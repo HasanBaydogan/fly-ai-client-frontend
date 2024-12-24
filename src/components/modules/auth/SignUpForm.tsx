@@ -1,26 +1,30 @@
 import Button from 'components/base/Button';
-import AuthSocialButtons from 'components/common/AuthSocialButtons';
 import { Col, Form, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-const SignUpForm = ({ layout }: { layout: 'simple' | 'card' | 'split' }) => {
+const SignUpForm = ({
+  layout,
+  handleRegister
+}: {
+  layout: 'simple' | 'card' | 'split';
+  handleRegister: () => void;
+}) => {
   return (
     <>
-      <div className="text-center mb-7">
+      <div className="text-center mb-3">
         <h3 className="text-body-highlight">Sign Up</h3>
         <p className="text-body-tertiary">Create your account today</p>
       </div>
-      <AuthSocialButtons title="Sign up" />
-      <div className="position-relative mt-4">
-        <hr className="bg-body-secondary" />
-        <div className="divider-content-center">or use email</div>
-      </div>
       <Form>
-        <Form.Group className="mb-3 text-start">
+        <Form.Group className="mb-2 text-start">
           <Form.Label htmlFor="name">Name</Form.Label>
           <Form.Control id="name" type="text" placeholder="Name" />
         </Form.Group>
-        <Form.Group className="mb-3 text-start">
+        <Form.Group className="mb-2 text-start">
+          <Form.Label htmlFor="surname">Surname</Form.Label>
+          <Form.Control id="surname" type="text" placeholder="Surname" />
+        </Form.Group>
+        <Form.Group className="mb-2 text-start">
           <Form.Label htmlFor="email">Email address</Form.Label>
           <Form.Control
             id="email"
@@ -62,14 +66,15 @@ const SignUpForm = ({ layout }: { layout: 'simple' | 'card' | 'split' }) => {
             <Link to="#!">privacy policy</Link>
           </Form.Check.Label>
         </Form.Check>
-        <Button variant="primary" className="w-100 mb-3">
+        <Button
+          variant="primary"
+          className="w-100 mb-3"
+          onClick={handleRegister}
+        >
           Sign up
         </Button>
         <div className="text-center">
-          <Link
-            to={`/pages/authentication/${layout}/sign-in`}
-            className="fs-9 fw-bold"
-          >
+          <Link to={`/auth/sign-in`} className="fs-9 fw-bold">
             Sign in to an existing account
           </Link>
         </div>

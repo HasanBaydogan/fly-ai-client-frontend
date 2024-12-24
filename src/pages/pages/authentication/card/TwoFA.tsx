@@ -1,10 +1,10 @@
 import TwoFAForm from 'components/modules/auth/TwoFAForm';
 import AuthCardLayout from 'layouts/AuthCardLayout';
 
-const TwoFA = () => {
+const TwoFA = ({ handleTwoFA }: { handleTwoFA: () => void }) => {
   return (
     <AuthCardLayout>
-      <TwoFAForm />
+      <TwoFAForm handleTwoFA={handleTwoFA} />
     </AuthCardLayout>
   );
 };

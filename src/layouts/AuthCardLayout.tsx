@@ -47,11 +47,10 @@ const AuthCardLayout = ({
                     )}
                   >
                     <h3 className="mb-3 text-body-emphasis fs-7">
-                      Phoenix Authentication
+                      Sales Management Tool
                     </h3>
                     <p className="text-body-tertiary">
-                      Give yourself some hassle-free development process with
-                      the uniqueness of Phoenix!
+                      Power-up your bussiness with Sale Management Tool
                     </p>
                     <ul className="list-unstyled mb-0 w-max-content w-md-auto mx-auto">
                       <li className="d-flex align-items-center gap-2">
@@ -71,7 +70,7 @@ const AuthCardLayout = ({
                           size={16}
                         />
                         <span className="text-body-tertiary fw-semibold">
-                          Simple
+                          Simple Usage
                         </span>
                       </li>
                       <li className="d-flex align-items-center gap-2">
@@ -81,7 +80,7 @@ const AuthCardLayout = ({
                           size={16}
                         />
                         <span className="text-body-tertiary fw-semibold">
-                          Responsive
+                          Big Data
                         </span>
                       </li>
                     </ul>
@@ -108,7 +107,7 @@ const AuthCardLayout = ({
                       >
                         <Logo
                           text={false}
-                          width={58}
+                          width={300}
                           className="fw-bolder fs-5 d-inline-block"
                         />
                       </Link>

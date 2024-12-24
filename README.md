@@ -31,3 +31,6 @@ To run the production build locally, run the following commands:
 
 Get the figma design file here:
 [https://www.figma.com/design/hSrnmiIDdIbGweIwvKdCpM/Phoenix-React-Distributed-(v1.5.0)---(Preview_-Duplicate-to-Edit)?node-id=1248-35561](<https://www.figma.com/design/hSrnmiIDdIbGweIwvKdCpM/Phoenix-React-Distributed-(v1.5.0)---(Preview_-Duplicate-to-Edit)?node-id=1248-35561
+
+Redux kurulumu
+Login , Register tasarımların yapılması. Anasayfanın gelmesi durumunu kodlama. Forget Password'u ekleme. Validation yapma. Şifre girme. Bunları backend'e bağlama. Giriş yapıldığında boş sayfada gözükse tam bir çalışan uygulama yap.

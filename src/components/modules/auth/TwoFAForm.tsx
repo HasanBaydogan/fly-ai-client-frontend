@@ -7,7 +7,13 @@ import { Link } from 'react-router-dom';
 
 const totalInputLength = 6;
 
-const TwoFAForm = ({ layout }: { layout?: 'simple' | 'card' | 'split' }) => {
+const TwoFAForm = ({
+  layout,
+  handleTwoFA
+}: {
+  layout?: 'simple' | 'card' | 'split';
+  handleTwoFA: () => void;
+}) => {
   const [otp, setOtp] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -89,7 +95,8 @@ const TwoFAForm = ({ layout }: { layout?: 'simple' | 'card' | 'split' }) => {
             <Button
               variant="primary"
               className="w-100 mb-5"
-              type="submit"
+              type="button"
+              onClick={handleTwoFA}
               disabled={otp.length < totalInputLength}
             >
               Verify
