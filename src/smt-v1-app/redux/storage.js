@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import rfqMailReducer from './rfqMailSlice';
+import userReducer from './userSlice';
 
 const storage = configureStore({
   reducer: {
-    rfqMails: rfqMailReducer
+    rfqMails: rfqMailReducer,
+    user: userReducer
   }
 });
 

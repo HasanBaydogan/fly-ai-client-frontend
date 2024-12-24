@@ -1,14 +1,71 @@
 import Button from 'components/base/Button';
+import { useState } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
+import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
+import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
+import { putUser } from 'smt-v1-app/redux/userSlice';
 
 const SignUpForm = ({
   layout,
-  handleRegister
+  handleRegister,
+  isLoading
 }: {
   layout: 'simple' | 'card' | 'split';
-  handleRegister: () => void;
+  handleRegister: (user: User) => void;
+  isLoading: boolean;
 }) => {
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
+  const [isChecked, setIsChecked] = useState(false);
+  const [isShowToast, setIsShowToast] = useState(false);
+  const [messageHeader, setMessageHeader] = useState('');
+  const [messageBodyText, setMessageBodyText] = useState('');
+
+  const dispatch = useDispatch();
+
+  function isValidEmail(email: string) {
+    // A commonly used email validation regex pattern (though not perfect)
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  }
+  const handleRegisterFields = e => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toastError('Enter your name');
+    } else if (!surname.trim()) {
+      toastError('Enter your surname');
+    } else if (!email.trim() || !isValidEmail(email)) {
+      toastError('Invalid Email!');
+    } else if (password.includes(' ')) {
+      toastError('Password has empty character!');
+    } else if (password.trim().length < 8) {
+      toastError('Password has at least 8 character!');
+    } else if (password !== repeatPassword) {
+      toastError('Passwords are not same!');
+    } else if (!isChecked) {
+      toastError('Confirm terms and privacy!');
+    } else {
+      const user = {
+        name: name,
+        surname: surname,
+        email: email,
+        password: password
+      };
+      dispatch(putUser({ email }));
+      handleRegister(user);
+    }
+  };
+  function toastError(message: string) {
+    setMessageHeader('Invalid Field');
+    setMessageBodyText(message);
+    setIsShowToast(true);
+  }
+
   return (
     <>
       <div className="text-center mb-3">
@@ -18,11 +75,23 @@ const SignUpForm = ({
       <Form>
         <Form.Group className="mb-2 text-start">
           <Form.Label htmlFor="name">Name</Form.Label>
-          <Form.Control id="name" type="text" placeholder="Name" />
+          <Form.Control
+            id="name"
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
         </Form.Group>
         <Form.Group className="mb-2 text-start">
           <Form.Label htmlFor="surname">Surname</Form.Label>
-          <Form.Control id="surname" type="text" placeholder="Surname" />
+          <Form.Control
+            id="surname"
+            type="text"
+            placeholder="Surname"
+            value={surname}
+            onChange={e => setSurname(e.target.value)}
+          />
         </Form.Group>
         <Form.Group className="mb-2 text-start">
           <Form.Label htmlFor="email">Email address</Form.Label>
@@ -30,13 +99,21 @@ const SignUpForm = ({
             id="email"
             type="email"
             placeholder="name@example.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
           />
         </Form.Group>
         <Row className="g-3 mb-3">
           <Col sm={layout === 'card' ? 12 : 6} lg={6}>
             <Form.Group>
               <Form.Label htmlFor="password">Password</Form.Label>
-              <Form.Control id="password" type="text" placeholder="Password" />
+              <Form.Control
+                id="password"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+              />
             </Form.Group>
           </Col>
           <Col sm={layout === 'card' ? 12 : 6} lg={6}>
@@ -46,8 +123,10 @@ const SignUpForm = ({
               </Form.Label>
               <Form.Control
                 id="confirmPassword"
-                type="text"
+                type="password"
                 placeholder="Confirm Password"
+                value={repeatPassword}
+                onChange={e => setRepeatPassword(e.target.value)}
               />
             </Form.Group>
           </Col>
@@ -57,6 +136,8 @@ const SignUpForm = ({
             type="checkbox"
             name="termsService"
             id="termsService"
+            checked={isChecked}
+            onChange={e => setIsChecked(e.target.checked)}
           />
           <Form.Check.Label
             htmlFor="termsService"
@@ -69,9 +150,10 @@ const SignUpForm = ({
         <Button
           variant="primary"
           className="w-100 mb-3"
-          onClick={handleRegister}
+          onClick={handleRegisterFields}
+          disabled={isLoading}
         >
-          Sign up
+          {isLoading ? <LoadingAnimation /> : 'Sign up'}
         </Button>
         <div className="text-center">
           <Link to={`/auth/sign-in`} className="fs-9 fw-bold">
@@ -79,6 +161,13 @@ const SignUpForm = ({
           </Link>
         </div>
       </Form>
+      <ToastNotification
+        isShow={isShowToast}
+        setIsShow={setIsShowToast}
+        variant={'danger'}
+        messageHeader={messageHeader}
+        messageBodyText={messageBodyText}
+      />
     </>
   );
 };

@@ -3,14 +3,19 @@ import AuthCardLayout from 'layouts/AuthCardLayout';
 import React from 'react';
 
 interface RegisterProps {
-  handleRegister: () => void;
+  handleRegister: (user: User) => void;
+  isLoading: boolean;
 }
 
-const Register = ({ handleRegister }: RegisterProps) => {
+const Register = ({ handleRegister, isLoading }: RegisterProps) => {
   return (
     <>
       <AuthCardLayout className="card-sign-up">
-        <SignUpForm layout="card" handleRegister={handleRegister} />
+        <SignUpForm
+          layout="card"
+          handleRegister={handleRegister}
+          isLoading={isLoading}
+        />
       </AuthCardLayout>
     </>
   );
