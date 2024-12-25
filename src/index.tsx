@@ -6,20 +6,24 @@ import SettingsPanelProvider from 'providers/SettingsPanelProvider';
 import { RouterProvider } from 'react-router-dom';
 import { router } from 'Routes';
 import ChatWidgetProvider from 'providers/ChatWidgetProvider';
+import { Provider } from 'react-redux';
+import storage from 'smt-v1-app/redux/storage';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <React.StrictMode>
-    <AppProvider>
-      <SettingsPanelProvider>
-        <ChatWidgetProvider>
-          <BreakpointsProvider>
-            <RouterProvider router={router} />
-          </BreakpointsProvider>
-        </ChatWidgetProvider>
-      </SettingsPanelProvider>
-    </AppProvider>
-  </React.StrictMode>
+  <Provider store={storage}>
+    <React.StrictMode>
+      <AppProvider>
+        <SettingsPanelProvider>
+          <ChatWidgetProvider>
+            <BreakpointsProvider>
+              <RouterProvider router={router} />
+            </BreakpointsProvider>
+          </ChatWidgetProvider>
+        </SettingsPanelProvider>
+      </AppProvider>
+    </React.StrictMode>
+  </Provider>
 );

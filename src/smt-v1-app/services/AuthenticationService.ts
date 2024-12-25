@@ -20,3 +20,12 @@ export const register = async user => {
     console.log(err);
   }
 };
+
+export const validateEmailOTP = async (email: string, otp: string) => {
+  try {
+    const response = await api().post('/auth/verify/email', { otp, email });
+    return response.data;
+  } catch (err) {
+    console.log(err);
+  }
+};

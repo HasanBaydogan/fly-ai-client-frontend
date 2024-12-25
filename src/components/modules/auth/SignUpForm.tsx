@@ -26,8 +26,6 @@ const SignUpForm = ({
   const [messageHeader, setMessageHeader] = useState('');
   const [messageBodyText, setMessageBodyText] = useState('');
 
-  const dispatch = useDispatch();
-
   function isValidEmail(email: string) {
     // A commonly used email validation regex pattern (though not perfect)
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,7 +54,7 @@ const SignUpForm = ({
         email: email,
         password: password
       };
-      dispatch(putUser({ email }));
+
       handleRegister(user);
     }
   };

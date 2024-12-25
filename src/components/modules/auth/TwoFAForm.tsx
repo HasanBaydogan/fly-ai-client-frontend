@@ -4,15 +4,20 @@ import Button from 'components/base/Button';
 import React, { ChangeEvent, useRef, useState } from 'react';
 import { Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const totalInputLength = 6;
 
 const TwoFAForm = ({
   layout,
-  handleTwoFA
+  handleTwoFA,
+  isLoading,
+  email
 }: {
   layout?: 'simple' | 'card' | 'split';
-  handleTwoFA: () => void;
+  handleTwoFA: (email: string, otp: string) => void;
+  isLoading: boolean;
+  email: string;
 }) => {
   const [otp, setOtp] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -53,12 +58,12 @@ const TwoFAForm = ({
           <h4 className="text-body-highlight">Enter the verification code</h4>
           <p className="text-body-tertiary mb-0">
             An email containing a 6-digit verification code has been sent to the
-            email address - exa*********.com
+            email address - {email}
           </p>
-          <p className="fs-10 mb-5">
+          {/*<p className="fs-10 mb-5">
             Don’t have access?
             <Link to="#!"> Use another method</Link>
-          </p>
+          </p> */}
           <div className="verification-form">
             <div className="d-flex align-items-center gap-2 mb-3">
               {Array(totalInputLength)
@@ -96,10 +101,10 @@ const TwoFAForm = ({
               variant="primary"
               className="w-100 mb-5"
               type="button"
-              onClick={handleTwoFA}
+              onClick={() => handleTwoFA(email, otp)}
               disabled={otp.length < totalInputLength}
             >
-              Verify
+              {isLoading ? <LoadingAnimation /> : 'Verify'}
             </Button>
             <Link to="#!" className="fs-9">
               Didn’t receive the code?

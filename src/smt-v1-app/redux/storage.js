@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import rfqMailReducer from './rfqMailSlice';
-import userReducer from './userSlice';
+import rfqMailReducer from './rfqMailSlice.ts';
+import userReducer from './userSlice.ts';
 
 const storage = configureStore({
   reducer: {
