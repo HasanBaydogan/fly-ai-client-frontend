@@ -29,3 +29,11 @@ export const validateEmailOTP = async (email: string, otp: string) => {
     console.log(err);
   }
 };
+export const login = async (email: string, password: string) => {
+  try {
+    const response = await api().post('/auth/login', { email, password });
+    return response.data;
+  } catch (err) {
+    console.log(err);
+  }
+};

@@ -1,11 +1,9 @@
 import TwoFA from 'pages/pages/authentication/card/TwoFA';
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
+
 import { useNavigate } from 'react-router-dom';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import Register from 'smt-v1-app/components/features/authentication/Register/Register';
-import { putUser } from 'smt-v1-app/redux/userSlice';
 import {
   register,
   validateEmailOTP
@@ -37,7 +35,6 @@ const RegisterContainer = () => {
   const handleTwoFA = async (email: string, otp: string) => {
     setIsLoading(true);
     const response = await validateEmailOTP(email, otp);
-    console.log(response);
     if (response.statusCode === 200) {
       setIsTwoFactorAuth(false);
       navigate('/auth/sign-in');
@@ -64,7 +61,13 @@ const RegisterContainer = () => {
       {isTwoFactorAuth ? (
         <TwoFA handleTwoFA={handleTwoFA} isLoading={isLoading} email={email} />
       ) : (
-        <Register handleRegister={handleRegister} isLoading={isLoading} />
+        <Register
+          handleRegister={handleRegister}
+          isLoading={isLoading}
+          setIsShowToast={setIsShowToast}
+          setMessageHeader={setMessageHeader}
+          setMessageBodyText={setMessageBodyText}
+        />
       )}
       {isShowToast ? (
         <ToastNotification

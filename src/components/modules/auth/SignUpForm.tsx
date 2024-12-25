@@ -1,20 +1,23 @@
 import Button from 'components/base/Button';
 import { useState } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
-import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
-import { putUser } from 'smt-v1-app/redux/userSlice';
 
 const SignUpForm = ({
   layout,
   handleRegister,
-  isLoading
+  isLoading,
+  setIsShowToast,
+  setMessageHeader,
+  setMessageBodyText
 }: {
   layout: 'simple' | 'card' | 'split';
   handleRegister: (user: User) => void;
   isLoading: boolean;
+  setIsShowToast: React.Dispatch<React.SetStateAction<boolean>>;
+  setMessageHeader: React.Dispatch<React.SetStateAction<string>>;
+  setMessageBodyText: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
@@ -22,9 +25,6 @@ const SignUpForm = ({
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [isChecked, setIsChecked] = useState(false);
-  const [isShowToast, setIsShowToast] = useState(false);
-  const [messageHeader, setMessageHeader] = useState('');
-  const [messageBodyText, setMessageBodyText] = useState('');
 
   function isValidEmail(email: string) {
     // A commonly used email validation regex pattern (though not perfect)
@@ -49,10 +49,10 @@ const SignUpForm = ({
       toastError('Confirm terms and privacy!');
     } else {
       const user = {
-        name: name,
-        surname: surname,
-        email: email,
-        password: password
+        name: name.trim(),
+        surname: surname.trim(),
+        email: email.trim(),
+        password: password.trim()
       };
 
       handleRegister(user);
@@ -159,13 +159,6 @@ const SignUpForm = ({
           </Link>
         </div>
       </Form>
-      <ToastNotification
-        isShow={isShowToast}
-        setIsShow={setIsShowToast}
-        variant={'danger'}
-        messageHeader={messageHeader}
-        messageBodyText={messageBodyText}
-      />
     </>
   );
 };
