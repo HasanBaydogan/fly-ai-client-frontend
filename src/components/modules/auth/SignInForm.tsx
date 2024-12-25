@@ -97,10 +97,7 @@ const SignInForm = ({
           </Form.Check>
         </Col>
         <Col xs="auto">
-          <Link
-            to={`/pages/authentication/${layout}/forgot-password`}
-            className="fs-9 fw-semibold"
-          >
+          <Link to={`/auth/forget-password`} className="fs-9 fw-semibold">
             Forgot Password?
           </Link>
         </Col>

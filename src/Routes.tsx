@@ -13,7 +13,6 @@ import Showcase from 'pages/Showcase';
 import App from 'App';
 
 import CardResetPassword from 'pages/pages/authentication/card/ResetPassword';
-import CardLockScreen from 'pages/pages/authentication/card/LockScreen';
 
 import TravelLanding from 'pages/apps/travel-agency/landing/Landing';
 
@@ -52,16 +51,12 @@ const routes: RouteObject[] = [
             element: <RegisterContainer />
           },
           {
-            path: 'forgot-password',
+            path: 'forget-password',
             element: <ForgetPasswordContainer />
           },
           {
             path: 'reset-password',
             element: <CardResetPassword />
-          },
-          {
-            path: 'lock-screen',
-            element: <CardLockScreen />
           }
         ]
       },

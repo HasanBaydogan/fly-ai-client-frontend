@@ -1,7 +1,5 @@
 import axios from 'axios';
 import { baseURL } from './ApiConstants';
-import Cookies from 'js-cookie';
-import { setCookie } from './CookieService';
 
 const api = () => {
   return axios.create({
@@ -32,6 +30,31 @@ export const validateEmailOTP = async (email: string, otp: string) => {
 export const login = async (email: string, password: string) => {
   try {
     const response = await api().post('/auth/login', { email, password });
+    return response.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+export const forgetPassword = async (email: string) => {
+  try {
+    const response = await api().post('/auth/forget-password', { email });
+    return response.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const verifyPassRefreshOTP = async (
+  email: string,
+  otp: string,
+  clientValidationOTP: string
+) => {
+  try {
+    const response = await api().post('/auth/verify/password-refresh-otp', {
+      email,
+      otp,
+      clientValidationOTP
+    });
     return response.data;
   } catch (err) {
     console.log(err);
