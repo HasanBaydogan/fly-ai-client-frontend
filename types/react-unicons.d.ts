@@ -7,6 +7,22 @@ declare module '@iconscout/react-unicons' {
   } & SVGProps<SVGElement>;
 
   export type Icon = (props: IconProps) => JSX.Element;
+  /* Test Custom Icon
+  const MyCustomIcon: React.FC<IconProps> = ({ color = 'black', size = 24, ...props }) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill={color} // color özelliği burada kullanılıyor
+      width={size} // size özelliği burada kullanılıyor
+      height={size}
+      {...props} // Diğer SVG özelliklerini desteklemek için
+    >
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+    </svg>
+  );
+  
+  export const MyCustomIcon;
+  */
 
   export const Uil0Plus: Icon;
   export const Uil10Plus: Icon;

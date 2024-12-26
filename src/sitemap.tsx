@@ -44,12 +44,14 @@ export const routes: RouteItems[] = [
         name: 'mail',
         active: true,
         icon: 'mail',
+        flat: true,
         pages: [
           {
             name: 'Mail Tracking',
-            path: '/test/subtest',
+            path: '/subtest',
             pathName: 'test-subtest',
-            active: true
+            active: true,
+            next: false
           },
           {
             name: 'RFQs',
@@ -70,12 +72,12 @@ export const routes: RouteItems[] = [
       {
         name: 'logistic',
         active: true,
-        iconSet: 'font-awesome',
-        icon: 'logistic',
+        iconSet: 'feather',
+        icon: 'truck',
         pages: [
           {
             name: 'logistic',
-            path: '/test/logistic',
+            path: '/logistic',
             pathName: 'test-subtest',
             active: true
           }
@@ -84,8 +86,8 @@ export const routes: RouteItems[] = [
       {
         name: 'operations',
         active: true,
-        iconSet: 'font-awesome',
-        icon: 'logistic',
+        iconSet: 'feather',
+        icon: 'settings',
         pages: [
           {
             name: 'operations',
@@ -98,8 +100,8 @@ export const routes: RouteItems[] = [
       {
         name: 'Client Management',
         active: true,
-        iconSet: 'font-awesome',
-        icon: 'logistic',
+        iconSet: 'feather',
+        icon: 'users',
         pages: [
           {
             name: 'Client Management',
@@ -112,8 +114,8 @@ export const routes: RouteItems[] = [
       {
         name: 'status',
         active: true,
-        iconSet: 'font-awesome',
-        icon: 'logistic',
+        iconSet: 'feather',
+        icon: 'clock',
         pages: [
           {
             name: 'status',

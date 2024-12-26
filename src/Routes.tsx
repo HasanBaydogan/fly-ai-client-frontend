@@ -12,8 +12,6 @@ import Showcase from 'pages/Showcase';
 
 import App from 'App';
 
-import CardResetPassword from 'pages/pages/authentication/card/ResetPassword';
-
 import TravelLanding from 'pages/apps/travel-agency/landing/Landing';
 
 import HotelHomepage from 'pages/apps/travel-agency/hotel/customer/homepage/Homepage';

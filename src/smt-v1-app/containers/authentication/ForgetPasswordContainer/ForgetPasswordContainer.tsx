@@ -69,7 +69,7 @@ const ForgetPasswordContainer = () => {
       toastError('Invalid Code');
     } else if (resp && resp.statusCode === 498) {
       // Expired OTP
-      toastError('Expired Code');
+      toastError('Expired Code. New Code sent');
     } else {
       toastError('Unknown Error!');
     }
