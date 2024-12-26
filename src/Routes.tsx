@@ -53,10 +53,6 @@ const routes: RouteObject[] = [
           {
             path: 'forget-password',
             element: <ForgetPasswordContainer />
-          },
-          {
-            path: 'reset-password',
-            element: <CardResetPassword />
           }
         ]
       },

@@ -60,3 +60,20 @@ export const verifyPassRefreshOTP = async (
     console.log(err);
   }
 };
+
+export const refreshPassword = async (
+  email: string,
+  secret: string,
+  newPassword: string
+) => {
+  try {
+    const response = await api().post('/auth/refresh-password', {
+      email,
+      secret,
+      newPassword
+    });
+    return response.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
