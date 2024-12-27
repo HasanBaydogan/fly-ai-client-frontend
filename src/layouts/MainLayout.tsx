@@ -30,8 +30,8 @@ const MainLayout = () => {
 
       <div className={classNames(contentClass, 'content')}>
         <Outlet />
-        <Footer className={classNames(footerClass, 'position-absolute')} />
-        <ChatWidget />
+        {/* <Footer className={classNames(footerClass, 'position-absolute')} /> */}
+        {/* <ChatWidget /> */}
       </div>
     </Container>
   );

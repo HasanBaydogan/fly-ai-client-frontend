@@ -1,13 +1,5 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faHourglassHalf } from '@fortawesome/free-regular-svg-icons';
-import {
-  Icon,
-  UilChartPie,
-  UilCube,
-  UilDocumentLayoutRight,
-  UilFilesLandscapesAlt,
-  UilPuzzlePiece
-} from '@iconscout/react-unicons';
+import { Icon, UilCube } from '@iconscout/react-unicons';
 
 export interface Route {
   name: string;
@@ -48,23 +40,22 @@ export const routes: RouteItems[] = [
         pages: [
           {
             name: 'Mail Tracking',
-            path: '/subtest',
-            pathName: 'test-subtest',
+            path: '/mail/mail-tracking',
+            pathName: 'mail-mail-tracking',
             active: true,
             next: false
           },
           {
             name: 'RFQs',
-            path: '/test/subtest2',
-            pathName: 'test-subtest',
+            path: '/mail/rfqs',
+            pathName: 'test-rfqs',
 
             active: true
           },
           {
             name: 'Quote',
-            path: '/test/quote2',
+            path: '/mail/quote',
             pathName: 'quote',
-            topNavIcon: 'phone',
             active: true
           }
         ]

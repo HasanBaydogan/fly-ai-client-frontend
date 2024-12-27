@@ -8,8 +8,6 @@ import Error404 from 'pages/error/Error404';
 import Error403 from 'pages/error/Error403';
 import Error500 from 'pages/error/Error500';
 
-import Showcase from 'pages/Showcase';
-
 import App from 'App';
 
 import TravelLanding from 'pages/apps/travel-agency/landing/Landing';
@@ -22,6 +20,9 @@ import TravelLandingLayout from 'layouts/TravelLandingLayout';
 import LoginContainer from 'smt-v1-app/containers/authentication/LoginContainer/LoginContainer';
 import RegisterContainer from 'smt-v1-app/containers/authentication/RegisterContainer/RegisterContainer';
 import ForgetPasswordContainer from 'smt-v1-app/containers/authentication/ForgetPasswordContainer/ForgetPasswordContainer';
+import MailTrackingContainer from 'smt-v1-app/containers/MailTrackingContainer/MailTrackingContainer';
+import RFQsContainer from 'smt-v1-app/containers/RFQsContainer/RFQsContainer';
+import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
 
 const routes: RouteObject[] = [
   {
@@ -34,7 +35,25 @@ const routes: RouteObject[] = [
             <MainLayout />
           </MainLayoutProvider>
         ),
-        children: []
+        children: [
+          {
+            path: '/mail',
+            children: [
+              {
+                path: 'mail-tracking',
+                element: <MailTrackingContainer />
+              },
+              {
+                path: 'rfqs',
+                element: <RFQsContainer />
+              },
+              {
+                path: 'quote',
+                element: <QuoteContainer />
+              }
+            ]
+          }
+        ]
       },
 
       {
@@ -54,6 +73,7 @@ const routes: RouteObject[] = [
           }
         ]
       },
+
       {
         element: <TravelLandingLayout />,
         path: 'apps/travel-agency',
@@ -99,11 +119,6 @@ const routes: RouteObject[] = [
             element: <Error500 />
           }
         ]
-      },
-
-      {
-        path: 'showcase',
-        element: <Showcase />
       },
       {
         path: '*',

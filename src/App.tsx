@@ -1,5 +1,3 @@
-import SettingsPanel from 'components/settings-panel/SettingsPanel';
-import SettingsToggle from 'components/settings-panel/SettingsToggle';
 import useToggleStyle from 'hooks/useToggleStyle';
 import { useAppContext } from 'providers/AppProvider';
 import { useSettingsPanelContext } from 'providers/SettingsPanelProvider';
@@ -48,8 +46,8 @@ const App = () => {
           <Outlet />
           {showSettingPanelButton && (
             <>
-              <SettingsToggle />
-              <SettingsPanel />
+              {/* <SettingsToggle /> */}
+              {/* <SettingsPanel /> */}
             </>
           )}
         </>
