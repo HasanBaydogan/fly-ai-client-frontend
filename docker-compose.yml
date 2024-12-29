@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  react-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "443:443" # HTTPS
+      - "80:80" # HTTP for redirection
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+    labels:
+      com.example.service: "react-app"
+
+networks:
+  app-network:
+    driver: bridge
