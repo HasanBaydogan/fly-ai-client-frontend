@@ -23,7 +23,6 @@ const LoginContainer = () => {
   const handleLogin = async (userInputemail: string, password: string) => {
     setIsLoading(true);
     const resp = await login(userInputemail, password);
-    console.log(resp);
     if (resp && resp.statusCode === 200) {
       const { access_token, refresh_token } = resp.data;
       setCookie('access_token', access_token);
