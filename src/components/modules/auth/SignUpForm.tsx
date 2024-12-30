@@ -154,7 +154,7 @@ const SignUpForm = ({
           {isLoading ? <LoadingAnimation /> : 'Sign up'}
         </Button>
         <div className="text-center">
-          <Link to={`/auth/sign-in`} className="fs-9 fw-bold">
+          <Link to={`/`} className="fs-9 fw-bold">
             Sign in to an existing account
           </Link>
         </div>

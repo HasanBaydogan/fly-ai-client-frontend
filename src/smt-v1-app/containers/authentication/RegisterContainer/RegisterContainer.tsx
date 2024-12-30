@@ -37,7 +37,7 @@ const RegisterContainer = () => {
     const response = await validateEmailOTP(email, otp);
     if (response.statusCode === 200) {
       setIsTwoFactorAuth(false);
-      navigate('/auth/sign-in');
+      navigate('/');
     } else if (response.statusCode === 498) {
       setMessageHeader('Expired Email');
       setMessageBodyText('New Code is sent to your email');

@@ -97,7 +97,7 @@ const SignInForm = ({
           </Form.Check>
         </Col>
         <Col xs="auto">
-          <Link to={`/auth/forget-password`} className="fs-9 fw-semibold">
+          <Link to={`/forget-password`} className="fs-9 fw-semibold">
             Forgot Password?
           </Link>
         </Col>
@@ -111,7 +111,7 @@ const SignInForm = ({
         {isLoading ? <LoadingAnimation /> : 'Sign In'}
       </Button>
       <div className="text-center">
-        <Link to={`/auth/sign-up`} className="fs-9 fw-bold">
+        <Link to={`/register`} className="fs-9 fw-bold">
           Create an account
         </Link>
       </div>

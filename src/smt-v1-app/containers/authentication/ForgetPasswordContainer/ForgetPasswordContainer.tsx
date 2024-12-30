@@ -85,7 +85,7 @@ const ForgetPasswordContainer = () => {
       if (resp && resp.statusCode === 200) {
         toastSuccess('Refresh Password', 'Successfully password refreshed');
         setIsNewPassword(false);
-        setTimeout(() => navigation('/auth/sign-in'), 1500);
+        setTimeout(() => navigation('/'), 1500);
       } else if (resp && resp.statusCode === 422) {
         toastError('Invalid Operation. Come back to main Page');
       } else {

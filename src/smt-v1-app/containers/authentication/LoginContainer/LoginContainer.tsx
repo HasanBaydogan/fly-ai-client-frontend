@@ -29,7 +29,7 @@ const LoginContainer = () => {
       setCookie('access_token', access_token);
       setCookie('refresh_token', refresh_token);
 
-      navigation('');
+      navigation('/mail-tracking');
     } else if (resp && resp.statusCode === 404) {
       toastError('Error', 'There is no such a user!');
     } else if (resp && resp.statusCode === 411) {
@@ -62,7 +62,7 @@ const LoginContainer = () => {
     const response = await validateEmailOTP(email, otp);
     if (response.statusCode === 200) {
       setIsTwoFA(false);
-      navigation('/auth/sign-in');
+      navigation('/');
     } else if (response.statusCode === 498) {
       setMessageHeader('Expired Email');
       setMessageBodyText('New Code is sent to your email');

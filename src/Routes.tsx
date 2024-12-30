@@ -30,6 +30,10 @@ const routes: RouteObject[] = [
     children: [
       {
         path: '/',
+        element: <LoginContainer />
+      },
+      {
+        path: '/',
         element: (
           <MainLayoutProvider>
             <MainLayout />
@@ -37,41 +41,29 @@ const routes: RouteObject[] = [
         ),
         children: [
           {
-            path: '/mail',
-            children: [
-              {
-                path: 'mail-tracking',
-                element: <MailTrackingContainer />
-              },
-              {
-                path: 'rfqs',
-                element: <RFQsContainer />
-              },
-              {
-                path: 'quote',
-                element: <QuoteContainer />
-              }
-            ]
+            path: 'mail-tracking', 
+            element: <MailTrackingContainer />
+          },
+          {
+            path: 'rfqs', 
+            element: <RFQsContainer />
+          },
+          {
+            path: 'quote', 
+            element: <QuoteContainer />
           }
         ]
       },
-
+    
       {
-        path: '/auth',
-        children: [
-          {
-            path: 'sign-in',
-            element: <LoginContainer />
-          },
-          {
-            path: 'sign-up',
-            element: <RegisterContainer />
-          },
-          {
-            path: 'forget-password',
-            element: <ForgetPasswordContainer />
-          }
-        ]
+        path: '/register',
+        element: <RegisterContainer />
+        
+      },
+      {
+        path: '/forget-password',
+        element: <ForgetPasswordContainer />
+        
       },
 
       {

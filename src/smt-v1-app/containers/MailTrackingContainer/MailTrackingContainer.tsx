@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getAllRFQMails } from 'smt-v1-app/services/MailTrackingService';
 
 interface RFQMailRow {
   rfqMailId: string;
@@ -50,6 +51,14 @@ const MailTrackingContainer = () => {
   // statusType (state)
 
   // useEffect data fetch
+  useEffect(() => {
+    const getRFQMailsFromDB = async () => {
+      const response = await getAllRFQMails(pageNo,pageSize,"ALL",sinceFromDate.toDateString());
+      console.log(response);
+    }
+    getRFQMailsFromDB();
+  },[])
+  
   // handle Not RFQ , No Quote and Spam icons
   // handle refresh button
   // onSelect data fetching
