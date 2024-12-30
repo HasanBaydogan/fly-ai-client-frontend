@@ -36,7 +36,6 @@ const SignInForm = ({
 
   const handleLocalLogin = e => {
     e.preventDefault();
-    console.log(localEmail + ' ' + password);
     if (!localEmail.trim() || !password || !isValidEmail(localEmail)) {
       setVariant('danger');
       setMessageHeader('Invalid Email or Password!');
