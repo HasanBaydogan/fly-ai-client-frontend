@@ -40,21 +40,21 @@ export const routes: RouteItems[] = [
         pages: [
           {
             name: 'Mail Tracking',
-            path: '/mail/mail-tracking',
+            path: '/mail-tracking',
             pathName: 'mail-mail-tracking',
             active: true,
             next: false
           },
           {
             name: 'RFQs',
-            path: '/mail/rfqs',
+            path: '/rfqs',
             pathName: 'test-rfqs',
 
             active: true
           },
           {
             name: 'Quote',
-            path: '/mail/quote',
+            path: '/quote',
             pathName: 'quote',
             active: true
           }

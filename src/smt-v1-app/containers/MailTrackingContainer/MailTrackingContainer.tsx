@@ -1,5 +1,12 @@
+import { faArrowRotateRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import DatePicker from 'components/base/DatePicker';
+import SearchBox from 'components/common/SearchBox';
 import React, { useEffect, useState } from 'react';
-import { getAllRFQMails } from 'smt-v1-app/services/MailTrackingService';
+import { Col, Form, Row } from 'react-bootstrap';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
+import MailTrackingHeader from 'smt-v1-app/components/features/MailTrackingHeader/MailTrackingHeader';
+import { getAllRFQMails, searchByRfqNumberId } from 'smt-v1-app/services/MailTrackingService';
 
 interface RFQMailRow {
   rfqMailId: string;
@@ -40,7 +47,7 @@ const MailTrackingContainer = () => {
   const [pageSize, setPageSize] = useState(10);
 
   // page activestatus(state)
-  const [activeStatus, setActiveStatus] = useState('All');
+  const [activeStatus, setActiveStatus] = useState('ALL');
   // data (state)
   const [rfqMails, setRfMails] = useState<RFQMailRow[]>();
 
@@ -50,23 +57,48 @@ const MailTrackingContainer = () => {
   const [statusType, setStatusType] = useState();
   // statusType (state)
 
+
   // useEffect data fetch
   useEffect(() => {
+    setLoading(true);
     const getRFQMailsFromDB = async () => {
-      const response = await getAllRFQMails(pageNo,pageSize,"ALL",sinceFromDate.toDateString());
+      
+      const formattedDate = sinceFromDate.toLocaleDateString("tr-TR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+      const response = await getAllRFQMails(pageNo,pageSize,activeStatus,formattedDate);
       console.log(response);
+      console.log(formattedDate);
     }
     getRFQMailsFromDB();
-  },[])
+    setLoading(false);
+  },[pageNo,pageSize,activeStatus,sinceFromDate])
   
   // handle Not RFQ , No Quote and Spam icons
   // handle refresh button
   // onSelect data fetching
 
+  const handleRFQNumberIdSearch = async (rfqNumberId : string) => {
+    setLoading(true);
+    const response = await searchByRfqNumberId(rfqNumberId,1,10);
+
+    console.log(response);
+
+    setLoading(false);
+  }
+
   return (
-    <div className="d-flex justify-content-center align-items-center">
-      Mail Tracking Container
-    </div>
+    <>
+    <MailTrackingHeader 
+        loading={loading} 
+        sinceFromDate={sinceFromDate} 
+        setSinceFromDate={setSinceFromDate}
+        handleRFQNumberIdSearch={handleRFQNumberIdSearch}
+        />
+     
+    </>
   );
 };
 
