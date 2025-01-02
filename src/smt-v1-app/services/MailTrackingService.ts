@@ -20,10 +20,10 @@ export const getAllRFQMails = async (
   sinceFromDate: string
 ) => {
   try {
-    const accessToken = Cookies.get('access_token');
+    const access_token = Cookies.get('access_token');
     const headers = {};
-    if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
+    if (access_token) {
+      headers['Authorization'] = `Bearer ${access_token}`;
     } else {
       window.location.assign('/');
     }
@@ -40,18 +40,16 @@ export const getAllRFQMails = async (
         headers
       }
     );
-    console.log('Before rfqMailResp ');
-    console.log(rfqMailResp);
-    console.log('After rfqMailResp ');
     if (rfqMailResp.data.statusCode === 200) {
       return rfqMailResp.data;
     } else if (rfqMailResp.data.statusCode === 498) {
       // Expired JWT
       try {
         const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refreshToken: Cookies.get('refresh_token'),
-          accessToken: accessToken
+          refresh_token: Cookies.get('refresh_token')
         });
+        //console.log(refreshTokenresponse);
+
         if (refreshTokenresponse.data.statusCode === 200) {
           setCookie(
             'access_token',
@@ -61,11 +59,17 @@ export const getAllRFQMails = async (
             'refresh_token',
             refreshTokenresponse.data.data.refresh_token
           );
-          let rfqMailResponseAfterRefresh = await api().get(
+          let rfqMailResponseAfterRefresh = await api().post(
             `/rfq-mail/previews`,
             {
+              pageNo: pageNo,
+              pageSize: pageSize,
+              filterType: filterType,
+              sinceFrom: sinceFromDate
+            },
+            {
               headers: {
-                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+                Authorization: `Bearer ${refreshTokenresponse.data.data.access_token}`
               }
             }
           );
