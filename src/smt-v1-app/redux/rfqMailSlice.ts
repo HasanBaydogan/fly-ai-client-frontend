@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { useSelector } from 'react-redux';
 
 // Define the structure of the state
 interface RFQMailState {
@@ -17,16 +18,18 @@ const rfqMailSlice = createSlice({
     // Action to add new RFQ mails
     putRfqMails: (state, action: PayloadAction<RFQMail[]>) => {
       state.rfqMails = action.payload;
+      
     },
 
     // Action to delete RFQ mails by their IDs
     deleteRfqMails: (state, action: PayloadAction<string[]>) => {
-      state.rfqMails = state.rfqMails.filter(
-        mail => !action.payload.includes(mail.id)
-      );
+      state.rfqMails = []
     }
   }
 });
 
+// Select RFQ mails with type safety
+export const useRFQMailsSelector = () =>
+  useSelector((state: { rfqMails: RFQMailState }) => state.rfqMails.rfqMails);
 export const { putRfqMails, deleteRfqMails } = rfqMailSlice.actions;
 export default rfqMailSlice.reducer;

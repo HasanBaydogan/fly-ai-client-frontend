@@ -1,0 +1,16 @@
+.rfq-mail-item-rigth-arrow:hover { 
+    opacity: 0.4;
+    cursor: pointer;
+}
+.rfq-mail-listing-icon-hover:hover {
+    opacity: 0.4;
+    cursor: pointer;
+}
+.rfq-mail-detail-content {
+
+    white-space: pre-wrap;
+
+}
+.deadline-font-size {
+    font-size: 12px;
+}

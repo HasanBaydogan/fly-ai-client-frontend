@@ -1,11 +1,10 @@
-import { faArrowRotateRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import DatePicker from 'components/base/DatePicker';
-import SearchBox from 'components/common/SearchBox';
 import React, { useEffect, useState } from 'react';
-import { Col, Form, Row } from 'react-bootstrap';
+import { Table } from 'react-bootstrap';
+import { useDispatch } from 'react-redux';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import MailTrackingHeader from 'smt-v1-app/components/features/MailTrackingHeader/MailTrackingHeader';
+import RfqMailRowItem from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowItem';
+import { putRfqMails, useRFQMailsSelector } from 'smt-v1-app/redux/rfqMailSlice';
 import { getAllRFQMails, searchByRfqNumberId } from 'smt-v1-app/services/MailTrackingService';
 
 interface RFQMailRow {
@@ -34,6 +33,10 @@ type StatusType =
   | 'SPAM';
 
 const MailTrackingContainer = () => {
+
+  const dispatch = useDispatch();
+  const reduxRfqMails = useRFQMailsSelector();
+  
   // loading until everything ready (state)
   const [loading, setLoading] = useState(false);
   // date since from (state)
@@ -69,8 +72,10 @@ const MailTrackingContainer = () => {
         year: "numeric",
       });
       const response = await getAllRFQMails(pageNo,pageSize,activeStatus,formattedDate);
-      console.log(response);
-      console.log(formattedDate);
+      dispatch(putRfqMails(response.data))
+      setTimeout(() => {
+        console.log(reduxRfqMails);
+      },1000)
     }
     getRFQMailsFromDB();
     setLoading(false);
@@ -97,6 +102,27 @@ const MailTrackingContainer = () => {
         setSinceFromDate={setSinceFromDate}
         handleRFQNumberIdSearch={handleRFQNumberIdSearch}
         />
+        <Table responsive >
+        <thead>
+                <tr>
+                  <th></th>
+                  <th>RFQ Id</th>
+                  <th></th>
+                  <th></th>
+                  <th>Status</th>
+                  <th>Assign To</th>
+                  <th>Comments</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+              {reduxRfqMails && reduxRfqMails.map((rfqMail) => <RfqMailRowItem rfqMail={rfqMail} />)}
+
+              </tbody>
+
+        </Table>
+      
+        
      
     </>
   );
