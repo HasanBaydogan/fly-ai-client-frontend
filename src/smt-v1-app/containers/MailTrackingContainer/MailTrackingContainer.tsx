@@ -1,25 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Nav, Pagination, Tab, Table } from 'react-bootstrap';
+import { Nav, Tab, Table } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import MailTrackingHeader from 'smt-v1-app/components/features/MailTrackingHeader/MailTrackingHeader';
-import RfqMailRowItem from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowItem';
-import {
-  deleteRfqMails,
-  putRfqMails,
-  useRFQMailsSelector
-} from 'smt-v1-app/redux/rfqMailSlice';
+import { deleteRfqMails, putRfqMails } from 'smt-v1-app/redux/rfqMailSlice';
 import {
   getAllRFQMails,
   searchByRfqNumberId
 } from 'smt-v1-app/services/MailTrackingService';
 import { getActiveStatusFromStringStatus } from './MailTrackingHelper';
 import './MailTrackingContainer.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faChevronLeft,
-  faChevronRight
-} from '@fortawesome/free-solid-svg-icons';
+import CustomPagination from 'smt-v1-app/components/common/CustomPagination/CustomPagination';
+import MailTrackingItemsBody from 'smt-v1-app/components/features/MailTrackingItemsBody/MailTrackingItemsBody';
 
 interface RFQMailRow {
   rfqMailId: string;
@@ -72,7 +64,6 @@ type filterType =
 
 const MailTrackingContainer = () => {
   const dispatch = useDispatch();
-  const reduxRfqMails = useRFQMailsSelector();
 
   // loading until everything ready (state)
   const [loading, setLoading] = useState(false);
@@ -94,6 +85,7 @@ const MailTrackingContainer = () => {
   // data (state)
   const [rfqMails, setRfMails] = useState<RFQMailRow[]>();
 
+  const [isTextSearch, setIsTextSearch] = useState(true);
   const [searchText, setSearchText] = useState('');
   // search text RFQ Number (state)
 
@@ -109,14 +101,15 @@ const MailTrackingContainer = () => {
         month: '2-digit',
         year: 'numeric'
       });
+
       const response = await getAllRFQMails(
         pageNo,
         pageSize,
         filterType,
         formattedDate
       );
-      console.log(response);
       dispatch(deleteRfqMails());
+      console.log(response);
       dispatch(putRfqMails(response.data.rfqMailPreviewResponses));
       setTotalRFQMail(response.data.totalItems);
       setTotalPage(response.data.totalPage);
@@ -129,27 +122,11 @@ const MailTrackingContainer = () => {
   // handle refresh button
   // onSelect data fetching
 
-  const handlePageChange = (pageNumber: number) => {
-    setPageNo(pageNumber);
-  };
-
-  const handlePrevPage = () => {
-    if (pageNo > 1) {
-      setPageNo(pageNo - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (pageNo < totalPage) {
-      setPageNo(pageNo + 1);
-    }
-  };
-
   const handleRFQNumberIdSearch = async (rfqNumberId: string) => {
     setLoading(true);
     const response = await searchByRfqNumberId(rfqNumberId, 1, 10);
 
-    console.log(response);
+    //console.log(response);
 
     setLoading(false);
   };
@@ -170,7 +147,9 @@ const MailTrackingContainer = () => {
         sinceFromDate={sinceFromDate}
         setSinceFromDate={setSinceFromDate}
         handleRFQNumberIdSearch={handleRFQNumberIdSearch}
+        setPageNo={setPageNo}
       />
+
       <Tab.Container
         id="rfq-mails-tabs"
         defaultActiveKey="All"
@@ -188,88 +167,13 @@ const MailTrackingContainer = () => {
 
         <Tab.Content>
           <Tab.Pane eventKey={stringActiveStatus}>
-            {loading ? (
-              <LoadingAnimation />
-            ) : (
-              <Table responsive>
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>RFQ Id</th>
-                    <th></th>
-                    <th></th>
-                    <th>Status</th>
-                    <th>Assign To</th>
-                    <th>Comments</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reduxRfqMails &&
-                    reduxRfqMails.map((rfqMail, key) => (
-                      <RfqMailRowItem key={key} rfqMail={rfqMail} />
-                    ))}
-                </tbody>
-              </Table>
-            )}
-            <Pagination className="mb-2 justify-content-end">
-              <Pagination.Prev onClick={handlePrevPage} disabled={pageNo === 1}>
-                <FontAwesomeIcon icon={faChevronLeft} />
-              </Pagination.Prev>
-
-              {/* First 3 Pages */}
-              {Array.from({ length: Math.min(3, totalPage) }, (_, index) => (
-                <Pagination.Item
-                  key={index + 1}
-                  active={index + 1 === pageNo}
-                  onClick={() => handlePageChange(index + 1)}
-                >
-                  {index + 1}
-                </Pagination.Item>
-              ))}
-
-              {/* Ellipsis if necessary */}
-              {pageNo > 4 && totalPage > 6 && <Pagination.Ellipsis disabled />}
-
-              {/* Current Page (if not part of the first/last 3) */}
-              {pageNo > 3 && pageNo < totalPage - 2 && (
-                <Pagination.Item
-                  active
-                  onClick={() => handlePageChange(pageNo)}
-                >
-                  {pageNo}
-                </Pagination.Item>
-              )}
-
-              {/* Ellipsis before last pages */}
-              {pageNo < totalPage - 3 && totalPage > 6 && (
-                <Pagination.Ellipsis disabled />
-              )}
-
-              {/* Last 3 Pages */}
-              {Array.from({ length: 3 }, (_, index) => {
-                const pageIndex = totalPage - 3 + index;
-                if (pageIndex + 1 > 3) {
-                  return (
-                    <Pagination.Item
-                      key={pageIndex + 1}
-                      active={pageIndex + 1 === pageNo}
-                      onClick={() => handlePageChange(pageIndex + 1)}
-                    >
-                      {pageIndex + 1}
-                    </Pagination.Item>
-                  );
-                }
-                return null;
-              })}
-
-              <Pagination.Next
-                onClick={handleNextPage}
-                disabled={pageNo === totalPage}
-              >
-                <FontAwesomeIcon icon={faChevronRight} />
-              </Pagination.Next>
-            </Pagination>
+            {loading ? <LoadingAnimation /> : <MailTrackingItemsBody />}
+            <CustomPagination
+              pageNo={pageNo}
+              setPageNo={setPageNo}
+              totalPage={totalPage}
+              totalItem={totalRFQMail}
+            />
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
