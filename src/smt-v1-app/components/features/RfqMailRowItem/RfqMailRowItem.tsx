@@ -37,10 +37,13 @@ const RfqMailRowItem = ({
   const forceReRender = () => {
     setComponentKey(prevKey => prevKey + 1);
   };
-  useEffect(() => {
+  const handleStatusColor = (rfqMailStatus: string) => {
     const returnColors = getColorStyles(rfqMailStatus);
     setBgColor(returnColors.bgColor);
     setTextColor(returnColors.textColor);
+  };
+  useEffect(() => {
+    handleStatusColor(rfqMailStatus);
     // Default olarak hepsini aktif yapıyoruz
     setIsNotRFQActive(false);
     setIsNoQuoteActive(false);
@@ -81,6 +84,7 @@ const RfqMailRowItem = ({
       forceReRender();
       const mappedStatus = mapPointTypeToRfqMailStatus(pointType);
       setRfqMailStatus(mappedStatus);
+      handleStatusColor(mappedStatus);
       setVariant('success');
       setMessageHeader('Success');
       setMessageBodyText('RFQMail pointed as ' + pointType);
