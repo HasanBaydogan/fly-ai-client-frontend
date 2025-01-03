@@ -48,7 +48,6 @@ export const getAllRFQMails = async (
         const refreshTokenresponse = await api().post('/auth/refresh-token', {
           refresh_token: Cookies.get('refresh_token')
         });
-        //console.log(refreshTokenresponse);
 
         if (refreshTokenresponse.data.statusCode === 200) {
           setCookie(
@@ -73,10 +72,14 @@ export const getAllRFQMails = async (
               }
             }
           );
-
           return rfqMailResponseAfterRefresh.data;
         } else if (refreshTokenresponse.data.statusCode === 411) {
           // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           window.location.assign('/');
@@ -87,6 +90,7 @@ export const getAllRFQMails = async (
         console.log(err);
       }
     } else if (rfqMailResp.data.statusCode === 401) {
+      // Unauthorize
       Cookies.remove('access_token');
       Cookies.remove('refresh_token');
       window.location.assign('/');

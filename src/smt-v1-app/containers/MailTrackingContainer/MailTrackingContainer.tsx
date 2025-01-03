@@ -95,25 +95,27 @@ const MailTrackingContainer = () => {
   // useEffect data fetch
   useEffect(() => {
     const getRFQMailsFromDB = async () => {
-      setLoading(true);
-      const formattedDate = sinceFromDate.toLocaleDateString('tr-TR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
+      try {
+        setLoading(true);
+        const formattedDate = sinceFromDate.toLocaleDateString('tr-TR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
 
-      const response = await getAllRFQMails(
-        pageNo,
-        pageSize,
-        filterType,
-        formattedDate
-      );
-      dispatch(deleteRfqMails());
-      console.log(response);
-      dispatch(putRfqMails(response.data.rfqMailPreviewResponses));
-      setTotalRFQMail(response.data.totalItems);
-      setTotalPage(response.data.totalPage);
-      setLoading(false);
+        const response = await getAllRFQMails(
+          pageNo,
+          pageSize,
+          filterType,
+          formattedDate
+        );
+        dispatch(deleteRfqMails());
+        console.log(response);
+        dispatch(putRfqMails(response.data.rfqMailPreviewResponses));
+        setTotalRFQMail(response.data.totalItems);
+        setTotalPage(response.data.totalPage);
+        setLoading(false);
+      } catch (err) {}
     };
     getRFQMailsFromDB();
   }, [pageNo, pageSize, filterType, sinceFromDate]);
