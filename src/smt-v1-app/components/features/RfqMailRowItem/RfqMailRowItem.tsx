@@ -11,6 +11,7 @@ import {
 import completetionIcon from '../../../../assets/img/icons/completetionIcon.svg';
 import './RfqMailRowItem.css';
 import { point } from 'smt-v1-app/services/MailTrackingService';
+import RFQMailDetailModal from '../RFQMailDetailModal/RFQMailDetailModal';
 
 const RfqMailRowItem = ({
   rfqMail,
@@ -195,13 +196,15 @@ const RfqMailRowItem = ({
         </td>
       </tr>
 
-      {/* <RFQMailDetailModal
-        isDetailShow={isDetailShow}
-        setIsDetailShow={setIsDetailShow}
-        rfqProps={props}
-        bgColor={bgColor}
-        textColor={textColor}
-      /> */}
+      {isDetailShow ? (
+        <RFQMailDetailModal
+          isDetailShow={isDetailShow}
+          setIsDetailShow={setIsDetailShow}
+          bgColor={bgColor}
+          textColor={textColor}
+          rfqMailId={rfqMail.rfqMailId}
+        />
+      ) : null}
     </>
   );
 };
