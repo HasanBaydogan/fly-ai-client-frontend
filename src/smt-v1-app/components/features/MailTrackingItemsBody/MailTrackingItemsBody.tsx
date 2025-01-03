@@ -3,7 +3,17 @@ import { Table } from 'react-bootstrap';
 import RfqMailRowItem from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowItem';
 import { useRFQMailsSelector } from 'smt-v1-app/redux/rfqMailSlice';
 
-const MailTrackingItemsBody = () => {
+const MailTrackingItemsBody = ({
+  setIsShow,
+  setMessageHeader,
+  setMessageBodyText,
+  setVariant
+}: {
+  setIsShow: React.Dispatch<React.SetStateAction<boolean>>;
+  setMessageHeader: React.Dispatch<React.SetStateAction<string>>;
+  setMessageBodyText: React.Dispatch<React.SetStateAction<string>>;
+  setVariant: React.Dispatch<React.SetStateAction<string>>;
+}) => {
   const reduxRfqMails = useRFQMailsSelector();
   return (
     <>
@@ -23,7 +33,14 @@ const MailTrackingItemsBody = () => {
         <tbody>
           {reduxRfqMails &&
             reduxRfqMails.map((rfqMail, key) => (
-              <RfqMailRowItem key={key} rfqMail={rfqMail} />
+              <RfqMailRowItem
+                key={key}
+                rfqMail={rfqMail}
+                setIsShow={setIsShow}
+                setMessageHeader={setMessageHeader}
+                setMessageBodyText={setMessageBodyText}
+                setVariant={setVariant}
+              />
             ))}
         </tbody>
       </Table>

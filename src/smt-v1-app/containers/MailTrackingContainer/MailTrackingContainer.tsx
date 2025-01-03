@@ -12,6 +12,8 @@ import { getActiveStatusFromStringStatus } from './MailTrackingHelper';
 import './MailTrackingContainer.css';
 import CustomPagination from 'smt-v1-app/components/common/CustomPagination/CustomPagination';
 import MailTrackingItemsBody from 'smt-v1-app/components/features/MailTrackingItemsBody/MailTrackingItemsBody';
+import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
+import { ToastPosition } from 'react-bootstrap/esm/ToastContainer';
 
 interface RFQMailRow {
   rfqMailId: string;
@@ -92,6 +94,13 @@ const MailTrackingContainer = () => {
   const [statusType, setStatusType] = useState();
   // statusType (state)
 
+  // ToastContainer
+  const [isShow, setIsShow] = useState(false);
+  const [variant, setVariant] = useState('danger');
+  const [messageHeader, setMessageHeader] = useState('');
+  const [messageBodyText, setMessageBodyText] = useState('');
+  const [position, setPosition] = useState<ToastPosition>('middle-end');
+
   // useEffect data fetch
   useEffect(() => {
     const getRFQMailsFromDB = async () => {
@@ -110,7 +119,6 @@ const MailTrackingContainer = () => {
           formattedDate
         );
         dispatch(deleteRfqMails());
-        console.log(response);
         dispatch(putRfqMails(response.data.rfqMailPreviewResponses));
         setTotalRFQMail(response.data.totalItems);
         setTotalPage(response.data.totalPage);
@@ -169,7 +177,16 @@ const MailTrackingContainer = () => {
 
         <Tab.Content>
           <Tab.Pane eventKey={stringActiveStatus}>
-            {loading ? <LoadingAnimation /> : <MailTrackingItemsBody />}
+            {loading ? (
+              <LoadingAnimation />
+            ) : (
+              <MailTrackingItemsBody
+                setIsShow={setIsShow}
+                setMessageHeader={setMessageHeader}
+                setMessageBodyText={setMessageBodyText}
+                setVariant={setVariant}
+              />
+            )}
             <CustomPagination
               pageNo={pageNo}
               setPageNo={setPageNo}
@@ -179,6 +196,15 @@ const MailTrackingContainer = () => {
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
+
+      <ToastNotification
+        isShow={isShow}
+        setIsShow={setIsShow}
+        variant={variant}
+        messageHeader={messageHeader}
+        messageBodyText={messageBodyText}
+        position={position}
+      />
     </>
   );
 };

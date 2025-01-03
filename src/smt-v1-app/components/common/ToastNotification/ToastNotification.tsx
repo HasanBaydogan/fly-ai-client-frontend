@@ -19,7 +19,7 @@ const ToastNotification = (props: Props) => {
     >
       <Toast
         className="d-inline-block m-1"
-        bg={props.variant.toLowerCase()}
+        bg={props.variant}
         z-index={5}
         onClose={() => props.setIsShow(false)}
         show={props.isShow}
