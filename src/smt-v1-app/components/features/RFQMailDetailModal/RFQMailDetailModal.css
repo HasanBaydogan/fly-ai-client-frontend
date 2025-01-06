@@ -1,0 +1,9 @@
+.rfq-detail-logs-time-spent-text {
+  color: #0d6efd;
+  font-size: 12px;
+  text-decoration: none;
+}
+.rfq-detail-logs-time-spent-text:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}

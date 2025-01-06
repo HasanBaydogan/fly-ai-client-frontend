@@ -161,6 +161,9 @@ export const searchByRfqNumberId = async (
           window.location.assign('/');
         } else if (refreshTokenresponse.data.statusCode === 404) {
           console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
         }
       } catch (err) {
         console.log(err);
@@ -243,6 +246,9 @@ export const point = async (
           window.location.assign('/');
         } else if (refreshTokenresponse.data.statusCode === 404) {
           console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
         }
       } catch (err) {
         console.log(err);
@@ -311,6 +317,9 @@ export const getRfqMailDetailFromDB = async (rfqMailId: string) => {
           window.location.assign('/');
         } else if (refreshTokenresponse.data.statusCode === 404) {
           console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
         }
       } catch (err) {
         console.log(err);
