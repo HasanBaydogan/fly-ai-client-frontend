@@ -141,8 +141,14 @@ const SignUpForm = ({
             htmlFor="termsService"
             className="fs-9 text-transform-none"
           >
-            I accept the <Link to="#!">terms </Link>and{' '}
-            <Link to="#!">privacy policy</Link>
+            I accept the{' '}
+            <Link to="/privacy-policy" target="_blank">
+              terms{' '}
+            </Link>
+            and{' '}
+            <Link to="/privacy-policy" target="_blank">
+              privacy policy
+            </Link>
           </Form.Check.Label>
         </Form.Check>
         <Button

@@ -3,7 +3,9 @@ import Unicon from 'components/base/Unicon';
 import { Card, Col, Container, Row } from 'react-bootstrap';
 import bg37 from 'assets/img/bg/37.png';
 import bg38 from 'assets/img/bg/38.png';
+import loginBg from '../assets/img/bg/login-bg.svg';
 import authIllustrations from 'assets/img/spot-illustrations/auth.png';
+import loginIlustr from '../assets/img/spot-illustrations/login-ilustr.svg';
 import authIllustrationsDark from 'assets/img/spot-illustrations/auth-dark.png';
 import { PropsWithChildren } from 'react';
 import { Link } from 'react-router-dom';
@@ -60,7 +62,7 @@ const AuthCardLayout = ({
                           size={16}
                         />
                         <span className="text-body-tertiary fw-semibold">
-                          Fast
+                          Rapid Results
                         </span>
                       </li>
                       <li className="d-flex align-items-center gap-2">
@@ -70,7 +72,7 @@ const AuthCardLayout = ({
                           size={16}
                         />
                         <span className="text-body-tertiary fw-semibold">
-                          Simple Usage
+                          Embrace Simplicity
                         </span>
                       </li>
                       <li className="d-flex align-items-center gap-2">
@@ -80,7 +82,7 @@ const AuthCardLayout = ({
                           size={16}
                         />
                         <span className="text-body-tertiary fw-semibold">
-                          Big Data
+                          Data Beyond Limits
                         </span>
                       </li>
                     </ul>
@@ -88,13 +90,9 @@ const AuthCardLayout = ({
                   <div className="position-relative mb-6 d-none d-md-block text-center mt-md-15 z-n1">
                     <img
                       className="auth-title-box-img d-dark-none"
-                      src={authIllustrations}
+                      src={loginIlustr}
                       alt=""
-                    />
-                    <img
-                      className="auth-title-box-img d-light-none"
-                      src={authIllustrationsDark}
-                      alt=""
+                      style={{ zIndex: 1000000 }}
                     />
                   </div>
                 </Col>

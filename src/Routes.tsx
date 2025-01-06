@@ -24,6 +24,7 @@ import MailTrackingContainer from 'smt-v1-app/containers/MailTrackingContainer/M
 import RFQContainer from 'smt-v1-app/containers/RFQContainer/RFQContainer';
 import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
 import RFQListContainer from 'smt-v1-app/containers/RFQListContainer/RFQListContainer';
+import PrivacyPolicy from 'smt-v1-app/components/features/authentication/PrivacyPolicy/PrivacyPolicy';
 
 const routes: RouteObject[] = [
   {
@@ -32,6 +33,10 @@ const routes: RouteObject[] = [
       {
         path: '/',
         element: <LoginContainer />
+      },
+      {
+        path: 'privacy-policy',
+        element: <PrivacyPolicy />
       },
       {
         path: '/',
