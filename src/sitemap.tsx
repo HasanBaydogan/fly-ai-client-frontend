@@ -47,9 +47,8 @@ export const routes: RouteItems[] = [
           },
           {
             name: 'RFQs',
-            path: '/rfq-list',
-            pathName: 'rfq-list',
-
+            path: '/rfqs/list',
+            pathName: 'rfqs/list',
             active: true
           },
           {

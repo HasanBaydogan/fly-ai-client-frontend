@@ -163,6 +163,7 @@ const RFQMailDetailModal = ({
                   {
                     <RFQActionButtons
                       statusType={rfqMailDetail.rfqMailStatus}
+                      rfqMailId={rfqMailDetail.rfqMailId}
                     />
                   }
                 </div>

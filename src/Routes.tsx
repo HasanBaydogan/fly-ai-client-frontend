@@ -46,8 +46,21 @@ const routes: RouteObject[] = [
             element: <MailTrackingContainer />
           },
           {
-            path: 'rfq-list',
-            element: <RFQListContainer />
+            path: 'rfqs',
+            children: [
+              {
+                path: 'list',
+                element: <RFQListContainer />
+              },
+              {
+                path: 'rfq',
+                element: <RFQContainer />
+              },
+              {
+                path: '',
+                element: <Error404 />
+              }
+            ]
           },
           {
             path: 'quote',

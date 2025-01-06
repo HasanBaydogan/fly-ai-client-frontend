@@ -4,9 +4,13 @@ import { useNavigate } from 'react-router-dom';
 
 interface RFQActionButtonsProps {
   statusType: string;
+  rfqMailId: string;
 }
 
-const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({ statusType }) => {
+const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
+  statusType,
+  rfqMailId
+}) => {
   const navigation = useNavigate();
 
   const renderActionButtons = () => {
@@ -15,7 +19,7 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({ statusType }) => {
         return (
           <Button
             variant="outline-primary"
-            onClick={() => navigation('/test/rfq-creation')}
+            onClick={() => navigation('/rfqs/rfq?rfqMailId=' + rfqMailId)}
           >
             Open RFQ Mail
           </Button>
