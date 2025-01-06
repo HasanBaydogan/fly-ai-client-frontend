@@ -21,8 +21,9 @@ import LoginContainer from 'smt-v1-app/containers/authentication/LoginContainer/
 import RegisterContainer from 'smt-v1-app/containers/authentication/RegisterContainer/RegisterContainer';
 import ForgetPasswordContainer from 'smt-v1-app/containers/authentication/ForgetPasswordContainer/ForgetPasswordContainer';
 import MailTrackingContainer from 'smt-v1-app/containers/MailTrackingContainer/MailTrackingContainer';
-import RFQsContainer from 'smt-v1-app/containers/RFQsContainer/RFQsContainer';
+import RFQContainer from 'smt-v1-app/containers/RFQContainer/RFQContainer';
 import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
+import RFQListContainer from 'smt-v1-app/containers/RFQListContainer/RFQListContainer';
 
 const routes: RouteObject[] = [
   {
@@ -41,29 +42,27 @@ const routes: RouteObject[] = [
         ),
         children: [
           {
-            path: 'mail-tracking', 
+            path: 'mail-tracking',
             element: <MailTrackingContainer />
           },
           {
-            path: 'rfqs', 
-            element: <RFQsContainer />
+            path: 'rfq-list',
+            element: <RFQListContainer />
           },
           {
-            path: 'quote', 
+            path: 'quote',
             element: <QuoteContainer />
           }
         ]
       },
-    
+
       {
         path: '/register',
         element: <RegisterContainer />
-        
       },
       {
         path: '/forget-password',
         element: <ForgetPasswordContainer />
-        
       },
 
       {

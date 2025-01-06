@@ -4,6 +4,7 @@ import './RFQMailDetailModal.css';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getRfqMailDetailFromDB } from 'smt-v1-app/services/MailTrackingService';
 import RFQActionButtons from '../RFQActionButton/RFQActionButton';
+import RFQMailLogs from '../RFQMailLogs/RFQMailLogs';
 
 const RFQMailDetailModal = ({
   isDetailShow,
@@ -20,6 +21,7 @@ const RFQMailDetailModal = ({
 }) => {
   const [rfqMailDetail, setRfqMailDetail] = useState<RFQMailDetail>();
   const [isLoading, setIsLoading] = useState(true);
+  const [isShowLogs, setIsShowLogs] = useState(false);
   useEffect(() => {
     const getRFQMailDetail = async () => {
       setIsLoading(true);
@@ -27,7 +29,6 @@ const RFQMailDetailModal = ({
         const response = await getRfqMailDetailFromDB(rfqMailId);
         if (response.statusCode === 200) {
           setRfqMailDetail(response.data);
-          console.log(response.data);
         } else {
           console.error('An error occurred while fetching data detail');
         }
@@ -126,7 +127,7 @@ const RFQMailDetailModal = ({
                     <div className="d-flex justify-content-end mt-3">
                       <a
                         className="rfq-detail-logs-time-spent-text"
-                        //onClick={handleLog}
+                        onClick={() => setIsShowLogs(!isShowLogs)}
                       >
                         View Logs , Time Spent
                       </a>
@@ -168,6 +169,9 @@ const RFQMailDetailModal = ({
               </div>
             </>
           )}
+          {isShowLogs ? (
+            <RFQMailLogs rfqMailId={rfqMailDetail.rfqMailId} />
+          ) : null}
         </Modal.Body>
       </Modal>
     </>

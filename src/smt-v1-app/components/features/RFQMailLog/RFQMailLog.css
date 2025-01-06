@@ -1,0 +1,7 @@
+.log-quote-hover:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.log-date-time-font-style {
+  font-size: 12px;
+}

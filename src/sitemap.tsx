@@ -47,13 +47,13 @@ export const routes: RouteItems[] = [
           },
           {
             name: 'RFQs',
-            path: '/rfqs',
-            pathName: 'test-rfqs',
+            path: '/rfq-list',
+            pathName: 'rfq-list',
 
             active: true
           },
           {
-            name: 'Quote',
+            name: 'Quotes',
             path: '/quote',
             pathName: 'quote',
             active: true
