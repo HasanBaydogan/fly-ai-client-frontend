@@ -6,3 +6,7 @@ export const setCookie = (key: string, value: string) => {
     sameSite: 'lax' // Allows some cross-site usage
   });
 };
+export const removeCookies = () => {
+  Cookies.remove('access_token');
+  Cookies.remove('refresh_token');
+};

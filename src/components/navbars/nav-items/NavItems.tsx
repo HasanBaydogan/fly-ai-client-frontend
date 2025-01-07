@@ -1,6 +1,6 @@
 import Avatar from 'components/base/Avatar';
 import { Dropdown, Modal, Nav } from 'react-bootstrap';
-import avatar57 from 'assets/img/team/40x40/57.webp';
+import avatar57 from 'assets/img/icons/user-icon-circle.svg';
 import ProfileDropdownMenu from './ProfileDropdownMenu';
 import NineDotMenu from './NineDotMenu';
 import { useAppContext } from 'providers/AppProvider';
@@ -21,9 +21,9 @@ const NavItems = () => {
 
   return (
     <div className="navbar-nav navbar-nav-icons flex-row">
-      <Nav.Item>
+      {/*<Nav.Item>
         <ThemeToggler className="px-2" />
-      </Nav.Item>
+      </Nav.Item> */}
       <Nav.Item
         className={classNames({
           'd-lg-none':
@@ -34,7 +34,7 @@ const NavItems = () => {
           <FeatherIcon icon="search" size={19} style={{ marginBottom: 2 }} />
         </Nav.Link>
       </Nav.Item>
-      <Nav.Item>
+      {/* <Nav.Item>
         <Dropdown autoClose="outside" className="h-100">
           <Dropdown.Toggle
             as={Link}
@@ -46,8 +46,8 @@ const NavItems = () => {
           </Dropdown.Toggle>
           <NotificationDropdownMenu />
         </Dropdown>
-      </Nav.Item>
-      <Nav.Item>
+      </Nav.Item> */}
+      {/*<Nav.Item>
         <Dropdown autoClose="outside" className="h-100">
           <Dropdown.Toggle
             as={Link}
@@ -75,7 +75,7 @@ const NavItems = () => {
           </Dropdown.Toggle>
           <NineDotMenu />
         </Dropdown>
-      </Nav.Item>
+      </Nav.Item> */}
       <Nav.Item>
         <Dropdown autoClose="outside" className="h-100">
           <Dropdown.Toggle
@@ -90,7 +90,7 @@ const NavItems = () => {
         </Dropdown>
       </Nav.Item>
 
-      <Modal
+      {/* <Modal
         show={openSearchModal}
         onHide={() => setOpenSearchModal(false)}
         className="search-box-modal mt-15"
@@ -105,7 +105,7 @@ const NavItems = () => {
             <SearchResult />
           </DropdownSearchBox>
         </Modal.Body>
-      </Modal>
+      </Modal> */}
     </div>
   );
 };

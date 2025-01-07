@@ -31,14 +31,7 @@ const NavbarTopDefault = () => {
         {navbarTopShape === 'default' ? (
           <>
             {breakpoints.up('lg') && (
-              <DropdownSearchBox
-                className="navbar-top-search-box"
-                inputClassName="rounded-pill"
-                size="sm"
-                style={{ width: '25rem' }}
-              >
-                <SearchResult />
-              </DropdownSearchBox>
+              <p className="logo-text ms-2 d-none d-sm-block"></p>
             )}
             <NavItems />
           </>
