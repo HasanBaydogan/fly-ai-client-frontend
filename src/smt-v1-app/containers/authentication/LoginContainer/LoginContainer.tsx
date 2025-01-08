@@ -6,6 +6,7 @@ import ToastNotification from 'smt-v1-app/components/common/ToastNotification/To
 import Login from 'smt-v1-app/components/features/authentication/Login/Login';
 import {
   login,
+  validateAccessToken,
   validateEmailOTP
 } from 'smt-v1-app/services/AuthenticationService';
 import { removeCookies, setCookie } from 'smt-v1-app/services/CookieService';
@@ -22,12 +23,16 @@ const LoginContainer = () => {
   const navigation = useNavigate();
 
   useEffect(() => {
-    const access_token = Cookies.get('access_token');
-    const refresh_token = Cookies.get('refresh_token');
-    if (access_token && refresh_token) {
-    } else {
-      removeCookies();
-    }
+    const handleLoginDirection = async () => {
+      const access_token = Cookies.get('access_token');
+      const refresh_token = Cookies.get('refresh_token');
+      if (access_token && refresh_token) {
+        const resp = await validateAccessToken();
+      } else {
+        removeCookies();
+      }
+    };
+    handleLoginDirection();
   });
 
   const handleLogin = async (userInputemail: string, password: string) => {
@@ -44,10 +49,12 @@ const LoginContainer = () => {
     } else if (resp && resp.statusCode === 411) {
       toastError('Error', 'Username or Password is invalid!');
     } else if (resp && resp.statusCode === 410) {
-      toastInfo('Info', 'Emaii Verification Needed! Directed...');
+      toastInfo('Info', 'Email Verification Needed! Directed...');
       setTimeout(() => {
         setIsTwoFA(true);
       }, 1500);
+    } else if (resp && resp.statusCode === 403) {
+      toastInfo('Info', 'User Not Approved. Please Contact with admin');
     } else {
       toastError('Error', 'Unknown Error');
     }
