@@ -14,22 +14,8 @@ import CustomPagination from 'smt-v1-app/components/common/CustomPagination/Cust
 import MailTrackingItemsBody from 'smt-v1-app/components/features/MailTrackingItemsBody/MailTrackingItemsBody';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import { ToastPosition } from 'react-bootstrap/esm/ToastContainer';
+import RFQMailRfqNumberIdSearch from 'smt-v1-app/components/features/RFQMailRfqNumberIdSearch/RFQMailRfqNumberIdSearch';
 
-interface RFQMailRow {
-  rfqMailId: string;
-  rfqNumberId: string;
-  isNotRFQ: boolean;
-  isNoQuote: boolean;
-  isSpam: boolean;
-  emailSender: string;
-  shortEmailContent: string;
-  rfqMailStatus: StatusType;
-  assignTo: string;
-  comment: string;
-  mailSentDate: string;
-  totalProductCount: number;
-  pricedProductCount: number;
-}
 const links = [
   'All',
   'My Issues',
@@ -85,14 +71,10 @@ const MailTrackingContainer = () => {
   const [filterType, setFilterType] = useState<filterType>('ALL');
   const [stringActiveStatus, setStringActiveStatus] = useState('All');
   // data (state)
-  const [rfqMails, setRfMails] = useState<RFQMailRow[]>();
-
-  const [isTextSearch, setIsTextSearch] = useState(true);
-  const [searchText, setSearchText] = useState('');
-  // search text RFQ Number (state)
-
-  const [statusType, setStatusType] = useState();
-  // statusType (state)
+  const [rfqNumberSearchrfqMails, setRfqNumberSearchrfqMails] = useState<
+    RFQMail[]
+  >([]);
+  const [isShowRFQNumberSearch, setIsShowRFQNumberSearch] = useState(false);
 
   // ToastContainer
   const [isShow, setIsShow] = useState(false);
@@ -134,10 +116,16 @@ const MailTrackingContainer = () => {
 
   const handleRFQNumberIdSearch = async (rfqNumberId: string) => {
     setLoading(true);
-    const response = await searchByRfqNumberId(rfqNumberId, 1, 10);
-
-    //console.log(response);
-
+    if (rfqNumberId) {
+      const response = await searchByRfqNumberId(rfqNumberId, 1, 10);
+      if (response && response.data) {
+        setRfqNumberSearchrfqMails(response.data);
+        setIsShowRFQNumberSearch(true);
+      }
+    } else {
+      setIsShowRFQNumberSearch(false);
+      setRfqNumberSearchrfqMails([]);
+    }
     setLoading(false);
   };
 
@@ -159,43 +147,52 @@ const MailTrackingContainer = () => {
         handleRFQNumberIdSearch={handleRFQNumberIdSearch}
         setPageNo={setPageNo}
       />
+      {isShowRFQNumberSearch ? (
+        <RFQMailRfqNumberIdSearch
+          rfqNumberSearchrfqMails={rfqNumberSearchrfqMails}
+          setIsShow={setIsShow}
+          setMessageHeader={setMessageHeader}
+          setMessageBodyText={setMessageBodyText}
+          setVariant={setVariant}
+        />
+      ) : (
+        <Tab.Container
+          id="rfq-mails-tabs"
+          defaultActiveKey="All"
+          onSelect={handleTabSelect}
+        >
+          <Nav variant="underline" className="mb-3">
+            {links.map(tab => (
+              <Nav.Item key={tab}>
+                <Nav.Link eventKey={tab} className="tab-link-text-size">
+                  {tab}
+                </Nav.Link>
+              </Nav.Item>
+            ))}
+          </Nav>
 
-      <Tab.Container
-        id="rfq-mails-tabs"
-        defaultActiveKey="All"
-        onSelect={handleTabSelect}
-      >
-        <Nav variant="underline" className="mb-3">
-          {links.map(tab => (
-            <Nav.Item key={tab}>
-              <Nav.Link eventKey={tab} className="tab-link-text-size">
-                {tab}
-              </Nav.Link>
-            </Nav.Item>
-          ))}
-        </Nav>
-
-        <Tab.Content>
-          <Tab.Pane eventKey={stringActiveStatus}>
-            {loading ? (
-              <LoadingAnimation />
-            ) : (
-              <MailTrackingItemsBody
-                setIsShow={setIsShow}
-                setMessageHeader={setMessageHeader}
-                setMessageBodyText={setMessageBodyText}
-                setVariant={setVariant}
+          <Tab.Content>
+            <Tab.Pane eventKey={stringActiveStatus}>
+              {loading ? (
+                <LoadingAnimation />
+              ) : (
+                <MailTrackingItemsBody
+                  setIsShow={setIsShow}
+                  setMessageHeader={setMessageHeader}
+                  setMessageBodyText={setMessageBodyText}
+                  setVariant={setVariant}
+                />
+              )}
+              <CustomPagination
+                pageNo={pageNo}
+                setPageNo={setPageNo}
+                totalPage={totalPage}
+                totalItem={totalRFQMail}
               />
-            )}
-            <CustomPagination
-              pageNo={pageNo}
-              setPageNo={setPageNo}
-              totalPage={totalPage}
-              totalItem={totalRFQMail}
-            />
-          </Tab.Pane>
-        </Tab.Content>
-      </Tab.Container>
+            </Tab.Pane>
+          </Tab.Content>
+        </Tab.Container>
+      )}
 
       <ToastNotification
         isShow={isShow}
