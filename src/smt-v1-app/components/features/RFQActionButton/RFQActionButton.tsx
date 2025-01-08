@@ -1,17 +1,55 @@
-import React from 'react';
+import { cl } from '@fullcalendar/core/internal-common';
+import React, { useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { isOpenRFQMail } from 'smt-v1-app/services/MailTrackingService';
 
 interface RFQActionButtonsProps {
   statusType: string;
   rfqMailId: string;
+  setIsShow: React.Dispatch<React.SetStateAction<boolean>>;
+  setMessageHeader: React.Dispatch<React.SetStateAction<string>>;
+  setMessageBodyText: React.Dispatch<React.SetStateAction<string>>;
+  setVariant: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
   statusType,
-  rfqMailId
+  rfqMailId,
+  setIsShow,
+  setMessageHeader,
+  setMessageBodyText,
+  setVariant
 }) => {
   const navigation = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const openRFQMail = async () => {
+    setIsLoading(true);
+    const response = await isOpenRFQMail(rfqMailId);
+    console.log(response);
+    // 200
+    if (response.statusCode === 200) {
+      if (response.data) {
+        toastError('Invalid Operation', 'Already RFQMail opened');
+      } else {
+        navigation('/rfqs/rfq?rfqMailId=' + rfqMailId);
+      }
+    }
+    setIsLoading(false);
+  };
+
+  function toastError(messageHeader: string, message: string) {
+    setVariant('danger');
+    setMessageHeader(messageHeader);
+    setMessageBodyText(message);
+    setIsShow(true);
+  }
+  function toastInfo(messageHeader: string, message: string) {
+    setVariant('info');
+    setMessageHeader(messageHeader);
+    setMessageBodyText(message);
+    setIsShow(true);
+  }
 
   const renderActionButtons = () => {
     switch (statusType) {
@@ -19,8 +57,11 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
         return (
           <Button
             variant="outline-primary"
-            onClick={() => navigation('/rfqs/rfq?rfqMailId=' + rfqMailId)}
+            onClick={openRFQMail}
+            disabled={isLoading}
           >
+            {' '}
+            {/* Is loading animation ?  */}
             Open RFQ Mail
           </Button>
         );
@@ -30,7 +71,8 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
             <Button
               variant="outline-primary"
               className="me-3"
-              onClick={() => navigation('/test/rfq-creation')}
+              onClick={openRFQMail}
+              disabled={isLoading}
             >
               Open RFQ Mail
             </Button>
@@ -45,18 +87,19 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
             <Button
               variant="outline-primary"
               className="me-3"
-              onClick={() => navigation('/test/rfq-creation')}
+              onClick={openRFQMail}
+              disabled={isLoading}
             >
               Open RFQ Mail
             </Button>
             <Button variant="outline-success">Convert to Quote</Button>
           </>
         );
-      case 'NO QUOTE':
+      case 'NO_QUOTE':
         return <Button variant="outline-secondary">There is a Quote</Button>;
       case 'SPAM':
         return <Button variant="outline-secondary">No Spam</Button>;
-      case 'NOT RFQ':
+      case 'NOT_RFQ':
         return <Button variant="outline-secondary">It is a RFQ</Button>;
       default:
         return null;

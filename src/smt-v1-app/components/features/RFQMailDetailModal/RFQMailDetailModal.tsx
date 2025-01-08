@@ -11,13 +11,21 @@ const RFQMailDetailModal = ({
   setIsDetailShow,
   bgColor,
   textColor,
-  rfqMailId
+  rfqMailId,
+  setIsShow,
+  setMessageHeader,
+  setMessageBodyText,
+  setVariant
 }: {
   isDetailShow: boolean;
   setIsDetailShow: React.Dispatch<React.SetStateAction<boolean>>;
   bgColor: string;
   textColor: string;
   rfqMailId: string;
+  setIsShow: React.Dispatch<React.SetStateAction<boolean>>;
+  setMessageHeader: React.Dispatch<React.SetStateAction<string>>;
+  setMessageBodyText: React.Dispatch<React.SetStateAction<string>>;
+  setVariant: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const [rfqMailDetail, setRfqMailDetail] = useState<RFQMailDetail>();
   const [isLoading, setIsLoading] = useState(true);
@@ -164,6 +172,10 @@ const RFQMailDetailModal = ({
                     <RFQActionButtons
                       statusType={rfqMailDetail.rfqMailStatus}
                       rfqMailId={rfqMailDetail.rfqMailId}
+                      setIsShow={setIsShow}
+                      setMessageHeader={setMessageHeader}
+                      setMessageBodyText={setMessageBodyText}
+                      setVariant={setVariant}
                     />
                   }
                 </div>

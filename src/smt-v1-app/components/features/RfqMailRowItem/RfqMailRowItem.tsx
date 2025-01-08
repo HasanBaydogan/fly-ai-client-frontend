@@ -203,6 +203,10 @@ const RfqMailRowItem = ({
           bgColor={bgColor}
           textColor={textColor}
           rfqMailId={rfqMail.rfqMailId}
+          setIsShow={setIsShow}
+          setMessageHeader={setMessageHeader}
+          setMessageBodyText={setMessageBodyText}
+          setVariant={setVariant}
         />
       ) : null}
     </>
