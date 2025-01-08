@@ -26,13 +26,22 @@ const SignUpForm = ({
   const [repeatPassword, setRepeatPassword] = useState('');
   const [isChecked, setIsChecked] = useState(false);
 
+  const isValidPassword = (): boolean => {
+    return (
+      /[A-Z]/.test(password) && // Contains at least one uppercase character
+      /\d/.test(password) && // Contains at least one digit
+      !/^\d+$/.test(password) // Not entirely numeric
+    );
+  };
+
   function isValidEmail(email: string) {
-    // A commonly used email validation regex pattern (though not perfect)
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   }
+
   const handleRegisterFields = e => {
     e.preventDefault();
+
     if (!name.trim()) {
       toastError('Enter your name');
     } else if (!surname.trim()) {
@@ -40,13 +49,17 @@ const SignUpForm = ({
     } else if (!email.trim() || !isValidEmail(email)) {
       toastError('Invalid Email!');
     } else if (password.includes(' ')) {
-      toastError('Password has empty character!');
+      toastError('Password should not contain spaces!');
     } else if (password.trim().length < 8) {
-      toastError('Password has at least 8 character!');
+      toastError('Password must have at least 8 characters!');
     } else if (password !== repeatPassword) {
-      toastError('Passwords are not same!');
+      toastError('Passwords are not the same!');
+    } else if (!isValidPassword()) {
+      toastError(
+        'Password must have at least one uppercase character and one digit!'
+      );
     } else if (!isChecked) {
-      toastError('Confirm terms and privacy!');
+      toastError('Please confirm terms and privacy!');
     } else {
       const user = {
         name: name.trim(),
@@ -58,6 +71,7 @@ const SignUpForm = ({
       handleRegister(user);
     }
   };
+
   function toastError(message: string) {
     setMessageHeader('Invalid Field');
     setMessageBodyText(message);

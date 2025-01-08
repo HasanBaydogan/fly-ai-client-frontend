@@ -1,5 +1,6 @@
+import Cookies from 'js-cookie';
 import TwoFA from 'pages/pages/authentication/card/TwoFA';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import Login from 'smt-v1-app/components/features/authentication/Login/Login';
@@ -7,7 +8,7 @@ import {
   login,
   validateEmailOTP
 } from 'smt-v1-app/services/AuthenticationService';
-import { setCookie } from 'smt-v1-app/services/CookieService';
+import { removeCookies, setCookie } from 'smt-v1-app/services/CookieService';
 
 const LoginContainer = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +20,15 @@ const LoginContainer = () => {
   const [isTwoFA, setIsTwoFA] = useState(false);
 
   const navigation = useNavigate();
+
+  useEffect(() => {
+    const access_token = Cookies.get('access_token');
+    const refresh_token = Cookies.get('refresh_token');
+    if (access_token && refresh_token) {
+    } else {
+      removeCookies();
+    }
+  });
 
   const handleLogin = async (userInputemail: string, password: string) => {
     setIsLoading(true);

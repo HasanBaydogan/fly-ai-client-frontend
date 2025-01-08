@@ -75,10 +75,21 @@ const ForgetPasswordContainer = () => {
     }
     setIsLoading(false);
   };
+  const isValidPassword = (password: string): boolean => {
+    return (
+      /[A-Z]/.test(password) && // Contains at least one uppercase character
+      /\d/.test(password) && // Contains at least one digit
+      !/^\d+$/.test(password) // Not entirely numeric
+    );
+  };
 
   const handleResetPassword = async (newPassword: string) => {
     if (newPassword.length < 8) {
       toastError('Password should be at least 8 characters');
+    } else if (!isValidPassword(newPassword)) {
+      toastError(
+        'Password must have at least one uppercase character and one digit!'
+      );
     } else {
       setIsLoading(true);
       const resp = await refreshPassword(email, otpToken, newPassword);
