@@ -29,8 +29,14 @@ const RFQAttachments = ({
     // Create a URL for the Blob
     const url = URL.createObjectURL(blob);
 
-    // Open the Blob URL in a new tab
-    window.open(url, '_blank');
+    // Create an anchor element and simulate a click
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.fileName; // Set the file name
+    link.target = '_blank'; // Open in a new tab
+    document.body.appendChild(link); // Append to the DOM
+    link.click(); // Trigger the click
+    document.body.removeChild(link); // Remove the link after download
   };
 
   return (
@@ -43,7 +49,7 @@ const RFQAttachments = ({
         />
         <h3 className="rfq-mail-attachment-header ms-3">Attachments</h3>
       </div>
-      <hr className="custom-line w-60 m-0" />
+      <hr className="custom-line w-100 m-0" />
 
       <div className="d-flex justify-content-start rfq-mail-attachments-container mt-3">
         {/* PDF Component Start */}
