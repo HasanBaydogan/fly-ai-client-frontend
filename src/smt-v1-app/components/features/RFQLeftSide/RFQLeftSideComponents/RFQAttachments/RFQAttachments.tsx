@@ -1,15 +1,41 @@
 import React from 'react';
 import pdfIcon from '../../../../../../assets/img/icons/pdf_icon.svg';
 import attachmentIcon from '../../../../../../assets/img/icons/attachment-icon.svg';
+import { openAttachment } from 'smt-v1-app/services/AttachmentService';
 
 const RFQAttachments = ({
   attachments
 }: {
   attachments: MailItemAttachment[];
 }) => {
+  const openAttachmentFromDB = async (attachmentId: string) => {
+    const resp = await openAttachment(attachmentId);
+    openPdfInNewTab(resp.data);
+  };
+
+  const openPdfInNewTab = file => {
+    // Decode the Base64 string
+    const binaryData = atob(file.data);
+
+    // Convert the binary data to a Uint8Array
+    const arrayBuffer = new Uint8Array(binaryData.length);
+    for (let i = 0; i < binaryData.length; i++) {
+      arrayBuffer[i] = binaryData.charCodeAt(i);
+    }
+
+    // Create a Blob object
+    const blob = new Blob([arrayBuffer], { type: file.contentType });
+
+    // Create a URL for the Blob
+    const url = URL.createObjectURL(blob);
+
+    // Open the Blob URL in a new tab
+    window.open(url, '_blank');
+  };
+
   return (
     <>
-      <div className="d-flex d-flex align-items-center mb-2">
+      <div className="d-flex d-flex align-items-center my-2 mt-4">
         <img
           src={attachmentIcon}
           alt=""
@@ -26,16 +52,17 @@ const RFQAttachments = ({
             <a
               key={mailAttach.attachmentId}
               //href="path/to/RFQ022.pdf" // Update with the actual path to your PDF
-              target="_blank"
               rel="noopener noreferrer"
               className="d-flex flex-column justify-content-center align-items-center mx-3"
+              onClick={() => openAttachmentFromDB(mailAttach.attachmentId)}
+              style={{ cursor: 'pointer' }}
             >
               <img
                 src={pdfIcon}
                 className="rfq-product-mail-detail-file-icon"
                 alt=""
               />
-              <span className="rfq-product-mail-detail-file-name text-center">
+              <span className="rfq-product-mail-detail-file-name text-center mt-2">
                 {mailAttach.fileName}
               </span>
             </a>
