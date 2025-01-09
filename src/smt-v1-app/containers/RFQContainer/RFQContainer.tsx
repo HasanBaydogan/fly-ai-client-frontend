@@ -4,17 +4,20 @@ import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/Load
 import RFQLeftSide from 'smt-v1-app/components/features/RFQLeftSide/RFQLeftSide';
 import RFQRightSide from 'smt-v1-app/components/features/RFQRightSide/RFQRightSide';
 import { openRFQ } from 'smt-v1-app/services/RFQService';
+import './RFQContainer.css';
 
 const RFQContainer = () => {
   const [searchParams] = useSearchParams();
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const rfqMailId = searchParams.get('rfqMailId');
+  const [rfq, setRfq] = useState<RFQ>();
 
   useEffect(() => {
     const openRFQMail = async () => {
       setIsLoading(true);
       const response = await openRFQ(rfqMailId);
+      setRfq(response.data);
       console.log(response);
       setIsLoading(false);
     };
@@ -38,15 +41,14 @@ const RFQContainer = () => {
             <LoadingAnimation />
           </div>
         ) : (
-          <>
-            <RFQLeftSide />
+          <div className="d-flex flex-wrap justify-content-around">
+            <RFQLeftSide mailItem={rfq.mailItemMoreDetailResponse} />
 
             {/* Sağ taraf (products, alternative products) */}
             <RFQRightSide />
-          </>
+          </div>
         )}
       </div>
-      rfq container
     </div>
   );
 };

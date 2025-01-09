@@ -2,6 +2,7 @@ import { cl } from '@fullcalendar/core/internal-common';
 import React, { useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { isOpenRFQMail } from 'smt-v1-app/services/MailTrackingService';
 
 interface RFQActionButtonsProps {
@@ -60,9 +61,7 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
             onClick={openRFQMail}
             disabled={isLoading}
           >
-            {' '}
-            {/* Is loading animation ?  */}
-            Open RFQ Mail
+            {isLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
           </Button>
         );
       case 'OPEN':
@@ -74,7 +73,7 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
               onClick={openRFQMail}
               disabled={isLoading}
             >
-              Open RFQ Mail
+              {isLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
             </Button>
             <Button variant="outline-warning">Convert to WFS</Button>
           </>

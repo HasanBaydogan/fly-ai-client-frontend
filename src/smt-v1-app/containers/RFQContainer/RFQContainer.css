@@ -1,0 +1,99 @@
+.rfq-mail-detail-subject {
+  font-size: 28px;
+}
+.rfq-mail-detail-icon {
+  width: 36px;
+  height: 36px;
+  margin-top: 20px;
+}
+.rfq-mail-company-name {
+  font-size: 24px;
+  font-weight: bold;
+}
+.rfq-mail-sent-date {
+  font-size: 14px;
+}
+.rfq-mail-company-email {
+  text-decoration: none;
+  color: #737373;
+}
+.rfq-mail-company-email:hover {
+  cursor: pointer;
+}
+.rfq-mail-detail-content {
+  width: 390px;
+  font-weight: 500;
+  white-space: pre-wrap;
+}
+.rfq-mail-attachment-icon {
+  width: 24px;
+  height: 24px;
+}
+.rfq-mail-attachment-header {
+  font-weight: bolder;
+}
+hr.custom-line {
+  border-top: 2px solid #000; /* Example: Black line */
+}
+
+.rfq-product-mail-detail-file-name {
+  font-size: 12px;
+  font-weight: 400;
+}
+.rfq-product-mail-detail-file-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.valueRFQ-id {
+  font-weight: 400;
+}
+
+.action-icon {
+  display: inline-block;
+  transition:
+    opacity 0.3s ease,
+    background-color 0.3s ease;
+  border-radius: 5px;
+  padding: 3px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.action-icon:hover {
+  background-color: rgba(0, 123, 255, 0.3);
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+.last-modified {
+  font-weight: 700;
+}
+
+.last-modified-date {
+  font-weight: 400;
+}
+
+.custom-dropdown-item:focus,
+.custom-dropdown-item:active {
+  background-color: transparent !important;
+  color: inherit;
+}
+
+.custom-dropdown-item:hover {
+  background-color: gray;
+}
+
+.break-word-cell {
+  word-wrap: break-word;
+  white-space: normal;
+  max-width: 100px;
+}
+
+.rfq-left {
+  width: 40%;
+}
+
+.rfq-right {
+  width: 60%;
+}

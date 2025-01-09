@@ -5,31 +5,30 @@ import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/Load
 import { getRfqMailDetailFromDB } from 'smt-v1-app/services/MailTrackingService';
 import RFQActionButtons from '../RFQActionButton/RFQActionButton';
 import RFQMailLogs from '../RFQMailLogs/RFQMailLogs';
+import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 
 const RFQMailDetailModal = ({
   isDetailShow,
   setIsDetailShow,
   bgColor,
   textColor,
-  rfqMailId,
-  setIsShow,
-  setMessageHeader,
-  setMessageBodyText,
-  setVariant
+  rfqMailId
 }: {
   isDetailShow: boolean;
   setIsDetailShow: React.Dispatch<React.SetStateAction<boolean>>;
   bgColor: string;
   textColor: string;
   rfqMailId: string;
-  setIsShow: React.Dispatch<React.SetStateAction<boolean>>;
-  setMessageHeader: React.Dispatch<React.SetStateAction<string>>;
-  setMessageBodyText: React.Dispatch<React.SetStateAction<string>>;
-  setVariant: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const [rfqMailDetail, setRfqMailDetail] = useState<RFQMailDetail>();
   const [isLoading, setIsLoading] = useState(true);
   const [isShowLogs, setIsShowLogs] = useState(false);
+
+  const [isShowToast, setIsShowToast] = useState(false);
+  const [messageHeader, setMessageHeader] = useState('');
+  const [messageBodyText, setMessageBodyText] = useState('');
+  const [variant, setVariant] = useState('danger');
+
   useEffect(() => {
     const getRFQMailDetail = async () => {
       setIsLoading(true);
@@ -172,7 +171,7 @@ const RFQMailDetailModal = ({
                     <RFQActionButtons
                       statusType={rfqMailDetail.rfqMailStatus}
                       rfqMailId={rfqMailDetail.rfqMailId}
-                      setIsShow={setIsShow}
+                      setIsShow={setIsShowToast}
                       setMessageHeader={setMessageHeader}
                       setMessageBodyText={setMessageBodyText}
                       setVariant={setVariant}
@@ -185,6 +184,15 @@ const RFQMailDetailModal = ({
           {isShowLogs ? (
             <RFQMailLogs rfqMailId={rfqMailDetail.rfqMailId} />
           ) : null}
+
+          <ToastNotification
+            isShow={isShowToast}
+            setIsShow={setIsShowToast}
+            position="bottom-end"
+            messageBodyText={messageBodyText}
+            messageHeader={messageHeader}
+            variant={variant}
+          />
         </Modal.Body>
       </Modal>
     </>
