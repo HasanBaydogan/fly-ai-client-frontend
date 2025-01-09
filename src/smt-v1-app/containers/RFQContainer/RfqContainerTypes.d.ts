@@ -35,8 +35,51 @@ interface RFQPart {
   airlineCompany: string;
   MSDS: string;
 }
+
+interface AlternativeRFQPart {
+  partId: string;
+  rfqPartId: string;
+  partNumber: string;
+  partName: string;
+  parentRFQPart: {
+    parentRFQPartId: string;
+    parentPartNumber: string;
+  };
+  reqQTY: number;
+  fndQTY: number;
+  reqCND: NE | FN | NS | OH | SV | AR | RP | IN | TST;
+  fndCND: NE | FN | NS | OH | SV | AR | RP | IN | TST;
+  supplierLT: number;
+  clientLT: number;
+  unitPriceResponse: {
+    currencyId: string;
+    unitPrice: number;
+    currency: string;
+  };
+  supplier: {
+    supplierId: string;
+    supplierName: string;
+  };
+  comment: string;
+  dgPackagingCost: boolean;
+  tagDate: string;
+  lastUpdatedDate: string;
+  certificateType:
+    | CERTIFICATE_1
+    | CERTIFICATE_2
+    | CERTIFICATE_3
+    | CERTIFICATE_4;
+
+  MSN: string;
+  wareHouse: string;
+  stock: number;
+  stockLocation: string;
+  airlineCompany: string;
+  MSDS: string;
+}
+
 interface RFQ {
-  alternativeRFQPartResponses: [];
+  alternativeRFQPartResponses: AlternativeRFQPart[];
   clientRFQNumberId: string | null;
   clientResponse: string | null;
   lastModifiedDate: string;

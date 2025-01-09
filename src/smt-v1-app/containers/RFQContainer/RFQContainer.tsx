@@ -26,29 +26,27 @@ const RFQContainer = () => {
   }, [rfqMailId]);
 
   return (
-    <div className="d-flex justify-content-center align-items-center">
-      <div className="d-flex flex-wrap justify-content-around ">
-        {/* Sol tarafı modular hale getirdik */}
-        {isLoading ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '200px'
-            }}
-          >
-            <LoadingAnimation />
-          </div>
-        ) : (
-          <div className="d-flex flex-wrap justify-content-around">
-            <RFQLeftSide mailItem={rfq.mailItemMoreDetailResponse} />
+    <div className="d-flex flex-wrap justify-content-around ">
+      {/* Sol tarafı modular hale getirdik */}
+      {isLoading ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '200px'
+          }}
+        >
+          <LoadingAnimation />
+        </div>
+      ) : (
+        <>
+          <RFQLeftSide mailItem={rfq.mailItemMoreDetailResponse} />
 
-            {/* Sağ taraf (products, alternative products) */}
-            <RFQRightSide />
-          </div>
-        )}
-      </div>
+          {/* Sağ taraf (products, alternative products) */}
+          <RFQRightSide rfq={rfq} />
+        </>
+      )}
     </div>
   );
 };
