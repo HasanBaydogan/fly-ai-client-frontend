@@ -86,7 +86,6 @@ export const validateAccessToken = async () => {
     const response = await api().post('/auth/validate-access-token', {
       access_token
     });
-    console.log(response);
     if (response.data.statusCode === 200) {
       // 200 Success
       window.location.assign('/mail-tracking');
@@ -108,6 +107,10 @@ export const validateAccessToken = async () => {
       } else {
         removeCookies();
       }
+    } else if (response.data.statusCode === 404) {
+      removeCookies();
+    } else {
+      removeCookies();
     }
   } catch (err) {
     console.log(err);

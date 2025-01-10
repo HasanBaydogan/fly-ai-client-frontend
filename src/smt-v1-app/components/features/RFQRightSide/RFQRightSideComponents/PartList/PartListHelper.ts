@@ -22,3 +22,7 @@ export const tableHeaders = [
   'Airline Com.',
   'MSDS'
 ];
+export type Supplier = {
+  supplierId: string;
+  supplierCompanyName: string;
+};

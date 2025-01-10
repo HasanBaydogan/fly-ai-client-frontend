@@ -41,7 +41,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
           status={rfq.rfqMailStatus}
         />
 
-        <Client />
+        <Client client={rfq.clientResponse} rfqDeadline={rfq.rfqDeadline} />
 
         {
           <PartList

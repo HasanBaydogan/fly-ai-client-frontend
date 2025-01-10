@@ -29,7 +29,7 @@ const Header = ({
         {/* Last Modified Date */}
         <div className="d-flex justify-content-end me-6">
           <span className="last-modified">Last Modified Date:</span>
-          <span className="last-modified-date">{date}</span>
+          <span className="last-modified-date">{' ' + date}</span>
         </div>
 
         {/* RFQ Header */}
@@ -42,7 +42,7 @@ const Header = ({
             style={{ gap: '50px' }}
           >
             <h3>
-              RFQ Id: <span className="valueRFQ-id">{rfqNumberId}</span>
+              RFQ Id: <span className="valueRFQ-id">{' ' + rfqNumberId}</span>
             </h3>
             <h3>
               ClientRFQ Id: <span className="valueRFQ-id">{clientRFQId}</span>

@@ -81,7 +81,10 @@ interface AlternativeRFQPart {
 interface RFQ {
   alternativeRFQPartResponses: AlternativeRFQPart[];
   clientRFQNumberId: string | null;
-  clientResponse: string | null;
+  clientResponse: {
+    clientId: string;
+    clientName: string;
+  };
   lastModifiedDate: string;
   mailItemMoreDetailResponse: MailItemMoreDetail;
   rfqDeadline: string;
