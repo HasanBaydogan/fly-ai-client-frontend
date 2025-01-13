@@ -21,6 +21,7 @@ import {
   getAllCurrenciesFromDB,
   getAllSuppliersFromDB
 } from 'smt-v1-app/services/RFQService';
+import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 
 const PartList = ({
   parts,
@@ -191,84 +192,94 @@ const PartList = ({
   }
 
   const handleNewPartAddition = () => {
+    // Zorunlu alanların kontrolü
     if (!partNumber || !partName || reqQTY === 0 || !reqCND) {
-      toastError('Required Field', 'Fill the required fields *');
-    } else if (
+      toastError('Required Field', 'Please fill all the required fields.');
+      return;
+    }
+
+    // Koşullu alanların kontrolü
+    const additionalFieldsProvided =
+      fndQTY !== 0 ||
       fndCND ||
       supplierLT !== 0 ||
       clientLT !== 0 ||
       unitPricevalueNumber !== 0.0 ||
-      (supplier && supplier.length > 0)
-    ) {
-      const missingFields = [];
+      (supplier && supplier.length > 0);
 
+    if (additionalFieldsProvided) {
+      const missingFields = [];
+      if (fndQTY === 0) missingFields.push('fndQTY');
       if (!fndCND) missingFields.push('fndCND');
       if (supplierLT === 0) missingFields.push('supplierLT');
       if (clientLT === 0) missingFields.push('clientLT');
       if (unitPricevalueNumber === 0.0)
         missingFields.push('unitPricevalueNumber');
-      if (!supplier) missingFields.push('supplier');
+      if (!supplier || supplier.length === 0) missingFields.push('supplier');
 
       if (missingFields.length > 0) {
         toastError(
           'Incomplete Fields',
           `The following fields must be filled: ${missingFields.join(', ')}`
         );
+        return;
       }
-    } else if (clientLT < supplierLT) {
+    }
+
+    // `clientLT` ve `supplierLT` kontrolü
+    if (clientLT < supplierLT) {
       toastError(
         'Invalid LeadTime',
         'Supplier LT cannot be greater than client LT'
       );
-    } else {
-      if (parts.some(element => element.partNumber === partNumber)) {
-        toastError('Invalid Partnumber', 'Part number is already added!');
-      } else {
-        // Add the partNumber to the parts array
-
-        // create a RFQPart
-
-        const rfqPart: RFQPart = {
-          partId: null,
-          rfqPartId: null,
-          partNumber: partNumber,
-          partName: partName,
-          reqQTY: reqQTY,
-          fndQTY: fndQTY,
-          reqCND: reqCND, // Replace with a default valid value
-          fndCND: fndCND, // Replace with a default valid value
-          supplierLT: supplierLT,
-          clientLT: clientLT,
-          unitPriceResponse: {
-            currencyId: unitPriceCurrency.id ? unitPriceCurrency.id : null,
-            unitPrice: unitPricevalueNumber !== 0 ? unitPricevalueNumber : null,
-            currency:
-              unitPriceCurrency.currency !== ''
-                ? unitPriceCurrency.currency
-                : null
-          },
-          supplier:
-            supplier.length > 0
-              ? {
-                  supplierId: supplier[0].supplierId,
-                  supplierName: supplier[0].supplierName
-                }
-              : null,
-          comment: comment,
-          dgPackagingCost: dgPackagingCst,
-          tagDate: tagDate ? formatDate(tagDate) : null,
-          lastUpdatedDate: lastUpdatedDate,
-          certificateType: certType, // Replace with a default valid value
-          MSN: MSN,
-          wareHouse: warehouse,
-          stock: stock,
-          stockLocation: stockLocation,
-          airlineCompany: airlineCompany,
-          MSDS: MSDS
-        };
-        handleAddPart(rfqPart);
-      }
+      return;
     }
+
+    // Aynı `partNumber` kontrolü
+    if (parts.some(element => element.partNumber === partNumber)) {
+      toastError('Invalid Part Number', 'Part number is already added!');
+      return;
+    }
+
+    // Her şey doğruysa, yeni parça ekleme işlemi
+    const rfqPart: RFQPart = {
+      partId: null,
+      rfqPartId: null,
+      partNumber: partNumber,
+      partName: partName,
+      reqQTY: reqQTY,
+      fndQTY: fndQTY,
+      reqCND: reqCND,
+      fndCND: fndCND,
+      supplierLT: supplierLT,
+      clientLT: clientLT,
+      unitPriceResponse: {
+        currencyId: unitPriceCurrency.id || null,
+        unitPrice: unitPricevalueNumber || null,
+        currency: unitPriceCurrency.currency || null
+      },
+      supplier:
+        supplier.length > 0
+          ? {
+              supplierId: supplier[0].supplierId,
+              supplierName: supplier[0].supplierName
+            }
+          : null,
+      comment: comment,
+      dgPackagingCost: dgPackagingCst,
+      tagDate: tagDate ? formatDate(tagDate) : null,
+      lastUpdatedDate: lastUpdatedDate,
+      certificateType: certType,
+      MSN: MSN,
+      wareHouse: warehouse,
+      stock: stock,
+      stockLocation: stockLocation,
+      airlineCompany: airlineCompany,
+      MSDS: MSDS
+    };
+    console.log(rfqPart);
+
+    handleAddPart(rfqPart);
   };
 
   return (
@@ -576,12 +587,12 @@ const PartList = ({
                     <Form.Group style={{ width: '200px' }}>
                       <Typeahead
                         id="searchable-select"
-                        labelKey="supplierCompanyName"
+                        labelKey="supplierName"
                         options={suppliers}
                         placeholder="Select a supplier"
                         multiple={false}
                         positionFixed
-                        style={{ zIndex: 1050 }}
+                        style={{ zIndex: 100 }}
                         //If it is empty then it returns [] otherwise It returns selected
                         onChange={selected => {
                           if (selected.length > 0) {

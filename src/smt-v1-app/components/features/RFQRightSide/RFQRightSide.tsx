@@ -5,6 +5,11 @@ import PartList from './RFQRightSideComponents/PartList/PartList';
 import AlternativePartList from './RFQRightSideComponents/AlternativePartList/AlternativePartList';
 import Footer from 'components/footers/Footer';
 import Header from './RFQRightSideComponents/Header/Header';
+import {
+  AlternativeRFQPart,
+  RFQ,
+  RFQPart
+} from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 
 const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [bgColor, setBgColor] = useState('');

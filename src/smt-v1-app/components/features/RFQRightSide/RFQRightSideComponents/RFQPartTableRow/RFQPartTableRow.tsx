@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
 import editIcon from '../../../../../../assets/img/icons/edit-icon.svg';
 import './RFQPartTableRow.css';
+import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 
 const RFQPartTableRow = ({ rfqParts }: { rfqParts: RFQPart[] }) => {
   const [total, setTotal] = useState(0);
@@ -42,7 +43,7 @@ const RFQPartTableRow = ({ rfqParts }: { rfqParts: RFQPart[] }) => {
               </span>{' '}
               {rfqPart.unitPriceResponse.unitPrice}
             </td>
-            <td>{/*rfqPart.supplier*/}</td>
+            <td>{rfqPart.supplier && rfqPart.supplier.supplierName}</td>
             <td className="text-center">
               <span className="fw-bold">
                 {rfqPart.unitPriceResponse.unitPrice}

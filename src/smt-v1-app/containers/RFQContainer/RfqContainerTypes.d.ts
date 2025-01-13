@@ -1,3 +1,6 @@
+import Client from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/Client/Client';
+import { Supplier } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/PartList/PartListHelper';
+
 interface RFQPart {
   partId: string | null;
   rfqPartId: string | null;
@@ -14,10 +17,7 @@ interface RFQPart {
     unitPrice: number;
     currency: string;
   };
-  supplier: {
-    supplierId: string;
-    supplierName: string;
-  };
+  supplier: Supplier;
   comment: string;
   dgPackagingCost: boolean;
   tagDate: string;
@@ -56,10 +56,7 @@ interface AlternativeRFQPart {
     unitPrice: number;
     currency: string;
   };
-  supplier: {
-    supplierId: string;
-    supplierName: string;
-  };
+  supplier: Supplier;
   comment: string;
   dgPackagingCost: boolean;
   tagDate: string;
@@ -81,10 +78,7 @@ interface AlternativeRFQPart {
 interface RFQ {
   alternativeRFQPartResponses: AlternativeRFQPart[];
   clientRFQNumberId: string | null;
-  clientResponse: {
-    clientId: string;
-    clientName: string;
-  };
+  clientResponse: Client;
   lastModifiedDate: string;
   mailItemMoreDetailResponse: MailItemMoreDetail;
   rfqDeadline: string;
