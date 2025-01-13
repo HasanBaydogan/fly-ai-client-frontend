@@ -45,7 +45,7 @@ const RFQPartTableRow = ({ rfqParts }: { rfqParts: RFQPart[] }) => {
             <td>{/*rfqPart.supplier*/}</td>
             <td className="text-center">
               <span className="fw-bold">
-                {rfqPart.unitPriceResponse.currency}
+                {rfqPart.unitPriceResponse.unitPrice}
               </span>{' '}
               {total}
             </td>

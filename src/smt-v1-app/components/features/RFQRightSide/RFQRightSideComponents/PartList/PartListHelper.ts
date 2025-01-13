@@ -24,11 +24,11 @@ export const tableHeaders = [
 ];
 export type Supplier = {
   supplierId: string;
-  supplierCompanyName: string;
+  supplierName: string;
 };
 
 // Function to convert date to "DD.MM.YYYY" format
-const formatDate = dateString => {
+export const formatDate = dateString => {
   if (!dateString) return '';
   const date = new Date(dateString);
   const day = String(date.getDate()).padStart(2, '0');

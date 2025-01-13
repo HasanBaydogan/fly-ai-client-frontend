@@ -10,7 +10,7 @@ import React, {
 import { Button, Form, Table } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import CustomButton from '../../../../../../components/base/Button';
-import { tableHeaders, Supplier, Currency } from './PartListHelper';
+import { tableHeaders, Supplier, Currency, formatDate } from './PartListHelper';
 import { Option } from 'react-bootstrap-typeahead/types/types';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
@@ -28,7 +28,7 @@ const PartList = ({
   handleAddPart
 }: {
   parts: RFQPart[];
-  handleDeletePart: (rfqPart: RFQPart) => void;
+  handleDeletePart: (partNumber: string) => void;
   handleAddPart: (rfqPart: RFQPart) => void;
 }) => {
   const [isPartNumberEmpty, setIsPartNumberEmpty] = useState(false);
@@ -247,22 +247,26 @@ const PartList = ({
                 ? unitPriceCurrency.currency
                 : null
           },
-          supplier: {
-            supplierId: '',
-            supplierName: ''
-          },
-          comment: '',
-          dgPackagingCost: false,
-          tagDate: new Date().toISOString(),
-          lastUpdatedDate: new Date().toISOString(),
-          certificateType: 'CERTIFICATE_1', // Replace with a default valid value
-          MSN: '',
-          wareHouse: '',
-          stock: 0,
-          stockLocation: '',
-          airlineCompany: '',
-          MSDS: ''
+          supplier:
+            supplier.length > 0
+              ? {
+                  supplierId: supplier[0].supplierId,
+                  supplierName: supplier[0].supplierName
+                }
+              : null,
+          comment: comment,
+          dgPackagingCost: dgPackagingCst,
+          tagDate: tagDate ? formatDate(tagDate) : null,
+          lastUpdatedDate: lastUpdatedDate,
+          certificateType: certType, // Replace with a default valid value
+          MSN: MSN,
+          wareHouse: warehouse,
+          stock: stock,
+          stockLocation: stockLocation,
+          airlineCompany: airlineCompany,
+          MSDS: MSDS
         };
+        handleAddPart(rfqPart);
       }
     }
   };
@@ -305,17 +309,19 @@ const PartList = ({
             </tr>
           </thead>
           <tbody>
-            {/* <RFQPartTableRow
-            parts={parts}
-            setShowDeleteModal={setShowDeleteModal}
-            setDeletedId={setDeletedId}
-            handleEditPart={handleEditPart}
-          /> */}
+            {
+              <RFQPartTableRow
+                rfqParts={parts}
+                //setShowDeleteModal={setShowDeleteModal}
+                //setDeletedId={setDeletedId}
+                //handleEditPart={handleEditPart}
+              />
+            }
 
             <tr>
               <td style={{ padding: '10px' }}>
                 <span
-                  //onClick={handleNewPartAddition}
+                  onClick={handleNewPartAddition}
                   className="action-icon mt-2"
                 >
                   <FontAwesomeIcon icon={faPlus} />

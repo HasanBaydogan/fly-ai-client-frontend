@@ -26,8 +26,13 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     alternativeRFQPart: AlternativeRFQPart
   ) => {};
 
-  const handleAddPart = (rfqPart: RFQPart) => {};
-  const handleDeletePart = (rfqPart: RFQPart) => {};
+  const handleAddPart = (rfqPart: RFQPart) => {
+    setParts([...parts, rfqPart]);
+  };
+  const handleDeletePart = (partNumber: string) => {
+    const updatedArray = parts.filter(item => item.partNumber !== partNumber);
+    setParts(updatedArray);
+  };
 
   return (
     <>
