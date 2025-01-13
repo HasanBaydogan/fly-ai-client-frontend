@@ -1,12 +1,12 @@
 interface RFQPart {
-  partId: string;
-  rfqPartId: string;
+  partId: string | null;
+  rfqPartId: string | null;
   partNumber: string;
   partName: string;
   reqQTY: number;
   fndQTY: number;
-  reqCND: NE | FN | NS | OH | SV | AR | RP | IN | TST;
-  fndCND: NE | FN | NS | OH | SV | AR | RP | IN | TST;
+  reqCND: NE | FN | NS | OH | SV | AR | RP | IN | TST | '';
+  fndCND: NE | FN | NS | OH | SV | AR | RP | IN | TST | '';
   supplierLT: number;
   clientLT: number;
   unitPriceResponse: {

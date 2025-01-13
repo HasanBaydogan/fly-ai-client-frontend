@@ -1,4 +1,4 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRotateRight, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {
   ChangeEvent,
@@ -10,14 +10,17 @@ import React, {
 import { Button, Form, Table } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import CustomButton from '../../../../../../components/base/Button';
-import { tableHeaders, Supplier } from './PartListHelper';
+import { tableHeaders, Supplier, Currency } from './PartListHelper';
 import { Option } from 'react-bootstrap-typeahead/types/types';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
 import RFQPartTableRow from '../RFQPartTableRow/RFQPartTableRow';
 import './PartList.css';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import { getAllSuppliersFromDB } from 'smt-v1-app/services/RFQService';
+import {
+  getAllCurrenciesFromDB,
+  getAllSuppliersFromDB
+} from 'smt-v1-app/services/RFQService';
 
 const PartList = ({
   parts,
@@ -38,7 +41,7 @@ const PartList = ({
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [partIdCounter, setPartIdCounter] = useState(0);
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  // RFQPart Properties
   const [partName, setPartName] = useState<string>('');
   const [partNumber, setPartNumber] = useState<string>('');
   const [reqQTY, setReqQTY] = useState<number>(0);
@@ -50,12 +53,23 @@ const PartList = ({
   const [unitPricevalueString, setUnitPricevalueString] =
     useState<string>('0.00');
   const [unitPricevalueNumber, setUnitPricevalueNumber] = useState<number>(0.0);
-  const [unitPriceCurrency, setUnitPriceCurrency] = useState<string>('USD');
-  const [currencySymbol, setCurrencySymbol] = useState<string>('$');
+  const [unitPriceCurrency, setUnitPriceCurrency] = useState<Currency>({
+    id: '',
+    currency: '',
+    currencySymbol: ''
+  });
+
+  /*const [unitPriceCurrencyName, setUnitPriceCurrencyName] = useState<string>('USD');
+  const [unitPriceCurrencyId, setUnitPriceCurrencyId] = useState('');
+  const [currencySymbol, setCurrencySymbol] = useState<string>('$'); */
+
   const [supplier, setSupplier] = useState<Supplier[]>([]);
   const [comment, setComment] = useState<string>('');
-  const [dgPackagingCst, setDgPackagingCost] = useState('NO');
+  const [dgPackagingCst, setDgPackagingCost] = useState(false);
   const [tagDate, setTagDate] = useState('');
+  const handleDateChange = e => {
+    setTagDate(e.target.value); // Store the date in YYYY-MM-DD format
+  };
   const [lastUpdatedDate, setLastUpdatedDate] = useState<string>('23.12.2023');
   const [certType, setCertType] = useState<string>('defCerf');
   const [MSN, setMSN] = useState<string>('');
@@ -65,23 +79,35 @@ const PartList = ({
   const [airlineCompany, setAirlineCompany] = useState<string>('');
   const [MSDS, setMSDS] = useState<string>('');
 
+  const [isNewSupplierLoading, setIsNewSupplierLoading] = useState(false);
+
   const partNumberRef = useRef<HTMLInputElement>(null);
 
-  const [deletedId, setDeletedId] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
+
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
 
   useEffect(() => {
     // Get all suppliers
-    const getAllSupplier = async () => {
+    const getAllSupplierAndCurrencies = async () => {
       setIsLoading(true);
-      const resp = await getAllSuppliersFromDB();
-      setSuppliers(resp.data);
+      const suppResp = await getAllSuppliersFromDB();
+      setSuppliers(suppResp.data);
+      const currencyResp = await getAllCurrenciesFromDB();
+      setCurrencies(currencyResp.data);
       setIsLoading(false);
     };
-    getAllSupplier();
+    getAllSupplierAndCurrencies();
   }, []);
 
+  const handleAllSuppliersRefresh = async () => {
+    setIsNewSupplierLoading(true);
+    const resp = await getAllSuppliersFromDB();
+    setSuppliers(resp.data);
+    setIsNewSupplierLoading(false);
+  };
   const formatNumber = (n: string): string => {
     return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
@@ -106,16 +132,18 @@ const PartList = ({
 
       right_side = right_side.substring(0, 2);
 
-      input_val = `${currencySymbol}${left_side}.${right_side}`;
+      input_val = `${unitPriceCurrency.currencySymbol}${left_side}.${right_side}`;
     } else {
-      input_val = `${currencySymbol}${formatNumber(input_val)}`;
+      input_val = `${unitPriceCurrency.currencySymbol}${formatNumber(
+        input_val
+      )}`;
 
       if (blur === 'blur') {
         input_val += '.00';
       }
     }
 
-    const x = input_val.split(currencySymbol);
+    const x = input_val.split(unitPriceCurrency.currencySymbol);
     if (x.length > 1) {
       const inputValueArray = x[1].split(',');
       let totalinputValueString = '';
@@ -170,7 +198,7 @@ const PartList = ({
       supplierLT !== 0 ||
       clientLT !== 0 ||
       unitPricevalueNumber !== 0.0 ||
-      supplier
+      (supplier && supplier.length > 0)
     ) {
       const missingFields = [];
 
@@ -192,6 +220,50 @@ const PartList = ({
         'Invalid LeadTime',
         'Supplier LT cannot be greater than client LT'
       );
+    } else {
+      if (parts.some(element => element.partNumber === partNumber)) {
+        toastError('Invalid Partnumber', 'Part number is already added!');
+      } else {
+        // Add the partNumber to the parts array
+
+        // create a RFQPart
+
+        const rfqPart: RFQPart = {
+          partId: null,
+          rfqPartId: null,
+          partNumber: partNumber,
+          partName: partName,
+          reqQTY: reqQTY,
+          fndQTY: fndQTY,
+          reqCND: reqCND, // Replace with a default valid value
+          fndCND: fndCND, // Replace with a default valid value
+          supplierLT: supplierLT,
+          clientLT: clientLT,
+          unitPriceResponse: {
+            currencyId: unitPriceCurrency.id ? unitPriceCurrency.id : null,
+            unitPrice: unitPricevalueNumber !== 0 ? unitPricevalueNumber : null,
+            currency:
+              unitPriceCurrency.currency !== ''
+                ? unitPriceCurrency.currency
+                : null
+          },
+          supplier: {
+            supplierId: '',
+            supplierName: ''
+          },
+          comment: '',
+          dgPackagingCost: false,
+          tagDate: new Date().toISOString(),
+          lastUpdatedDate: new Date().toISOString(),
+          certificateType: 'CERTIFICATE_1', // Replace with a default valid value
+          MSN: '',
+          wareHouse: '',
+          stock: 0,
+          stockLocation: '',
+          airlineCompany: '',
+          MSDS: ''
+        };
+      }
     }
   };
 
@@ -350,9 +422,7 @@ const PartList = ({
                     paddingLeft: '8px'
                   }}
                 >
-                  <option value="" disabled>
-                    Req CND
-                  </option>
+                  <option value="">Req CND</option>
                   <option value="NE">NE</option>
                   <option value="FN">FN</option>
                   <option value="NS">NS</option>
@@ -380,9 +450,7 @@ const PartList = ({
                     paddingLeft: '8px'
                   }}
                 >
-                  <option value="" disabled>
-                    Fnd CND
-                  </option>
+                  <option value="">Fnd CND</option>
                   <option value="NE">NE</option>
                   <option value="FN">FN</option>
                   <option value="NS">NS</option>
@@ -430,29 +498,37 @@ const PartList = ({
               <td>
                 <div
                   className="d-flex justify-content-between"
-                  style={{ width: '200px' }}
+                  style={{ width: '230px' }}
                 >
                   <Form.Select
-                    value={unitPriceCurrency}
-                    //onChange={e => {setUnitPriceCurrency(e.target.value);setCurrencySymbol(getPriceCurrencySymbol(e.target.value));}}
+                    value={unitPriceCurrency.id} // Make sure this matches the currency.id value
+                    onChange={e => {
+                      const selectedCurrencyId = e.target.value;
+                      const selectedCurrency = currencies.find(
+                        currency => currency.id === selectedCurrencyId
+                      );
+
+                      if (selectedCurrency) {
+                        setUnitPriceCurrency({
+                          id: selectedCurrency.id,
+                          currency: selectedCurrency.currency,
+                          currencySymbol:
+                            selectedCurrency.currencySymbol ||
+                            getPriceCurrencySymbol(selectedCurrency.currency)
+                        });
+                      }
+                    }}
                     style={{
-                      width: '80px',
+                      width: '110px',
                       paddingRight: '4px',
                       paddingLeft: '8px'
                     }}
                   >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="RUB">RUB</option>
-                    <option value="TRY">TRY</option>
-                    <option value="GBP">GBP</option>
-                    <option value="CNY">CNY</option>
-                    <option value="JPY">JPY</option>
-                    <option value="CAD">CAD</option>
-                    <option value="AUD">AUD</option>
-                    <option value="CHF">CHF</option>
-                    <option value="SGD">SGD</option>
-                    <option value="HKD">HKD</option>
+                    {currencies.map(currency => (
+                      <option key={currency.id} value={currency.id}>
+                        {currency.currency} ({currency.currencySymbol})
+                      </option>
+                    ))}
                   </Form.Select>
 
                   <Form.Control
@@ -463,7 +539,7 @@ const PartList = ({
                     onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
                       e.currentTarget.blur()
                     }
-                    placeholder={currencySymbol + '1,000,000.00'}
+                    placeholder={unitPriceCurrency.currency + '1,000,000.00'}
                     style={{
                       width: '110px',
                       paddingRight: '4px',
@@ -480,6 +556,16 @@ const PartList = ({
                   <Button variant="primary" className="px-3 py-1 me-3">
                     <span style={{ fontSize: '16px' }}>+</span>
                   </Button>
+                  <div className="d-flex justify-content-center align-items-center">
+                    <FontAwesomeIcon
+                      icon={faArrowRotateRight}
+                      className="me-3"
+                      size="lg"
+                      spin={isNewSupplierLoading}
+                      onClick={handleAllSuppliersRefresh}
+                    />
+                  </div>
+
                   {
                     <Form.Group style={{ width: '200px' }}>
                       <Typeahead
@@ -493,11 +579,11 @@ const PartList = ({
                         //If it is empty then it returns [] otherwise It returns selected
                         onChange={selected => {
                           if (selected.length > 0) {
-                            setSupplier(selected as Supplier[]); // Assign the selected supplier(s) to the state
-                            console.log(supplier);
+                            setSupplier(selected as Supplier[]);
+                            console.log('Selected Supplier:', selected); // For debugging
                           } else {
-                            setSupplier([]); // Clear the state if nothing is selected
-                            console.log(supplier); //
+                            setSupplier([]);
+                            console.log('Supplier cleared.'); // For debugging
                           }
                         }}
                       />
@@ -510,7 +596,7 @@ const PartList = ({
               {/* TOTAL START */}
               <td>
                 <div className="d-flex align-items-center mt-2">
-                  <span className="fw-bold">{unitPriceCurrency}</span>
+                  <span className="fw-bold">{unitPriceCurrency.currency}</span>
                   <span className="ms-2">
                     {(unitPricevalueNumber
                       ? Math.round(unitPricevalueNumber * 100) / 100
@@ -525,7 +611,7 @@ const PartList = ({
                 <Form.Control
                   as="textarea"
                   placeholder="Comments"
-                  //value={comment}
+                  value={comment}
                   onChange={e => {
                     setComment(e.target.value);
                   }}
@@ -538,9 +624,11 @@ const PartList = ({
               {
                 <td>
                   <Form.Select
-                    value={dgPackagingCst}
+                    value={dgPackagingCst === false ? 'NO' : 'YES'}
                     onChange={e => {
-                      setDgPackagingCost(e.target.value);
+                      setDgPackagingCost(
+                        e.target.value === 'NO' ? false : true
+                      );
                     }}
                     defaultValue={'NO'}
                     required // Zorunlu alan
@@ -563,9 +651,8 @@ const PartList = ({
                   value={tagDate}
                   placeholder="Tag Date" // Etiket Tarihi
                   type="date"
-                  onChange={e => {
-                    setTagDate(e.target.value);
-                  }}
+                  onChange={handleDateChange}
+                  // When sending date to backend use formatDate in helper file.
                 />
               </td>
               {/* TAG DATE END */}
@@ -678,7 +765,7 @@ const PartList = ({
                 <Form.Group>
                   <Form.Control
                     placeholder="Airline Company"
-                    //value={airlineCompany}
+                    value={airlineCompany}
                     onChange={e => {
                       setAirlineCompany(e.target.value);
                     }}
@@ -696,7 +783,7 @@ const PartList = ({
                 <Form.Group>
                   <Form.Control
                     placeholder="MSDS"
-                    //value={MSDS}
+                    value={MSDS}
                     onChange={e => {
                       setMSDS(e.target.value);
                     }}
