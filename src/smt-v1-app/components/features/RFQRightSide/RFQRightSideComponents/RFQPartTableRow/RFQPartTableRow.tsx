@@ -11,12 +11,14 @@ const RFQPartTableRow = ({
   rfqParts,
   setShowDeleteModal,
   handleDeletePart,
-  handleEditPart
+  handleEditPart,
+  handlePartDeletion
 }: {
   rfqParts: RFQPart[];
   setShowDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
   handleDeletePart: (partNumber: string) => void;
   handleEditPart: (partNumber: string) => void;
+  handlePartDeletion: (partNumber: string) => void;
 }) => {
   return (
     <>
@@ -28,9 +30,7 @@ const RFQPartTableRow = ({
                 <span
                   className="action-icon"
                   style={{ cursor: 'pointer', marginRight: '8px' }}
-                  onClick={() => {
-                    setShowDeleteModal(true);
-                  }}
+                  onClick={() => handlePartDeletion(rfqPart.partNumber)}
                 >
                   <FontAwesomeIcon icon={faMinus} />
                 </span>

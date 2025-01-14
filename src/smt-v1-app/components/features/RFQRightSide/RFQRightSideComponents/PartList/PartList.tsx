@@ -47,7 +47,8 @@ const PartList = ({
   const [toastVariant, setToastVariant] = useState('danger');
 
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [partIdCounter, setPartIdCounter] = useState(0);
+  const [desiredPartNumberToDelete, setDesiredPartNumberToDelete] =
+    useState('');
 
   // RFQPart Properties
   const [partName, setPartName] = useState<string>('');
@@ -66,10 +67,6 @@ const PartList = ({
     currency: '',
     currencySymbol: ''
   });
-
-  /*const [unitPriceCurrencyName, setUnitPriceCurrencyName] = useState<string>('USD');
-  const [unitPriceCurrencyId, setUnitPriceCurrencyId] = useState('');
-  const [currencySymbol, setCurrencySymbol] = useState<string>('$'); */
 
   const [supplier, setSupplier] = useState<Supplier[]>([]);
   const [comment, setComment] = useState<string>('');
@@ -178,7 +175,11 @@ const PartList = ({
     return input_val;
   };
 
-  const handleConfirmDelete = () => {};
+  const handleConfirmDelete = () => {
+    handleDeletePart(desiredPartNumberToDelete);
+    setShowDeleteModal(false);
+    setDesiredPartNumberToDelete('');
+  };
 
   const handleUnitPriceChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const formattedValue = formatCurrency(e.target.value);
@@ -244,6 +245,11 @@ const PartList = ({
       handleDeletePart(partNumber);
     }
   };
+  const handlePartDeletion = (partNumber: string) => {
+    setShowDeleteModal(true);
+    setDesiredPartNumberToDelete(partNumber);
+  };
+
   const updateUnitPrice = (foundRFQ: RFQPart) => {
     const unitPrice = foundRFQ.unitPriceResponse.unitPrice ?? 0.0;
     const currency = foundRFQ.unitPriceResponse.currency;
@@ -420,6 +426,7 @@ const PartList = ({
                 setShowDeleteModal={setShowDeleteModal}
                 handleDeletePart={handleDeletePart}
                 handleEditPart={handleEditPart}
+                handlePartDeletion={handlePartDeletion}
               />
             }
 
