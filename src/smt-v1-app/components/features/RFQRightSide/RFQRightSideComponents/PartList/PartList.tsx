@@ -10,7 +10,13 @@ import React, {
 import { Button, Form, Table } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import CustomButton from '../../../../../../components/base/Button';
-import { tableHeaders, Supplier, Currency, formatDate } from './PartListHelper';
+import {
+  tableHeaders,
+  Supplier,
+  Currency,
+  formatDate,
+  convertDateFormat
+} from './PartListHelper';
 import { Option } from 'react-bootstrap-typeahead/types/types';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
@@ -22,6 +28,7 @@ import {
   getAllSuppliersFromDB
 } from 'smt-v1-app/services/RFQService';
 import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
 const PartList = ({
   parts,
@@ -72,11 +79,11 @@ const PartList = ({
     setTagDate(e.target.value); // Store the date in YYYY-MM-DD format
   };
   const [lastUpdatedDate, setLastUpdatedDate] = useState<string>('23.12.2023');
-  const [certType, setCertType] = useState<string>('defCerf');
+  const [certType, setCertType] = useState<string>('');
   const [MSN, setMSN] = useState<string>('');
   const [warehouse, setWarehouse] = useState<string>('');
   const [stock, setStock] = useState<number>(0);
-  const [stockLocation, setStockLocatipon] = useState<string>('');
+  const [stockLocation, setStockLocation] = useState<string>('');
   const [airlineCompany, setAirlineCompany] = useState<string>('');
   const [MSDS, setMSDS] = useState<string>('');
 
@@ -85,6 +92,11 @@ const PartList = ({
   const partNumberRef = useRef<HTMLInputElement>(null);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  //Edit states
+  const [isEditing, setIsEditing] = useState(false);
+  const [partId, setPartId] = useState<string | null>(null);
+  const [rfqPartId, setRfqPartId] = useState<string | null>(null);
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
@@ -166,6 +178,8 @@ const PartList = ({
     return input_val;
   };
 
+  const handleConfirmDelete = () => {};
+
   const handleUnitPriceChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const formattedValue = formatCurrency(e.target.value);
     setUnitPricevalueString(formattedValue);
@@ -192,6 +206,58 @@ const PartList = ({
     setToastMessageBody(message);
     setIsShowToast(true);
   }
+  const handleEditPart = (partNumber: string) => {
+    const foundRFQ: RFQPart | null = parts.filter(
+      part => part.partNumber === partNumber
+    )[0];
+    if (!foundRFQ) {
+      console.log('Found RFQ is not valid');
+    } else {
+      setIsEditing(true);
+      setPartName(foundRFQ.partName);
+      setPartNumber(foundRFQ.partNumber);
+      setPartId(foundRFQ.partId);
+      setRfqPartId(foundRFQ.rfqPartId);
+      setReqQTY(foundRFQ.reqQTY);
+      setFndQTY(foundRFQ.fndQTY);
+      setReqCND(foundRFQ.reqCND);
+      setFndCND(foundRFQ.fndCND);
+      setSupplierLT(foundRFQ.supplierLT);
+      setClientLT(foundRFQ.clientLT);
+      updateUnitPrice(foundRFQ);
+      setSupplier(foundRFQ.supplier ? [foundRFQ.supplier] : []);
+      setComment(foundRFQ.comment);
+      setDgPackagingCost(foundRFQ.dgPackagingCost);
+      setTagDate(convertDateFormat(foundRFQ.tagDate));
+      setCertType(foundRFQ.certificateType);
+      setMSN(foundRFQ.MSN);
+      setWarehouse(foundRFQ.wareHouse);
+      setStock(foundRFQ.stock);
+      setStockLocation(foundRFQ.stockLocation);
+      setAirlineCompany(foundRFQ.airlineCompany);
+      setMSDS(foundRFQ.MSDS);
+
+      if (partNumberRef.current) {
+        partNumberRef.current.focus();
+      }
+
+      handleDeletePart(partNumber);
+    }
+  };
+  const updateUnitPrice = (foundRFQ: RFQPart) => {
+    const unitPrice = foundRFQ.unitPriceResponse.unitPrice ?? 0.0;
+    const currency = foundRFQ.unitPriceResponse.currency;
+    const currencyId = foundRFQ.unitPriceResponse.currencyId;
+
+    setUnitPricevalueNumber(unitPrice);
+    setUnitPricevalueString(unitPrice.toFixed(2)); // Ensure string reflects the number
+
+    setUnitPriceCurrency({
+      id: currencyId,
+      currency: currency,
+      currencySymbol: getPriceCurrencySymbol(currency)
+    });
+  };
 
   const handleNewPartAddition = () => {
     // Zorunlu alanların kontrolü
@@ -245,8 +311,8 @@ const PartList = ({
 
     // Her şey doğruysa, yeni parça ekleme işlemi
     const rfqPart: RFQPart = {
-      partId: null,
-      rfqPartId: null,
+      partId: isEditing ? partId : null,
+      rfqPartId: isEditing ? rfqPartId : null,
       partNumber: partNumber,
       partName: partName,
       reqQTY: reqQTY,
@@ -279,9 +345,35 @@ const PartList = ({
       airlineCompany: airlineCompany,
       MSDS: MSDS
     };
-    console.log(rfqPart);
 
     handleAddPart(rfqPart);
+
+    setPartNumber('');
+    setPartName('');
+    setReqQTY(0);
+    setFndQTY(0);
+    setReqCND('');
+    setFndCND('');
+    setSupplierLT(0);
+    setClientLT(0);
+    setUnitPricevalueNumber(0.0);
+    setUnitPricevalueString('0.00');
+    setUnitPriceCurrency(currencies[0]);
+    setSupplier([]);
+    setComment('');
+    setDgPackagingCost(false);
+    setTagDate('');
+    setLastUpdatedDate('');
+    setCertType('');
+    setMSN('');
+    setWarehouse('');
+    setStock(0);
+    setStockLocation('');
+    setAirlineCompany('');
+    setMSDS('');
+    setIsEditing(false);
+    setPartId(null);
+    setRfqPartId(null);
   };
 
   return (
@@ -325,9 +417,9 @@ const PartList = ({
             {
               <RFQPartTableRow
                 rfqParts={parts}
-                //setShowDeleteModal={setShowDeleteModal}
-                //setDeletedId={setDeletedId}
-                //handleEditPart={handleEditPart}
+                setShowDeleteModal={setShowDeleteModal}
+                handleDeletePart={handleDeletePart}
+                handleEditPart={handleEditPart}
               />
             }
 
@@ -596,6 +688,7 @@ const PartList = ({
                         positionFixed
                         style={{ zIndex: 100 }}
                         //If it is empty then it returns [] otherwise It returns selected
+                        selected={supplier}
                         onChange={selected => {
                           if (selected.length > 0) {
                             setSupplier(selected as Supplier[]);
@@ -699,7 +792,7 @@ const PartList = ({
                     paddingLeft: '8px'
                   }}
                 >
-                  <option value="defCerf">Select Cerf.</option>
+                  <option value="">Select Cerf.</option>
                   <option value="FAA81303">FAA 8130-3</option>
                   <option value="EASEF1">EASSA Form 1</option>
                   <option value="COFC">CofC</option>
@@ -768,7 +861,7 @@ const PartList = ({
                     placeholder="Stock Location"
                     value={stockLocation}
                     onChange={e => {
-                      setStockLocatipon(e.target.value);
+                      setStockLocation(e.target.value);
                     }}
                     style={{
                       width: '180px'
@@ -819,11 +912,13 @@ const PartList = ({
         </Table>
       )}
 
-      {/* <DeleteConfirmationModal
-        showDeleteModal={showDeleteModal}
-        setShowDeleteModal={setShowDeleteModal}
-        handleConfirmDelete={handleConfirmDelete}
-      />*/}
+      {
+        <DeleteConfirmationModal
+          showDeleteModal={showDeleteModal}
+          setShowDeleteModal={setShowDeleteModal}
+          handleConfirmDelete={handleConfirmDelete}
+        />
+      }
       <ToastNotification
         isShow={isShowToast}
         setIsShow={setIsShowToast}

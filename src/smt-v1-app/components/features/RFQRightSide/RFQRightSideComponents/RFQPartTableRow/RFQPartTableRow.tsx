@@ -7,7 +7,17 @@ import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import { formatNumber } from './RFQPartTableRowHelper';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
 
-const RFQPartTableRow = ({ rfqParts }: { rfqParts: RFQPart[] }) => {
+const RFQPartTableRow = ({
+  rfqParts,
+  setShowDeleteModal,
+  handleDeletePart,
+  handleEditPart
+}: {
+  rfqParts: RFQPart[];
+  setShowDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
+  handleDeletePart: (partNumber: string) => void;
+  handleEditPart: (partNumber: string) => void;
+}) => {
   return (
     <>
       {rfqParts.map((rfqPart, key) => {
@@ -18,7 +28,9 @@ const RFQPartTableRow = ({ rfqParts }: { rfqParts: RFQPart[] }) => {
                 <span
                   className="action-icon"
                   style={{ cursor: 'pointer', marginRight: '8px' }}
-                  //onClick={() => {setShowDeleteModal(true);setDeletedId(part.id);}}
+                  onClick={() => {
+                    setShowDeleteModal(true);
+                  }}
                 >
                   <FontAwesomeIcon icon={faMinus} />
                 </span>
@@ -26,7 +38,7 @@ const RFQPartTableRow = ({ rfqParts }: { rfqParts: RFQPart[] }) => {
                   src={editIcon}
                   alt="edit-icon"
                   className="part-number-addition-edit-icon"
-                  //onClick={() => handleEditPart(part)}
+                  onClick={() => handleEditPart(rfqPart.partNumber)}
                 />
               </div>
             </td>
@@ -40,18 +52,22 @@ const RFQPartTableRow = ({ rfqParts }: { rfqParts: RFQPart[] }) => {
             <td className="text-center">{rfqPart.clientLT}</td>
             <td className="text-center">
               <span className="fw-bold">
-                {getPriceCurrencySymbol(rfqPart.unitPriceResponse.currency)}
+                {rfqPart.unitPriceResponse.currency &&
+                  getPriceCurrencySymbol(rfqPart.unitPriceResponse.currency)}
               </span>{' '}
-              {formatNumber(rfqPart.unitPriceResponse.unitPrice)}
+              {rfqPart.unitPriceResponse.unitPrice &&
+                formatNumber(rfqPart.unitPriceResponse.unitPrice)}
             </td>
             <td>{rfqPart.supplier && rfqPart.supplier.supplierName}</td>
             <td className="text-center">
               <span className="fw-bold">
-                {getPriceCurrencySymbol(rfqPart.unitPriceResponse.currency)}
+                {rfqPart.unitPriceResponse.currency &&
+                  getPriceCurrencySymbol(rfqPart.unitPriceResponse.currency)}
               </span>{' '}
-              {formatNumber(
-                rfqPart.unitPriceResponse.unitPrice * rfqPart.fndQTY
-              )}
+              {rfqPart.unitPriceResponse.unitPrice &&
+                formatNumber(
+                  rfqPart.unitPriceResponse.unitPrice * rfqPart.fndQTY
+                )}
             </td>
             <td>{rfqPart.comment}</td>
             <td className="text-center">{rfqPart.dgPackagingCost}</td>

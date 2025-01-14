@@ -42,3 +42,14 @@ export interface Currency {
   currency: string;
   currencySymbol: string;
 }
+
+export function convertDateFormat(inputDate: string): string {
+  // Split the input date by the dot separator
+  if (!inputDate) {
+    return '';
+  }
+  const [day, month, year] = inputDate.split('.');
+
+  // Return the date in the desired format
+  return `${year}-${month}-${day}`;
+}
