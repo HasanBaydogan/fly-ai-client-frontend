@@ -29,6 +29,7 @@ import {
 } from '../PartList/PartListHelper';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import AlternativePartTableRow from '../AlternativePartTableRow/AlternativePartTableRow';
+import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
 const AlternativePartList = ({
   alternativeParts,
@@ -326,7 +327,9 @@ const AlternativePartList = ({
     }
 
     // Aynı `partNumber` kontrolü
-    if (alternativeParts.some(element => element.partNumber === partNumber)) {
+    if (
+      alternativeParts.some(element => element.partNumber === partNumber.trim())
+    ) {
       toastError('Invalid Part Number', 'Part number is already added!');
       return;
     }
@@ -336,8 +339,8 @@ const AlternativePartList = ({
       parentRFQPart: selectedParentRFQPart[0],
       partId: isEditing ? partId : null,
       rfqPartId: isEditing ? rfqPartId : null,
-      partNumber: partNumber,
-      partName: partName,
+      partNumber: partNumber.trim(),
+      partName: partName.trim(),
       reqQTY: reqQTY,
       fndQTY: fndQTY,
       reqCND: reqCND,
@@ -356,17 +359,17 @@ const AlternativePartList = ({
               supplierName: supplier[0].supplierName
             }
           : null,
-      comment: comment,
+      comment: comment.trim(),
       dgPackagingCost: dgPackagingCst,
       tagDate: tagDate ? formatDate(tagDate) : null,
       lastUpdatedDate: lastUpdatedDate,
       certificateType: certType,
-      MSN: MSN,
-      wareHouse: warehouse,
+      MSN: MSN.trim(),
+      wareHouse: warehouse.trim(),
       stock: stock,
-      stockLocation: stockLocation,
-      airlineCompany: airlineCompany,
-      MSDS: MSDS
+      stockLocation: stockLocation.trim(),
+      airlineCompany: airlineCompany.trim(),
+      MSDS: MSDS.trim()
     };
     handleAddAlternativePart(alternativeRfqPart);
 
@@ -381,6 +384,7 @@ const AlternativePartList = ({
     setUnitPricevalueNumber(0.0);
     setUnitPricevalueString('0.00');
     setUnitPriceCurrency(currencies[0]);
+    setSelectedParentRFQPart([]);
     setSupplier([]);
     setComment('');
     setDgPackagingCost(false);
@@ -510,7 +514,7 @@ const AlternativePartList = ({
               <td>
                 <Form.Group style={{ width: '200px' }}>
                   <Typeahead
-                    id="searchable-select"
+                    id="searchable-selec02"
                     labelKey="partNumber"
                     options={parts}
                     placeholder="Select a Parent RFQPart"
@@ -522,10 +526,8 @@ const AlternativePartList = ({
                     onChange={selected => {
                       if (selected.length > 0) {
                         setSelectedParentRFQPart(selected as RFQPart[]);
-                        console.log('Selected Supplier:', selected); // For debugging
                       } else {
                         setSelectedParentRFQPart([]);
-                        console.log('Supplier cleared.'); // For debugging
                       }
                     }}
                   />
@@ -957,21 +959,19 @@ const AlternativePartList = ({
           </tbody>
         </Table>
 
-        {
-          /*<DeleteConfirmationModal
+        <DeleteConfirmationModal
           showDeleteModal={showDeleteModal}
           setShowDeleteModal={setShowDeleteModal}
           handleConfirmDelete={handleConfirmDelete}
-        />*/
-          <ToastNotification
-            isShow={isShowToast}
-            setIsShow={setIsShowToast}
-            variant={toastVariant}
-            messageHeader={toastMessageHeader}
-            messageBodyText={toastMessageBody}
-            position="bottom-end"
-          />
-        }
+        />
+        <ToastNotification
+          isShow={isShowToast}
+          setIsShow={setIsShowToast}
+          variant={toastVariant}
+          messageHeader={toastMessageHeader}
+          messageBodyText={toastMessageBody}
+          position="bottom-end"
+        />
       </div>
     </>
   );

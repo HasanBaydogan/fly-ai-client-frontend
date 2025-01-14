@@ -37,12 +37,16 @@ const PartList = ({
   parts,
   handleDeletePart,
   handleAddPart,
-  alternativeParts
+  alternativeParts,
+  handleDeleteAlternativePartAccordingToParentRFQNumber
 }: {
   parts: RFQPart[];
   handleDeletePart: (partNumber: string) => void;
   handleAddPart: (rfqPart: RFQPart) => void;
   alternativeParts: AlternativeRFQPart[];
+  handleDeleteAlternativePartAccordingToParentRFQNumber: (
+    alternPartNumber: string
+  ) => void;
 }) => {
   const [isPartNumberEmpty, setIsPartNumberEmpty] = useState(false);
   const [isPartNameEmpty, setIsPartNameEmpty] = useState(false);
@@ -99,6 +103,14 @@ const PartList = ({
   const [isEditing, setIsEditing] = useState(false);
   const [partId, setPartId] = useState<string | null>(null);
   const [rfqPartId, setRfqPartId] = useState<string | null>(null);
+
+  // Delete States
+  const [numOfconnectedAlternativeRFQ, setNumOfconnectedAlternativeRFQ] =
+    useState(0);
+  const [
+    connectedAlternativeRFQPartsForDeletion,
+    setConnectedAlternativeRFQPartsForDeletion
+  ] = useState<AlternativeRFQPart[]>();
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
@@ -180,12 +192,6 @@ const PartList = ({
     return input_val;
   };
 
-  const handleConfirmDelete = () => {
-    handleDeletePart(desiredPartNumberToDelete);
-    setShowDeleteModal(false);
-    setDesiredPartNumberToDelete('');
-  };
-
   const handleUnitPriceChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const formattedValue = formatCurrency(e.target.value);
     setUnitPricevalueString(formattedValue);
@@ -202,12 +208,6 @@ const PartList = ({
 
   function toastError(messageHeader: string, message: string) {
     setToastVariant('danger');
-    setToastMessageHeader(messageHeader);
-    setToastMessageBody(message);
-    setIsShowToast(true);
-  }
-  function toastInfo(messageHeader: string, message: string) {
-    setToastVariant('info');
     setToastMessageHeader(messageHeader);
     setToastMessageBody(message);
     setIsShowToast(true);
@@ -250,8 +250,24 @@ const PartList = ({
       handleDeletePart(partNumber);
     }
   };
+
+  // Deleting a RFQPart
+  const handleConfirmDelete = () => {
+    handleDeletePart(desiredPartNumberToDelete);
+    handleDeleteAlternativePartAccordingToParentRFQNumber(
+      desiredPartNumberToDelete
+    );
+    setShowDeleteModal(false);
+    setDesiredPartNumberToDelete('');
+  };
   const handlePartDeletion = (partNumber: string) => {
     setShowDeleteModal(true);
+    const connectedAlternativeRFQParts = alternativeParts.filter(
+      alternativePart => alternativePart.parentRFQPart.partNumber === partNumber
+    );
+    console.log(connectedAlternativeRFQParts);
+    setConnectedAlternativeRFQPartsForDeletion(connectedAlternativeRFQParts);
+    setNumOfconnectedAlternativeRFQ(connectedAlternativeRFQParts.length);
     setDesiredPartNumberToDelete(partNumber);
   };
 
@@ -318,7 +334,7 @@ const PartList = ({
     }
 
     // Aynı `partNumber` kontrolü
-    if (parts.some(element => element.partNumber === partNumber)) {
+    if (parts.some(element => element.partNumber === partNumber.trim())) {
       toastError('Invalid Part Number', 'Part number is already added!');
       return;
     }
@@ -327,8 +343,8 @@ const PartList = ({
     const rfqPart: RFQPart = {
       partId: isEditing ? partId : null,
       rfqPartId: isEditing ? rfqPartId : null,
-      partNumber: partNumber,
-      partName: partName,
+      partNumber: partNumber.trim(),
+      partName: partName.trim(),
       reqQTY: reqQTY,
       fndQTY: fndQTY,
       reqCND: reqCND,
@@ -347,17 +363,17 @@ const PartList = ({
               supplierName: supplier[0].supplierName
             }
           : null,
-      comment: comment,
+      comment: comment.trim(),
       dgPackagingCost: dgPackagingCst,
       tagDate: tagDate ? formatDate(tagDate) : null,
       lastUpdatedDate: lastUpdatedDate,
       certificateType: certType,
-      MSN: MSN,
-      wareHouse: warehouse,
+      MSN: MSN.trim(),
+      wareHouse: warehouse.trim(),
       stock: stock,
-      stockLocation: stockLocation,
-      airlineCompany: airlineCompany,
-      MSDS: MSDS
+      stockLocation: stockLocation.trim(),
+      airlineCompany: airlineCompany.trim(),
+      MSDS: MSDS.trim()
     };
 
     handleAddPart(rfqPart);
@@ -930,6 +946,7 @@ const PartList = ({
           showDeleteModal={showDeleteModal}
           setShowDeleteModal={setShowDeleteModal}
           handleConfirmDelete={handleConfirmDelete}
+          numOfconnectedAlternativeRFQ={numOfconnectedAlternativeRFQ}
         />
       }
       <ToastNotification

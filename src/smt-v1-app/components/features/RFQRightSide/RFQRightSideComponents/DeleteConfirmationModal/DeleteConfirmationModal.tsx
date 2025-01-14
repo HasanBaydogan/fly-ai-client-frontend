@@ -5,19 +5,27 @@ type Props = {
   showDeleteModal: boolean;
   setShowDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
   handleConfirmDelete: () => void;
+  numOfconnectedAlternativeRFQ?: number;
 };
 
 const DeleteConfirmationModal = ({
   showDeleteModal,
   setShowDeleteModal,
-  handleConfirmDelete
+  handleConfirmDelete,
+  numOfconnectedAlternativeRFQ
 }: Props) => {
   return (
     <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
       <Modal.Header closeButton>
         <Modal.Title>Delete Confirmation</Modal.Title>
       </Modal.Header>
-      <Modal.Body>Are you sure you want to delete this product?</Modal.Body>
+      <Modal.Body>
+        {numOfconnectedAlternativeRFQ > 0
+          ? 'Are you sure you want to delete this product that connected to ' +
+            numOfconnectedAlternativeRFQ +
+            ' alternative product(s)'
+          : 'Are you sure you want to delete this product?'}{' '}
+      </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
           Cancel
