@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.bc366d48.css",
-    "main.js": "/static/js/main.5c52aacf.js",
+    "main.css": "/static/css/main.a337f196.css",
+    "main.js": "/static/js/main.5b1b1324.js",
     "static/media/travel.mp4": "/static/media/travel.1ac0084f122621360009.mp4",
     "static/media/77.mp4": "/static/media/77.03b82fffae71ed7f8ce2.mp4",
     "static/media/42.png": "/static/media/42.9910f34b028ba975d6ec.png",
@@ -127,6 +127,7 @@
     "static/media/15.webp": "/static/media/15.a4e38fed4eaf8d40497d.webp",
     "static/media/1.webp": "/static/media/1.3d05c298abde1d9337be.webp",
     "static/media/ln.webp": "/static/media/ln.307869904b4136f480cd.webp",
+    "static/media/attachment-icon.svg": "/static/media/attachment-icon.2a2ea5e1715d6d97377ef63482af8a9d.svg",
     "static/media/completetionIcon.svg": "/static/media/completetionIcon.03b9e60a17de211785cb20f156355705.svg",
     "static/media/slack.webp": "/static/media/slack.fe9ebfbddee23e04fd07.webp",
     "static/media/user-icon-circle.svg": "/static/media/user-icon-circle.7b1f174aaea9416038268fcf68d58cb9.svg",
@@ -135,6 +136,8 @@
     "index.html": "/index.html",
     "static/media/not_rfq_icon.svg": "/static/media/not_rfq_icon.7331551f6bdbb356f56289edb6274c1f.svg",
     "static/media/figma.webp": "/static/media/figma.6704fd935606082b1ac6.webp",
+    "static/media/pdf_icon.svg": "/static/media/pdf_icon.342131c5105cdb26fbe3c170239892fc.svg",
+    "static/media/edit-icon.svg": "/static/media/edit-icon.5118b484d85e2ec5f941d600cb4bb558.svg",
     "static/media/10.webp": "/static/media/10.de40e2828251d7928566.webp",
     "static/media/34.webp": "/static/media/34.958001407481e1f6a4ce.webp",
     "static/media/58.webp": "/static/media/58.ee59376a459e5f7378ef.webp",
@@ -144,7 +147,7 @@
     "static/media/spam_icon.svg": "/static/media/spam_icon.f8a404e2cbf04f7a62411176c2f01044.svg"
   },
   "entrypoints": [
-    "static/css/main.bc366d48.css",
-    "static/js/main.5c52aacf.js"
+    "static/css/main.a337f196.css",
+    "static/js/main.5b1b1324.js"
   ]
 }
