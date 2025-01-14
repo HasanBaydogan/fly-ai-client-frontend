@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import editIcon from '../../../../../../assets/img/icons/edit-icon.svg';
 import './RFQPartTableRow.css';
 import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import { formatNumber } from './RFQPartTableRowHelper';
+import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
 
 const RFQPartTableRow = ({ rfqParts }: { rfqParts: RFQPart[] }) => {
-  const [total, setTotal] = useState(0);
   return (
     <>
       {rfqParts.map((rfqPart, key) => {
@@ -39,16 +40,18 @@ const RFQPartTableRow = ({ rfqParts }: { rfqParts: RFQPart[] }) => {
             <td className="text-center">{rfqPart.clientLT}</td>
             <td className="text-center">
               <span className="fw-bold">
-                {rfqPart.unitPriceResponse.currency}
+                {getPriceCurrencySymbol(rfqPart.unitPriceResponse.currency)}
               </span>{' '}
-              {rfqPart.unitPriceResponse.unitPrice}
+              {formatNumber(rfqPart.unitPriceResponse.unitPrice)}
             </td>
             <td>{rfqPart.supplier && rfqPart.supplier.supplierName}</td>
             <td className="text-center">
               <span className="fw-bold">
-                {rfqPart.unitPriceResponse.unitPrice}
+                {getPriceCurrencySymbol(rfqPart.unitPriceResponse.currency)}
               </span>{' '}
-              {total}
+              {formatNumber(
+                rfqPart.unitPriceResponse.unitPrice * rfqPart.fndQTY
+              )}
             </td>
             <td>{rfqPart.comment}</td>
             <td className="text-center">{rfqPart.dgPackagingCost}</td>

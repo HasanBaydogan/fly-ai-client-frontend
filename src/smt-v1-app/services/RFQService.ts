@@ -37,8 +37,7 @@ export const openRFQ = async (rfqMailId: string) => {
       // Expired JWT
       try {
         const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refreshToken: Cookies.get('refresh_token'),
-          accessToken: accessToken
+          refresh_token: Cookies.get('refresh_token')
         });
         if (refreshTokenresponse.data.statusCode === 200) {
           setCookie(
@@ -111,8 +110,7 @@ export const getAllClientsFromDB = async () => {
       // Expired JWT
       try {
         const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refreshToken: Cookies.get('refresh_token'),
-          accessToken: accessToken
+          refresh_token: Cookies.get('refresh_token')
         });
         if (refreshTokenresponse.data.statusCode === 200) {
           setCookie(
@@ -179,8 +177,7 @@ export const getAllSuppliersFromDB = async () => {
       // Expired JWT
       try {
         const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refreshToken: Cookies.get('refresh_token'),
-          accessToken: accessToken
+          refresh_token: Cookies.get('refresh_token')
         });
         if (refreshTokenresponse.data.statusCode === 200) {
           setCookie(
@@ -247,8 +244,7 @@ export const getAllCurrenciesFromDB = async () => {
       // Expired JWT
       try {
         const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refreshToken: Cookies.get('refresh_token'),
-          accessToken: accessToken
+          refresh_token: Cookies.get('refresh_token')
         });
         if (refreshTokenresponse.data.statusCode === 200) {
           setCookie(

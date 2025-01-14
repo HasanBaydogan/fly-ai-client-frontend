@@ -2,6 +2,7 @@ import React from 'react';
 import pdfIcon from '../../../../../../assets/img/icons/pdf_icon.svg';
 import attachmentIcon from '../../../../../../assets/img/icons/attachment-icon.svg';
 import { openAttachment } from 'smt-v1-app/services/AttachmentService';
+import { MailItemAttachment } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 
 const RFQAttachments = ({
   attachments

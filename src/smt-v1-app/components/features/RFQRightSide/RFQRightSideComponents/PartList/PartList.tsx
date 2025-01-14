@@ -98,6 +98,8 @@ const PartList = ({
       setSuppliers(suppResp.data);
       const currencyResp = await getAllCurrenciesFromDB();
       setCurrencies(currencyResp.data);
+      const firstCurrency = currencyResp.data[0];
+      setUnitPriceCurrency(firstCurrency);
       setIsLoading(false);
     };
     getAllSupplierAndCurrencies();

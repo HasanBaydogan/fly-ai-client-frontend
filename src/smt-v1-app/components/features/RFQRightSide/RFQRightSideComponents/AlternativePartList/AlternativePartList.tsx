@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
+import { AlternativeRFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 
 const AlternativePartList = ({}) => {
   const [isPartNumberEmpty, setIsPartNumberEmpty] = useState(false);
