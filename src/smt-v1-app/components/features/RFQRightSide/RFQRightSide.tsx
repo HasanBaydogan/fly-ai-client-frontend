@@ -3,19 +3,21 @@ import { getColorStyles } from '../RfqMailRowItem/RfqMailRowHelper';
 import Client from './RFQRightSideComponents/Client/Client';
 import PartList from './RFQRightSideComponents/PartList/PartList';
 import AlternativePartList from './RFQRightSideComponents/AlternativePartList/AlternativePartList';
-import Footer from 'components/footers/Footer';
 import Header from './RFQRightSideComponents/Header/Header';
 import {
   AlternativeRFQPart,
   RFQ,
   RFQPart
 } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import RFQRightSideFooter from './RFQRightSideComponents/RFQRightSideFooter/RFQRightSideFooter';
 
 const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [bgColor, setBgColor] = useState('');
   const [textColor, setTextColor] = useState('');
   const [parts, setParts] = useState(rfq.savedRFQItems);
-  const [alternativeParts, setAlternativeParts] = useState();
+  const [alternativeParts, setAlternativeParts] = useState(
+    rfq.alternativeRFQPartResponses
+  );
 
   useEffect(() => {
     const returnColors = getColorStyles(rfq.rfqMailStatus);
@@ -23,13 +25,16 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     setTextColor(returnColors.textColor);
   }, []);
 
-  const handleDeleteAlternativePart = (
-    alternativeRFQPart: AlternativeRFQPart
-  ) => {};
+  const handleDeleteAlternativePart = (alternPartNumber: string) => {
+    const updatedArray = alternativeParts.filter(
+      item => item.partNumber !== alternPartNumber
+    );
+    setAlternativeParts(updatedArray);
+  };
 
-  const handleAddAlternativePart = (
-    alternativeRFQPart: AlternativeRFQPart
-  ) => {};
+  const handleAddAlternativePart = (alternativePart: AlternativeRFQPart) => {
+    setAlternativeParts([...alternativeParts, alternativePart]);
+  };
 
   const handleAddPart = (rfqPart: RFQPart) => {
     setParts([...parts, rfqPart]);
@@ -58,16 +63,18 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
             parts={parts}
             handleDeletePart={handleDeletePart}
             handleAddPart={handleAddPart}
+            alternativeParts={alternativeParts}
           />
         }
 
-        {/* <AlternativePartList
+        <AlternativePartList
           alternativeParts={alternativeParts}
+          parts={parts}
           handleDeleteAlternativePart={handleDeleteAlternativePart}
           handleAddAlternativePart={handleAddAlternativePart}
         />
 
-        <Footer / */}
+        <RFQRightSideFooter />
       </div>
     </>
   );

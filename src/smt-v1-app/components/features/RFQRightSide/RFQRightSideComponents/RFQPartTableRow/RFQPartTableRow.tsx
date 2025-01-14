@@ -9,14 +9,10 @@ import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
 
 const RFQPartTableRow = ({
   rfqParts,
-  setShowDeleteModal,
-  handleDeletePart,
   handleEditPart,
   handlePartDeletion
 }: {
   rfqParts: RFQPart[];
-  setShowDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
-  handleDeletePart: (partNumber: string) => void;
   handleEditPart: (partNumber: string) => void;
   handlePartDeletion: (partNumber: string) => void;
 }) => {

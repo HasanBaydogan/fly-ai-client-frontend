@@ -27,17 +27,22 @@ import {
   getAllCurrenciesFromDB,
   getAllSuppliersFromDB
 } from 'smt-v1-app/services/RFQService';
-import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import {
+  AlternativeRFQPart,
+  RFQPart
+} from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
 
 const PartList = ({
   parts,
   handleDeletePart,
-  handleAddPart
+  handleAddPart,
+  alternativeParts
 }: {
   parts: RFQPart[];
   handleDeletePart: (partNumber: string) => void;
   handleAddPart: (rfqPart: RFQPart) => void;
+  alternativeParts: AlternativeRFQPart[];
 }) => {
   const [isPartNumberEmpty, setIsPartNumberEmpty] = useState(false);
   const [isPartNameEmpty, setIsPartNameEmpty] = useState(false);
@@ -268,7 +273,10 @@ const PartList = ({
   const handleNewPartAddition = () => {
     // Zorunlu alanların kontrolü
     if (!partNumber || !partName || reqQTY === 0 || !reqCND) {
-      toastError('Required Field', 'Please fill all the required fields.');
+      toastError(
+        'RFQPart Required Field',
+        'Please fill all the required RFQPart fields.'
+      );
       return;
     }
 
@@ -423,8 +431,6 @@ const PartList = ({
             {
               <RFQPartTableRow
                 rfqParts={parts}
-                setShowDeleteModal={setShowDeleteModal}
-                handleDeletePart={handleDeletePart}
                 handleEditPart={handleEditPart}
                 handlePartDeletion={handlePartDeletion}
               />

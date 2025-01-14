@@ -1,125 +1,131 @@
-import React, { ChangeEvent, FocusEvent, useRef, useState } from 'react';
+import React, {
+  ChangeEvent,
+  FocusEvent,
+  useEffect,
+  useRef,
+  useState
+} from 'react';
 import { Option } from 'react-bootstrap-typeahead/types/types';
 import { tableHeaders } from './AlternativePartListHelper';
 import { Button, Form, Table } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRotateRight, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
-import { AlternativeRFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import CustomButton from '../../../../../../components/base/Button';
+import {
+  AlternativeRFQPart,
+  RFQPart
+} from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import {
+  getAllCurrenciesFromDB,
+  getAllSuppliersFromDB
+} from 'smt-v1-app/services/RFQService';
+import {
+  convertDateFormat,
+  Currency,
+  formatDate,
+  Supplier
+} from '../PartList/PartListHelper';
+import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
+import AlternativePartTableRow from '../AlternativePartTableRow/AlternativePartTableRow';
 
-const AlternativePartList = ({}) => {
+const AlternativePartList = ({
+  alternativeParts,
+  handleDeleteAlternativePart,
+  handleAddAlternativePart,
+  parts
+}: {
+  alternativeParts: AlternativeRFQPart[];
+  handleDeleteAlternativePart: (alternPartNumber: string) => void;
+  handleAddAlternativePart: (alternativePart: AlternativeRFQPart) => void;
+  parts: RFQPart[];
+}) => {
   const [isPartNumberEmpty, setIsPartNumberEmpty] = useState(false);
   const [isPartNameEmpty, setIsPartNameEmpty] = useState(false);
-  const [isParentPartNumberEmpty, setIsParentPartNumberEmpty] =
-    useState<boolean>(false);
   const [isShowToast, setIsShowToast] = useState(false);
   const [toastMessageHeader, setToastMessageHeader] = useState('');
   const [toastMessageBody, setToastMessageBody] = useState('');
   const [toastVariant, setToastVariant] = useState('danger');
 
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [partIdCounter, setPartIdCounter] = useState(0);
+  const [desiredPartNumberToDelete, setDesiredPartNumberToDelete] =
+    useState('');
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [selected, setSelected] = useState<Option[]>([]);
-
+  // RFQPart Properties
   const [partName, setPartName] = useState<string>('');
   const [partNumber, setPartNumber] = useState<string>('');
-  const [parentPartNumber, setParentPartNumber] = useState<string>('');
   const [reqQTY, setReqQTY] = useState<number>(0);
   const [fndQTY, setFndQTY] = useState<number>(0);
-  const [reqCND, setReqCND] = useState<string>('NE');
-  const [fndCND, setFndCND] = useState<string>('NE');
+  const [reqCND, setReqCND] = useState<string>('');
+  const [fndCND, setFndCND] = useState<string>('');
   const [supplierLT, setSupplierLT] = useState<number>(0);
   const [clientLT, setClientLT] = useState<number>(0);
   const [unitPricevalueString, setUnitPricevalueString] =
     useState<string>('0.00');
   const [unitPricevalueNumber, setUnitPricevalueNumber] = useState<number>(0.0);
-  const [unitPriceCurrency, setUnitPriceCurrency] = useState<string>('USD');
-  const [currencySymbol, setCurrencySymbol] = useState<string>('$');
-  //const [supplier, setSupplier] = useState<Supplier[]>([]);
+  const [unitPriceCurrency, setUnitPriceCurrency] = useState<Currency>({
+    id: '',
+    currency: '',
+    currencySymbol: ''
+  });
+
+  const [supplier, setSupplier] = useState<Supplier[]>([]);
   const [comment, setComment] = useState<string>('');
-  const [dgPackagingCst, setDgPackagingCost] = useState('NO');
+  const [dgPackagingCst, setDgPackagingCost] = useState(false);
   const [tagDate, setTagDate] = useState('');
+  const handleDateChange = e => {
+    setTagDate(e.target.value); // Store the date in YYYY-MM-DD format
+  };
   const [lastUpdatedDate, setLastUpdatedDate] = useState<string>('23.12.2023');
-  const [certType, setCertType] = useState<string>('defCerf');
+  const [certType, setCertType] = useState<string>('');
   const [MSN, setMSN] = useState<string>('');
   const [warehouse, setWarehouse] = useState<string>('');
   const [stock, setStock] = useState<number>(0);
-  const [stockLocation, setStockLocatipon] = useState<string>('');
+  const [stockLocation, setStockLocation] = useState<string>('');
   const [airlineCompany, setAirlineCompany] = useState<string>('');
   const [MSDS, setMSDS] = useState<string>('');
+
+  // Parent RFQNumber
+  const [selectedParentRFQPart, setSelectedParentRFQPart] =
+    useState<RFQPart[]>();
+
+  const [isNewSupplierLoading, setIsNewSupplierLoading] = useState(false);
+
   const alternativePartNumberRef = useRef<HTMLInputElement>(null);
 
-  const [deletedId, setDeletedId] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleConfirmDelete = () => {
-    //handleDeleteAlternativePart(deletedId);
-    setShowDeleteModal(false);
-  };
+  //Edit states
+  const [isEditing, setIsEditing] = useState(false);
+  const [partId, setPartId] = useState<string | null>(null);
+  const [rfqPartId, setRfqPartId] = useState<string | null>(null);
 
-  const handleNewAlternativePartAddition = () => {
-    if (partNumber === '') {
-      setToastMessageHeader('Part Number');
-      setToastMessageBody('Please fill Part Number properly!');
-      setIsShowToast(true);
-      return;
-    }
-    if (partName === '') {
-      setToastMessageHeader('Part Name');
-      setToastMessageBody('Please fill Part Name properly!');
-      setIsShowToast(true);
-      return;
-    }
-    if (parentPartNumber === '') {
-      setToastMessageHeader('Parent Part Number');
-      setToastMessageBody('Please fill Parent Part Number properly!');
-      setIsShowToast(true);
-      return;
-    }
-    if (reqQTY === 0) {
-      setToastMessageHeader('Requested Quantity');
-      setToastMessageBody('Please fill Requested Quantity properly!');
-      setIsShowToast(true);
-      return;
-    }
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
-    const alternativePart = {
-      id: partIdCounter,
-      partNumber: partNumber,
-      partName: partName,
-      parentPartNumber: parentPartNumber,
-      reqQuantity: reqQTY,
-      fndQuantity: fndQTY,
-      reqCondition: reqCND,
-      fndCondition: fndCND,
-      supplierLt: supplierLT,
-      clientLt: clientLT,
-      unitPrice: unitPricevalueNumber,
-      unitPriceCurrency: {
-        currencyString: unitPriceCurrency,
-        currencySymbol: currencySymbol
-      },
-      //supplier: supplier[0] ? supplier[0].name : '',
-      total: unitPricevalueNumber * fndQTY,
-      comment: comment,
-      dgPackagingCst: dgPackagingCst,
-      tagDate: tagDate,
-      lastUpdatedDate: '23.12.2023',
-      certificateType: certType,
-      MSN: MSN,
-      warehouse: warehouse,
-      stock: stock,
-      stockLocation: stockLocation,
-      airlineCompany: airlineCompany,
-      MSDS: MSDS
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+
+  useEffect(() => {
+    // Get all suppliers
+    const getAllSupplierAndCurrencies = async () => {
+      setIsLoading(true);
+      const suppResp = await getAllSuppliersFromDB();
+      setSuppliers(suppResp.data);
+      const currencyResp = await getAllCurrenciesFromDB();
+      setCurrencies(currencyResp.data);
+      const firstCurrency = currencyResp.data[0];
+      setUnitPriceCurrency(firstCurrency);
+      setIsLoading(false);
     };
-    setPartIdCounter(partIdCounter + 1);
-    //handleAddAlternativePart(alternativePart);
-    resetAllValues();
-  };
+    getAllSupplierAndCurrencies();
+  }, []);
 
+  const handleAllSuppliersRefresh = async () => {
+    setIsNewSupplierLoading(true);
+    const resp = await getAllSuppliersFromDB();
+    setSuppliers(resp.data);
+    setIsNewSupplierLoading(false);
+  };
   const formatNumber = (n: string): string => {
     return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
@@ -144,16 +150,18 @@ const AlternativePartList = ({}) => {
 
       right_side = right_side.substring(0, 2);
 
-      input_val = `${currencySymbol}${left_side}.${right_side}`;
+      input_val = `${unitPriceCurrency.currencySymbol}${left_side}.${right_side}`;
     } else {
-      input_val = `${currencySymbol}${formatNumber(input_val)}`;
+      input_val = `${unitPriceCurrency.currencySymbol}${formatNumber(
+        input_val
+      )}`;
 
       if (blur === 'blur') {
         input_val += '.00';
       }
     }
 
-    const x = input_val.split(currencySymbol);
+    const x = input_val.split(unitPriceCurrency.currencySymbol);
     if (x.length > 1) {
       const inputValueArray = x[1].split(',');
       let totalinputValueString = '';
@@ -173,6 +181,12 @@ const AlternativePartList = ({}) => {
     return input_val;
   };
 
+  const handleConfirmDelete = () => {
+    handleDeleteAlternativePart(desiredPartNumberToDelete);
+    setShowDeleteModal(false);
+    setDesiredPartNumberToDelete('');
+  };
+
   const handleUnitPriceChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const formattedValue = formatCurrency(e.target.value);
     setUnitPricevalueString(formattedValue);
@@ -187,66 +201,201 @@ const AlternativePartList = ({}) => {
     setUnitPricevalueString(formattedValue);
   };
 
-  const resetAllValues = () => {
+  function toastError(messageHeader: string, message: string) {
+    setToastVariant('danger');
+    setToastMessageHeader(messageHeader);
+    setToastMessageBody(message);
+    setIsShowToast(true);
+  }
+  function toastInfo(messageHeader: string, message: string) {
+    setToastVariant('info');
+    setToastMessageHeader(messageHeader);
+    setToastMessageBody(message);
+    setIsShowToast(true);
+  }
+  const handleEditAlternativeRFQPart = (partNumber: string) => {
+    const foundRFQ: AlternativeRFQPart | null = alternativeParts.filter(
+      part => part.partNumber === partNumber
+    )[0];
+    if (!foundRFQ) {
+      console.log('Found RFQ is not valid');
+    } else {
+      setIsEditing(true);
+      setPartName(foundRFQ.partName);
+      setPartNumber(foundRFQ.partNumber);
+      setPartId(foundRFQ.partId);
+      setSelectedParentRFQPart([]);
+      setRfqPartId(foundRFQ.rfqPartId);
+      setReqQTY(foundRFQ.reqQTY);
+      setFndQTY(foundRFQ.fndQTY);
+      setReqCND(foundRFQ.reqCND);
+      setFndCND(foundRFQ.fndCND);
+      setSupplierLT(foundRFQ.supplierLT);
+      setClientLT(foundRFQ.clientLT);
+      updateUnitPrice(foundRFQ);
+      setSupplier(foundRFQ.supplier ? [foundRFQ.supplier] : []);
+      setComment(foundRFQ.comment);
+      setDgPackagingCost(foundRFQ.dgPackagingCost);
+      setTagDate(convertDateFormat(foundRFQ.tagDate));
+      setCertType(foundRFQ.certificateType);
+      setMSN(foundRFQ.MSN);
+      setWarehouse(foundRFQ.wareHouse);
+      setStock(foundRFQ.stock);
+      setStockLocation(foundRFQ.stockLocation);
+      setAirlineCompany(foundRFQ.airlineCompany);
+      setMSDS(foundRFQ.MSDS);
+
+      if (alternativePartNumberRef.current) {
+        alternativePartNumberRef.current.focus();
+      }
+
+      handleDeleteAlternativePart(partNumber);
+    }
+  };
+  const handleAlternativeRFQPartDeletion = (partNumber: string) => {
+    setShowDeleteModal(true);
+    setDesiredPartNumberToDelete(partNumber);
+  };
+
+  const updateUnitPrice = (foundRFQ: RFQPart) => {
+    const unitPrice = foundRFQ.unitPriceResponse.unitPrice ?? 0.0;
+    const currency = foundRFQ.unitPriceResponse.currency;
+    const currencyId = foundRFQ.unitPriceResponse.currencyId;
+
+    setUnitPricevalueNumber(unitPrice);
+    setUnitPricevalueString(unitPrice.toFixed(2)); // Ensure string reflects the number
+
+    setUnitPriceCurrency({
+      id: currencyId,
+      currency: currency,
+      currencySymbol: getPriceCurrencySymbol(currency)
+    });
+  };
+
+  const handleNewAlternativePartAddition = () => {
+    // Zorunlu alanların kontrolü
+    if (
+      !partNumber ||
+      !partName ||
+      reqQTY === 0 ||
+      !reqCND ||
+      selectedParentRFQPart.length < 0
+    ) {
+      toastError(
+        'Alternative RFQPart Required Field',
+        'Please fill all the required Alternative RFQPart fields.'
+      );
+      return;
+    }
+
+    // Koşullu alanların kontrolü
+    const additionalFieldsProvided =
+      fndQTY !== 0 ||
+      fndCND ||
+      supplierLT !== 0 ||
+      clientLT !== 0 ||
+      unitPricevalueNumber !== 0.0 ||
+      (supplier && supplier.length > 0);
+
+    if (additionalFieldsProvided) {
+      const missingFields = [];
+      if (fndQTY === 0) missingFields.push('fndQTY');
+      if (!fndCND) missingFields.push('fndCND');
+      if (supplierLT === 0) missingFields.push('supplierLT');
+      if (clientLT === 0) missingFields.push('clientLT');
+      if (unitPricevalueNumber === 0.0)
+        missingFields.push('unitPricevalueNumber');
+      if (!supplier || supplier.length === 0) missingFields.push('supplier');
+
+      if (missingFields.length > 0) {
+        toastError(
+          'Incomplete Fields',
+          `The following fields must be filled: ${missingFields.join(', ')}`
+        );
+        return;
+      }
+    }
+
+    // `clientLT` ve `supplierLT` kontrolü
+    if (clientLT < supplierLT) {
+      toastError(
+        'Invalid LeadTime',
+        'Supplier LT cannot be greater than client LT'
+      );
+      return;
+    }
+
+    // Aynı `partNumber` kontrolü
+    if (alternativeParts.some(element => element.partNumber === partNumber)) {
+      toastError('Invalid Part Number', 'Part number is already added!');
+      return;
+    }
+
+    // Her şey doğruysa, yeni parça ekleme işlemi
+    const alternativeRfqPart: AlternativeRFQPart = {
+      parentRFQPart: selectedParentRFQPart[0],
+      partId: isEditing ? partId : null,
+      rfqPartId: isEditing ? rfqPartId : null,
+      partNumber: partNumber,
+      partName: partName,
+      reqQTY: reqQTY,
+      fndQTY: fndQTY,
+      reqCND: reqCND,
+      fndCND: fndCND,
+      supplierLT: supplierLT,
+      clientLT: clientLT,
+      unitPriceResponse: {
+        currencyId: unitPriceCurrency.id || null,
+        unitPrice: unitPricevalueNumber || null,
+        currency: unitPriceCurrency.currency || null
+      },
+      supplier:
+        supplier.length > 0
+          ? {
+              supplierId: supplier[0].supplierId,
+              supplierName: supplier[0].supplierName
+            }
+          : null,
+      comment: comment,
+      dgPackagingCost: dgPackagingCst,
+      tagDate: tagDate ? formatDate(tagDate) : null,
+      lastUpdatedDate: lastUpdatedDate,
+      certificateType: certType,
+      MSN: MSN,
+      wareHouse: warehouse,
+      stock: stock,
+      stockLocation: stockLocation,
+      airlineCompany: airlineCompany,
+      MSDS: MSDS
+    };
+    handleAddAlternativePart(alternativeRfqPart);
+
     setPartNumber('');
     setPartName('');
-    setParentPartNumber('');
     setReqQTY(0);
     setFndQTY(0);
-    setFndCND('NE');
-    setReqCND('NE');
+    setReqCND('');
+    setFndCND('');
     setSupplierLT(0);
     setClientLT(0);
+    setUnitPricevalueNumber(0.0);
     setUnitPricevalueString('0.00');
-    setUnitPricevalueNumber(0);
-    setUnitPriceCurrency('USD');
-    setCurrencySymbol('$');
-    //setSupplier([]);
+    setUnitPriceCurrency(currencies[0]);
+    setSupplier([]);
     setComment('');
-    setDgPackagingCost('NO');
+    setDgPackagingCost(false);
     setTagDate('');
     setLastUpdatedDate('');
-    setCertType('defCerf');
+    setCertType('');
     setMSN('');
     setWarehouse('');
     setStock(0);
-    setStockLocatipon('');
+    setStockLocation('');
     setAirlineCompany('');
     setMSDS('');
-  };
-
-  const handleEditPart = (alternativePart: AlternativeRFQPart) => {
-    /*
-    setPartNumber(alternativePart.partNumber);
-    setPartName(alternativePart.partName);
-    setParentPartNumber(alternativePart.parentPartNumber);
-    setReqQTY(alternativePart.reqQuantity);
-    setFndQTY(alternativePart.fndQuantity);
-    setFndCND(alternativePart.fndCondition);
-    setReqCND(alternativePart.reqCondition);
-    setSupplierLT(alternativePart.supplierLt);
-    setClientLT(alternativePart.clientLt);
-    setUnitPricevalueNumber(alternativePart.unitPrice);
-    setUnitPriceCurrency(alternativePart.unitPriceCurrency.currencyString);
-    setCurrencySymbol(alternativePart.unitPriceCurrency.currencySymbol);
-    handleUnitPriceChangeForEdit(alternativePart.unitPrice.toString());
-    setSupplier([{ name: alternativePart.supplier }]);
-    setComment(alternativePart.comment);
-    setDgPackagingCost(alternativePart.dgPackagingCst);
-    setTagDate(alternativePart.tagDate);
-    setLastUpdatedDate(alternativePart.lastUpdatedDate);
-    setCertType(alternativePart.certificateType);
-    setMSN(alternativePart.MSN);
-    setWarehouse(alternativePart.warehouse);
-    setStock(alternativePart.stock);
-    setStockLocatipon(alternativePart.stockLocation);
-    setAirlineCompany(alternativePart.airlineCompany);
-    setMSDS(alternativePart.MSDS);
-    handleDeleteAlternativePart(alternativePart.id);
-    if (alternativePartNumberRef.current) {
-      alternativePartNumberRef.current.focus();
-    }
-      */
+    setIsEditing(false);
+    setPartId(null);
+    setRfqPartId(null);
   };
 
   return (
@@ -259,11 +408,13 @@ const AlternativePartList = ({}) => {
           className="d-flex justify-content-end"
           style={{ padding: '10px', paddingRight: '0px' }}
         >
-          {/* <CustomButton
-            variant="primary"
-            startIcon={<FontAwesomeIcon icon={faPlus} className="ms-0" />}
-            onClick={handleNewAlternativePartAddition}
-          ></CustomButton> */}
+          {
+            <CustomButton
+              variant="primary"
+              startIcon={<FontAwesomeIcon icon={faPlus} className="ms-0" />}
+              onClick={handleNewAlternativePartAddition}
+            ></CustomButton>
+          }
         </div>
 
         <Table responsive style={{ overflow: 'visible' }}>
@@ -284,12 +435,15 @@ const AlternativePartList = ({}) => {
             </tr>
           </thead>
           <tbody>
-            {/*<AlternativePartTableRow
-              alternativeParts={alternativeParts}
-              setShowDeleteModal={setShowDeleteModal}
-              setDeletedId={setDeletedId}
-              handleEditPart={handleEditPart}
-            /> */}
+            {
+              <AlternativePartTableRow
+                alternativeRFQParts={alternativeParts}
+                handleEditAlternativeRFQPart={handleEditAlternativeRFQPart}
+                handleAlternativeRFQPartDeletion={
+                  handleAlternativeRFQPartDeletion
+                }
+              />
+            }
 
             <tr>
               <td style={{ padding: '10px' }}>
@@ -354,24 +508,26 @@ const AlternativePartList = ({}) => {
 
               {/* Parent Part Number START*/}
               <td>
-                <Form.Group>
-                  <Form.Control
-                    placeholder="Parent Part Number" // Parça Numarası
-                    value={parentPartNumber}
-                    onChange={e => {
-                      setParentPartNumber(e.target.value);
-                      setIsParentPartNumberEmpty(false); // Reset error when user types
-                    }}
-                    onBlur={e => {
-                      if (!e.target.value.trim()) {
-                        setIsParentPartNumberEmpty(true); // Set error if input is empty
+                <Form.Group style={{ width: '200px' }}>
+                  <Typeahead
+                    id="searchable-select"
+                    labelKey="partNumber"
+                    options={parts}
+                    placeholder="Select a Parent RFQPart"
+                    multiple={false}
+                    positionFixed
+                    style={{ zIndex: 10 }}
+                    //If it is empty then it returns [] otherwise It returns selected
+                    selected={selectedParentRFQPart}
+                    onChange={selected => {
+                      if (selected.length > 0) {
+                        setSelectedParentRFQPart(selected as RFQPart[]);
+                        console.log('Selected Supplier:', selected); // For debugging
+                      } else {
+                        setSelectedParentRFQPart([]);
+                        console.log('Supplier cleared.'); // For debugging
                       }
                     }}
-                    style={{
-                      width: '180px',
-                      borderColor: isParentPartNumberEmpty ? 'red' : '' // Apply red border if empty
-                    }}
-                    required
                   />
                 </Form.Group>
               </td>
@@ -421,13 +577,21 @@ const AlternativePartList = ({}) => {
                     setReqCND(e.target.value);
                   }}
                   style={{
-                    width: '85px',
+                    width: '95px',
                     paddingRight: '4px',
                     paddingLeft: '8px'
                   }}
                 >
+                  <option value="">Req CND</option>
                   <option value="NE">NE</option>
+                  <option value="FN">FN</option>
+                  <option value="NS">NS</option>
                   <option value="OH">OH</option>
+                  <option value="SV">SV</option>
+                  <option value="AR">AR</option>
+                  <option value="RP">RP</option>
+                  <option value="IN">IN</option>
+                  <option value="TST">TST</option>
                 </Form.Select>
               </td>
               {/* REQ CND END*/}
@@ -441,13 +605,21 @@ const AlternativePartList = ({}) => {
                   }}
                   required // Zorunlu alan
                   style={{
-                    width: '80px',
+                    width: '95px',
                     paddingRight: '4px',
                     paddingLeft: '8px'
                   }}
                 >
-                  <option value="New">NE</option>
-                  <option value="Used">OH</option>
+                  <option value="">Fnd CND</option>
+                  <option value="NE">NE</option>
+                  <option value="FN">FN</option>
+                  <option value="NS">NS</option>
+                  <option value="OH">OH</option>
+                  <option value="SV">SV</option>
+                  <option value="AR">AR</option>
+                  <option value="RP">RP</option>
+                  <option value="IN">IN</option>
+                  <option value="TST">TST</option>
                 </Form.Select>
               </td>
               {/* FND CND START*/}
@@ -486,32 +658,37 @@ const AlternativePartList = ({}) => {
               <td>
                 <div
                   className="d-flex justify-content-between"
-                  style={{ width: '200px' }}
+                  style={{ width: '230px' }}
                 >
                   <Form.Select
-                    value={unitPriceCurrency}
+                    value={unitPriceCurrency.id} // Make sure this matches the currency.id value
                     onChange={e => {
-                      setUnitPriceCurrency(e.target.value);
-                      setCurrencySymbol(getPriceCurrencySymbol(e.target.value));
+                      const selectedCurrencyId = e.target.value;
+                      const selectedCurrency = currencies.find(
+                        currency => currency.id === selectedCurrencyId
+                      );
+
+                      if (selectedCurrency) {
+                        setUnitPriceCurrency({
+                          id: selectedCurrency.id,
+                          currency: selectedCurrency.currency,
+                          currencySymbol:
+                            selectedCurrency.currencySymbol ||
+                            getPriceCurrencySymbol(selectedCurrency.currency)
+                        });
+                      }
                     }}
                     style={{
-                      width: '80px',
+                      width: '110px',
                       paddingRight: '4px',
                       paddingLeft: '8px'
                     }}
                   >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="RUB">RUB</option>
-                    <option value="TRY">TRY</option>
-                    <option value="GBP">GBP</option>
-                    <option value="CNY">CNY</option>
-                    <option value="JPY">JPY</option>
-                    <option value="CAD">CAD</option>
-                    <option value="AUD">AUD</option>
-                    <option value="CHF">CHF</option>
-                    <option value="SGD">SGD</option>
-                    <option value="HKD">HKD</option>
+                    {currencies.map(currency => (
+                      <option key={currency.id} value={currency.id}>
+                        {currency.currency} ({currency.currencySymbol})
+                      </option>
+                    ))}
                   </Form.Select>
 
                   <Form.Control
@@ -522,7 +699,7 @@ const AlternativePartList = ({}) => {
                     onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
                       e.currentTarget.blur()
                     }
-                    placeholder={currencySymbol + '1,000,000.00'}
+                    placeholder={unitPriceCurrency.currency + '1,000,000.00'}
                     style={{
                       width: '110px',
                       paddingRight: '4px',
@@ -539,25 +716,40 @@ const AlternativePartList = ({}) => {
                   <Button variant="primary" className="px-3 py-1 me-3">
                     <span style={{ fontSize: '16px' }}>+</span>
                   </Button>
-                  <Form.Group>
-                    <Typeahead // Explicitly set the type parameter to Supplier
-                      id="searchable-select"
-                      labelKey="name"
-                      //onChange={selected => setSupplier(selected as Supplier[])} // Cast selected to Supplier[]
-                      options={[
-                        { name: 'USA Supplier' },
-                        { name: 'EURO Supplier' },
-                        { name: 'China Supplier' },
-                        { name: 'Turkey 1 Supplier' },
-                        { name: 'Grand China Supplier' }
-                      ]}
-                      placeholder="Select a supplier"
-                      //selected={supplier}
-                      multiple={false}
-                      style={{ zIndex: 1050, width: '170px' }}
-                      positionFixed
+                  <div className="d-flex justify-content-center align-items-center">
+                    <FontAwesomeIcon
+                      icon={faArrowRotateRight}
+                      className="me-3"
+                      size="lg"
+                      spin={isNewSupplierLoading}
+                      onClick={handleAllSuppliersRefresh}
                     />
-                  </Form.Group>
+                  </div>
+
+                  {
+                    <Form.Group style={{ width: '200px' }}>
+                      <Typeahead
+                        id="searchable-select"
+                        labelKey="supplierName"
+                        options={suppliers}
+                        placeholder="Select a supplier"
+                        multiple={false}
+                        positionFixed
+                        style={{ zIndex: 100 }}
+                        //If it is empty then it returns [] otherwise It returns selected
+                        selected={supplier}
+                        onChange={selected => {
+                          if (selected.length > 0) {
+                            setSupplier(selected as Supplier[]);
+                            console.log('Selected Supplier:', selected); // For debugging
+                          } else {
+                            setSupplier([]);
+                            console.log('Supplier cleared.'); // For debugging
+                          }
+                        }}
+                      />
+                    </Form.Group>
+                  }
                 </div>
               </td>
               {/* SUPPLIER END */}
@@ -565,7 +757,7 @@ const AlternativePartList = ({}) => {
               {/* TOTAL START */}
               <td>
                 <div className="d-flex align-items-center mt-2">
-                  <span className="fw-bold">{unitPriceCurrency}</span>
+                  <span className="fw-bold">{unitPriceCurrency.currency}</span>
                   <span className="ms-2">
                     {(unitPricevalueNumber
                       ? Math.round(unitPricevalueNumber * 100) / 100
@@ -592,9 +784,9 @@ const AlternativePartList = ({}) => {
               {/* DGPACKAGIN COST START */}
               <td>
                 <Form.Select
-                  value={dgPackagingCst}
+                  value={dgPackagingCst === false ? 'NO' : 'YES'}
                   onChange={e => {
-                    setDgPackagingCost(e.target.value);
+                    setDgPackagingCost(e.target.value === 'NO' ? false : true);
                   }}
                   defaultValue={'NO'}
                   required // Zorunlu alan
@@ -646,7 +838,7 @@ const AlternativePartList = ({}) => {
                     paddingLeft: '8px'
                   }}
                 >
-                  <option value="defCerf">Select Cerf.</option>
+                  <option value="">Select Cerf.</option>
                   <option value="FAA81303">FAA 8130-3</option>
                   <option value="EASEF1">EASSA Form 1</option>
                   <option value="COFC">CofC</option>
@@ -715,7 +907,7 @@ const AlternativePartList = ({}) => {
                     placeholder="Stock Location"
                     value={stockLocation}
                     onChange={e => {
-                      setStockLocatipon(e.target.value);
+                      setStockLocation(e.target.value);
                     }}
                     style={{
                       width: '180px'
@@ -765,18 +957,21 @@ const AlternativePartList = ({}) => {
           </tbody>
         </Table>
 
-        {/*<DeleteConfirmationModal
+        {
+          /*<DeleteConfirmationModal
           showDeleteModal={showDeleteModal}
           setShowDeleteModal={setShowDeleteModal}
           handleConfirmDelete={handleConfirmDelete}
-        />
-        <ToastNotification
-          isShow={isShowToast}
-          setIsShow={setIsShowToast}
-          variant={toastVariant}
-          messageHeader={toastMessageHeader}
-          messageBodyText={toastMessageBody}
-        /> */}
+        />*/
+          <ToastNotification
+            isShow={isShowToast}
+            setIsShow={setIsShowToast}
+            variant={toastVariant}
+            messageHeader={toastMessageHeader}
+            messageBodyText={toastMessageBody}
+            position="bottom-end"
+          />
+        }
       </div>
     </>
   );
