@@ -48,19 +48,19 @@ const RFQPartTableRow = ({
             <td className="text-center">{rfqPart.clientLT}</td>
             <td className="text-center">
               <span className="fw-bold">
-                {rfqPart.unitPriceResponse.currency &&
+                {rfqPart.unitPriceResponse &&
                   getPriceCurrencySymbol(rfqPart.unitPriceResponse.currency)}
               </span>{' '}
-              {rfqPart.unitPriceResponse.unitPrice &&
+              {rfqPart.unitPriceResponse &&
                 formatNumber(rfqPart.unitPriceResponse.unitPrice)}
             </td>
             <td>{rfqPart.supplier && rfqPart.supplier.supplierName}</td>
             <td className="text-center">
               <span className="fw-bold">
-                {rfqPart.unitPriceResponse.currency &&
+                {rfqPart.unitPriceResponse &&
                   getPriceCurrencySymbol(rfqPart.unitPriceResponse.currency)}
               </span>{' '}
-              {rfqPart.unitPriceResponse.unitPrice &&
+              {rfqPart.unitPriceResponse &&
                 formatNumber(
                   rfqPart.unitPriceResponse.unitPrice * rfqPart.fndQTY
                 )}

@@ -179,8 +179,9 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
       };
 
       //console.log(savedRFQ);
-      const resp = saveRFQToDB(savedRFQ);
-      console.log(resp);
+      const resp = await saveRFQToDB(savedRFQ);
+      if (resp.statusCode === 200) {
+      }
     }
   };
 

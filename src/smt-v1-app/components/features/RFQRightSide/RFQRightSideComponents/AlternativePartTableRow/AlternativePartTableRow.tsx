@@ -54,12 +54,12 @@ const AlternativePartTableRow = ({
             <td className="text-center">{alternativeRFQPart.clientLT}</td>
             <td className="text-center">
               <span className="fw-bold">
-                {alternativeRFQPart.unitPriceResponse.currency &&
+                {alternativeRFQPart.unitPriceResponse &&
                   getPriceCurrencySymbol(
                     alternativeRFQPart.unitPriceResponse.currency
                   )}
               </span>{' '}
-              {alternativeRFQPart.unitPriceResponse.unitPrice &&
+              {alternativeRFQPart.unitPriceResponse &&
                 formatNumber(alternativeRFQPart.unitPriceResponse.unitPrice)}
             </td>
             <td>
@@ -68,12 +68,12 @@ const AlternativePartTableRow = ({
             </td>
             <td className="text-center">
               <span className="fw-bold">
-                {alternativeRFQPart.unitPriceResponse.currency &&
+                {alternativeRFQPart.unitPriceResponse &&
                   getPriceCurrencySymbol(
                     alternativeRFQPart.unitPriceResponse.currency
                   )}
               </span>{' '}
-              {alternativeRFQPart.unitPriceResponse.unitPrice &&
+              {alternativeRFQPart.unitPriceResponse &&
                 formatNumber(
                   alternativeRFQPart.unitPriceResponse.unitPrice *
                     alternativeRFQPart.fndQTY
