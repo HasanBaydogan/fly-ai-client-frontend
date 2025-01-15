@@ -19,6 +19,12 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     rfq.alternativeRFQPartResponses
   );
 
+  const [foundClient, setFoundClient] = useState<Client | null>(
+    rfq.clientResponse
+  );
+  const [rfqDeadline, setRFQDeadline] = useState(rfq.rfqDeadline);
+  const [clientRFQId, setClientRFQId] = useState(rfq.clientRFQNumberId);
+
   useEffect(() => {
     const returnColors = getColorStyles(rfq.rfqMailStatus);
     setBgColor(returnColors.bgColor);
@@ -63,9 +69,15 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
           textColor={textColor}
           status={rfq.rfqMailStatus}
         />
-
-        <Client client={rfq.clientResponse} rfqDeadline={rfq.rfqDeadline} />
-
+        foundClient
+        <Client
+          foundClient={foundClient}
+          setFoundClient={setFoundClient}
+          rfqDeadline={rfqDeadline}
+          setRFQDeadline={setRFQDeadline}
+          clientRFQId={clientRFQId}
+          setClientRFQId={setClientRFQId}
+        />
         {
           <PartList
             parts={parts}
@@ -77,14 +89,12 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
             }
           />
         }
-
         <AlternativePartList
           alternativeParts={alternativeParts}
           parts={parts}
           handleDeleteAlternativePart={handleDeleteAlternativePart}
           handleAddAlternativePart={handleAddAlternativePart}
         />
-
         <RFQRightSideFooter />
       </div>
     </>

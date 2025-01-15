@@ -13,15 +13,23 @@ type Client = {
 };
 
 const Client = ({
-  client,
-  rfqDeadline
+  foundClient,
+  rfqDeadline,
+  setFoundClient,
+  setRFQDeadline,
+  clientRFQId,
+  setClientRFQId
 }: {
-  client: Client;
+  foundClient: Client;
   rfqDeadline: string;
+  setFoundClient: React.Dispatch<React.SetStateAction<Client>>;
+  setRFQDeadline: React.Dispatch<React.SetStateAction<string>>;
+  clientRFQId: string;
+  setClientRFQId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredCompanies, setFilteredCompanies] = useState<Client[]>([]);
-  const [foundClient, setFoundClient] = useState<Client | null>(client);
+
   const [clientList, setClientList] = useState<Client[]>();
 
   const parseDeadline = (deadlineString: string): Date => {
@@ -108,13 +116,25 @@ const Client = ({
         />
       </div>
 
-      <div className="d-flex align-items-center mt-3">
-        <h4 className="me-2">RFQ Deadline:</h4>
-        <DatePicker
-          placeholder="Select Date"
-          value={selectedDate}
-          onChange={date => setSelectedDate(date[0])} // Flatpickr returns an array of dates.
-        />
+      <div className="d-flex align-items-center justify-content-between mt-3">
+        <div className="d-flex align-items-center">
+          <h4 className="me-2">RFQ Deadline:</h4>
+          <DatePicker
+            placeholder="Select Date"
+            value={selectedDate}
+            onChange={date => setSelectedDate(date[0])} // Flatpickr returns an array of dates.
+          />
+        </div>
+        <div className="d-flex align-items-center">
+          <h4 className="me-2">{'Client RFQ Id : '}</h4>
+          <Form.Group>
+            <Form.Control
+              placeholder="ClientRFQ Id"
+              //value={partName}
+              onChange={e => {}}
+            />
+          </Form.Group>
+        </div>
       </div>
     </div>
   );
