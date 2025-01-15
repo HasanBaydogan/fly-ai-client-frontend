@@ -30,6 +30,7 @@ import {
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import AlternativePartTableRow from '../AlternativePartTableRow/AlternativePartTableRow';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const AlternativePartList = ({
   alternativeParts,
@@ -215,36 +216,45 @@ const AlternativePartList = ({
     setIsShowToast(true);
   }
   const handleEditAlternativeRFQPart = (partNumber: string) => {
-    const foundRFQ: AlternativeRFQPart | null = alternativeParts.filter(
-      part => part.partNumber === partNumber
-    )[0];
-    if (!foundRFQ) {
-      console.log('Found RFQ is not valid');
+    const foundAlternativeRFQParts: AlternativeRFQPart[] | null =
+      alternativeParts.filter(part => part.partNumber === partNumber);
+
+    if (foundAlternativeRFQParts.length === 0) {
+      toastError(
+        'Alternative RFQ Part Error',
+        'There is no such a alternative part'
+      );
     } else {
+      const foundAlternativeRFQPart = foundAlternativeRFQParts[0];
+
       setIsEditing(true);
-      setPartName(foundRFQ.partName);
-      setPartNumber(foundRFQ.partNumber);
-      setPartId(foundRFQ.partId);
-      setSelectedParentRFQPart([]);
-      setRfqPartId(foundRFQ.rfqPartId);
-      setReqQTY(foundRFQ.reqQTY);
-      setFndQTY(foundRFQ.fndQTY);
-      setReqCND(foundRFQ.reqCND);
-      setFndCND(foundRFQ.fndCND);
-      setSupplierLT(foundRFQ.supplierLT);
-      setClientLT(foundRFQ.clientLT);
-      updateUnitPrice(foundRFQ);
-      setSupplier(foundRFQ.supplier ? [foundRFQ.supplier] : []);
-      setComment(foundRFQ.comment);
-      setDgPackagingCost(foundRFQ.dgPackagingCost);
-      setTagDate(convertDateFormat(foundRFQ.tagDate));
-      setCertType(foundRFQ.certificateType);
-      setMSN(foundRFQ.MSN);
-      setWarehouse(foundRFQ.wareHouse);
-      setStock(foundRFQ.stock);
-      setStockLocation(foundRFQ.stockLocation);
-      setAirlineCompany(foundRFQ.airlineCompany);
-      setMSDS(foundRFQ.MSDS);
+      setPartName(foundAlternativeRFQPart.partName);
+      setPartNumber(foundAlternativeRFQPart.partNumber);
+      setPartId(foundAlternativeRFQPart.partId);
+      setSelectedParentRFQPart([foundAlternativeRFQPart.parentRFQPart]);
+      setRfqPartId(foundAlternativeRFQPart.rfqPartId);
+      setReqQTY(foundAlternativeRFQPart.reqQTY);
+      setFndQTY(foundAlternativeRFQPart.fndQTY);
+      setReqCND(foundAlternativeRFQPart.reqCND);
+      setFndCND(foundAlternativeRFQPart.fndCND);
+      setSupplierLT(foundAlternativeRFQPart.supplierLT);
+      setClientLT(foundAlternativeRFQPart.clientLT);
+      updateUnitPrice(foundAlternativeRFQPart);
+      setSupplier(
+        foundAlternativeRFQPart.supplier
+          ? [foundAlternativeRFQPart.supplier]
+          : []
+      );
+      setComment(foundAlternativeRFQPart.comment);
+      setDgPackagingCost(foundAlternativeRFQPart.dgPackagingCost);
+      setTagDate(convertDateFormat(foundAlternativeRFQPart.tagDate));
+      setCertType(foundAlternativeRFQPart.certificateType);
+      setMSN(foundAlternativeRFQPart.MSN);
+      setWarehouse(foundAlternativeRFQPart.wareHouse);
+      setStock(foundAlternativeRFQPart.stock);
+      setStockLocation(foundAlternativeRFQPart.stockLocation);
+      setAirlineCompany(foundAlternativeRFQPart.airlineCompany);
+      setMSDS(foundAlternativeRFQPart.MSDS);
 
       if (alternativePartNumberRef.current) {
         alternativePartNumberRef.current.focus();
@@ -333,6 +343,21 @@ const AlternativePartList = ({
       toastError('Invalid Part Number', 'Part number is already added!');
       return;
     }
+    // If a User edits an already added alternative RFQPart then parent RFQPart should be checked whether it is there or not .
+    if (isEditing) {
+      if (selectedParentRFQPart.length > 0) {
+        const foundRFQPart = parts.filter(
+          part => part.partNumber === selectedParentRFQPart[0].partNumber
+        );
+        if (foundRFQPart.length === 0) {
+          toastError('RFQ Part Error', 'There is no such a parent rfq part');
+          return;
+        }
+      } else {
+        toastError('RFQ Part Error', 'There is no such a parent rfq part');
+        return;
+      }
+    }
 
     // Her şey doğruysa, yeni parça ekleme işlemi
     const alternativeRfqPart: AlternativeRFQPart = {
@@ -420,544 +445,552 @@ const AlternativePartList = ({
             ></CustomButton>
           }
         </div>
-
-        <Table responsive style={{ overflow: 'visible' }}>
-          <thead>
-            <tr>
-              {/* For adding and substracting button */}
-              <th></th>
-              {tableHeaders.map((header, key) => {
-                if (header === 'Unit Price') {
-                  return (
-                    <th key={key} className="text-center">
-                      {header}
-                    </th>
-                  );
-                }
-                return <th key={key}>{header}</th>;
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {
-              <AlternativePartTableRow
-                alternativeRFQParts={alternativeParts}
-                handleEditAlternativeRFQPart={handleEditAlternativeRFQPart}
-                handleAlternativeRFQPartDeletion={
-                  handleAlternativeRFQPartDeletion
-                }
-              />
-            }
-
-            <tr>
-              <td style={{ padding: '10px' }}>
-                <span
-                  onClick={handleNewAlternativePartAddition}
-                  className="action-icon mt-2"
-                >
-                  <FontAwesomeIcon icon={faPlus} />
-                </span>
-              </td>
-              {/* Part Number START*/}
-              <td>
-                <Form.Group>
-                  <Form.Control
-                    placeholder="Part Number" // Parça Numarası
-                    value={partNumber}
-                    ref={alternativePartNumberRef}
-                    onChange={e => {
-                      setPartNumber(e.target.value);
-                      setIsPartNumberEmpty(false); // Reset error when user types
-                    }}
-                    onBlur={e => {
-                      if (!e.target.value.trim()) {
-                        setIsPartNumberEmpty(true); // Set error if input is empty
-                      }
-                    }}
-                    style={{
-                      width: '180px',
-                      borderColor: isPartNumberEmpty ? 'red' : '' // Apply red border if empty
-                    }}
-                    required
-                  />
-                </Form.Group>
-              </td>
-              {/* Part Number END */}
-
-              {/* Part Name START*/}
-              <td>
-                <Form.Group>
-                  <Form.Control
-                    placeholder="Part Name"
-                    value={partName}
-                    onChange={e => {
-                      setPartName(e.target.value);
-                      setIsPartNameEmpty(false);
-                    }}
-                    onBlur={e => {
-                      if (!e.target.value.trim()) {
-                        setIsPartNameEmpty(true); // Set error if input is empty
-                      }
-                    }}
-                    style={{
-                      width: '180px',
-                      borderColor: isPartNameEmpty ? 'red' : '' // Apply red border if empty
-                    }}
-                    required
-                  />
-                </Form.Group>
-              </td>
-
-              {/* Part Name END*/}
-
-              {/* Parent Part Number START*/}
-              <td>
-                <Form.Group style={{ width: '200px' }}>
-                  <Typeahead
-                    id="searchable-selec02"
-                    labelKey="partNumber"
-                    options={parts}
-                    placeholder="Select a Parent RFQPart"
-                    multiple={false}
-                    positionFixed
-                    style={{ zIndex: 10 }}
-                    //If it is empty then it returns [] otherwise It returns selected
-                    selected={selectedParentRFQPart}
-                    onChange={selected => {
-                      if (selected.length > 0) {
-                        setSelectedParentRFQPart(selected as RFQPart[]);
-                      } else {
-                        setSelectedParentRFQPart([]);
-                      }
-                    }}
-                  />
-                </Form.Group>
-              </td>
-              {/* Parent Part Number END */}
-
-              {/* Req QTY START*/}
-              <td>
-                <Form.Group>
-                  <Form.Control
-                    value={reqQTY}
-                    onWheel={e => (e.target as HTMLInputElement).blur()}
-                    type="number"
-                    onChange={e => {
-                      setReqQTY(parseInt(e.target.value, 10));
-                    }}
-                    required
-                    style={{ width: '80px', paddingRight: '8px' }}
-                    min={0}
-                  />
-                </Form.Group>
-              </td>
-              {/* Req QTY END*/}
-
-              {/* FND QTY START*/}
-              <td>
-                <Form.Group>
-                  <Form.Control
-                    value={fndQTY}
-                    type="number"
-                    onWheel={e => (e.target as HTMLInputElement).blur()}
-                    onChange={e => {
-                      setFndQTY(parseInt(e.target.value, 10));
-                    }}
-                    required
-                    style={{ width: '80px', paddingRight: '8px' }}
-                    min={0}
-                  />
-                </Form.Group>
-              </td>
-              {/* FND QTY END*/}
-
-              {/* REQ CND START*/}
-              <td>
-                <Form.Select
-                  value={reqCND}
-                  onChange={e => {
-                    setReqCND(e.target.value);
-                  }}
-                  style={{
-                    width: '95px',
-                    paddingRight: '4px',
-                    paddingLeft: '8px'
-                  }}
-                >
-                  <option value="">Req CND</option>
-                  <option value="NE">NE</option>
-                  <option value="FN">FN</option>
-                  <option value="NS">NS</option>
-                  <option value="OH">OH</option>
-                  <option value="SV">SV</option>
-                  <option value="AR">AR</option>
-                  <option value="RP">RP</option>
-                  <option value="IN">IN</option>
-                  <option value="TST">TST</option>
-                </Form.Select>
-              </td>
-              {/* REQ CND END*/}
-
-              {/* FND CND START*/}
-              <td>
-                <Form.Select
-                  value={fndCND}
-                  onChange={e => {
-                    setFndCND(e.target.value);
-                  }}
-                  required // Zorunlu alan
-                  style={{
-                    width: '95px',
-                    paddingRight: '4px',
-                    paddingLeft: '8px'
-                  }}
-                >
-                  <option value="">Fnd CND</option>
-                  <option value="NE">NE</option>
-                  <option value="FN">FN</option>
-                  <option value="NS">NS</option>
-                  <option value="OH">OH</option>
-                  <option value="SV">SV</option>
-                  <option value="AR">AR</option>
-                  <option value="RP">RP</option>
-                  <option value="IN">IN</option>
-                  <option value="TST">TST</option>
-                </Form.Select>
-              </td>
-              {/* FND CND START*/}
-
-              {/* SUPPLIER LT START*/}
-              <td>
-                <Form.Control
-                  value={supplierLT}
-                  type="number"
-                  onWheel={e => (e.target as HTMLInputElement).blur()}
-                  style={{ width: '80px', paddingRight: '8px' }}
-                  onChange={e => {
-                    setSupplierLT(parseInt(e.target.value));
-                  }}
-                  min={0}
+        {isLoading ? (
+          <LoadingAnimation />
+        ) : (
+          <Table responsive style={{ overflow: 'visible' }}>
+            <thead>
+              <tr>
+                {/* For adding and substracting button */}
+                <th></th>
+                {tableHeaders.map((header, key) => {
+                  if (header === 'Unit Price') {
+                    return (
+                      <th key={key} className="text-center">
+                        {header}
+                      </th>
+                    );
+                  }
+                  return <th key={key}>{header}</th>;
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {
+                <AlternativePartTableRow
+                  alternativeRFQParts={alternativeParts}
+                  handleEditAlternativeRFQPart={handleEditAlternativeRFQPart}
+                  handleAlternativeRFQPartDeletion={
+                    handleAlternativeRFQPartDeletion
+                  }
                 />
-              </td>
-              {/* SUPPLIER LT END */}
+              }
 
-              {/* CLIENT LT START*/}
-              <td>
-                <Form.Control
-                  value={clientLT}
-                  type="number"
-                  onWheel={e => (e.target as HTMLInputElement).blur()}
-                  style={{ width: '80px', paddingRight: '8px' }}
-                  onChange={e => {
-                    setClientLT(parseInt(e.target.value));
-                  }}
-                  min={0}
-                />
-              </td>
-              {/* CLIENT LT END */}
+              <tr>
+                <td style={{ padding: '10px' }}>
+                  <span
+                    onClick={handleNewAlternativePartAddition}
+                    className="action-icon mt-2"
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                  </span>
+                </td>
+                {/* Part Number START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      placeholder="Part Number" // Parça Numarası
+                      value={partNumber}
+                      ref={alternativePartNumberRef}
+                      onChange={e => {
+                        setPartNumber(e.target.value);
+                        setIsPartNumberEmpty(false); // Reset error when user types
+                      }}
+                      onBlur={e => {
+                        if (!e.target.value.trim()) {
+                          setIsPartNumberEmpty(true); // Set error if input is empty
+                        }
+                      }}
+                      style={{
+                        width: '180px',
+                        borderColor: isPartNumberEmpty ? 'red' : '' // Apply red border if empty
+                      }}
+                      required
+                    />
+                  </Form.Group>
+                </td>
+                {/* Part Number END */}
 
-              {/* UNIT PRICE START */}
-              <td>
-                <div
-                  className="d-flex justify-content-between"
-                  style={{ width: '230px' }}
-                >
+                {/* Part Name START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      placeholder="Part Name"
+                      value={partName}
+                      onChange={e => {
+                        setPartName(e.target.value);
+                        setIsPartNameEmpty(false);
+                      }}
+                      onBlur={e => {
+                        if (!e.target.value.trim()) {
+                          setIsPartNameEmpty(true); // Set error if input is empty
+                        }
+                      }}
+                      style={{
+                        width: '180px',
+                        borderColor: isPartNameEmpty ? 'red' : '' // Apply red border if empty
+                      }}
+                      required
+                    />
+                  </Form.Group>
+                </td>
+
+                {/* Part Name END*/}
+
+                {/* Parent Part Number START*/}
+                <td>
+                  <Form.Group style={{ width: '200px' }}>
+                    <Typeahead
+                      id="searchable-selec02"
+                      labelKey="partNumber"
+                      options={parts}
+                      placeholder="Select a Parent RFQPart"
+                      multiple={false}
+                      positionFixed
+                      style={{ zIndex: 10 }}
+                      //If it is empty then it returns [] otherwise It returns selected
+                      selected={selectedParentRFQPart}
+                      onChange={selected => {
+                        if (selected.length > 0) {
+                          setSelectedParentRFQPart(selected as RFQPart[]);
+                        } else {
+                          setSelectedParentRFQPart([]);
+                        }
+                      }}
+                    />
+                  </Form.Group>
+                </td>
+                {/* Parent Part Number END */}
+
+                {/* Req QTY START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      value={reqQTY}
+                      onWheel={e => (e.target as HTMLInputElement).blur()}
+                      type="number"
+                      onChange={e => {
+                        setReqQTY(parseInt(e.target.value, 10));
+                      }}
+                      required
+                      style={{ width: '80px', paddingRight: '8px' }}
+                      min={0}
+                    />
+                  </Form.Group>
+                </td>
+                {/* Req QTY END*/}
+
+                {/* FND QTY START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      value={fndQTY}
+                      type="number"
+                      onWheel={e => (e.target as HTMLInputElement).blur()}
+                      onChange={e => {
+                        setFndQTY(parseInt(e.target.value, 10));
+                      }}
+                      required
+                      style={{ width: '80px', paddingRight: '8px' }}
+                      min={0}
+                    />
+                  </Form.Group>
+                </td>
+                {/* FND QTY END*/}
+
+                {/* REQ CND START*/}
+                <td>
                   <Form.Select
-                    value={unitPriceCurrency.id} // Make sure this matches the currency.id value
+                    value={reqCND}
                     onChange={e => {
-                      const selectedCurrencyId = e.target.value;
-                      const selectedCurrency = currencies.find(
-                        currency => currency.id === selectedCurrencyId
-                      );
-
-                      if (selectedCurrency) {
-                        setUnitPriceCurrency({
-                          id: selectedCurrency.id,
-                          currency: selectedCurrency.currency,
-                          currencySymbol:
-                            selectedCurrency.currencySymbol ||
-                            getPriceCurrencySymbol(selectedCurrency.currency)
-                        });
-                      }
+                      setReqCND(e.target.value);
                     }}
                     style={{
-                      width: '110px',
+                      width: '95px',
                       paddingRight: '4px',
                       paddingLeft: '8px'
                     }}
                   >
-                    {currencies.map(currency => (
-                      <option key={currency.id} value={currency.id}>
-                        {currency.currency} ({currency.currencySymbol})
-                      </option>
-                    ))}
+                    <option value="">Req CND</option>
+                    <option value="NE">NE</option>
+                    <option value="FN">FN</option>
+                    <option value="NS">NS</option>
+                    <option value="OH">OH</option>
+                    <option value="SV">SV</option>
+                    <option value="AR">AR</option>
+                    <option value="RP">RP</option>
+                    <option value="IN">IN</option>
+                    <option value="TST">TST</option>
                   </Form.Select>
+                </td>
+                {/* REQ CND END*/}
 
-                  <Form.Control
-                    type="text"
-                    value={unitPricevalueString}
-                    onChange={handleUnitPriceChange}
-                    onBlur={handleBlur}
-                    onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
-                      e.currentTarget.blur()
-                    }
-                    placeholder={unitPriceCurrency.currency + '1,000,000.00'}
+                {/* FND CND START*/}
+                <td>
+                  <Form.Select
+                    value={fndCND}
+                    onChange={e => {
+                      setFndCND(e.target.value);
+                    }}
+                    required // Zorunlu alan
                     style={{
-                      width: '110px',
+                      width: '95px',
                       paddingRight: '4px',
                       paddingLeft: '8px'
                     }}
-                  />
-                </div>
-              </td>
-              {/* UNIT PRICE END */}
+                  >
+                    <option value="">Fnd CND</option>
+                    <option value="NE">NE</option>
+                    <option value="FN">FN</option>
+                    <option value="NS">NS</option>
+                    <option value="OH">OH</option>
+                    <option value="SV">SV</option>
+                    <option value="AR">AR</option>
+                    <option value="RP">RP</option>
+                    <option value="IN">IN</option>
+                    <option value="TST">TST</option>
+                  </Form.Select>
+                </td>
+                {/* FND CND START*/}
 
-              {/* SUPPLIER START */}
-              <td style={{ overflow: 'visible' }}>
-                <div className="d-flex">
-                  <Button variant="primary" className="px-3 py-1 me-3">
-                    <span style={{ fontSize: '16px' }}>+</span>
-                  </Button>
-                  <div className="d-flex justify-content-center align-items-center">
-                    <FontAwesomeIcon
-                      icon={faArrowRotateRight}
-                      className="me-3"
-                      size="lg"
-                      spin={isNewSupplierLoading}
-                      onClick={handleAllSuppliersRefresh}
-                    />
-                  </div>
-
-                  {
-                    <Form.Group style={{ width: '200px' }}>
-                      <Typeahead
-                        id="searchable-select"
-                        labelKey="supplierName"
-                        options={suppliers}
-                        placeholder="Select a supplier"
-                        multiple={false}
-                        positionFixed
-                        style={{ zIndex: 100 }}
-                        //If it is empty then it returns [] otherwise It returns selected
-                        selected={supplier}
-                        onChange={selected => {
-                          if (selected.length > 0) {
-                            setSupplier(selected as Supplier[]);
-                            console.log('Selected Supplier:', selected); // For debugging
-                          } else {
-                            setSupplier([]);
-                            console.log('Supplier cleared.'); // For debugging
-                          }
-                        }}
-                      />
-                    </Form.Group>
-                  }
-                </div>
-              </td>
-              {/* SUPPLIER END */}
-
-              {/* TOTAL START */}
-              <td>
-                <div className="d-flex align-items-center mt-2">
-                  <span className="fw-bold">{unitPriceCurrency.currency}</span>
-                  <span className="ms-2">
-                    {(unitPricevalueNumber
-                      ? Math.round(unitPricevalueNumber * 100) / 100
-                      : 0) * fndQTY}
-                  </span>
-                </div>
-              </td>
-              {/* TOTAL END */}
-
-              {/* COMMENT START */}
-              <td>
-                <Form.Control
-                  as="textarea"
-                  placeholder="Comments"
-                  value={comment}
-                  onChange={e => {
-                    setComment(e.target.value);
-                  }}
-                  style={{ width: '200px', height: '37.07px' }}
-                />
-              </td>
-              {/* COMMENT END */}
-
-              {/* DGPACKAGIN COST START */}
-              <td>
-                <Form.Select
-                  value={dgPackagingCst === false ? 'NO' : 'YES'}
-                  onChange={e => {
-                    setDgPackagingCost(e.target.value === 'NO' ? false : true);
-                  }}
-                  defaultValue={'NO'}
-                  required // Zorunlu alan
-                  style={{
-                    width: '80px',
-                    paddingRight: '4px',
-                    paddingLeft: '8px'
-                  }}
-                >
-                  <option value="NO">NO</option>
-                  <option value="YES">YES</option>
-                </Form.Select>
-              </td>
-              {/* DGPACKAGIN COST END */}
-
-              {/* TAG DATE START */}
-              <td>
-                <Form.Control
-                  value={tagDate}
-                  placeholder="Tag Date" // Etiket Tarihi
-                  type="date"
-                  onChange={e => {
-                    setTagDate(e.target.value);
-                  }}
-                />
-              </td>
-              {/* TAG DATE END */}
-
-              {/* Last Updated Date START */}
-              <td>
-                <div className="d-flex align-items-center justify-content-center mt-2 last-updated-date-text-container">
-                  <span className="last-updated-date-text fw-bold">
-                    {lastUpdatedDate}
-                  </span>
-                </div>
-              </td>
-              {/* Last Updated Date END */}
-
-              {/* Certificate Type START */}
-              <td>
-                <Form.Select
-                  value={certType}
-                  onChange={e => {
-                    setCertType(e.target.value);
-                  }}
-                  style={{
-                    width: '120px',
-                    paddingRight: '4px',
-                    paddingLeft: '8px'
-                  }}
-                >
-                  <option value="">Select Cerf.</option>
-                  <option value="FAA81303">FAA 8130-3</option>
-                  <option value="EASEF1">EASSA Form 1</option>
-                  <option value="COFC">CofC</option>
-                </Form.Select>
-              </td>
-              {/* Certificate Type END */}
-
-              {/* MSN START*/}
-              <td>
-                <Form.Group>
+                {/* SUPPLIER LT START*/}
+                <td>
                   <Form.Control
-                    placeholder="MSN"
-                    value={MSN}
-                    onChange={e => {
-                      setMSN(e.target.value);
-                    }}
-                    style={{
-                      width: '180px'
-                    }}
-                  />
-                </Form.Group>
-              </td>
-
-              {/* MSN END*/}
-
-              {/* WAREHOUSE START*/}
-              <td>
-                <Form.Group>
-                  <Form.Control
-                    placeholder="Warehouse"
-                    value={warehouse}
-                    onChange={e => {
-                      setWarehouse(e.target.value);
-                    }}
-                    style={{
-                      width: '180px'
-                    }}
-                  />
-                </Form.Group>
-              </td>
-
-              {/* WAREHOUSE END*/}
-
-              {/* STOCK START*/}
-              <td>
-                <Form.Group>
-                  <Form.Control
-                    value={stock}
+                    value={supplierLT}
                     type="number"
                     onWheel={e => (e.target as HTMLInputElement).blur()}
-                    onChange={e => {
-                      setStock(parseInt(e.target.value, 10));
-                    }}
-                    required
                     style={{ width: '80px', paddingRight: '8px' }}
+                    onChange={e => {
+                      setSupplierLT(parseInt(e.target.value));
+                    }}
                     min={0}
                   />
-                </Form.Group>
-              </td>
-              {/* STOCK END*/}
+                </td>
+                {/* SUPPLIER LT END */}
 
-              {/* STOCK LOCATION START*/}
-              <td>
-                <Form.Group>
+                {/* CLIENT LT START*/}
+                <td>
                   <Form.Control
-                    placeholder="Stock Location"
-                    value={stockLocation}
+                    value={clientLT}
+                    type="number"
+                    onWheel={e => (e.target as HTMLInputElement).blur()}
+                    style={{ width: '80px', paddingRight: '8px' }}
                     onChange={e => {
-                      setStockLocation(e.target.value);
+                      setClientLT(parseInt(e.target.value));
                     }}
+                    min={0}
+                  />
+                </td>
+                {/* CLIENT LT END */}
+
+                {/* UNIT PRICE START */}
+                <td>
+                  <div
+                    className="d-flex justify-content-between"
+                    style={{ width: '230px' }}
+                  >
+                    <Form.Select
+                      value={unitPriceCurrency.id} // Make sure this matches the currency.id value
+                      onChange={e => {
+                        const selectedCurrencyId = e.target.value;
+                        const selectedCurrency = currencies.find(
+                          currency => currency.id === selectedCurrencyId
+                        );
+
+                        if (selectedCurrency) {
+                          setUnitPriceCurrency({
+                            id: selectedCurrency.id,
+                            currency: selectedCurrency.currency,
+                            currencySymbol:
+                              selectedCurrency.currencySymbol ||
+                              getPriceCurrencySymbol(selectedCurrency.currency)
+                          });
+                        }
+                      }}
+                      style={{
+                        width: '110px',
+                        paddingRight: '4px',
+                        paddingLeft: '8px'
+                      }}
+                    >
+                      {currencies.map(currency => (
+                        <option key={currency.id} value={currency.id}>
+                          {currency.currency} ({currency.currencySymbol})
+                        </option>
+                      ))}
+                    </Form.Select>
+
+                    <Form.Control
+                      type="text"
+                      value={unitPricevalueString}
+                      onChange={handleUnitPriceChange}
+                      onBlur={handleBlur}
+                      onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
+                        e.currentTarget.blur()
+                      }
+                      placeholder={unitPriceCurrency.currency + '1,000,000.00'}
+                      style={{
+                        width: '110px',
+                        paddingRight: '4px',
+                        paddingLeft: '8px'
+                      }}
+                    />
+                  </div>
+                </td>
+                {/* UNIT PRICE END */}
+
+                {/* SUPPLIER START */}
+                <td style={{ overflow: 'visible' }}>
+                  <div className="d-flex">
+                    <Button variant="primary" className="px-3 py-1 me-3">
+                      <span style={{ fontSize: '16px' }}>+</span>
+                    </Button>
+                    <div className="d-flex justify-content-center align-items-center">
+                      <FontAwesomeIcon
+                        icon={faArrowRotateRight}
+                        className="me-3"
+                        size="lg"
+                        spin={isNewSupplierLoading}
+                        onClick={handleAllSuppliersRefresh}
+                      />
+                    </div>
+
+                    {
+                      <Form.Group style={{ width: '200px' }}>
+                        <Typeahead
+                          id="searchable-select"
+                          labelKey="supplierName"
+                          options={suppliers}
+                          placeholder="Select a supplier"
+                          multiple={false}
+                          positionFixed
+                          style={{ zIndex: 100 }}
+                          //If it is empty then it returns [] otherwise It returns selected
+                          selected={supplier}
+                          onChange={selected => {
+                            if (selected.length > 0) {
+                              setSupplier(selected as Supplier[]);
+                              console.log('Selected Supplier:', selected); // For debugging
+                            } else {
+                              setSupplier([]);
+                              console.log('Supplier cleared.'); // For debugging
+                            }
+                          }}
+                        />
+                      </Form.Group>
+                    }
+                  </div>
+                </td>
+                {/* SUPPLIER END */}
+
+                {/* TOTAL START */}
+                <td>
+                  <div className="d-flex align-items-center mt-2">
+                    <span className="fw-bold">
+                      {unitPriceCurrency.currency}
+                    </span>
+                    <span className="ms-2">
+                      {(unitPricevalueNumber
+                        ? Math.round(unitPricevalueNumber * 100) / 100
+                        : 0) * fndQTY}
+                    </span>
+                  </div>
+                </td>
+                {/* TOTAL END */}
+
+                {/* COMMENT START */}
+                <td>
+                  <Form.Control
+                    as="textarea"
+                    placeholder="Comments"
+                    value={comment}
+                    onChange={e => {
+                      setComment(e.target.value);
+                    }}
+                    style={{ width: '200px', height: '37.07px' }}
+                  />
+                </td>
+                {/* COMMENT END */}
+
+                {/* DGPACKAGIN COST START */}
+                <td>
+                  <Form.Select
+                    value={dgPackagingCst === false ? 'NO' : 'YES'}
+                    onChange={e => {
+                      setDgPackagingCost(
+                        e.target.value === 'NO' ? false : true
+                      );
+                    }}
+                    defaultValue={'NO'}
+                    required // Zorunlu alan
                     style={{
-                      width: '180px'
+                      width: '80px',
+                      paddingRight: '4px',
+                      paddingLeft: '8px'
+                    }}
+                  >
+                    <option value="NO">NO</option>
+                    <option value="YES">YES</option>
+                  </Form.Select>
+                </td>
+                {/* DGPACKAGIN COST END */}
+
+                {/* TAG DATE START */}
+                <td>
+                  <Form.Control
+                    value={tagDate}
+                    placeholder="Tag Date" // Etiket Tarihi
+                    type="date"
+                    onChange={e => {
+                      setTagDate(e.target.value);
                     }}
                   />
-                </Form.Group>
-              </td>
+                </td>
+                {/* TAG DATE END */}
 
-              {/* STOCK LOCATION END*/}
+                {/* Last Updated Date START */}
+                <td>
+                  <div className="d-flex align-items-center justify-content-center mt-2 last-updated-date-text-container">
+                    <span className="last-updated-date-text fw-bold">
+                      {lastUpdatedDate}
+                    </span>
+                  </div>
+                </td>
+                {/* Last Updated Date END */}
 
-              {/* Airline Company START*/}
-              <td>
-                <Form.Group>
-                  <Form.Control
-                    placeholder="Airline Company"
-                    value={airlineCompany}
+                {/* Certificate Type START */}
+                <td>
+                  <Form.Select
+                    value={certType}
                     onChange={e => {
-                      setAirlineCompany(e.target.value);
+                      setCertType(e.target.value);
                     }}
                     style={{
-                      width: '180px'
+                      width: '120px',
+                      paddingRight: '4px',
+                      paddingLeft: '8px'
                     }}
-                  />
-                </Form.Group>
-              </td>
+                  >
+                    <option value="">Select Cerf.</option>
+                    <option value="CERTIFICATE_1">CERTIFICATE_1</option>
+                    <option value="CERTIFICATE_2">CERTIFICATE_2</option>
+                    <option value="CERTIFICATE_3">CERTIFICATE_3</option>
+                    <option value="CERTIFICATE_4">CERTIFICATE_4</option>
+                  </Form.Select>
+                </td>
+                {/* Certificate Type END */}
 
-              {/* Airline Company END*/}
+                {/* MSN START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      placeholder="MSN"
+                      value={MSN}
+                      onChange={e => {
+                        setMSN(e.target.value);
+                      }}
+                      style={{
+                        width: '180px'
+                      }}
+                    />
+                  </Form.Group>
+                </td>
 
-              {/* MSDS START*/}
-              <td>
-                <Form.Group>
-                  <Form.Control
-                    placeholder="MSDS"
-                    value={MSDS}
-                    onChange={e => {
-                      setMSDS(e.target.value);
-                    }}
-                    style={{
-                      width: '180px'
-                    }}
-                  />
-                </Form.Group>
-              </td>
+                {/* MSN END*/}
 
-              {/* MSDS END*/}
-            </tr>
-          </tbody>
-        </Table>
+                {/* WAREHOUSE START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      placeholder="Warehouse"
+                      value={warehouse}
+                      onChange={e => {
+                        setWarehouse(e.target.value);
+                      }}
+                      style={{
+                        width: '180px'
+                      }}
+                    />
+                  </Form.Group>
+                </td>
+
+                {/* WAREHOUSE END*/}
+
+                {/* STOCK START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      value={stock}
+                      type="number"
+                      onWheel={e => (e.target as HTMLInputElement).blur()}
+                      onChange={e => {
+                        setStock(parseInt(e.target.value, 10));
+                      }}
+                      required
+                      style={{ width: '80px', paddingRight: '8px' }}
+                      min={0}
+                    />
+                  </Form.Group>
+                </td>
+                {/* STOCK END*/}
+
+                {/* STOCK LOCATION START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      placeholder="Stock Location"
+                      value={stockLocation}
+                      onChange={e => {
+                        setStockLocation(e.target.value);
+                      }}
+                      style={{
+                        width: '180px'
+                      }}
+                    />
+                  </Form.Group>
+                </td>
+
+                {/* STOCK LOCATION END*/}
+
+                {/* Airline Company START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      placeholder="Airline Company"
+                      value={airlineCompany}
+                      onChange={e => {
+                        setAirlineCompany(e.target.value);
+                      }}
+                      style={{
+                        width: '180px'
+                      }}
+                    />
+                  </Form.Group>
+                </td>
+
+                {/* Airline Company END*/}
+
+                {/* MSDS START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      placeholder="MSDS"
+                      value={MSDS}
+                      onChange={e => {
+                        setMSDS(e.target.value);
+                      }}
+                      style={{
+                        width: '180px'
+                      }}
+                    />
+                  </Form.Group>
+                </td>
+
+                {/* MSDS END*/}
+              </tr>
+            </tbody>
+          </Table>
+        )}
 
         <DeleteConfirmationModal
           showDeleteModal={showDeleteModal}

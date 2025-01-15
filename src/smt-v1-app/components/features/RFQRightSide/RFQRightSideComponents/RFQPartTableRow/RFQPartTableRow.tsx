@@ -65,8 +65,11 @@ const RFQPartTableRow = ({
                   rfqPart.unitPriceResponse.unitPrice * rfqPart.fndQTY
                 )}
             </td>
+
             <td>{rfqPart.comment}</td>
-            <td className="text-center">{rfqPart.dgPackagingCost}</td>
+            <td className="text-center">
+              {rfqPart.dgPackagingCost ? 'YES' : 'NO'}
+            </td>
             <td className="text-center">{rfqPart.tagDate}</td>
             <td className="text-center">{rfqPart.lastUpdatedDate}</td>
             <td>{rfqPart.certificateType}</td>

@@ -10,6 +10,16 @@ import {
   RFQPart
 } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import RFQRightSideFooter from './RFQRightSideComponents/RFQRightSideFooter/RFQRightSideFooter';
+import {
+  formatDateToString,
+  parseDeadline
+} from './RFQRightSideComponents/Client/ClientHelper';
+import {
+  AlternativeRFQPartRequest,
+  RFQPartRequest,
+  SaveRFQ
+} from './RFQRightSideComponents/RFQRightSideHelper';
+import { saveRFQToDB } from 'smt-v1-app/services/RFQService';
 
 const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [bgColor, setBgColor] = useState('');
@@ -22,7 +32,9 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [foundClient, setFoundClient] = useState<Client | null>(
     rfq.clientResponse
   );
-  const [rfqDeadline, setRFQDeadline] = useState(rfq.rfqDeadline);
+  const [rfqDeadline, setRFQDeadline] = useState<Date | undefined>(
+    rfq.rfqDeadline ? parseDeadline(rfq.rfqDeadline) : undefined
+  );
   const [clientRFQId, setClientRFQId] = useState(rfq.clientRFQNumberId);
 
   useEffect(() => {
@@ -58,6 +70,120 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     setAlternativeParts(updatedArray);
   };
 
+  const handleCancel = () => {};
+
+  const handleSaveUpdate = async () => {
+    if (!foundClient) {
+      console.log('Client cannot be empty');
+    } else {
+      const rfqPartRequests: RFQPartRequest[] = parts.map(
+        (part): RFQPartRequest => {
+          return {
+            partNumber: part.partNumber,
+            partName: part.partName,
+            reqQTY: part.reqQTY,
+            fndQTY: part.fndQTY,
+            reqRFQPartCondition: part.reqCND,
+            fndRFQPartCondition: part.fndCND ? part.fndCND : null,
+            supplierLT: part.supplierLT !== 0 ? part.supplierLT : null,
+            clientLT: part.clientLT !== 0 ? part.clientLT : null,
+            supplierId:
+              part.supplier !== null ? part.supplier.supplierId : null,
+            unitPrice:
+              part.unitPriceResponse.unitPrice !== null
+                ? {
+                    price: part.unitPriceResponse.unitPrice,
+                    currencyId: part.unitPriceResponse.currencyId
+                  }
+                : null,
+            comment: part.comment !== '' ? part.comment : null,
+            isDgPackagingCost: part.dgPackagingCost,
+            tagDate: part.tagDate !== '' ? part.tagDate : null,
+            certificateType:
+              part.certificateType !== '' ? part.certificateType : null,
+            MSN: part.MSN !== '' ? part.MSN : null,
+            warehouse: part.wareHouse !== '' ? part.wareHouse : null,
+            stock: part.stock !== 0 ? part.stock : null,
+            stockLocation:
+              part.stockLocation !== '' ? part.stockLocation : null,
+            airlineCompany:
+              part.airlineCompany !== '' ? part.airlineCompany : null,
+            MSDS: part.MSDS !== '' ? part.MSDS : null
+          };
+        }
+      );
+
+      const alternativeRFQPartRequests: AlternativeRFQPartRequest[] =
+        alternativeParts.map((alternativePart): AlternativeRFQPartRequest => {
+          return {
+            parentPartNumber: alternativePart.parentRFQPart.partNumber,
+            partNumber: alternativePart.partNumber,
+            partName: alternativePart.partName,
+            reqQTY: alternativePart.reqQTY,
+            fndQTY: alternativePart.fndQTY,
+            reqRFQPartCondition: alternativePart.reqCND,
+            fndRFQPartCondition: alternativePart.fndCND
+              ? alternativePart.fndCND
+              : null,
+            supplierLT:
+              alternativePart.supplierLT !== 0
+                ? alternativePart.supplierLT
+                : null,
+            clientLT:
+              alternativePart.clientLT !== 0 ? alternativePart.clientLT : null,
+            supplierId:
+              alternativePart.supplier !== null
+                ? alternativePart.supplier.supplierId
+                : null,
+            unitPrice:
+              alternativePart.unitPriceResponse.unitPrice !== null
+                ? {
+                    price: alternativePart.unitPriceResponse.unitPrice,
+                    currencyId: alternativePart.unitPriceResponse.currencyId
+                  }
+                : null,
+            comment:
+              alternativePart.comment !== '' ? alternativePart.comment : null,
+            isDgPackagingCost: alternativePart.dgPackagingCost,
+            tagDate:
+              alternativePart.tagDate !== '' ? alternativePart.tagDate : null,
+            certificateType:
+              alternativePart.certificateType !== ''
+                ? alternativePart.certificateType
+                : null,
+            MSN: alternativePart.MSN !== '' ? alternativePart.MSN : null,
+            warehouse:
+              alternativePart.wareHouse !== ''
+                ? alternativePart.wareHouse
+                : null,
+            stock: alternativePart.stock !== 0 ? alternativePart.stock : null,
+            stockLocation:
+              alternativePart.stockLocation !== ''
+                ? alternativePart.stockLocation
+                : null,
+            airlineCompany:
+              alternativePart.airlineCompany !== ''
+                ? alternativePart.airlineCompany
+                : null,
+            MSDS: alternativePart.MSDS !== '' ? alternativePart.MSDS : null
+          };
+        });
+
+      const savedRFQ: SaveRFQ = {
+        rfqMailId: rfq.rfqMailId,
+        rfqPartRequests: rfqPartRequests,
+        alternativeRFQPartRequests: alternativeRFQPartRequests,
+        clientId: foundClient.clientId,
+        rfqDeadline: formatDateToString(rfqDeadline),
+        clientRFQId: clientRFQId !== '' ? clientRFQId : null
+      };
+
+      //console.log(savedRFQ);
+      const resp = saveRFQToDB(savedRFQ);
+      console.log(resp);
+    }
+  };
+
   return (
     <>
       <div className="rfq-right">
@@ -69,7 +195,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
           textColor={textColor}
           status={rfq.rfqMailStatus}
         />
-        foundClient
+
         <Client
           foundClient={foundClient}
           setFoundClient={setFoundClient}
@@ -95,7 +221,10 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
           handleDeleteAlternativePart={handleDeleteAlternativePart}
           handleAddAlternativePart={handleAddAlternativePart}
         />
-        <RFQRightSideFooter />
+        <RFQRightSideFooter
+          handleCancel={handleCancel}
+          handleSaveUpdate={handleSaveUpdate}
+        />
       </div>
     </>
   );

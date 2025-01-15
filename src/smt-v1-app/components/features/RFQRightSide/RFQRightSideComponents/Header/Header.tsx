@@ -44,9 +44,6 @@ const Header = ({
             <h3>
               RFQ Id: <span className="valueRFQ-id">{' ' + rfqNumberId}</span>
             </h3>
-            <h3>
-              ClientRFQ Id: <span className="valueRFQ-id">{clientRFQId}</span>
-            </h3>
           </div>
           <div>
             <div className="px-2 rounded" style={{ backgroundColor: bgColor }}>

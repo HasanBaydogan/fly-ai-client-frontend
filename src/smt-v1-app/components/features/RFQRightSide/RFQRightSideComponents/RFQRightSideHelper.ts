@@ -87,3 +87,67 @@ export const getPriceCurrencySymbol = (unitPriceCurrency: string): string => {
 
   return symbol;
 };
+
+export interface SaveRFQ {
+  rfqMailId: string;
+  rfqPartRequests: RFQPartRequest[];
+  alternativeRFQPartRequests: AlternativeRFQPartRequest[];
+  clientId: string;
+  rfqDeadline: string;
+  clientRFQId: string;
+}
+export interface RFQPartRequest {
+  partNumber: string;
+  partName: string;
+  reqQTY: number;
+  fndQTY: number;
+  reqRFQPartCondition:
+    | 'NE'
+    | 'FN'
+    | 'NS'
+    | 'OH'
+    | 'SV'
+    | 'AR'
+    | 'RP'
+    | 'IN'
+    | 'TST'
+    | '';
+  fndRFQPartCondition:
+    | 'NE'
+    | 'FN'
+    | 'NS'
+    | 'OH'
+    | 'SV'
+    | 'AR'
+    | 'RP'
+    | 'IN'
+    | 'TST'
+    | '';
+  supplierLT: number;
+  clientLT: number;
+  supplierId: string;
+  unitPrice: UnitPrice;
+  comment: string;
+  isDgPackagingCost: boolean;
+  tagDate: string;
+  certificateType:
+    | 'CERTIFICATE_1'
+    | 'CERTIFICATE_2'
+    | 'CERTIFICATE_3'
+    | 'CERTIFICATE_4';
+  MSN: string;
+  warehouse: string;
+  stock: number;
+  stockLocation: string;
+  airlineCompany: string;
+  MSDS: string;
+}
+
+export interface UnitPrice {
+  price: number;
+  currencyId: string;
+}
+
+export interface AlternativeRFQPartRequest extends RFQPartRequest {
+  parentPartNumber: string;
+}

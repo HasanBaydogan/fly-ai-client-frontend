@@ -765,7 +765,7 @@ const PartList = ({
               {
                 <td>
                   <Form.Select
-                    value={dgPackagingCst === false ? 'NO' : 'YES'}
+                    value={dgPackagingCst ? 'YES' : 'NO'}
                     onChange={e => {
                       setDgPackagingCost(
                         e.target.value === 'NO' ? false : true
@@ -822,9 +822,10 @@ const PartList = ({
                   }}
                 >
                   <option value="">Select Cerf.</option>
-                  <option value="FAA81303">FAA 8130-3</option>
-                  <option value="EASEF1">EASSA Form 1</option>
-                  <option value="COFC">CofC</option>
+                  <option value="CERTIFICATE_1">CERTIFICATE_1</option>
+                  <option value="CERTIFICATE_2">CERTIFICATE_2</option>
+                  <option value="CERTIFICATE_3">CERTIFICATE_3</option>
+                  <option value="CERTIFICATE_4">CERTIFICATE_4</option>
                 </Form.Select>
               </td>
               {/* Certificate Type END */}

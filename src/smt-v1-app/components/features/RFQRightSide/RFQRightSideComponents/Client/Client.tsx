@@ -21,9 +21,9 @@ const Client = ({
   setClientRFQId
 }: {
   foundClient: Client;
-  rfqDeadline: string;
+  rfqDeadline: Date;
   setFoundClient: React.Dispatch<React.SetStateAction<Client>>;
-  setRFQDeadline: React.Dispatch<React.SetStateAction<string>>;
+  setRFQDeadline: React.Dispatch<React.SetStateAction<Date>>;
   clientRFQId: string;
   setClientRFQId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
@@ -31,15 +31,6 @@ const Client = ({
   const [filteredCompanies, setFilteredCompanies] = useState<Client[]>([]);
 
   const [clientList, setClientList] = useState<Client[]>();
-
-  const parseDeadline = (deadlineString: string): Date => {
-    const [day, month, year] = deadlineString.split('.').map(Number);
-    return new Date(year, month - 1, day); // Note: Month is 0-indexed.
-  };
-
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    rfqDeadline ? parseDeadline(rfqDeadline) : undefined
-  );
 
   useEffect(() => {
     const getAllClients = async () => {
@@ -60,7 +51,7 @@ const Client = ({
     setFilteredCompanies(filtered);
   };
 
-  const handleSelectCompany = (selected: Client[]) => {
+  const handleSelectClient = (selected: Client[]) => {
     if (selected.length > 0) {
       setFoundClient(selected[0]); // Set the first selected client
     } else {
@@ -86,11 +77,11 @@ const Client = ({
               options={clientList || []} // Use the client list
               placeholder="Search by Client Name"
               onInputChange={handleSearch} // Handle input change for filtering
-              onChange={handleSelectCompany} // Handle selection
+              onChange={handleSelectClient} // Handle selection
               selected={foundClient ? [foundClient] : []} // Preselect found client
               multiple={false} // Single selection only
               positionFixed // Keeps dropdown attached to the input
-              style={{ zIndex: 1050 }} // Ensure visibility of dropdown
+              style={{ zIndex: 10 }} // Ensure visibility of dropdown
             />
           </Form.Group>
         </div>
@@ -121,8 +112,8 @@ const Client = ({
           <h4 className="me-2">RFQ Deadline:</h4>
           <DatePicker
             placeholder="Select Date"
-            value={selectedDate}
-            onChange={date => setSelectedDate(date[0])} // Flatpickr returns an array of dates.
+            value={rfqDeadline}
+            onChange={date => setRFQDeadline(date[0])} // Flatpickr returns an array of dates.
           />
         </div>
         <div className="d-flex align-items-center">
@@ -130,8 +121,8 @@ const Client = ({
           <Form.Group>
             <Form.Control
               placeholder="ClientRFQ Id"
-              //value={partName}
-              onChange={e => {}}
+              value={clientRFQId}
+              onChange={e => setClientRFQId(e.target.value)}
             />
           </Form.Group>
         </div>
