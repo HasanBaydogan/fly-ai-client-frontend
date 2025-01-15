@@ -20,6 +20,7 @@ import {
   SaveRFQ
 } from './RFQRightSideComponents/RFQRightSideHelper';
 import { saveRFQToDB } from 'smt-v1-app/services/RFQService';
+import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 
 const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [bgColor, setBgColor] = useState('');
@@ -28,6 +29,11 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [alternativeParts, setAlternativeParts] = useState(
     rfq.alternativeRFQPartResponses
   );
+
+  const [isShowToast, setIsShowToast] = useState(false);
+  const [toastMessageHeader, setToastMessageHeader] = useState('');
+  const [toastMessageBody, setToastMessageBody] = useState('');
+  const [toastVariant, setToastVariant] = useState('danger');
 
   const [foundClient, setFoundClient] = useState<Client | null>(
     rfq.clientResponse
@@ -90,7 +96,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
             supplierId:
               part.supplier !== null ? part.supplier.supplierId : null,
             unitPrice:
-              part.unitPriceResponse.unitPrice !== null
+              part.unitPriceResponse !== null
                 ? {
                     price: part.unitPriceResponse.unitPrice,
                     currencyId: part.unitPriceResponse.currencyId
@@ -136,7 +142,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
                 ? alternativePart.supplier.supplierId
                 : null,
             unitPrice:
-              alternativePart.unitPriceResponse.unitPrice !== null
+              alternativePart.unitPriceResponse !== null
                 ? {
                     price: alternativePart.unitPriceResponse.unitPrice,
                     currencyId: alternativePart.unitPriceResponse.currencyId
@@ -181,9 +187,27 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
       //console.log(savedRFQ);
       const resp = await saveRFQToDB(savedRFQ);
       if (resp.statusCode === 200) {
+        toastSuccess(
+          'Saving Success',
+          'RFQ is saved successfully, directed...'
+        );
+      } else {
+        toastError('An Error', 'An error occurs');
       }
     }
   };
+  function toastSuccess(messageHeader: string, message: string) {
+    setToastVariant('success');
+    setToastMessageHeader(messageHeader);
+    setToastMessageBody(message);
+    setIsShowToast(true);
+  }
+  function toastError(messageHeader: string, message: string) {
+    setToastVariant('danger');
+    setToastMessageHeader(messageHeader);
+    setToastMessageBody(message);
+    setIsShowToast(true);
+  }
 
   return (
     <>
@@ -225,6 +249,14 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
         <RFQRightSideFooter
           handleCancel={handleCancel}
           handleSaveUpdate={handleSaveUpdate}
+        />
+        <ToastNotification
+          isShow={isShowToast}
+          setIsShow={setIsShowToast}
+          variant={toastVariant}
+          messageHeader={toastMessageHeader}
+          messageBodyText={toastMessageBody}
+          position="bottom-end"
         />
       </div>
     </>
