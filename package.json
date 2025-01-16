@@ -57,6 +57,7 @@
     "react-bootstrap-typeahead": "^6.3.4",
     "react-countup": "^6.5.0",
     "react-custom-scrollbars-2": "^4.5.0",
+    "react-datepicker": "^7.6.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-flatpickr": "^3.10.13",
