@@ -15,6 +15,29 @@ import DatePicker from 'components/base/DatePicker';
 import Reka_Static from 'assets/img/logos/Reka_Static.jpg';
 import './WizardTabs.css';
 
+interface WizardSetupFormProps {
+  id: string;
+  settings: {
+    adress: { row1: string; row2: string; row3: string };
+    quotaNumber: string;
+    ClientLocation: string;
+    ShipTo: string;
+    Requisitioner: string;
+    ShipVia: string;
+    CPT: string;
+    ShippingTerms: string;
+    CoSI: string;
+    ST1: string;
+    ST2: string;
+    ST3: string;
+    ST4: string;
+    CoSI2: string;
+    CoSI3: { CoSIRow1: string; CoSIRow2: string };
+  };
+  data: TableRow[];
+  setData: React.Dispatch<React.SetStateAction<TableRow[]>>;
+}
+
 interface TableRow {
   partNumber: string;
   alternativeTo: string;
@@ -22,18 +45,18 @@ interface TableRow {
   leadTime: string;
   qty: number;
   unitPrice: number;
-  isNew?: boolean; // Yeni satırları ayırt etmek için
+  isNew?: boolean;
 }
 
-const WizardAccountForm = ({ id }: { id: string }) => {
-  const methods = useWizardFormContext<WizardFormData>();
-  const { formData, onChange, validation } = methods;
-
-  const [quoteNumber] = useState('2785674');
+const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
+  id,
+  settings,
+  data,
+  setData
+}) => {
   const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
-  const [currency, setCurrency] = useState('USD'); // Varsayılan para birimi
-
+  const [currency, setCurrency] = useState('USD');
   const [subTotalValues, setSubTotalValues] = useState<number[]>([0, 0, 0, 0]);
 
   const handleSubTotalChange = (index: number, value: number) => {
@@ -63,32 +86,6 @@ const WizardAccountForm = ({ id }: { id: string }) => {
   };
 
   //fake data
-  const [data, setData] = useState<TableRow[]>([
-    {
-      partNumber: '4122-006009',
-      alternativeTo: '',
-      description: 'PUMP-PROPELLER FEATHERING',
-      leadTime: '18',
-      qty: 1,
-      unitPrice: 4634.71
-    },
-    {
-      partNumber: '4122-006009',
-      alternativeTo: '',
-      description: 'SENSOR (CONDITION REQ. = NE FOUND = TST)',
-      leadTime: '18',
-      qty: 1,
-      unitPrice: 4634.71
-    },
-    {
-      partNumber: '3116499-04',
-      alternativeTo: '4122-006009',
-      description: 'SENSOR',
-      leadTime: '18',
-      qty: 3,
-      unitPrice: 2795.0
-    }
-  ]);
 
   // Satır ekleme için fake data
   const addRow = (index: number) => {
@@ -103,7 +100,7 @@ const WizardAccountForm = ({ id }: { id: string }) => {
     };
 
     const updatedData = [...data];
-    updatedData.splice(index + 1, 0, newRow); // Yeni satırı belirtilen index'in altına ekle
+    updatedData.splice(index + 1, 0, newRow);
     setData(updatedData);
   };
 
@@ -121,14 +118,6 @@ const WizardAccountForm = ({ id }: { id: string }) => {
     updatedData[index][field] = value;
     setData(updatedData);
   };
-
-  // Backend'den veri çekme
-  useEffect(() => {
-    fetch('/api/table-data')
-      .then(response => response.json())
-      .then(data => setData(data))
-      .catch(error => console.error('Error fetching data:', error));
-  }, []);
 
   return (
     <>
@@ -174,13 +163,10 @@ const WizardAccountForm = ({ id }: { id: string }) => {
             <Card.Img variant="top" src={Reka_Static} />
             <Card.Body className="p-0 px-1 fs-9">
               <Card.Text className="mb-2 pt-2">
-                Bahcelievler Mah. 274/1. Sokak No:1 Ofis:16 06830 Golbasi /
-                Ankara TURKEY
+                {settings.adress.row1}
               </Card.Text>
-              <Card.Text className="mb-2">
-                Phone: 0090 (312) 809 66 90
-              </Card.Text>
-              <Card.Text>Mobile: 0090 (507) 900 90 77</Card.Text>
+              <Card.Text className="mb-2">{settings.adress.row2}</Card.Text>
+              <Card.Text>{settings.adress.row3}</Card.Text>
             </Card.Body>
           </Card>
         </div>
@@ -192,7 +178,7 @@ const WizardAccountForm = ({ id }: { id: string }) => {
               <DatePicker placeholder="Date" />
             </Form.Group>
             <p className="mt-2 small mt-3">
-              <strong>Quote Number:</strong> {quoteNumber}
+              <strong>Quote Number:</strong> {settings.quotaNumber}
             </p>
             <Badge bg="primary" className="small">
               REVISION {revisionNumber}
@@ -207,11 +193,12 @@ const WizardAccountForm = ({ id }: { id: string }) => {
               CLIENT LOCATION
             </td>
             <td className="text-white">SHIP TO</td>
+            <td>{settings.ShipTo}</td>
           </tr>
         </thead>
         <tbody>
           <tr className="text-center align-middle">
-            <td colSpan={3}>Destination</td>
+            <td colSpan={3}>{settings.ClientLocation}</td>
             <td></td>
           </tr>
           <tr className="bg-primary text-white text-center align-middle">
@@ -229,10 +216,10 @@ const WizardAccountForm = ({ id }: { id: string }) => {
             </td>
           </tr>
           <tr className="text-center align-middle">
-            <td style={{ width: '25%' }}></td>
-            <td style={{ width: '25%' }}></td>
-            <td style={{ width: '25%' }}></td>
-            <td style={{ width: '25%' }}>EXW IST</td>
+            <td style={{ width: '25%' }}>{settings.Requisitioner}</td>
+            <td style={{ width: '25%' }}>{settings.ShipVia}</td>
+            <td style={{ width: '25%' }}>{settings.CPT}</td>
+            <td style={{ width: '25%' }}>{settings.ShippingTerms}</td>
           </tr>
         </tbody>
       </Table>
@@ -383,19 +370,7 @@ const WizardAccountForm = ({ id }: { id: string }) => {
               </thead>
               <tbody>
                 <tr>
-                  <td className="p-2">
-                    All parts are FACTORY NEW (FN), unless indicated.
-                    <br />
-                    Our Manufacturer's Certificate of Conformance is included
-                    with our Packing List / Invoice. Valid for 10 Days
-                    <br />
-                    TBD (To Be Determined): The costs indicated as TBD will be
-                    calculated when the quantities and items of quote is
-                    approved by the customer.
-                    <br />
-                    LT (Lead Time): Lead times start on the day the invoice of
-                    this quote is paid.
-                  </td>
+                  <td className="p-2">{settings.CoSI}</td>
                 </tr>
               </tbody>
             </Table>
@@ -428,7 +403,7 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="text-sm-md">Customs in Turkey</td>
+                    <td className="text-sm-md">{settings.ST1}</td>
                     <td>
                       <Form.Check type="checkbox" defaultChecked />
                     </td>
@@ -449,7 +424,7 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="text-sm-md">Aircargo to TURKEY</td>
+                    <td className="text-sm-md">{settings.ST2}</td>
                     <td>
                       <Form.Check type="checkbox" defaultChecked />
                     </td>
@@ -470,7 +445,7 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="text-sm-md">Aircargo to Destination</td>
+                    <td className="text-sm-md">{settings.ST3}</td>
                     <td>
                       <Form.Check type="checkbox" />
                     </td>
@@ -491,7 +466,7 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                     </td>
                   </tr>
                   <tr>
-                    <td className="text-sm-md">Aircargo to Destination</td>
+                    <td className="text-sm-md">{settings.ST4}</td>
                     <td>
                       <Form.Check type="checkbox" />
                     </td>
@@ -550,10 +525,7 @@ const WizardAccountForm = ({ id }: { id: string }) => {
             </thead>
             <tbody>
               <tr>
-                <td className="p-2">
-                  Delivery: Destination Custom and related TAX and costs shall
-                  be paid by Client.
-                </td>
+                <td className="p-2">{settings.CoSI2}</td>
               </tr>
             </tbody>
           </Table>
@@ -561,10 +533,9 @@ const WizardAccountForm = ({ id }: { id: string }) => {
             <tbody>
               <tr>
                 <td className="p-2">
-                  If you have any questions about this quote, please contact:
+                  {settings.CoSI3.CoSIRow1}
                   <br />
-                  info@rekaglobal.com | Tel: +90 312 809 66 90 | Mobile: +90 507
-                  900 90 77
+                  {settings.CoSI3.CoSIRow2}
                   <br />
                 </td>
               </tr>
@@ -576,4 +547,4 @@ const WizardAccountForm = ({ id }: { id: string }) => {
   );
 };
 
-export default WizardAccountForm;
+export default WizardSetupForm;

@@ -15,7 +15,7 @@ const QuoteContainer: React.FC = () => {
 
       <Modal show={showTabs} onHide={handleClose} size="xl" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Wizard Tabs</Modal.Title>
+          <Modal.Title>Quote Wizard</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <WizardTabs />
