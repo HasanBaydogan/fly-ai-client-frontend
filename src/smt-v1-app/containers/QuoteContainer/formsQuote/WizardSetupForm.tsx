@@ -29,12 +29,19 @@ const WizardAccountForm = ({ id }: { id: string }) => {
   const methods = useWizardFormContext<WizardFormData>();
   const { formData, onChange, validation } = methods;
 
-  const [quoteNumber] = useState('2785674'); // Sabit teklif numarası
-  const [revisionNumber] = useState(0); // Sabit revizyon numarası
+  const [quoteNumber] = useState('2785674');
+  const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
   const [currency, setCurrency] = useState('USD'); // Varsayılan para birimi
 
-  // Para birimi seçimine göre miktar ayarları
+  const [subTotalValues, setSubTotalValues] = useState<number[]>([0, 0, 0, 0]);
+
+  const handleSubTotalChange = (index: number, value: number) => {
+    const updatedValues = [...subTotalValues];
+    updatedValues[index] = value;
+    setSubTotalValues(updatedValues);
+  };
+
   const handleCurrencyChange = (selectedCurrency: string) => {
     setCurrency(selectedCurrency);
 
@@ -92,7 +99,7 @@ const WizardAccountForm = ({ id }: { id: string }) => {
       leadTime: '',
       qty: 1,
       unitPrice: 0.0,
-      isNew: true // Yeni satır olarak işaretle
+      isNew: true
     };
 
     const updatedData = [...data];
@@ -100,12 +107,11 @@ const WizardAccountForm = ({ id }: { id: string }) => {
     setData(updatedData);
   };
 
-  // Satır silme
   const deleteRow = (index: number) => {
     const updatedData = data.filter((_, i) => i !== index);
     setData(updatedData);
   };
-  // Hücre verisi güncelleme işlevi
+
   const handleCellChange = (
     index: number,
     field: string,
@@ -118,7 +124,6 @@ const WizardAccountForm = ({ id }: { id: string }) => {
 
   // Backend'den veri çekme
   useEffect(() => {
-    // Backend API çağrısı için
     fetch('/api/table-data')
       .then(response => response.json())
       .then(data => setData(data))
@@ -130,13 +135,12 @@ const WizardAccountForm = ({ id }: { id: string }) => {
       <div className="uppersection">
         <div className="upperleftsection">
           <Form.Group className="d-flex align-items-center gap-3 mb-5">
-            {/* Miktar */}
             <Form.Control
               value={reqQTY}
               onWheel={e => (e.target as HTMLInputElement).blur()}
               type="number"
               onChange={e => {
-                setReqQTY(parseInt(e.target.value, 10) || 1); // Kullanıcı elle değiştirebilir
+                setReqQTY(parseInt(e.target.value, 10) || 1);
               }}
               required
               style={{ width: '80px', paddingRight: '8px' }}
@@ -183,21 +187,13 @@ const WizardAccountForm = ({ id }: { id: string }) => {
 
         <div className="upperrightsection">
           <div className="quote-section mb-4 mt-6">
-            {/* Başlık */}
             <h2 className="text-primary">QUOTE</h2>
-
-            {/* Tarih Seçici */}
             <Form.Group className="date-picker d-inline-block mt-3">
               <DatePicker placeholder="Date" />
             </Form.Group>
-
-            {/* Teklif Numarası */}
             <p className="mt-2 small mt-3">
               <strong>Quote Number:</strong> {quoteNumber}
             </p>
-
-            {/* Revizyon Numarası */}
-
             <Badge bg="primary" className="small">
               REVISION {revisionNumber}
             </Badge>
@@ -350,8 +346,6 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                     currency: 'USD'
                   })}
                 </td>
-
-                {/* Butonlar için boş sütun */}
                 <td className="button-cell">
                   <div className="action-buttons">
                     <Button
@@ -378,7 +372,6 @@ const WizardAccountForm = ({ id }: { id: string }) => {
       </div>
       <div className="footer-section mt-5">
         <Row className="g-3">
-          {/* İlk Bölüm: Comments or Special Instructions */}
           <Col md={8}>
             <Table striped bordered hover className="mb-3">
               <thead>
@@ -407,14 +400,30 @@ const WizardAccountForm = ({ id }: { id: string }) => {
               </tbody>
             </Table>
           </Col>
-
-          {/* İkinci Bölüm: Sub-Total ve Total */}
           <Col md={4}>
             <div className="d-flex flex-column text-center">
               <Table bordered size="sm" className="sub-total-table mb-3">
                 <thead>
                   <tr>
                     <th>Sub-Total</th>
+                    <td></td>
+                    <td>
+                      <div className="mt-3 text-center">
+                        <h5>
+                          <span className="text-primary ms-2">
+                            {data
+                              .reduce(
+                                (acc, row) => acc + row.qty * row.unitPrice,
+                                0
+                              )
+                              .toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'USD'
+                              })}
+                          </span>
+                        </h5>
+                      </div>
+                    </td>
                   </tr>
                 </thead>
                 <tbody>
@@ -429,7 +438,13 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                         defaultValue={0}
                         min={0}
                         className="py-1"
-                        style={{ width: '80px' }} // Genişlik azaltıldı
+                        style={{ width: '80px' }}
+                        onChange={e =>
+                          handleSubTotalChange(
+                            0,
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
                       />
                     </td>
                   </tr>
@@ -444,7 +459,13 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                         defaultValue={0}
                         min={0}
                         className="py-1"
-                        style={{ width: '80px' }} // Genişlik azaltıldı
+                        style={{ width: '80px' }}
+                        onChange={e =>
+                          handleSubTotalChange(
+                            1,
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
                       />
                     </td>
                   </tr>
@@ -459,7 +480,13 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                         defaultValue={0}
                         min={0}
                         className="py-1"
-                        style={{ width: '80px' }} // Genişlik azaltıldı
+                        style={{ width: '80px' }}
+                        onChange={e =>
+                          handleSubTotalChange(
+                            2,
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
                       />
                     </td>
                   </tr>
@@ -474,7 +501,13 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                         defaultValue={0}
                         min={0}
                         className="py-1"
-                        style={{ width: '80px' }} // Genişlik azaltıldı
+                        style={{ width: '80px' }}
+                        onChange={e =>
+                          handleSubTotalChange(
+                            3,
+                            parseFloat(e.target.value) || 0
+                          )
+                        }
                       />
                     </td>
                   </tr>
@@ -483,12 +516,30 @@ const WizardAccountForm = ({ id }: { id: string }) => {
                   <tr>
                     <th className="text-sm-md">Total</th>
                     <td></td>
-                    <td className="text-center"></td>
+                    <td className="text-center">
+                      <div className="mt-3 text-center">
+                        <h5>
+                          <span className="text-success">
+                            {(
+                              data.reduce(
+                                (acc, row) => acc + row.qty * row.unitPrice,
+                                0
+                              ) +
+                              subTotalValues.reduce((acc, val) => acc + val, 0)
+                            ).toLocaleString('en-US', {
+                              style: 'currency',
+                              currency: 'USD'
+                            })}
+                          </span>
+                        </h5>
+                      </div>
+                    </td>
                   </tr>
                 </thead>
               </Table>
             </div>
           </Col>
+
           <Table striped bordered hover className="mb-3 text-center">
             <thead>
               <tr>
