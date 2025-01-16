@@ -93,7 +93,7 @@ const WizardTabs: React.FC = () => {
       row3: 'Mobile: 0090 (507) 900 90 77'
     },
     quotaNumber: '2753498',
-    revisionNumber: '17',
+    RevisionNumber: '17',
     ClientLocation: 'Destination',
     ShipTo: '',
     Requisitioner: '',
@@ -134,9 +134,10 @@ const WizardTabs: React.FC = () => {
             </Tab.Pane>
             <Tab.Pane eventKey={2}>
               <WizardForm step={2}>
-                <WizardPersonalForm />
+                <WizardPersonalForm settings={settings} data={data} />
               </WizardForm>
             </Tab.Pane>
+
             <Tab.Pane eventKey={3}>
               <WizardForm step={3}>
                 <WizardBillingForm />
