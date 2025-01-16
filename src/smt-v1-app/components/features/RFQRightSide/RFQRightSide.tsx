@@ -85,6 +85,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
       const rfqPartRequests: RFQPartRequest[] = parts.map(
         (part): RFQPartRequest => {
           return {
+            rfqPartId: part.rfqPartId,
             partNumber: part.partNumber,
             partName: part.partName,
             reqQTY: part.reqQTY,
@@ -95,13 +96,8 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
             clientLT: part.clientLT !== 0 ? part.clientLT : null,
             supplierId:
               part.supplier !== null ? part.supplier.supplierId : null,
-            unitPrice:
-              part.unitPriceResponse !== null
-                ? {
-                    price: part.unitPriceResponse.unitPrice,
-                    currencyId: part.unitPriceResponse.currencyId
-                  }
-                : null,
+            price: part.price,
+            currency: part.currency,
             comment: part.comment !== '' ? part.comment : null,
             isDgPackagingCost: part.dgPackagingCost,
             tagDate: part.tagDate !== '' ? part.tagDate : null,
@@ -122,6 +118,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
       const alternativeRFQPartRequests: AlternativeRFQPartRequest[] =
         alternativeParts.map((alternativePart): AlternativeRFQPartRequest => {
           return {
+            rfqPartId: alternativePart.rfqPartId,
             parentPartNumber: alternativePart.parentRFQPart.partNumber,
             partNumber: alternativePart.partNumber,
             partName: alternativePart.partName,
@@ -141,13 +138,8 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
               alternativePart.supplier !== null
                 ? alternativePart.supplier.supplierId
                 : null,
-            unitPrice:
-              alternativePart.unitPriceResponse !== null
-                ? {
-                    price: alternativePart.unitPriceResponse.unitPrice,
-                    currencyId: alternativePart.unitPriceResponse.currencyId
-                  }
-                : null,
+            price: alternativePart.price,
+            currency: alternativePart.currency,
             comment:
               alternativePart.comment !== '' ? alternativePart.comment : null,
             isDgPackagingCost: alternativePart.dgPackagingCost,
@@ -184,8 +176,9 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
         clientRFQId: clientRFQId !== '' ? clientRFQId : null
       };
 
-      //console.log(savedRFQ);
+      console.log(savedRFQ);
       const resp = await saveRFQToDB(savedRFQ);
+      console.log(resp);
       if (resp.statusCode === 200) {
         toastSuccess(
           'Saving Success',

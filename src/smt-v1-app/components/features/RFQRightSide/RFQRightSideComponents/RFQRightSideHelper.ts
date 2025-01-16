@@ -97,6 +97,7 @@ export interface SaveRFQ {
   clientRFQId: string;
 }
 export interface RFQPartRequest {
+  rfqPartId: string;
   partNumber: string;
   partName: string;
   reqQTY: number;
@@ -126,7 +127,8 @@ export interface RFQPartRequest {
   supplierLT: number;
   clientLT: number;
   supplierId: string;
-  unitPrice: UnitPrice;
+  price: number;
+  currency: string;
   comment: string;
   isDgPackagingCost: boolean;
   tagDate: string;
@@ -141,11 +143,6 @@ export interface RFQPartRequest {
   stockLocation: string;
   airlineCompany: string;
   MSDS: string;
-}
-
-export interface UnitPrice {
-  price: number;
-  currencyId: string;
 }
 
 export interface AlternativeRFQPartRequest extends RFQPartRequest {

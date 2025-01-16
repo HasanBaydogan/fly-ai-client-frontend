@@ -12,11 +12,8 @@ interface RFQPart {
   fndCND: NE | FN | NS | OH | SV | AR | RP | IN | TST | '';
   supplierLT: number;
   clientLT: number;
-  unitPriceResponse: {
-    currencyId: string;
-    unitPrice: number;
-    currency: string;
-  };
+  price: number;
+  currency: string;
   supplier: Supplier;
   comment: string;
   dgPackagingCost: boolean;
@@ -48,11 +45,8 @@ interface AlternativeRFQPart {
   fndCND: NE | FN | NS | OH | SV | AR | RP | IN | TST | '';
   supplierLT: number;
   clientLT: number;
-  unitPriceResponse: {
-    currencyId: string;
-    unitPrice: number;
-    currency: string;
-  };
+  price: number;
+  currency: string;
   supplier: Supplier;
   comment: string;
   dgPackagingCost: boolean;

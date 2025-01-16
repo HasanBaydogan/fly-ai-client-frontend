@@ -71,11 +71,8 @@ const PartList = ({
   const [unitPricevalueString, setUnitPricevalueString] =
     useState<string>('0.00');
   const [unitPricevalueNumber, setUnitPricevalueNumber] = useState<number>(0.0);
-  const [unitPriceCurrency, setUnitPriceCurrency] = useState<Currency>({
-    id: '',
-    currency: '',
-    currencySymbol: ''
-  });
+
+  const [currency, setCurrency] = useState('USD');
 
   const [supplier, setSupplier] = useState<Supplier[]>([]);
   const [comment, setComment] = useState<string>('');
@@ -114,7 +111,7 @@ const PartList = ({
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
-  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [currencies, setCurrencies] = useState<string[]>([]);
 
   useEffect(() => {
     // Get all suppliers
@@ -124,8 +121,7 @@ const PartList = ({
       setSuppliers(suppResp.data);
       const currencyResp = await getAllCurrenciesFromDB();
       setCurrencies(currencyResp.data);
-      const firstCurrency = currencyResp.data[0];
-      setUnitPriceCurrency(firstCurrency);
+
       setIsLoading(false);
     };
     getAllSupplierAndCurrencies();
@@ -161,9 +157,11 @@ const PartList = ({
 
       right_side = right_side.substring(0, 2);
 
-      input_val = `${unitPriceCurrency.currencySymbol}${left_side}.${right_side}`;
+      input_val = `${getPriceCurrencySymbol(
+        currency
+      )}${left_side}.${right_side}`;
     } else {
-      input_val = `${unitPriceCurrency.currencySymbol}${formatNumber(
+      input_val = `${getPriceCurrencySymbol(currency)}${formatNumber(
         input_val
       )}`;
 
@@ -172,7 +170,7 @@ const PartList = ({
       }
     }
 
-    const x = input_val.split(unitPriceCurrency.currencySymbol);
+    const x = input_val.split(getPriceCurrencySymbol(currency));
     if (x.length > 1) {
       const inputValueArray = x[1].split(',');
       let totalinputValueString = '';
@@ -216,6 +214,7 @@ const PartList = ({
     const foundRFQ: RFQPart | null = parts.filter(
       part => part.partNumber === partNumber
     )[0];
+    console.log(foundRFQ);
     if (!foundRFQ) {
       console.log('Found RFQ is not valid');
     } else {
@@ -265,25 +264,19 @@ const PartList = ({
     const connectedAlternativeRFQParts = alternativeParts.filter(
       alternativePart => alternativePart.parentRFQPart.partNumber === partNumber
     );
-    console.log(connectedAlternativeRFQParts);
+    //console.log(connectedAlternativeRFQParts);
     setConnectedAlternativeRFQPartsForDeletion(connectedAlternativeRFQParts);
     setNumOfconnectedAlternativeRFQ(connectedAlternativeRFQParts.length);
     setDesiredPartNumberToDelete(partNumber);
   };
 
   const updateUnitPrice = (foundRFQ: RFQPart) => {
-    const unitPrice = foundRFQ.unitPriceResponse.unitPrice ?? 0.0;
-    const currency = foundRFQ.unitPriceResponse.currency;
-    const currencyId = foundRFQ.unitPriceResponse.currencyId;
+    const unitPrice = foundRFQ.price ?? 0.0;
+    const currency = foundRFQ.currency;
 
     setUnitPricevalueNumber(unitPrice);
-    setUnitPricevalueString(unitPrice.toFixed(2)); // Ensure string reflects the number
-
-    setUnitPriceCurrency({
-      id: currencyId,
-      currency: currency,
-      currencySymbol: getPriceCurrencySymbol(currency)
-    });
+    setUnitPricevalueString(unitPrice.toFixed(2));
+    setCurrency(currency); // Ensure string reflects the number
   };
 
   const handleNewPartAddition = () => {
@@ -351,11 +344,8 @@ const PartList = ({
       fndCND: fndCND,
       supplierLT: supplierLT,
       clientLT: clientLT,
-      unitPriceResponse: {
-        currencyId: unitPriceCurrency.id || null,
-        unitPrice: unitPricevalueNumber || null,
-        currency: unitPriceCurrency.currency || null
-      },
+      currency: currency,
+      price: unitPricevalueNumber,
       supplier:
         supplier.length > 0
           ? {
@@ -363,21 +353,21 @@ const PartList = ({
               supplierName: supplier[0].supplierName
             }
           : null,
-      comment: comment.trim(),
+      comment: comment && comment.trim(),
       dgPackagingCost: dgPackagingCst,
       tagDate: tagDate ? formatDate(tagDate) : null,
       lastUpdatedDate: lastUpdatedDate,
       certificateType: certType,
-      MSN: MSN.trim(),
-      wareHouse: warehouse.trim(),
+      MSN: MSN && MSN.trim(),
+      wareHouse: warehouse && warehouse.trim(),
       stock: stock,
-      stockLocation: stockLocation.trim(),
-      airlineCompany: airlineCompany.trim(),
-      MSDS: MSDS.trim()
+      stockLocation: stockLocation && stockLocation.trim(),
+      airlineCompany: airlineCompany && airlineCompany.trim(),
+      MSDS: MSDS && MSDS.trim()
     };
 
     handleAddPart(rfqPart);
-
+    setRfqPartId('');
     setPartNumber('');
     setPartName('');
     setReqQTY(0);
@@ -388,7 +378,7 @@ const PartList = ({
     setClientLT(0);
     setUnitPricevalueNumber(0.0);
     setUnitPricevalueString('0.00');
-    setUnitPriceCurrency(currencies[0]);
+    setCurrency('USD');
     setSupplier([]);
     setComment('');
     setDgPackagingCost(false);
@@ -641,22 +631,9 @@ const PartList = ({
                   style={{ width: '230px' }}
                 >
                   <Form.Select
-                    value={unitPriceCurrency.id} // Make sure this matches the currency.id value
+                    value={currency} // Make sure this matches the currency.id value
                     onChange={e => {
-                      const selectedCurrencyId = e.target.value;
-                      const selectedCurrency = currencies.find(
-                        currency => currency.id === selectedCurrencyId
-                      );
-
-                      if (selectedCurrency) {
-                        setUnitPriceCurrency({
-                          id: selectedCurrency.id,
-                          currency: selectedCurrency.currency,
-                          currencySymbol:
-                            selectedCurrency.currencySymbol ||
-                            getPriceCurrencySymbol(selectedCurrency.currency)
-                        });
-                      }
+                      setCurrency(e.target.value);
                     }}
                     style={{
                       width: '110px',
@@ -664,9 +641,9 @@ const PartList = ({
                       paddingLeft: '8px'
                     }}
                   >
-                    {currencies.map(currency => (
-                      <option key={currency.id} value={currency.id}>
-                        {currency.currency} ({currency.currencySymbol})
+                    {currencies.map((currencyVar, id) => (
+                      <option key={id} value={currencyVar}>
+                        {currencyVar}
                       </option>
                     ))}
                   </Form.Select>
@@ -679,7 +656,9 @@ const PartList = ({
                     onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
                       e.currentTarget.blur()
                     }
-                    placeholder={unitPriceCurrency.currency + '1,000,000.00'}
+                    placeholder={
+                      getPriceCurrencySymbol(currency) + '1,000,000.00'
+                    }
                     style={{
                       width: '110px',
                       paddingRight: '4px',
@@ -737,7 +716,7 @@ const PartList = ({
               {/* TOTAL START */}
               <td>
                 <div className="d-flex align-items-center mt-2">
-                  <span className="fw-bold">{unitPriceCurrency.currency}</span>
+                  <span className="fw-bold">{currency}</span>
                   <span className="ms-2">
                     {(unitPricevalueNumber
                       ? Math.round(unitPricevalueNumber * 100) / 100

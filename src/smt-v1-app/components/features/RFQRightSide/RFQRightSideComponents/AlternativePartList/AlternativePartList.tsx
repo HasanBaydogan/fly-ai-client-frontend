@@ -66,11 +66,8 @@ const AlternativePartList = ({
   const [unitPricevalueString, setUnitPricevalueString] =
     useState<string>('0.00');
   const [unitPricevalueNumber, setUnitPricevalueNumber] = useState<number>(0.0);
-  const [unitPriceCurrency, setUnitPriceCurrency] = useState<Currency>({
-    id: '',
-    currency: '',
-    currencySymbol: ''
-  });
+
+  const [currency, setCurrency] = useState<string>('USD');
 
   const [supplier, setSupplier] = useState<Supplier[]>([]);
   const [comment, setComment] = useState<string>('');
@@ -105,7 +102,7 @@ const AlternativePartList = ({
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
-  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [currencies, setCurrencies] = useState<string[]>([]);
 
   useEffect(() => {
     // Get all suppliers
@@ -115,8 +112,6 @@ const AlternativePartList = ({
       setSuppliers(suppResp.data);
       const currencyResp = await getAllCurrenciesFromDB();
       setCurrencies(currencyResp.data);
-      const firstCurrency = currencyResp.data[0];
-      setUnitPriceCurrency(firstCurrency);
       setIsLoading(false);
     };
     getAllSupplierAndCurrencies();
@@ -152,9 +147,11 @@ const AlternativePartList = ({
 
       right_side = right_side.substring(0, 2);
 
-      input_val = `${unitPriceCurrency.currencySymbol}${left_side}.${right_side}`;
+      input_val = `${getPriceCurrencySymbol(
+        currency
+      )}${left_side}.${right_side}`;
     } else {
-      input_val = `${unitPriceCurrency.currencySymbol}${formatNumber(
+      input_val = `${getPriceCurrencySymbol(currency)}${formatNumber(
         input_val
       )}`;
 
@@ -163,7 +160,7 @@ const AlternativePartList = ({
       }
     }
 
-    const x = input_val.split(unitPriceCurrency.currencySymbol);
+    const x = input_val.split(getPriceCurrencySymbol(currency));
     if (x.length > 1) {
       const inputValueArray = x[1].split(',');
       let totalinputValueString = '';
@@ -269,18 +266,12 @@ const AlternativePartList = ({
   };
 
   const updateUnitPrice = (foundRFQ: RFQPart) => {
-    const unitPrice = foundRFQ.unitPriceResponse.unitPrice ?? 0.0;
-    const currency = foundRFQ.unitPriceResponse.currency;
-    const currencyId = foundRFQ.unitPriceResponse.currencyId;
+    const unitPrice = foundRFQ.price ?? 0.0;
+    const currency = foundRFQ.currency;
 
     setUnitPricevalueNumber(unitPrice);
     setUnitPricevalueString(unitPrice.toFixed(2)); // Ensure string reflects the number
-
-    setUnitPriceCurrency({
-      id: currencyId,
-      currency: currency,
-      currencySymbol: getPriceCurrencySymbol(currency)
-    });
+    setCurrency(currency);
   };
 
   const handleNewAlternativePartAddition = () => {
@@ -372,11 +363,8 @@ const AlternativePartList = ({
       fndCND: fndCND,
       supplierLT: supplierLT,
       clientLT: clientLT,
-      unitPriceResponse: {
-        currencyId: unitPriceCurrency.id || null,
-        unitPrice: unitPricevalueNumber || null,
-        currency: unitPriceCurrency.currency || null
-      },
+      currency: currency,
+      price: unitPricevalueNumber,
       supplier:
         supplier.length > 0
           ? {
@@ -397,7 +385,7 @@ const AlternativePartList = ({
       MSDS: MSDS.trim()
     };
     handleAddAlternativePart(alternativeRfqPart);
-
+    setRfqPartId('');
     setPartNumber('');
     setPartName('');
     setReqQTY(0);
@@ -408,7 +396,7 @@ const AlternativePartList = ({
     setClientLT(0);
     setUnitPricevalueNumber(0.0);
     setUnitPricevalueString('0.00');
-    setUnitPriceCurrency(currencies[0]);
+    setCurrency('USD');
     setSelectedParentRFQPart([]);
     setSupplier([]);
     setComment('');
@@ -690,22 +678,9 @@ const AlternativePartList = ({
                     style={{ width: '230px' }}
                   >
                     <Form.Select
-                      value={unitPriceCurrency.id} // Make sure this matches the currency.id value
+                      value={currency} // Make sure this matches the currency.id value
                       onChange={e => {
-                        const selectedCurrencyId = e.target.value;
-                        const selectedCurrency = currencies.find(
-                          currency => currency.id === selectedCurrencyId
-                        );
-
-                        if (selectedCurrency) {
-                          setUnitPriceCurrency({
-                            id: selectedCurrency.id,
-                            currency: selectedCurrency.currency,
-                            currencySymbol:
-                              selectedCurrency.currencySymbol ||
-                              getPriceCurrencySymbol(selectedCurrency.currency)
-                          });
-                        }
+                        setCurrency(e.target.value);
                       }}
                       style={{
                         width: '110px',
@@ -713,9 +688,9 @@ const AlternativePartList = ({
                         paddingLeft: '8px'
                       }}
                     >
-                      {currencies.map(currency => (
-                        <option key={currency.id} value={currency.id}>
-                          {currency.currency} ({currency.currencySymbol})
+                      {currencies.map((currencyVar, id) => (
+                        <option key={id} value={currencyVar}>
+                          {currencyVar}
                         </option>
                       ))}
                     </Form.Select>
@@ -728,7 +703,9 @@ const AlternativePartList = ({
                       onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
                         e.currentTarget.blur()
                       }
-                      placeholder={unitPriceCurrency.currency + '1,000,000.00'}
+                      placeholder={
+                        getPriceCurrencySymbol(currency) + '1,000,000.00'
+                      }
                       style={{
                         width: '110px',
                         paddingRight: '4px',
@@ -786,9 +763,7 @@ const AlternativePartList = ({
                 {/* TOTAL START */}
                 <td>
                   <div className="d-flex align-items-center mt-2">
-                    <span className="fw-bold">
-                      {unitPriceCurrency.currency}
-                    </span>
+                    <span className="fw-bold">{currency}</span>
                     <span className="ms-2">
                       {(unitPricevalueNumber
                         ? Math.round(unitPricevalueNumber * 100) / 100
