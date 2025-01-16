@@ -1,7 +1,16 @@
 import { WizardFormData } from 'pages/modules/forms/WizardExample';
 import { useWizardFormContext } from 'providers/WizardFormProvider';
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Col, Dropdown, Form, Row, Table } from 'react-bootstrap';
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Dropdown,
+  Form,
+  Row,
+  Table
+} from 'react-bootstrap';
 import DatePicker from 'components/base/DatePicker';
 import Reka_Static from 'assets/img/logos/Reka_Static.jpg';
 import './WizardTabs.css';
@@ -160,11 +169,11 @@ const WizardAccountForm = ({ id }: { id: string }) => {
           <Card style={{ width: '12rem' }} className="border-0 mb-5">
             <Card.Img variant="top" src={Reka_Static} />
             <Card.Body className="p-0 px-1 fs-9">
-              <Card.Text className="mb-1">
+              <Card.Text className="mb-2 pt-2">
                 Bahcelievler Mah. 274/1. Sokak No:1 Ofis:16 06830 Golbasi /
                 Ankara TURKEY
               </Card.Text>
-              <Card.Text className="mb-1">
+              <Card.Text className="mb-2">
                 Phone: 0090 (312) 809 66 90
               </Card.Text>
               <Card.Text>Mobile: 0090 (507) 900 90 77</Card.Text>
@@ -188,7 +197,10 @@ const WizardAccountForm = ({ id }: { id: string }) => {
             </p>
 
             {/* Revizyon Numarası */}
-            <p className="small text-primary">REVISION {revisionNumber}</p>
+
+            <Badge bg="primary" className="small">
+              REVISION {revisionNumber}
+            </Badge>
           </div>
         </div>
       </div>
