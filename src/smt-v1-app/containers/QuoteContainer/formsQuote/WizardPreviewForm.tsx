@@ -175,7 +175,6 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                 <thead>
                   <tr>
                     <th>Sub-Total</th>
-                    <td></td>
                     <td>
                       <div className="mt-3 text-center">
                         <h5>
@@ -192,6 +191,11 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                           </span>
                         </h5>
                       </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <td className="text-sm-md">{settings.ST1}</td>
                     </td>
                   </tr>
                 </thead>
