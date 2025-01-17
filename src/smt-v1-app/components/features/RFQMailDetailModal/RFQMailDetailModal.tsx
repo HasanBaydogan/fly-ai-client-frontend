@@ -12,13 +12,31 @@ const RFQMailDetailModal = ({
   setIsDetailShow,
   bgColor,
   textColor,
-  rfqMailId
+  rfqMailId,
+  setRfqMailStatus,
+  rfqMailStatus,
+  handleStatusColor
 }: {
   isDetailShow: boolean;
   setIsDetailShow: React.Dispatch<React.SetStateAction<boolean>>;
   bgColor: string;
   textColor: string;
   rfqMailId: string;
+  setRfqMailStatus: React.Dispatch<
+    React.SetStateAction<
+      'UNREAD' | 'OPEN' | 'WFS' | 'PQ' | 'FQ' | 'NOT_RFQ' | 'NO_QUOTE' | 'SPAM'
+    >
+  >;
+  rfqMailStatus:
+    | 'UNREAD'
+    | 'OPEN'
+    | 'WFS'
+    | 'PQ'
+    | 'FQ'
+    | 'NOT_RFQ'
+    | 'NO_QUOTE'
+    | 'SPAM';
+  handleStatusColor: (rfqMailStatus: string) => void;
 }) => {
   const [rfqMailDetail, setRfqMailDetail] = useState<RFQMailDetail>();
   const [isLoading, setIsLoading] = useState(true);
@@ -127,7 +145,7 @@ const RFQMailDetailModal = ({
                           className="fw-bold"
                           style={{ color: textColor, fontSize: '12px' }}
                         >
-                          {rfqMailDetail.rfqMailStatus}
+                          {rfqMailStatus}
                         </span>
                       </div>
                     </div>
@@ -169,12 +187,15 @@ const RFQMailDetailModal = ({
                 <div className="d-flex justify-content-end">
                   {
                     <RFQActionButtons
-                      statusType={rfqMailDetail.rfqMailStatus}
+                      rfqMailDetail={rfqMailDetail}
+                      setRfqMailDetail={setRfqMailDetail}
                       rfqMailId={rfqMailDetail.rfqMailId}
                       setIsShow={setIsShowToast}
                       setMessageHeader={setMessageHeader}
                       setMessageBodyText={setMessageBodyText}
                       setVariant={setVariant}
+                      setRfqMailRowStatus={setRfqMailStatus}
+                      handleStatusColor={handleStatusColor}
                     />
                   }
                 </div>

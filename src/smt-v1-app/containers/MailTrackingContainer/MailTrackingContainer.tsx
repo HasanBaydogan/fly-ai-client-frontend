@@ -56,7 +56,11 @@ const MailTrackingContainer = () => {
   // loading until everything ready (state)
   const [loading, setLoading] = useState(false);
   // date since from (state)
-  const [sinceFromDate, setSinceFromDate] = useState(new Date());
+  const [sinceFromDate, setSinceFromDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 3); // Subtract 2 days
+    return date;
+  });
   // refresh spin active (state),
   const [isActiveRefreshSpin, setIsActiveRefreshSprin] = useState(false);
 

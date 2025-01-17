@@ -22,13 +22,6 @@ const MailTrackingHeader = ({
     <Row className="mb-3">
       <div className="d-flex justify-content-between align-items-center">
         <div className="d-flex justify-content-start align-items-center">
-          <FontAwesomeIcon
-            icon={faArrowRotateRight}
-            className="mt-3 me-3"
-            size="lg"
-            spin={loading}
-            //onClick={handleIconClick}
-          />
           <Form.Group as={Col} xs={9}>
             <Form.Label>Since From</Form.Label>
             <DatePicker

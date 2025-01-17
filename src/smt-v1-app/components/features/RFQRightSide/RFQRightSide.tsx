@@ -106,6 +106,8 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     setIsLoading(true);
     if (!foundClient) {
       toastError('Client Error', 'Client cannot be empty');
+      setIsLoadingSave(false);
+      setIsLoading(false);
     } else {
       const rfqPartRequests: RFQPartRequest[] = parts.map(
         (part): RFQPartRequest => {
@@ -211,12 +213,12 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
         setTimeout(() => {
           navigation('/mail-tracking');
           setIsLoadingSave(false);
-          setIsLoading(true);
+          setIsLoading(false);
         }, 1500);
       } else {
         toastError('An Error', 'An error occurs when saving data');
         setIsLoadingSave(false);
-        setIsLoading(true);
+        setIsLoading(false);
       }
     }
   };

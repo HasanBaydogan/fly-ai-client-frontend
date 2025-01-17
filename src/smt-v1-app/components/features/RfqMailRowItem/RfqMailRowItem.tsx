@@ -198,11 +198,14 @@ const RfqMailRowItem = ({
 
       {isDetailShow ? (
         <RFQMailDetailModal
+          rfqMailStatus={rfqMailStatus}
+          setRfqMailStatus={setRfqMailStatus}
           isDetailShow={isDetailShow}
           setIsDetailShow={setIsDetailShow}
           bgColor={bgColor}
           textColor={textColor}
           rfqMailId={rfqMail.rfqMailId}
+          handleStatusColor={handleStatusColor}
         />
       ) : null}
     </>
