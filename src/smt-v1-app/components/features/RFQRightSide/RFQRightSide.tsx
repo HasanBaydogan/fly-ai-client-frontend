@@ -21,14 +21,21 @@ import {
 } from './RFQRightSideComponents/RFQRightSideHelper';
 import { saveRFQToDB } from 'smt-v1-app/services/RFQService';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
+import { useNavigate } from 'react-router-dom';
+import { cancelRFQMail } from 'smt-v1-app/services/MailTrackingService';
 
 const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [bgColor, setBgColor] = useState('');
   const [textColor, setTextColor] = useState('');
+  const navigation = useNavigate();
   const [parts, setParts] = useState(rfq.savedRFQItems);
   const [alternativeParts, setAlternativeParts] = useState(
     rfq.alternativeRFQPartResponses
   );
+
+  const [isLoadingSave, setIsLoadingSave] = useState(false);
+  const [isLoadingCancel, setIsLoadingCancel] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [isShowToast, setIsShowToast] = useState(false);
   const [toastMessageHeader, setToastMessageHeader] = useState('');
@@ -76,9 +83,27 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     setAlternativeParts(updatedArray);
   };
 
-  const handleCancel = () => {};
+  const handleCancel = async () => {
+    setIsLoading(true);
+    setIsLoadingCancel(true);
+    const response = await cancelRFQMail(rfq.rfqMailId);
+    if (response && response.statusCode === 200) {
+      toastSuccess('Success Cancel', 'RFQ Mail is canceled successfully');
+      setTimeout(() => {
+        navigation('/mail-tracking');
+        setIsLoadingCancel(false);
+        setIsLoading(false);
+      }, 1500);
+    } else {
+      toastError('An error', 'An error occurs');
+      setIsLoadingCancel(false);
+      setIsLoading(false);
+    }
+  };
 
   const handleSaveUpdate = async () => {
+    setIsLoadingSave(true);
+    setIsLoading(true);
     if (!foundClient) {
       toastError('Client Error', 'Client cannot be empty');
     } else {
@@ -177,14 +202,21 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
       };
 
       const resp = await saveRFQToDB(savedRFQ);
-      console.log(resp);
-      if (resp.statusCode === 200) {
+
+      if (resp && resp.statusCode === 200) {
         toastSuccess(
           'Saving Success',
           'RFQ is saved successfully, directed...'
         );
+        setTimeout(() => {
+          navigation('/mail-tracking');
+          setIsLoadingSave(false);
+          setIsLoading(true);
+        }, 1500);
       } else {
-        toastError('An Error', 'An error occurs');
+        toastError('An Error', 'An error occurs when saving data');
+        setIsLoadingSave(false);
+        setIsLoading(true);
       }
     }
   };
@@ -242,6 +274,9 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
         <RFQRightSideFooter
           handleCancel={handleCancel}
           handleSaveUpdate={handleSaveUpdate}
+          isLoadingSave={isLoadingSave}
+          isLoadingCancel={isLoadingCancel}
+          isLoading={isLoading}
         />
         <ToastNotification
           isShow={isShowToast}
