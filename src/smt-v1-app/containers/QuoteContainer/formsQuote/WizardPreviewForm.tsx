@@ -1,7 +1,8 @@
 import React from 'react';
-import { Badge, Card, Col, Row, Table } from 'react-bootstrap';
+import { Card, Col, Row, Table } from 'react-bootstrap';
 import Reka_Static from 'assets/img/logos/Reka_Static.jpg';
 import './WizardTabs.css';
+import Badge from 'components/base/Badge';
 
 interface WizardPersonalFormProps {
   settings: {
@@ -21,8 +22,11 @@ interface WizardPersonalFormProps {
     ST4: string;
     CoSI2: string;
     CoSI3: { CoSIRow1: string; CoSIRow2: string };
+    reqQTY: number;
+    currency: string;
   };
   data: TableRow[];
+  selectedDate: Date | null; // Seçilen tarih
 }
 
 interface TableRow {
@@ -36,7 +40,8 @@ interface TableRow {
 
 const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
   settings,
-  data
+  data,
+  selectedDate
 }) => {
   return (
     <>
@@ -57,12 +62,16 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
         <div className="upperrightsection">
           <div className="quote-section mb-4 mt-6">
             <h2 className="text-primary">QUOTE</h2>
+
+            <p>
+              <strong>Date:</strong>{' '}
+              {selectedDate
+                ? selectedDate.toLocaleDateString()
+                : 'No date selected'}
+            </p>
             <p className="mt-2 small mt-3">
               <strong>Quote Number:</strong> {settings.quotaNumber}
             </p>
-            <Badge bg="primary" className="small">
-              REVISION {settings.RevisionNumber}
-            </Badge>
           </div>
         </div>
       </div>

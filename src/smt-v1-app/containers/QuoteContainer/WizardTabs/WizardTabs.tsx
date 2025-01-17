@@ -86,6 +86,9 @@ const WizardTabs: React.FC = () => {
       unitPrice: 2795.0
     }
   ]);
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
   const settings = {
     adress: {
       row1: 'Bahcelievler Mah. 274/1. Sokak No:1 Ofis:16 06830 Golbasi / Ankara TURKEY',
@@ -111,7 +114,9 @@ const WizardTabs: React.FC = () => {
       CoSIRow1: 'If you have any questions about this quote, please contact:',
       CoSIRow2:
         'info@rekaglobal.com | Tel: +90 312 809 66 90 | Mobile: +90 507 900 90 77'
-    }
+    },
+    reqQTY: 1,
+    currency: 'USD'
   };
 
   return (
@@ -129,12 +134,17 @@ const WizardTabs: React.FC = () => {
                   settings={settings}
                   data={data}
                   setData={setData}
+                  setSelectedDate={setSelectedDate}
                 />
               </WizardForm>
             </Tab.Pane>
             <Tab.Pane eventKey={2}>
               <WizardForm step={2}>
-                <WizardPersonalForm settings={settings} data={data} />
+                <WizardPersonalForm
+                  settings={settings}
+                  data={data}
+                  selectedDate={selectedDate}
+                />
               </WizardForm>
             </Tab.Pane>
 

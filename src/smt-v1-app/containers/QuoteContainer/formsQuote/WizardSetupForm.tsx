@@ -35,7 +35,8 @@ interface WizardSetupFormProps {
     CoSI3: { CoSIRow1: string; CoSIRow2: string };
   };
   data: TableRow[];
-  setData: React.Dispatch<React.SetStateAction<TableRow[]>>;
+  setData: (data: any[]) => void;
+  setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
 }
 
 interface TableRow {
@@ -52,7 +53,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   id,
   settings,
   data,
-  setData
+  setData,
+  setSelectedDate
 }) => {
   const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
@@ -174,9 +176,17 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         <div className="upperrightsection">
           <div className="quote-section mb-4 mt-6">
             <h2 className="text-primary">QUOTE</h2>
-            <Form.Group className="date-picker d-inline-block mt-3">
-              <DatePicker placeholder="Date" />
-            </Form.Group>
+            <Form>
+              <Form.Group className="mb-3">
+                <DatePicker
+                  placeholder="Select a date"
+                  onChange={selectedDates => {
+                    selectedDates[0];
+                    setSelectedDate(selectedDates[0]);
+                  }}
+                />
+              </Form.Group>
+            </Form>
             <p className="mt-2 small mt-3">
               <strong>Quote Number:</strong> {settings.quotaNumber}
             </p>
