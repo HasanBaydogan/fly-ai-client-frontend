@@ -38,7 +38,8 @@ const PartList = ({
   handleDeletePart,
   handleAddPart,
   alternativeParts,
-  handleDeleteAlternativePartAccordingToParentRFQNumber
+  handleDeleteAlternativePartAccordingToParentRFQNumber,
+  setAlternativeParts
 }: {
   parts: RFQPart[];
   handleDeletePart: (partNumber: string) => void;
@@ -47,6 +48,9 @@ const PartList = ({
   handleDeleteAlternativePartAccordingToParentRFQNumber: (
     alternPartNumber: string
   ) => void;
+  setAlternativeParts: React.Dispatch<
+    React.SetStateAction<AlternativeRFQPart[]>
+  >;
 }) => {
   const [isPartNumberEmpty, setIsPartNumberEmpty] = useState(false);
   const [isPartNameEmpty, setIsPartNameEmpty] = useState(false);
@@ -98,6 +102,7 @@ const PartList = ({
 
   //Edit states
   const [isEditing, setIsEditing] = useState(false);
+  const [oldPartNumber, setOldPartNumber] = useState<string>('');
   const [partId, setPartId] = useState<string | null>(null);
   const [rfqPartId, setRfqPartId] = useState<string | null>(null);
 
@@ -214,10 +219,12 @@ const PartList = ({
     const foundRFQ: RFQPart | null = parts.filter(
       part => part.partNumber === partNumber
     )[0];
-    console.log(foundRFQ);
     if (!foundRFQ) {
       console.log('Found RFQ is not valid');
     } else {
+      // Old Part Number
+      setOldPartNumber(foundRFQ.partNumber);
+
       setIsEditing(true);
       setPartName(foundRFQ.partName);
       setPartNumber(foundRFQ.partNumber);
@@ -366,6 +373,24 @@ const PartList = ({
       MSDS: MSDS && MSDS.trim()
     };
 
+    // Change  parent rfqNumber of alternativerfqpart.
+    if (oldPartNumber !== partNumber.trim()) {
+      const newAlternativeParts: AlternativeRFQPart[] = alternativeParts.map(
+        alternativePart =>
+          alternativePart.parentRFQPart.partNumber === oldPartNumber
+            ? {
+                ...alternativePart,
+                parentRFQPart: {
+                  ...alternativePart.parentRFQPart,
+                  partNumber: partNumber.trim() // Update parent part number
+                }
+              }
+            : alternativePart
+      );
+      setAlternativeParts(newAlternativeParts);
+    }
+
+    setOldPartNumber('');
     handleAddPart(rfqPart);
     setRfqPartId('');
     setPartNumber('');

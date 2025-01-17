@@ -80,7 +80,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
 
   const handleSaveUpdate = async () => {
     if (!foundClient) {
-      console.log('Client cannot be empty');
+      toastError('Client Error', 'Client cannot be empty');
     } else {
       const rfqPartRequests: RFQPartRequest[] = parts.map(
         (part): RFQPartRequest => {
@@ -176,7 +176,6 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
         clientRFQId: clientRFQId !== '' ? clientRFQId : null
       };
 
-      console.log(savedRFQ);
       const resp = await saveRFQToDB(savedRFQ);
       console.log(resp);
       if (resp.statusCode === 200) {
@@ -231,6 +230,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
             handleDeleteAlternativePartAccordingToParentRFQNumber={
               handleDeleteAlternativePartAccordingToParentRFQNumber
             }
+            setAlternativeParts={setAlternativeParts}
           />
         }
         <AlternativePartList
