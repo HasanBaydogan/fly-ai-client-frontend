@@ -61,7 +61,7 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
 
         <div className="upperrightsection">
           <div className="quote-section mb-4 mt-6">
-            <h2 className="text-primary">QUOTE</h2>
+            <h2 className="text-primary mb-3">QUOTE</h2>
 
             <p>
               <strong>Date:</strong>{' '}
@@ -69,7 +69,7 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                 ? selectedDate.toLocaleDateString()
                 : 'No date selected'}
             </p>
-            <p className="mt-2 small mt-3">
+            <p className=" mt-3">
               <strong>Quote Number:</strong> {settings.quotaNumber}
             </p>
           </div>
@@ -198,6 +198,32 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
               </Table>
             </div>
           </Col>
+          <Table striped bordered hover className="mb-3 text-center">
+            <thead>
+              <tr>
+                <th className="text-center">
+                  Comments or Special Instructions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="p-2">{settings.CoSI2}</td>
+              </tr>
+            </tbody>
+          </Table>
+          <Table striped bordered hover className="mb-3 text-center">
+            <tbody>
+              <tr>
+                <td className="p-2">
+                  {settings.CoSI3.CoSIRow1}
+                  <br />
+                  {settings.CoSI3.CoSIRow2}
+                  <br />
+                </td>
+              </tr>
+            </tbody>
+          </Table>
         </Row>
       </div>
     </>
