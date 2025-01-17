@@ -372,17 +372,17 @@ const AlternativePartList = ({
               supplierName: supplier[0].supplierName
             }
           : null,
-      comment: comment.trim(),
+      comment: comment && comment.trim(),
       dgPackagingCost: dgPackagingCst,
       tagDate: tagDate ? formatDate(tagDate) : null,
       lastUpdatedDate: lastUpdatedDate,
       certificateType: certType,
-      MSN: MSN.trim(),
-      wareHouse: warehouse.trim(),
+      MSN: MSN && MSN.trim(),
+      wareHouse: warehouse && warehouse.trim(),
       stock: stock,
-      stockLocation: stockLocation.trim(),
-      airlineCompany: airlineCompany.trim(),
-      MSDS: MSDS.trim()
+      stockLocation: stockLocation && stockLocation.trim(),
+      airlineCompany: stockLocation && airlineCompany.trim(),
+      MSDS: MSDS && MSDS.trim()
     };
     handleAddAlternativePart(alternativeRfqPart);
     setRfqPartId('');
