@@ -59,7 +59,9 @@ const WizardTabs: React.FC = () => {
     totalStep: 4
   });
 
-  //Fake Data
+  const [subTotalValues, setSubTotalValues] = useState<number[]>([0, 0, 0, 0]);
+
+  // Fake Data
   const [data, setData] = useState<TableRow[]>([
     {
       partNumber: '4122-006009',
@@ -135,6 +137,8 @@ const WizardTabs: React.FC = () => {
                   data={data}
                   setData={setData}
                   setSelectedDate={setSelectedDate}
+                  subTotalValues={subTotalValues}
+                  setSubTotalValues={setSubTotalValues}
                 />
               </WizardForm>
             </Tab.Pane>
@@ -144,6 +148,7 @@ const WizardTabs: React.FC = () => {
                   settings={settings}
                   data={data}
                   selectedDate={selectedDate}
+                  subTotalValues={subTotalValues}
                 />
               </WizardForm>
             </Tab.Pane>

@@ -1,8 +1,7 @@
 import React from 'react';
-import { Card, Col, Row, Table } from 'react-bootstrap';
+import { Card, Col, Form, Row, Table } from 'react-bootstrap';
 import Reka_Static from 'assets/img/logos/Reka_Static.jpg';
 import './WizardTabs.css';
-import Badge from 'components/base/Badge';
 
 interface WizardPersonalFormProps {
   settings: {
@@ -26,6 +25,7 @@ interface WizardPersonalFormProps {
     currency: string;
   };
   data: TableRow[];
+  subTotalValues: number[]; // Sub-total değerleri
   selectedDate: Date | null; // Seçilen tarih
 }
 
@@ -41,6 +41,7 @@ interface TableRow {
 const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
   settings,
   data,
+  subTotalValues,
   selectedDate
 }) => {
   return (
@@ -171,10 +172,11 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
           </Col>
           <Col md={4}>
             <div className="d-flex flex-column text-center">
-              <Table bordered size="sm" className="sub-total-table mb-3">
+              <Table bordered hover size="sm" className="sub-total-table mb-3">
                 <thead>
                   <tr>
                     <th>Sub-Total</th>
+                    <td></td>
                     <td>
                       <div className="mt-3 text-center">
                         <h5>
@@ -193,12 +195,75 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                       </div>
                     </td>
                   </tr>
+                </thead>
+                <tbody>
                   <tr>
+                    <td className="text-sm-md">{settings.ST1}</td>
                     <td>
-                      <td className="text-sm-md">{settings.ST1}</td>
+                      <Form.Check type="checkbox" defaultChecked disabled />
+                    </td>
+                    <td>
+                      {subTotalValues[0]?.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                      })}
                     </td>
                   </tr>
-                </thead>
+                  <tr>
+                    <td className="text-sm-md">{settings.ST2}</td>
+                    <td>
+                      <Form.Check type="checkbox" defaultChecked disabled />
+                    </td>
+                    <td>
+                      {subTotalValues[1]?.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                      })}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-sm-md">{settings.ST3}</td>
+                    <td>
+                      <Form.Check type="checkbox" disabled />
+                    </td>
+                    <td>
+                      {subTotalValues[2]?.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                      })}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-sm-md">{settings.ST4}</td>
+                    <td>
+                      <Form.Check type="checkbox" disabled />
+                    </td>
+                    <td>
+                      {subTotalValues[3]?.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                      })}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan={2} className="text-end">
+                      <strong>Total:</strong>
+                    </td>
+                    <td>
+                      <strong>
+                        {(
+                          data.reduce(
+                            (acc, row) => acc + row.qty * row.unitPrice,
+                            0
+                          ) + subTotalValues.reduce((sum, val) => sum + val, 0)
+                        ).toLocaleString('en-US', {
+                          style: 'currency',
+                          currency: 'USD'
+                        })}
+                      </strong>
+                    </td>
+                  </tr>
+                </tbody>
               </Table>
             </div>
           </Col>

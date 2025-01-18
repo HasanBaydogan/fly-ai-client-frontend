@@ -37,6 +37,8 @@ interface WizardSetupFormProps {
   data: TableRow[];
   setData: (data: any[]) => void;
   setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
+  subTotalValues: number[];
+  setSubTotalValues: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 interface TableRow {
@@ -50,21 +52,31 @@ interface TableRow {
 }
 
 const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
-  id,
   settings,
   data,
   setData,
-  setSelectedDate
+  setSelectedDate,
+  subTotalValues,
+  setSubTotalValues
 }) => {
   const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
   const [currency, setCurrency] = useState('USD');
-  const [subTotalValues, setSubTotalValues] = useState<number[]>([0, 0, 0, 0]);
 
   const handleSubTotalChange = (index: number, value: number) => {
     const updatedValues = [...subTotalValues];
     updatedValues[index] = value;
     setSubTotalValues(updatedValues);
+  };
+
+  const handleCellChange = (
+    index: number,
+    field: string,
+    value: string | number
+  ) => {
+    const updatedData = [...data];
+    updatedData[index][field] = value;
+    setData(updatedData);
   };
 
   const handleCurrencyChange = (selectedCurrency: string) => {
@@ -108,16 +120,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   const deleteRow = (index: number) => {
     const updatedData = data.filter((_, i) => i !== index);
-    setData(updatedData);
-  };
-
-  const handleCellChange = (
-    index: number,
-    field: string,
-    value: string | number
-  ) => {
-    const updatedData = [...data];
-    updatedData[index][field] = value;
     setData(updatedData);
   };
 
@@ -387,7 +389,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           </Col>
           <Col md={4}>
             <div className="d-flex flex-column text-center">
-              <Table bordered size="sm" className="sub-total-table mb-3">
+              <Table bordered hover size="sm" className="mb-4">
                 <thead>
                   <tr>
                     <th>Sub-Total</th>
@@ -412,115 +414,137 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   </tr>
                 </thead>
                 <tbody>
+                  {settings.ST1 && (
+                    <tr>
+                      <td>{settings.ST1}</td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          defaultChecked
+                          onChange={e =>
+                            handleSubTotalChange(0, subTotalValues[0])
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="number"
+                          value={subTotalValues[0]}
+                          onChange={e =>
+                            handleSubTotalChange(
+                              0,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          min={0}
+                          className="py-1"
+                          style={{ width: '80px' }}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  {settings.ST2 && (
+                    <tr>
+                      <td>{settings.ST2}</td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          defaultChecked
+                          onChange={e =>
+                            handleSubTotalChange(1, subTotalValues[1])
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="number"
+                          value={subTotalValues[1]}
+                          onChange={e =>
+                            handleSubTotalChange(
+                              1,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          min={0}
+                          className="py-1"
+                          style={{ width: '80px' }}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  {settings.ST3 && (
+                    <tr>
+                      <td>{settings.ST3}</td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          onChange={e =>
+                            handleSubTotalChange(2, subTotalValues[2])
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="number"
+                          value={subTotalValues[2]}
+                          onChange={e =>
+                            handleSubTotalChange(
+                              2,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          min={0}
+                          className="py-1"
+                          style={{ width: '80px' }}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  {settings.ST4 && (
+                    <tr>
+                      <td>{settings.ST4}</td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          onChange={e =>
+                            handleSubTotalChange(3, subTotalValues[3])
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="number"
+                          value={subTotalValues[3]}
+                          onChange={e =>
+                            handleSubTotalChange(
+                              3,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          min={0}
+                          className="py-1"
+                          style={{ width: '80px' }}
+                        />
+                      </td>
+                    </tr>
+                  )}
                   <tr>
-                    <td className="text-sm-md">{settings.ST1}</td>
+                    <td colSpan={2}>Total:</td>
                     <td>
-                      <Form.Check type="checkbox" defaultChecked />
-                    </td>
-                    <td>
-                      <Form.Control
-                        type="number"
-                        defaultValue={0}
-                        min={0}
-                        className="py-1"
-                        style={{ width: '80px' }}
-                        onChange={e =>
-                          handleSubTotalChange(
-                            0,
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-sm-md">{settings.ST2}</td>
-                    <td>
-                      <Form.Check type="checkbox" defaultChecked />
-                    </td>
-                    <td>
-                      <Form.Control
-                        type="number"
-                        defaultValue={0}
-                        min={0}
-                        className="py-1"
-                        style={{ width: '80px' }}
-                        onChange={e =>
-                          handleSubTotalChange(
-                            1,
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-sm-md">{settings.ST3}</td>
-                    <td>
-                      <Form.Check type="checkbox" />
-                    </td>
-                    <td>
-                      <Form.Control
-                        type="number"
-                        defaultValue={0}
-                        min={0}
-                        className="py-1"
-                        style={{ width: '80px' }}
-                        onChange={e =>
-                          handleSubTotalChange(
-                            2,
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-sm-md">{settings.ST4}</td>
-                    <td>
-                      <Form.Check type="checkbox" />
-                    </td>
-                    <td>
-                      <Form.Control
-                        type="number"
-                        defaultValue={0}
-                        min={0}
-                        className="py-1"
-                        style={{ width: '80px' }}
-                        onChange={e =>
-                          handleSubTotalChange(
-                            3,
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                      />
+                      <strong>
+                        {(
+                          data.reduce(
+                            (acc, row) => acc + row.qty * row.unitPrice,
+                            0
+                          ) + subTotalValues.reduce((sum, val) => sum + val, 0)
+                        ).toLocaleString('en-US', {
+                          style: 'currency',
+                          currency: 'USD'
+                        })}
+                      </strong>
                     </td>
                   </tr>
                 </tbody>
-                <thead>
-                  <tr>
-                    <th className="text-sm-md">Total</th>
-                    <td></td>
-                    <td className="text-center">
-                      <div className="mt-3 text-center">
-                        <h5>
-                          <span className="text-success">
-                            {(
-                              data.reduce(
-                                (acc, row) => acc + row.qty * row.unitPrice,
-                                0
-                              ) +
-                              subTotalValues.reduce((acc, val) => acc + val, 0)
-                            ).toLocaleString('en-US', {
-                              style: 'currency',
-                              currency: 'USD'
-                            })}
-                          </span>
-                        </h5>
-                      </div>
-                    </td>
-                  </tr>
-                </thead>
               </Table>
             </div>
           </Col>
