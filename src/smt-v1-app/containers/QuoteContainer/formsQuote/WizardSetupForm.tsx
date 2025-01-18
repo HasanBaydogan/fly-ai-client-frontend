@@ -205,13 +205,12 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               CLIENT LOCATION
             </td>
             <td className="text-white">SHIP TO</td>
-            <td>{settings.ShipTo}</td>
           </tr>
         </thead>
         <tbody>
           <tr className="text-center align-middle">
             <td colSpan={3}>{settings.ClientLocation}</td>
-            <td></td>
+            <td>{settings.ShipTo}</td>
           </tr>
           <tr className="bg-primary text-white text-center align-middle">
             <td className="text-white" style={{ width: '25%' }}>

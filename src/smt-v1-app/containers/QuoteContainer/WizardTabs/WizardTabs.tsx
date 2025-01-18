@@ -1,5 +1,5 @@
 import WizardSetupForm from '../formsQuote/WizardSetupForm';
-import WizardBillingForm from '../formsQuote/WizardSendMailForm';
+import WizardSendMailForm from '../formsQuote/WizardSendMailForm';
 import WizardFormFooter from '../wizardQuote/WizardFormFooter';
 import WizardForm from '../wizardQuote/WizardForm';
 import WizardNav from '../wizardQuote/WizardNav';
@@ -155,7 +155,7 @@ const WizardTabs: React.FC = () => {
 
             <Tab.Pane eventKey={3}>
               <WizardForm step={3}>
-                <WizardBillingForm />
+                <WizardSendMailForm />
               </WizardForm>
             </Tab.Pane>
           </Tab.Content>
