@@ -1,5 +1,7 @@
 import React from 'react';
 import { Button, Form, Row, Col, InputGroup } from 'react-bootstrap';
+import TinymceEditor from 'components/base/TinymceEditor';
+import Dropzone from 'components/base/Dropzone';
 
 const WizardSendMailForm = () => {
   return (
@@ -38,22 +40,15 @@ const WizardSendMailForm = () => {
 
         {/* Attachments Section */}
         <div className="border p-3 mb-3">
-          <h5>Attachments</h5>
-          <Row>
-            <Col md={8}></Col>
-            <Col md={4} className="text-end">
-              <Button variant="success">Add Attachment +</Button>
-            </Col>
-          </Row>
+          <Dropzone onDrop={acceptedFiles => console.log(acceptedFiles)} />
         </div>
 
         {/* Message Body */}
         <Form.Group className="mb-3">
-          <Form.Label>Message</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={8}
-            placeholder="Type your message here..."
+          <TinymceEditor
+            options={{
+              height: '20rem'
+            }}
           />
         </Form.Group>
       </Form>
