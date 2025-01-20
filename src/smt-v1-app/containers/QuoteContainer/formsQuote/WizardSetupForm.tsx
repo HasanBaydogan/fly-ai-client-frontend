@@ -1,6 +1,6 @@
 import { WizardFormData } from 'pages/modules/forms/WizardExample';
 import { useWizardFormContext } from 'providers/WizardFormProvider';
-import React, { useEffect, useState, FocusEvent } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Badge,
   Button,
@@ -50,6 +50,7 @@ interface TableRow {
   qty: number;
   unitPrice: number;
   isNew?: boolean;
+  displayPrice?: string;
 }
 
 const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
@@ -72,8 +73,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     GBP: '£',
     TRY: '₺'
   };
-  const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value.replace(/[^0-9.-]+/g, ''));
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>): void => {
+    const value = parseFloat(e.target.value);
     const formattedValue = formatCurrency(value);
     e.target.value = formattedValue;
   };
@@ -145,6 +147,18 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   const deleteRow = (index: number) => {
     const updatedData = data.filter((_, i) => i !== index);
+    setData(updatedData);
+  };
+
+  // Unit price değişikliği için yeni handler
+  const handleUnitPriceChange = (index: number, value: string) => {
+    const numericValue = parseFloat(value.replace(/[^0-9.-]+/g, '')) || 0;
+    const updatedData = [...data];
+    updatedData[index] = {
+      ...updatedData[index],
+      unitPrice: numericValue,
+      displayPrice: formatCurrency(numericValue)
+    };
     setData(updatedData);
   };
 
@@ -350,16 +364,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 </td>
                 <td>
                   <Form.Control
-                    type="number"
-                    value={row.unitPrice}
-                    onChange={e =>
-                      handleCellChange(
-                        index,
-                        'unitPrice',
-                        parseFloat(e.target.value)
-                      )
-                    }
-                    step="0.01"
+                    type="text"
+                    value={row.displayPrice || formatCurrency(row.unitPrice)}
+                    onChange={e => handleUnitPriceChange(index, e.target.value)}
+                    onWheel={e => e.currentTarget.blur()}
+                    placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
                     disabled={!row.isNew}
                   />
                 </td>
