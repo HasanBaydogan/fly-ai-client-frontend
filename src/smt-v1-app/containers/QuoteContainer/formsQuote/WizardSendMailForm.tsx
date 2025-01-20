@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Form, Row, Col, Alert } from 'react-bootstrap';
+import { Button, Form, Row, Col, Alert, Badge } from 'react-bootstrap';
 import TinymceEditor from 'components/base/TinymceEditor';
 import Dropzone from 'components/base/Dropzone';
 import { useMail } from './MailContext';
+import { Typeahead } from 'react-bootstrap-typeahead';
+import 'react-bootstrap-typeahead/css/Typeahead.css';
 
 const MAX_TOTAL_SIZE = 22 * 1024 * 1024; // 22MB in bytes
 

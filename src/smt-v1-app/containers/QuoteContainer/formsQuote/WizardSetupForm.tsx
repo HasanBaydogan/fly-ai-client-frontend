@@ -63,6 +63,22 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const [reqQTY, setReqQTY] = useState(1);
   const [currency, setCurrency] = useState('USD');
 
+  // Para birimi sembollerini tanımlayalım
+  const currencySymbols: Record<string, string> = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    TRY: '₺'
+  };
+
+  // Para birimi formatlaması için yardımcı fonksiyon
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('en-US', {
+      style: 'currency',
+      currency: currency.replace(/[^A-Z]/g, '') // Sembolleri kaldır
+    });
+  };
+
   const handleSubTotalChange = (index: number, value: number) => {
     const updatedValues = [...subTotalValues];
     updatedValues[index] = value;
@@ -80,9 +96,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   };
 
   const handleCurrencyChange = (selectedCurrency: string) => {
-    setCurrency(selectedCurrency);
+    setCurrency(selectedCurrency.replace(/[^A-Z]/g, '')); // Sadece para birimi kodunu al (USD, EUR, vs.)
 
-    // Fake Currency  Data
+    // Fake Currency Data
     const defaultQuantities: Record<string, number> = {
       USD: 35,
       EUR: 2,
@@ -90,7 +106,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       TRY: 100
     };
 
-    setReqQTY(defaultQuantities[selectedCurrency]);
+    setReqQTY(defaultQuantities[selectedCurrency.replace(/[^A-Z]/g, '')]);
   };
 
   const handleQtyChange = (index: number, value: number) => {
@@ -338,12 +354,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     disabled={!row.isNew}
                   />
                 </td>
-                <td>
-                  {(row.qty * row.unitPrice).toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD'
-                  })}
-                </td>
+                <td>{formatCurrency(row.qty * row.unitPrice)}</td>
                 <td className="button-cell">
                   <div className="action-buttons">
                     <Button
@@ -397,15 +408,12 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <div className="mt-3 text-center">
                         <h5>
                           <span className="text-primary ms-2">
-                            {data
-                              .reduce(
+                            {formatCurrency(
+                              data.reduce(
                                 (acc, row) => acc + row.qty * row.unitPrice,
                                 0
                               )
-                              .toLocaleString('en-US', {
-                                style: 'currency',
-                                currency: 'USD'
-                              })}
+                            )}
                           </span>
                         </h5>
                       </div>
@@ -531,15 +539,12 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     <td colSpan={2}>Total:</td>
                     <td>
                       <strong>
-                        {(
+                        {formatCurrency(
                           data.reduce(
                             (acc, row) => acc + row.qty * row.unitPrice,
                             0
                           ) + subTotalValues.reduce((sum, val) => sum + val, 0)
-                        ).toLocaleString('en-US', {
-                          style: 'currency',
-                          currency: 'USD'
-                        })}
+                        )}
                       </strong>
                     </td>
                   </tr>
