@@ -118,49 +118,110 @@ const WizardSendMailForm: React.FC = ({ onNext }: { onNext: () => void }) => {
         <Row className="mb-3">
           <Form.Group as={Col} md={12}>
             <Form.Label>To</Form.Label>
-            {renderEmailTags(toEmails, setToEmails)}
-            <Form.Control
-              type="text"
+            <Typeahead
+              id="to-emails"
+              labelKey={(option: any) => {
+                if (typeof option === 'string') return option;
+                if (typeof option === 'object' && option.email)
+                  return option.email;
+                if (typeof option === 'object' && option.label)
+                  return option.label;
+                return '';
+              }}
+              multiple
+              allowNew
+              newSelectionPrefix="Add new email: "
+              options={toEmails}
               placeholder="Add recipient emails"
-              value={inputValue}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setInputValue(e.target.value)
-              }
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                handleKeyDown(e, toEmails, setToEmails)
-              }
+              selected={toEmails}
+              onChange={(selected: any[]) => {
+                setToEmails(
+                  selected.map(item => {
+                    if (typeof item === 'string') {
+                      return item;
+                    } else if ('customOption' in item) {
+                      return item.label;
+                    } else {
+                      return item;
+                    }
+                  })
+                );
+              }}
+              onInputChange={text => {
+                if (!isValidEmail(text)) {
+                  setError('Please enter a valid email address');
+                } else {
+                  setError(null);
+                }
+              }}
             />
           </Form.Group>
         </Row>
         <Row className="mb-3">
           <Form.Group as={Col} md={6}>
             <Form.Label>CC</Form.Label>
-            {renderEmailTags(ccEmails, setCcEmails)}
-            <Form.Control
-              type="text"
+            <Typeahead
+              id="cc-emails"
+              labelKey={(option: any) => {
+                if (typeof option === 'string') return option;
+                if (typeof option === 'object' && option.email)
+                  return option.email;
+                if (typeof option === 'object' && option.label)
+                  return option.label;
+                return '';
+              }}
+              multiple
+              allowNew
+              newSelectionPrefix="Add new email: "
+              options={ccEmails}
               placeholder="Add CC emails"
-              value={inputValue}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setInputValue(e.target.value)
-              }
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                handleKeyDown(e, ccEmails, setCcEmails)
-              }
+              selected={ccEmails}
+              onChange={(selected: any[]) => {
+                setCcEmails(
+                  selected.map(item => {
+                    if (typeof item === 'string') {
+                      return item;
+                    } else if ('customOption' in item) {
+                      return item.label;
+                    } else {
+                      return item;
+                    }
+                  })
+                );
+              }}
             />
           </Form.Group>
           <Form.Group as={Col} md={6}>
             <Form.Label>BCC</Form.Label>
-            {renderEmailTags(bccEmails, setBccEmails)}
-            <Form.Control
-              type="text"
+            <Typeahead
+              id="bcc-emails"
+              labelKey={(option: any) => {
+                if (typeof option === 'string') return option;
+                if (typeof option === 'object' && option.email)
+                  return option.email;
+                if (typeof option === 'object' && option.label)
+                  return option.label;
+                return '';
+              }}
+              multiple
+              allowNew
+              newSelectionPrefix="Add new email: "
+              options={bccEmails}
               placeholder="Add BCC emails"
-              value={inputValue}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setInputValue(e.target.value)
-              }
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                handleKeyDown(e, bccEmails, setBccEmails)
-              }
+              selected={bccEmails}
+              onChange={(selected: any[]) => {
+                setBccEmails(
+                  selected.map(item => {
+                    if (typeof item === 'string') {
+                      return item;
+                    } else if ('customOption' in item) {
+                      return item.label;
+                    } else {
+                      return item;
+                    }
+                  })
+                );
+              }}
             />
           </Form.Group>
         </Row>
