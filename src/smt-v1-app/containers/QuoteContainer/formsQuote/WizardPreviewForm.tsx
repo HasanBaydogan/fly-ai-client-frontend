@@ -179,13 +179,13 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                   <td>
                     {row.unitPrice.toLocaleString('en-US', {
                       style: 'currency',
-                      currency: 'USD'
+                      currency: settings.currency.replace(/[^A-Z]/g, '')
                     })}
                   </td>
                   <td>
                     {(row.qty * row.unitPrice).toLocaleString('en-US', {
                       style: 'currency',
-                      currency: 'USD'
+                      currency: settings.currency.replace(/[^A-Z]/g, '')
                     })}
                   </td>
                 </tr>
@@ -234,7 +234,10 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                                 )
                                 .toLocaleString('en-US', {
                                   style: 'currency',
-                                  currency: 'USD'
+                                  currency: settings.currency.replace(
+                                    /[^A-Z]/g,
+                                    ''
+                                  )
                                 })}
                             </span>
                           </h5>
@@ -251,7 +254,7 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         {subTotalValues[0]?.toLocaleString('en-US', {
                           style: 'currency',
-                          currency: 'USD'
+                          currency: settings.currency.replace(/[^A-Z]/g, '')
                         })}
                       </td>
                     </tr>
@@ -263,7 +266,7 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         {subTotalValues[1]?.toLocaleString('en-US', {
                           style: 'currency',
-                          currency: 'USD'
+                          currency: settings.currency.replace(/[^A-Z]/g, '')
                         })}
                       </td>
                     </tr>
@@ -275,7 +278,7 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         {subTotalValues[2]?.toLocaleString('en-US', {
                           style: 'currency',
-                          currency: 'USD'
+                          currency: settings.currency.replace(/[^A-Z]/g, '')
                         })}
                       </td>
                     </tr>
@@ -287,7 +290,7 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         {subTotalValues[3]?.toLocaleString('en-US', {
                           style: 'currency',
-                          currency: 'USD'
+                          currency: settings.currency.replace(/[^A-Z]/g, '')
                         })}
                       </td>
                     </tr>
@@ -305,7 +308,7 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                             subTotalValues.reduce((sum, val) => sum + val, 0)
                           ).toLocaleString('en-US', {
                             style: 'currency',
-                            currency: 'USD'
+                            currency: settings.currency.replace(/[^A-Z]/g, '')
                           })}
                         </strong>
                       </td>

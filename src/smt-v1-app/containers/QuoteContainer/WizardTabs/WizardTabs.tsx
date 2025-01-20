@@ -30,13 +30,13 @@ interface WizardSetupFormProps {
     ST4: string;
     CoSI2: string;
     CoSI3: { CoSIRow1: string; CoSIRow2: string };
+    currency: string;
   };
 }
 
 interface WizardFormData {
   name: string;
   accept_terms: boolean;
-  z;
   email: string;
   password: string;
   confirm_password: string;
@@ -93,6 +93,7 @@ const WizardTabs: React.FC = () => {
   ]);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currency, setCurrency] = useState('USD');
 
   const settings = {
     adress: {
@@ -121,7 +122,7 @@ const WizardTabs: React.FC = () => {
         'info@rekaglobal.com | Tel: +90 312 809 66 90 | Mobile: +90 507 900 90 77'
     },
     reqQTY: 1,
-    currency: 'USD'
+    currency: currency
   };
 
   return (
@@ -142,6 +143,7 @@ const WizardTabs: React.FC = () => {
                   setSelectedDate={setSelectedDate}
                   subTotalValues={subTotalValues}
                   setSubTotalValues={setSubTotalValues}
+                  setCurrency={setCurrency}
                 />
               </WizardForm>
             </Tab.Pane>

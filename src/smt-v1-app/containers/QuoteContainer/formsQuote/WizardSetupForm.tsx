@@ -39,6 +39,7 @@ interface WizardSetupFormProps {
   setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
   subTotalValues: number[];
   setSubTotalValues: React.Dispatch<React.SetStateAction<number[]>>;
+  setCurrency: (currency: string) => void;
 }
 
 interface TableRow {
@@ -57,11 +58,12 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   setData,
   setSelectedDate,
   subTotalValues,
-  setSubTotalValues
+  setSubTotalValues,
+  setCurrency
 }) => {
   const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
-  const [currency, setCurrency] = useState('USD');
+  const [currencyLocal, setCurrencyLocal] = useState('USD');
 
   // Para birimi sembollerini tanımlayalım
   const currencySymbols: Record<string, string> = {
@@ -75,7 +77,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString('en-US', {
       style: 'currency',
-      currency: currency.replace(/[^A-Z]/g, '') // Sembolleri kaldır
+      currency: currencyLocal.replace(/[^A-Z]/g, '') // Sembolleri kaldır
     });
   };
 
@@ -96,7 +98,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   };
 
   const handleCurrencyChange = (selectedCurrency: string) => {
-    setCurrency(selectedCurrency.replace(/[^A-Z]/g, '')); // Sadece para birimi kodunu al (USD, EUR, vs.)
+    const currencyCode = selectedCurrency.replace(/[^A-Z]/g, '');
+    setCurrency(currencyCode);
+    setCurrencyLocal(currencyCode);
 
     // Fake Currency Data
     const defaultQuantities: Record<string, number> = {
@@ -106,7 +110,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       TRY: 100
     };
 
-    setReqQTY(defaultQuantities[selectedCurrency.replace(/[^A-Z]/g, '')]);
+    setReqQTY(defaultQuantities[currencyCode]);
   };
 
   const handleQtyChange = (index: number, value: number) => {
@@ -159,7 +163,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             {/* Para Birimi Seçici */}
             <Dropdown>
               <Dropdown.Toggle variant="phoenix-secondary">
-                {currency}
+                {currencyLocal}
               </Dropdown.Toggle>
               <Dropdown.Menu className="py-2">
                 <Dropdown.Item onClick={() => handleCurrencyChange('USD$')}>
