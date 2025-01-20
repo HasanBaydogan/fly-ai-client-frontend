@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Form, Row, Col } from 'react-bootstrap';
+import { Button, Form, Row, Col, Alert } from 'react-bootstrap';
 import TinymceEditor from 'components/base/TinymceEditor';
 import Dropzone from 'components/base/Dropzone';
 import { useMail } from './MailContext';
+
+const MAX_TOTAL_SIZE = 22 * 1024 * 1024; // 22MB in bytes
 
 const WizardSendMailForm: React.FC = ({ onNext }: { onNext: () => void }) => {
   const { setMailData } = useMail();
@@ -13,6 +15,7 @@ const WizardSendMailForm: React.FC = ({ onNext }: { onNext: () => void }) => {
   const [content, setContent] = useState<string>('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [inputValue, setInputValue] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -91,9 +94,25 @@ const WizardSendMailForm: React.FC = ({ onNext }: { onNext: () => void }) => {
     );
   };
 
+  const handleDrop = (acceptedFiles: File[]) => {
+    const totalSize = acceptedFiles.reduce(
+      (acc, file) => acc + file.size,
+      attachments.reduce((acc, file) => acc + file.size, 0)
+    );
+
+    if (totalSize > MAX_TOTAL_SIZE) {
+      setError('Total attachment size cannot exceed 22MB.');
+      return;
+    }
+
+    setError(null); // Hata mesajını sıfırla
+    setAttachments(prev => [...prev, ...acceptedFiles]);
+  };
+
   return (
     <div className="p-4">
       <Form>
+        {error && <Alert variant="danger">{error}</Alert>}
         <Row className="mb-3">
           <Form.Group as={Col} md={12}>
             <Form.Label>To</Form.Label>
@@ -146,20 +165,29 @@ const WizardSendMailForm: React.FC = ({ onNext }: { onNext: () => void }) => {
 
         <Form.Group className="mb-3">
           <Form.Label>Subject</Form.Label>
-          <Form.Control type="text" placeholder="Enter subject" />
+          <Form.Control
+            type="text"
+            placeholder="Enter subject"
+            value={subject}
+            onChange={e => setSubject(e.target.value)}
+          />
         </Form.Group>
 
         <div className="border p-3 mb-3">
-          <Dropzone onDrop={acceptedFiles => console.log(acceptedFiles)} />
+          <Dropzone onDrop={handleDrop} />
         </div>
 
         <Form.Group className="mb-3">
           <TinymceEditor
-            options={{
-              height: '20rem'
-            }}
+            options={{ height: '20rem' }}
+            value={content}
+            onChange={(e: any) => setContent(e.target.getContent())}
           />
         </Form.Group>
+
+        <Button variant="primary" onClick={handleNext}>
+          Next
+        </Button>
       </Form>
     </div>
   );
