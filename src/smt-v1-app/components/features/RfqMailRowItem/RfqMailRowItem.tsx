@@ -6,6 +6,7 @@ import SpamIcon from '../../../../assets/img/icons/spam_icon.svg';
 import userIcon from '../../../../assets/img/icons/user-icon.svg';
 import {
   getColorStyles,
+  INACTIVE_STATUS,
   mapPointTypeToRfqMailStatus
 } from './RfqMailRowHelper';
 import completetionIcon from '../../../../assets/img/icons/completetionIcon.svg';
@@ -50,6 +51,12 @@ const RfqMailRowItem = ({
     setIsNoQuoteActive(false);
     setSpamActive(false);
 
+    if (INACTIVE_STATUS.includes(rfqMailStatus as 'PQ' | 'FQ')) {
+      setIsNotRFQActive(true);
+      setIsNoQuoteActive(true);
+      setSpamActive(true);
+      return;
+    }
     // Sadece aktif olanı `true` yapıyoruz
     if (rfqMail.isNotRFQ) {
       setIsNotRFQActive(true); // Not_RFQ aktif
@@ -64,7 +71,7 @@ const RfqMailRowItem = ({
     pointType: 'SPAM' | 'NOT_RFQ' | 'NO_QUOTE' | 'UNREAD'
   ) => {
     const response = await point(rfqMail.rfqMailId, pointType);
-    if (response.statusCode === 200) {
+    if (response && response.statusCode === 200) {
       switch (pointType) {
         case 'SPAM':
           setIsNotRFQActive(false);
@@ -90,13 +97,17 @@ const RfqMailRowItem = ({
       setMessageHeader('Success');
       setMessageBodyText('RFQMail pointed as ' + pointType);
       setIsShow(true);
+    } else if (response && response.statusCode === 406) {
+      setVariant('danger');
+      setMessageHeader('RFQMail Point Error');
+      setMessageBodyText('Priced RFQMail cannot be pointed as ' + pointType);
+      setIsShow(true);
     } else {
       setVariant('danger');
       setMessageHeader('Unknown Error');
       setMessageBodyText('There is unknown error');
       setIsShow(true);
     }
-    console.log(response);
   };
 
   return (

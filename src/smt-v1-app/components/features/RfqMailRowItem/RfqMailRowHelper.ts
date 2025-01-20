@@ -92,3 +92,5 @@ export const mapPointTypeToRfqMailStatus = (
       throw new Error(`Unknown pointType: ${pointType}`);
   }
 };
+
+export const INACTIVE_STATUS: ('PQ' | 'FQ')[] = ['FQ', 'FQ'];

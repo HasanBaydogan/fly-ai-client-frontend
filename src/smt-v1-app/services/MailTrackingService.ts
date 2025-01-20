@@ -201,7 +201,10 @@ export const point = async (
       }
     );
 
-    if (rfqMailResp.data.statusCode === 200) {
+    if (
+      rfqMailResp.data.statusCode === 200 ||
+      rfqMailResp.data.statusCode === 406
+    ) {
       return rfqMailResp.data;
     } else if (rfqMailResp.data.statusCode === 498) {
       // Expired JWT
