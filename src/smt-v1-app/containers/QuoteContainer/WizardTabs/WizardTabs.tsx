@@ -9,6 +9,8 @@ import { Card, Tab } from 'react-bootstrap';
 import classNames from 'classnames';
 import WizardPersonalForm from '../formsQuote/WizardPreviewForm';
 import { useState } from 'react';
+import { MailProvider } from '../formsQuote/MailContext';
+import ReviewMail from '../formsQuote/ReviewMail';
 
 interface WizardSetupFormProps {
   id: string;
@@ -34,6 +36,7 @@ interface WizardSetupFormProps {
 interface WizardFormData {
   name: string;
   accept_terms: boolean;
+  z;
   email: string;
   password: string;
   confirm_password: string;
@@ -156,6 +159,11 @@ const WizardTabs: React.FC = () => {
             <Tab.Pane eventKey={3}>
               <WizardForm step={3}>
                 <WizardSendMailForm />
+              </WizardForm>
+            </Tab.Pane>
+            <Tab.Pane eventKey={4}>
+              <WizardForm step={4}>
+                <ReviewMail />
               </WizardForm>
             </Tab.Pane>
           </Tab.Content>
