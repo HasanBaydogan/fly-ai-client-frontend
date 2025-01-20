@@ -1,6 +1,6 @@
 import { WizardFormData } from 'pages/modules/forms/WizardExample';
 import { useWizardFormContext } from 'providers/WizardFormProvider';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, FocusEvent } from 'react';
 import {
   Badge,
   Button,
@@ -71,6 +71,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     EUR: '€',
     GBP: '£',
     TRY: '₺'
+  };
+  const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value.replace(/[^0-9.-]+/g, ''));
+    const formattedValue = formatCurrency(value);
+    e.target.value = formattedValue;
   };
 
   // Para birimi formatlaması için yardımcı fonksiyon
@@ -439,7 +444,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       </td>
                       <td>
                         <Form.Control
-                          type="number"
+                          type="text"
                           value={subTotalValues[0]}
                           onChange={e =>
                             handleSubTotalChange(
@@ -447,9 +452,16 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               parseFloat(e.target.value) || 0
                             )
                           }
-                          min={0}
-                          className="py-1"
-                          style={{ width: '80px' }}
+                          onBlur={handleBlur}
+                          onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
+                            e.currentTarget.blur()
+                          }
+                          placeholder="$1,000,000.00"
+                          style={{
+                            width: '110px',
+                            paddingRight: '4px',
+                            paddingLeft: '8px'
+                          }}
                         />
                       </td>
                     </tr>
@@ -468,7 +480,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       </td>
                       <td>
                         <Form.Control
-                          type="number"
+                          type="text"
                           value={subTotalValues[1]}
                           onChange={e =>
                             handleSubTotalChange(
@@ -476,9 +488,16 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               parseFloat(e.target.value) || 0
                             )
                           }
-                          min={0}
-                          className="py-1"
-                          style={{ width: '80px' }}
+                          onBlur={handleBlur}
+                          onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
+                            e.currentTarget.blur()
+                          }
+                          placeholder="$1,000,000.00"
+                          style={{
+                            width: '110px',
+                            paddingRight: '4px',
+                            paddingLeft: '8px'
+                          }}
                         />
                       </td>
                     </tr>
@@ -496,7 +515,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       </td>
                       <td>
                         <Form.Control
-                          type="number"
+                          type="text"
                           value={subTotalValues[2]}
                           onChange={e =>
                             handleSubTotalChange(
@@ -504,9 +523,16 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               parseFloat(e.target.value) || 0
                             )
                           }
-                          min={0}
-                          className="py-1"
-                          style={{ width: '80px' }}
+                          onBlur={handleBlur}
+                          onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
+                            e.currentTarget.blur()
+                          }
+                          placeholder="$1,000,000.00"
+                          style={{
+                            width: '110px',
+                            paddingRight: '4px',
+                            paddingLeft: '8px'
+                          }}
                         />
                       </td>
                     </tr>
@@ -524,7 +550,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       </td>
                       <td>
                         <Form.Control
-                          type="number"
+                          type="text"
                           value={subTotalValues[3]}
                           onChange={e =>
                             handleSubTotalChange(
@@ -532,9 +558,16 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               parseFloat(e.target.value) || 0
                             )
                           }
-                          min={0}
-                          className="py-1"
-                          style={{ width: '80px' }}
+                          onBlur={handleBlur}
+                          onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
+                            e.currentTarget.blur()
+                          }
+                          placeholder="$1,000,000.00"
+                          style={{
+                            width: '110px',
+                            paddingRight: '4px',
+                            paddingLeft: '8px'
+                          }}
                         />
                       </td>
                     </tr>
