@@ -64,7 +64,17 @@ const ReviewMail: React.FC<ReviewMailProps> = ({ emailProps }) => {
         <strong>Attachments:</strong>
         <ul>
           {attachments.length > 0
-            ? attachments.map((file, index) => <li key={index}>{file.name}</li>)
+            ? attachments.map((file, index) => (
+                <li key={index}>
+                  <a
+                    href={URL.createObjectURL(file)}
+                    download={file.name}
+                    className="text-primary hover:underline"
+                  >
+                    {file.name}
+                  </a>
+                </li>
+              ))
             : 'No Attachments'}
         </ul>
       </div>
