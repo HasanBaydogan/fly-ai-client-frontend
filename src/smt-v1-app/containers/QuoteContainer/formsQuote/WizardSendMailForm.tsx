@@ -141,10 +141,38 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     setAttachments(prev => [...prev, ...acceptedFiles]);
   };
 
+  const handleEmailChange = (
+    selected: TypeaheadOption[],
+    setEmailList: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    // Get the last added email
+    const lastEmail = selected[selected.length - 1]?.label;
+
+    // Get current emails without the last one
+    const currentEmails = selected.slice(0, -1).map(item => item.label);
+
+    // Check if the last email already exists
+    if (lastEmail && currentEmails.includes(lastEmail)) {
+      setError(`Email address "${lastEmail}" is already added.`);
+      // Remove the duplicate email from selection
+      setEmailList(currentEmails);
+      return;
+    }
+
+    // If no duplicate, proceed normally
+    setError(''); // Clear any existing error
+    const uniqueEmails = [...new Set(selected.map(item => item.label))];
+    setEmailList(uniqueEmails);
+  };
+
   return (
     <div className="p-4">
       <Form>
-        {error && <Alert variant="danger">{error}</Alert>}
+        {error && (
+          <Alert variant="danger" dismissible onClose={() => setError('')}>
+            {error}
+          </Alert>
+        )}
         <Row className="mb-3">
           <Form.Group as={Col} md={12}>
             <Form.Label>To</Form.Label>
@@ -165,7 +193,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
               placeholder="Add recipient emails"
               selected={toEmails.map(email => ({ label: email }))}
               onChange={(selected: TypeaheadOption[]) => {
-                setToEmails(selected.map(item => item.label));
+                handleEmailChange(selected, setToEmails);
               }}
             />
           </Form.Group>
@@ -183,7 +211,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
               placeholder="Add CC emails"
               selected={ccEmails.map(email => ({ label: email }))}
               onChange={(selected: TypeaheadOption[]) => {
-                setCcEmails(selected.map(item => item.label));
+                handleEmailChange(selected, setCcEmails);
               }}
             />
           </Form.Group>
@@ -199,7 +227,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
               placeholder="Add BCC emails"
               selected={bccEmails.map(email => ({ label: email }))}
               onChange={(selected: TypeaheadOption[]) => {
-                setBccEmails(selected.map(item => item.label));
+                handleEmailChange(selected, setBccEmails);
               }}
             />
           </Form.Group>

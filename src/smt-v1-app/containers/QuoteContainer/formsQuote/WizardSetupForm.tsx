@@ -369,7 +369,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     onChange={e => handleUnitPriceChange(index, e.target.value)}
                     onWheel={e => e.currentTarget.blur()}
                     placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
-                    disabled={!row.isNew}
                   />
                 </td>
                 <td>{formatCurrency(row.qty * row.unitPrice)}</td>
