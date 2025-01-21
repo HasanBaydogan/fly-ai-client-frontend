@@ -156,14 +156,63 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     setData(updatedData);
   };
 
-  // Unit price değişikliği için yeni handler
+  const formatNumberInput = (value: string): string => {
+    // Remove all non-numeric characters except decimal point
+    const cleanValue = value.replace(/[^0-9.]/g, '');
+
+    // Handle empty input
+    if (!cleanValue) return '';
+
+    // Split on decimal point
+    const parts = cleanValue.split('.');
+
+    // Format the whole number part with commas
+    let wholeNumber = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (!wholeNumber) wholeNumber = '0';
+
+    // Add decimal part if it exists, limit to 2 digits
+    let decimalPart = '';
+    if (cleanValue.includes('.')) {
+      decimalPart = `.${(parts[1] || '').slice(0, 2)}`;
+    }
+
+    return wholeNumber + decimalPart;
+  };
+
   const handleUnitPriceChange = (index: number, value: string) => {
-    const numericValue = parseFloat(value.replace(/[^0-9.-]+/g, '')) || 0;
+    let cleanValue = value.replace(/[^0-9.]/g, '');
+
+    // Handle decimal points
+    const parts = cleanValue.split('.');
+    if (parts.length > 2) {
+      cleanValue = parts[0] + '.' + parts.slice(1).join('');
+    }
+    if (parts[1] && parts[1].length > 2) {
+      parts[1] = parts[1].slice(0, 2);
+      cleanValue = parts.join('.');
+    }
+
+    if (!cleanValue) {
+      // Handle empty input
+      const updatedData = [...data];
+      updatedData[index] = {
+        ...updatedData[index],
+        unitPrice: 0,
+        displayPrice: ''
+      };
+      setData(updatedData);
+      return;
+    }
+
+    const numericValue = parseFloat(cleanValue);
+    if (isNaN(numericValue)) return;
+
     const updatedData = [...data];
     updatedData[index] = {
       ...updatedData[index],
       unitPrice: numericValue,
-      displayPrice: formatCurrency(numericValue)
+      displayPrice:
+        currencySymbols[currencyLocal] + formatNumberInput(cleanValue)
     };
     setData(updatedData);
   };
@@ -371,10 +420,43 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td>
                   <Form.Control
                     type="text"
-                    value={row.displayPrice || formatCurrency(row.unitPrice)}
+                    value={
+                      row.displayPrice ||
+                      (row.unitPrice
+                        ? currencySymbols[currencyLocal] +
+                          formatNumberInput(row.unitPrice.toString())
+                        : currencySymbols[currencyLocal] + '0.00')
+                    }
                     onChange={e => handleUnitPriceChange(index, e.target.value)}
+                    onBlur={e => {
+                      const numericValue =
+                        parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0;
+                      const hasDecimal = e.target.value.includes('.');
+                      const formattedValue =
+                        currencySymbols[currencyLocal] +
+                        formatNumberInput(numericValue.toString()) +
+                        (!hasDecimal ? '.00' : '');
+
+                      const updatedData = [...data];
+                      updatedData[index] = {
+                        ...updatedData[index],
+                        unitPrice: numericValue,
+                        displayPrice: formattedValue
+                      };
+                      setData(updatedData);
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === '.') {
+                        const currentValue = e.currentTarget.value;
+                        if (!currentValue.includes('.')) {
+                          const newValue = currentValue + '.';
+                          handleUnitPriceChange(index, newValue);
+                        }
+                        e.preventDefault();
+                      }
+                    }}
                     onWheel={e => e.currentTarget.blur()}
-                    placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
+                    placeholder="0.00"
                   />
                 </td>
                 <td>{formatCurrency(row.qty * row.unitPrice)}</td>
