@@ -88,9 +88,15 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     });
   };
 
-  const handleSubTotalChange = (index: number, value: number) => {
+  const handleSubTotalChange = (index: number, value: string | number) => {
+    // Eğer string ise, sadece sayıları al
+    const numericValue =
+      typeof value === 'string'
+        ? parseFloat(value.replace(/[^0-9.-]+/g, '')) || 0
+        : value;
+
     const updatedValues = [...subTotalValues];
-    updatedValues[index] = value;
+    updatedValues[index] = numericValue;
     setSubTotalValues(updatedValues);
   };
 
@@ -453,18 +459,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Control
                           type="text"
-                          value={subTotalValues[0]}
+                          value={formatCurrency(subTotalValues[0])}
                           onChange={e =>
-                            handleSubTotalChange(
-                              0,
-                              parseFloat(e.target.value) || 0
-                            )
+                            handleSubTotalChange(0, e.target.value)
                           }
-                          onBlur={handleBlur}
                           onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
                             e.currentTarget.blur()
                           }
-                          placeholder="$1,000,000.00"
+                          placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
                           style={{
                             width: '110px',
                             paddingRight: '4px',
@@ -489,18 +491,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Control
                           type="text"
-                          value={subTotalValues[1]}
+                          value={formatCurrency(subTotalValues[1])}
                           onChange={e =>
-                            handleSubTotalChange(
-                              1,
-                              parseFloat(e.target.value) || 0
-                            )
+                            handleSubTotalChange(1, e.target.value)
                           }
-                          onBlur={handleBlur}
                           onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
                             e.currentTarget.blur()
                           }
-                          placeholder="$1,000,000.00"
+                          placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
                           style={{
                             width: '110px',
                             paddingRight: '4px',
@@ -524,18 +522,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Control
                           type="text"
-                          value={subTotalValues[2]}
+                          value={formatCurrency(subTotalValues[2])}
                           onChange={e =>
-                            handleSubTotalChange(
-                              2,
-                              parseFloat(e.target.value) || 0
-                            )
+                            handleSubTotalChange(2, e.target.value)
                           }
-                          onBlur={handleBlur}
                           onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
                             e.currentTarget.blur()
                           }
-                          placeholder="$1,000,000.00"
+                          placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
                           style={{
                             width: '110px',
                             paddingRight: '4px',
@@ -559,18 +553,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Control
                           type="text"
-                          value={subTotalValues[3]}
+                          value={formatCurrency(subTotalValues[3])}
                           onChange={e =>
-                            handleSubTotalChange(
-                              3,
-                              parseFloat(e.target.value) || 0
-                            )
+                            handleSubTotalChange(3, e.target.value)
                           }
-                          onBlur={handleBlur}
                           onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
                             e.currentTarget.blur()
                           }
-                          placeholder="$1,000,000.00"
+                          placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
                           style={{
                             width: '110px',
                             paddingRight: '4px',
