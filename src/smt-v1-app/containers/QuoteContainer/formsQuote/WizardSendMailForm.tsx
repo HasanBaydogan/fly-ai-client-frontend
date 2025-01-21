@@ -175,32 +175,15 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
             <Form.Label>CC</Form.Label>
             <Typeahead
               id="cc-emails"
-              labelKey={(option: any) => {
-                if (typeof option === 'string') return option;
-                if (typeof option === 'object' && option.email)
-                  return option.email;
-                if (typeof option === 'object' && option.label)
-                  return option.label;
-                return '';
-              }}
+              labelKey="label"
               multiple
               allowNew
               newSelectionPrefix="Add new email: "
-              options={ccEmails}
+              options={ccEmails.map(email => ({ label: email }))}
               placeholder="Add CC emails"
-              selected={ccEmails}
-              onChange={(selected: any[]) => {
-                setCcEmails(
-                  selected.map(item => {
-                    if (typeof item === 'string') {
-                      return item;
-                    } else if ('customOption' in item) {
-                      return item.label;
-                    } else {
-                      return item;
-                    }
-                  })
-                );
+              selected={ccEmails.map(email => ({ label: email }))}
+              onChange={(selected: TypeaheadOption[]) => {
+                setCcEmails(selected.map(item => item.label));
               }}
             />
           </Form.Group>
@@ -208,32 +191,15 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
             <Form.Label>BCC</Form.Label>
             <Typeahead
               id="bcc-emails"
-              labelKey={(option: any) => {
-                if (typeof option === 'string') return option;
-                if (typeof option === 'object' && option.email)
-                  return option.email;
-                if (typeof option === 'object' && option.label)
-                  return option.label;
-                return '';
-              }}
+              labelKey="label"
               multiple
               allowNew
               newSelectionPrefix="Add new email: "
-              options={bccEmails}
+              options={bccEmails.map(email => ({ label: email }))}
               placeholder="Add BCC emails"
-              selected={bccEmails}
-              onChange={(selected: any[]) => {
-                setBccEmails(
-                  selected.map(item => {
-                    if (typeof item === 'string') {
-                      return item;
-                    } else if ('customOption' in item) {
-                      return item.label;
-                    } else {
-                      return item;
-                    }
-                  })
-                );
+              selected={bccEmails.map(email => ({ label: email }))}
+              onChange={(selected: TypeaheadOption[]) => {
+                setBccEmails(selected.map(item => item.label));
               }}
             />
           </Form.Group>
