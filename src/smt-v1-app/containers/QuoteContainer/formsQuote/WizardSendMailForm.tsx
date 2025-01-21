@@ -5,16 +5,23 @@ import Dropzone from 'components/base/Dropzone';
 import { useMail } from './MailContext';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
+import { defaultMailTemplate } from './defaultMailTemplate';
+import { MailProvider } from './MailContext';
+import ReviewMail from './ReviewMail';
 
 const MAX_TOTAL_SIZE = 22 * 1024 * 1024; // 22MB in bytes
 
-const WizardSendMailForm: React.FC = ({ onNext }: { onNext: () => void }) => {
+interface WizardSendMailFormProps {
+  onNext?: () => void;
+}
+
+const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({ onNext }) => {
   const { setMailData } = useMail();
   const [toEmails, setToEmails] = useState<string[]>([]);
   const [ccEmails, setCcEmails] = useState<string[]>([]);
   const [bccEmails, setBccEmails] = useState<string[]>([]);
   const [subject, setSubject] = useState<string>('');
-  const [content, setContent] = useState<string>('');
+  const [content, setContent] = useState<string>(defaultMailTemplate);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [inputValue, setInputValue] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +31,7 @@ const WizardSendMailForm: React.FC = ({ onNext }: { onNext: () => void }) => {
   };
 
   const handleNext = () => {
-    setMailData({
+    const mailDataToSend = {
       to: toEmails,
       cc: ccEmails,
       bcc: bccEmails,
@@ -33,8 +40,10 @@ const WizardSendMailForm: React.FC = ({ onNext }: { onNext: () => void }) => {
       attachments,
       quoteId: 'Q-2323123',
       rfqId: 'RFQ-2323123'
-    });
-    onNext();
+    };
+
+    setMailData(mailDataToSend);
+    if (onNext) onNext();
   };
 
   const handleKeyDown = (
@@ -242,15 +251,13 @@ const WizardSendMailForm: React.FC = ({ onNext }: { onNext: () => void }) => {
 
         <Form.Group className="mb-3">
           <TinymceEditor
-            options={{ height: '20rem' }}
+            options={{
+              height: '30rem'
+            }}
             value={content}
-            onChange={(e: any) => setContent(e.target.getContent())}
+            onChange={(content: string) => setContent(content)}
           />
         </Form.Group>
-
-        <Button variant="primary" onClick={handleNext}>
-          Next
-        </Button>
       </Form>
     </div>
   );
