@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import {
   convertOpenToWFS,
-  isOpenRFQMail
+  isOpenRFQMail,
+  reverseRFQMail
 } from 'smt-v1-app/services/MailTrackingService';
 
 interface RFQActionButtonsProps {
@@ -95,6 +96,17 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
     setMessageBodyText(message);
     setIsShow(true);
   }
+  const handleReverseStatus = async () => {
+    const response = await reverseRFQMail(rfqMailDetail.rfqMailId);
+    if (response && response.statusCode === 200) {
+      toastSuccess('Success', 'RFQMail is convert to UNREAD');
+      setStatusType('UNREAD');
+      setRfqMailRowStatus('UNREAD');
+      handleStatusColor('UNREAD');
+    } else {
+      toastError('Error', 'Unknown Error');
+    }
+  };
 
   const renderActionButtons = () => {
     switch (statusType) {
@@ -188,12 +200,24 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
             </Button>
           </>
         );
-      case 'NO QUOTE':
-        return <Button variant="outline-secondary">There is a Quote</Button>;
+      case 'NO_QUOTE':
+        return (
+          <Button variant="outline-secondary" onClick={handleReverseStatus}>
+            There is a Quote
+          </Button>
+        );
       case 'SPAM':
-        return <Button variant="outline-secondary">No Spam</Button>;
-      case 'NOT RFQ':
-        return <Button variant="outline-secondary">It is a RFQ</Button>;
+        return (
+          <Button variant="outline-secondary" onClick={handleReverseStatus}>
+            No Spam
+          </Button>
+        );
+      case 'NOT_RFQ':
+        return (
+          <Button variant="outline-secondary" onClick={handleReverseStatus}>
+            It is a RFQ
+          </Button>
+        );
       default:
         return null;
     }

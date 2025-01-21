@@ -19,8 +19,8 @@ interface RFQMailDetail {
     | 'WFS'
     | 'PQ'
     | 'FQ'
-    | 'NOT RFQ'
-    | 'NO QUOTE'
+    | 'NOT_RFQ'
+    | 'NO_QUOTE'
     | 'SPAM';
   subject: string;
 }
