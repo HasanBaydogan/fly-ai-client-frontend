@@ -8,11 +8,6 @@ export const defaultMailTemplate = `
 
 <hr style="border: 1px solid #ddd; margin: 20px 0;" />
 
-<p><strong>From:</strong> "Bilgisayar Mühendisliği Bölüm Sekreterliği" &lt;bilgisayarmuh@iyte.edu.tr&gt;<br>
-<strong>To:</strong> "ÖZGÜR HAN POLAT" &lt;ozgurhanpolat@std.iyte.edu.tr&gt;<br>
-<strong>Sent:</strong> Monday, September 16, 2024 9:13:43 AM<br>
-<strong>Subject:</strong> Re: Tek Ders Dilekçesi İptali Hakkında</p>
-
 <p>Merhaba Nesli hocam,</p>
 <p>
 Ceng486 dersini alamadığım için dersin kontenjanını arttırılması için dersi veren Tuğkan hocam ile iletişim kurdum ve 

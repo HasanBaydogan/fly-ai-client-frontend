@@ -11,6 +11,7 @@ import WizardPersonalForm from '../formsQuote/WizardPreviewForm';
 import { useState } from 'react';
 import { MailProvider } from '../formsQuote/MailContext';
 import ReviewMail from '../formsQuote/ReviewMail';
+import { defaultMailTemplate } from '../formsQuote/defaultMailTemplate';
 
 interface WizardSetupFormProps {
   id: string;
@@ -125,58 +126,88 @@ const WizardTabs: React.FC = () => {
     currency: currency
   };
 
-  return (
-    <WizardFormProvider {...form}>
-      <Card className="theme-wizard">
-        <Card.Header className="bg-body-highlight pt-3 pb-2 border-bottom-0">
-          <WizardNav />
-        </Card.Header>
-        <Card.Body>
-          <Tab.Content>
-            <Tab.Pane eventKey={1}>
-              <WizardForm step={1}>
-                <WizardSetupForm
-                  id="progress"
-                  settings={settings}
-                  data={data}
-                  setData={setData}
-                  setSelectedDate={setSelectedDate}
-                  subTotalValues={subTotalValues}
-                  setSubTotalValues={setSubTotalValues}
-                  setCurrency={setCurrency}
-                />
-              </WizardForm>
-            </Tab.Pane>
-            <Tab.Pane eventKey={2}>
-              <WizardForm step={2}>
-                <WizardPersonalForm
-                  settings={settings}
-                  data={data}
-                  selectedDate={selectedDate}
-                  subTotalValues={subTotalValues}
-                />
-              </WizardForm>
-            </Tab.Pane>
+  const [toEmails, setToEmails] = useState<string[]>([]);
+  const [ccEmails, setCcEmails] = useState<string[]>([]);
+  const [bccEmails, setBccEmails] = useState<string[]>([]);
+  const [subject, setSubject] = useState<string>('');
+  const [content, setContent] = useState<string>(defaultMailTemplate);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [inputValue, setInputValue] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
-            <Tab.Pane eventKey={3}>
-              <WizardForm step={3}>
-                <WizardSendMailForm />
-              </WizardForm>
-            </Tab.Pane>
-            <Tab.Pane eventKey={4}>
-              <WizardForm step={4}>
-                <ReviewMail />
-              </WizardForm>
-            </Tab.Pane>
-          </Tab.Content>
-        </Card.Body>
-        <Card.Footer className="border-top-0">
-          <WizardFormFooter
-            className={classNames({ 'd-none': !form.getCanNextPage })}
-          />
-        </Card.Footer>
-      </Card>
-    </WizardFormProvider>
+  const emailProps = {
+    toEmails,
+    setToEmails,
+    ccEmails,
+    setCcEmails,
+    bccEmails,
+    setBccEmails,
+    subject,
+    setSubject,
+    content,
+    setContent,
+    attachments,
+    setAttachments,
+    inputValue,
+    setInputValue,
+    error,
+    setError
+  };
+
+  return (
+    <MailProvider>
+      <WizardFormProvider {...form}>
+        <Card className="theme-wizard">
+          <Card.Header className="bg-body-highlight pt-3 pb-2 border-bottom-0">
+            <WizardNav />
+          </Card.Header>
+          <Card.Body>
+            <Tab.Content>
+              <Tab.Pane eventKey={1}>
+                <WizardForm step={1}>
+                  <WizardSetupForm
+                    id="progress"
+                    settings={settings}
+                    data={data}
+                    setData={setData}
+                    setSelectedDate={setSelectedDate}
+                    subTotalValues={subTotalValues}
+                    setSubTotalValues={setSubTotalValues}
+                    setCurrency={setCurrency}
+                  />
+                </WizardForm>
+              </Tab.Pane>
+              <Tab.Pane eventKey={2}>
+                <WizardForm step={2}>
+                  <WizardPersonalForm
+                    settings={settings}
+                    data={data}
+                    subTotalValues={subTotalValues}
+                    selectedDate={selectedDate}
+                  />
+                </WizardForm>
+              </Tab.Pane>
+
+              <Tab.Pane eventKey={3}>
+                <WizardForm step={3}>
+                  <WizardSendMailForm emailProps={emailProps} />
+                </WizardForm>
+              </Tab.Pane>
+              <Tab.Pane eventKey={4}>
+                <WizardForm step={4}>
+                  <ReviewMail emailProps={emailProps} />
+                </WizardForm>
+              </Tab.Pane>
+            </Tab.Content>
+          </Card.Body>
+          <Card.Footer className="border-top-0">
+            <WizardFormFooter
+              className={classNames({ 'd-none': !form.getCanNextPage })}
+            />
+          </Card.Footer>
+        </Card>
+      </WizardFormProvider>
+    </MailProvider>
   );
 };
 

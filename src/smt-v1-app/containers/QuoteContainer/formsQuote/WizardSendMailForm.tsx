@@ -11,39 +11,60 @@ import ReviewMail from './ReviewMail';
 
 const MAX_TOTAL_SIZE = 22 * 1024 * 1024; // 22MB in bytes
 
-interface WizardSendMailFormProps {
-  onNext?: () => void;
+export interface EmailProps {
+  toEmails: string[];
+  setToEmails: React.Dispatch<React.SetStateAction<string[]>>;
+  ccEmails: string[];
+  setCcEmails: React.Dispatch<React.SetStateAction<string[]>>;
+  bccEmails: string[];
+  setBccEmails: React.Dispatch<React.SetStateAction<string[]>>;
+  subject: string;
+  setSubject: React.Dispatch<React.SetStateAction<string>>;
+  content: string;
+  setContent: React.Dispatch<React.SetStateAction<string>>;
+  attachments: File[];
+  setAttachments: React.Dispatch<React.SetStateAction<File[]>>;
+  inputValue: string;
+  setInputValue: React.Dispatch<React.SetStateAction<string>>;
+  error: string;
+  setError: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({ onNext }) => {
-  const { setMailData } = useMail();
-  const [toEmails, setToEmails] = useState<string[]>([]);
-  const [ccEmails, setCcEmails] = useState<string[]>([]);
-  const [bccEmails, setBccEmails] = useState<string[]>([]);
-  const [subject, setSubject] = useState<string>('');
-  const [content, setContent] = useState<string>(defaultMailTemplate);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [inputValue, setInputValue] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
+interface TypeaheadOption {
+  label: string;
+  customOption?: boolean;
+}
+
+interface WizardSendMailFormProps {
+  onNext?: () => void;
+  emailProps: EmailProps;
+}
+
+const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
+  onNext,
+  emailProps
+}) => {
+  const {
+    toEmails,
+    setToEmails,
+    ccEmails,
+    setCcEmails,
+    bccEmails,
+    setBccEmails,
+    subject,
+    setSubject,
+    content,
+    setContent,
+    attachments,
+    setAttachments,
+    inputValue,
+    setInputValue,
+    error,
+    setError
+  } = emailProps;
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const handleNext = () => {
-    const mailDataToSend = {
-      to: toEmails,
-      cc: ccEmails,
-      bcc: bccEmails,
-      subject,
-      content,
-      attachments,
-      quoteId: 'Q-2323123',
-      rfqId: 'RFQ-2323123'
-    };
-
-    setMailData(mailDataToSend);
-    if (onNext) onNext();
   };
 
   const handleKeyDown = (
@@ -129,39 +150,22 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({ onNext }) => {
             <Form.Label>To</Form.Label>
             <Typeahead
               id="to-emails"
-              labelKey={(option: any) => {
-                if (typeof option === 'string') return option;
-                if (typeof option === 'object' && option.email)
-                  return option.email;
-                if (typeof option === 'object' && option.label)
-                  return option.label;
-                return '';
-              }}
+              labelKey="label"
               multiple
-              allowNew
-              newSelectionPrefix="Add new email: "
-              options={toEmails}
-              placeholder="Add recipient emails"
-              selected={toEmails}
-              onChange={(selected: any[]) => {
-                setToEmails(
-                  selected.map(item => {
-                    if (typeof item === 'string') {
-                      return item;
-                    } else if ('customOption' in item) {
-                      return item.label;
-                    } else {
-                      return item;
-                    }
-                  })
+              allowNew={(results: Array<string | { label: string }>, props) => {
+                const text = props.text;
+                return (
+                  !results.some(r =>
+                    typeof r === 'string' ? r === text : r.label === text
+                  ) && isValidEmail(text)
                 );
               }}
-              onInputChange={text => {
-                if (!isValidEmail(text)) {
-                  setError('Please enter a valid email address');
-                } else {
-                  setError(null);
-                }
+              newSelectionPrefix="Add email: "
+              options={toEmails.map(email => ({ label: email }))}
+              placeholder="Add recipient emails"
+              selected={toEmails.map(email => ({ label: email }))}
+              onChange={(selected: TypeaheadOption[]) => {
+                setToEmails(selected.map(item => item.label));
               }}
             />
           </Form.Group>

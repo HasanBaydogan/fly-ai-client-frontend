@@ -1,10 +1,31 @@
 import React from 'react';
 import { useMail } from '../formsQuote/MailContext';
 import FeatherIcon from 'feather-icons-react';
+import { EmailProps } from './WizardSendMailForm';
 
-const ReviewMail: React.FC = () => {
-  const { to, cc, bcc, subject, content, attachments, quoteId, rfqId } =
-    useMail();
+interface ReviewMailProps {
+  emailProps: EmailProps;
+}
+
+const ReviewMail: React.FC<ReviewMailProps> = ({ emailProps }) => {
+  const {
+    toEmails,
+    setToEmails,
+    ccEmails,
+    setCcEmails,
+    bccEmails,
+    setBccEmails,
+    subject,
+    setSubject,
+    content,
+    setContent,
+    attachments,
+    setAttachments,
+    inputValue,
+    setInputValue,
+    error,
+    setError
+  } = emailProps;
 
   return (
     <div className="p-4">
@@ -16,19 +37,22 @@ const ReviewMail: React.FC = () => {
         <strong>From:</strong> username@company.com
       </p>
       <p>
-        <strong>To:</strong> {to.length > 0 ? to.join(', ') : 'Not Provided'}
+        <strong>To:</strong>{' '}
+        {toEmails.length > 0 ? toEmails.join(', ') : 'Not Provided'}
       </p>
       <p>
-        <strong>CC:</strong> {cc.length > 0 ? cc.join(', ') : 'Not Provided'}
+        <strong>CC:</strong>{' '}
+        {ccEmails.length > 0 ? ccEmails.join(', ') : 'Not Provided'}
       </p>
       <p>
-        <strong>BCC:</strong> {bcc.length > 0 ? bcc.join(', ') : 'Not Provided'}
+        <strong>BCC:</strong>{' '}
+        {bccEmails.length > 0 ? bccEmails.join(', ') : 'Not Provided'}
       </p>
       <p>
-        <strong>Quote ID:</strong> {quoteId || 'Not Provided'}
+        <strong>Quote ID:</strong> {'2551'}
       </p>
       <p>
-        <strong>RFQ ID:</strong> {rfqId || 'Not Provided'}
+        <strong>RFQ ID:</strong> {'2342'}
       </p>
       <p>
         <strong>Content:</strong>
