@@ -58,7 +58,9 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
         if (button) button.style.display = 'none';
 
         // Canvas oluştur
-        const canvas = await html2canvas(element);
+        const canvas = await html2canvas(element, {
+          scale: 1.2
+        } as any);
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
