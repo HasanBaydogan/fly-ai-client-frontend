@@ -65,13 +65,45 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
   const [currencyLocal, setCurrencyLocal] = useState('USD');
+  const [displayValues, setDisplayValues] = useState([
+    '0.00',
+    '0.00',
+    '0.00',
+    '0.00'
+  ]);
 
   // Para birimi sembollerini tanımlayalım
   const currencySymbols: Record<string, string> = {
     USD: '$',
     EUR: '€',
     GBP: '£',
-    TRY: '₺'
+    TRY: '₺',
+    RUB: '₽',
+    JPY: '¥',
+    CNY: '¥',
+    CAD: 'CA$',
+    NZD: 'NZ$',
+    AUD: '$',
+    MXN: '$',
+    CHF: 'Fr',
+    SEK: 'SEK',
+    NOK: 'NOK',
+    SGD: 'S$',
+    HKD: 'HK$',
+    INR: '₹',
+    BRL: 'R$',
+    KRW: '₩',
+    DKK: 'kr',
+    ZAR: 'R',
+    AED: 'د.إ',
+    SAR: '﷼',
+    MYR: 'RM',
+    THB: '฿',
+    IDR: 'Rp',
+    PLN: 'zł',
+    CZK: 'Kč',
+    HUF: 'Ft',
+    ILS: '₪'
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>): void => {
@@ -88,13 +120,25 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     });
   };
 
-  const handleSubTotalChange = (index: number, value: string | number) => {
-    // Eğer string ise, sadece sayıları al
-    const numericValue =
-      typeof value === 'string'
-        ? parseFloat(value.replace(/[^0-9.-]+/g, '')) || 0
-        : value;
+  const handleSubTotalChange = (index: number, value: string) => {
+    let cleanValue = value.replace(/[^0-9.]/g, '');
 
+    // Update display value immediately for responsive input
+    const newDisplayValues = [...displayValues];
+    newDisplayValues[index] = cleanValue;
+    setDisplayValues(newDisplayValues);
+
+    // Handle decimal points
+    const parts = cleanValue.split('.');
+    if (parts.length > 2) {
+      cleanValue = parts[0] + '.' + parts.slice(1).join('');
+    }
+    if (parts[1] && parts[1].length > 2) {
+      parts[1] = parts[1].slice(0, 2);
+      cleanValue = parts.join('.');
+    }
+
+    const numericValue = parseFloat(cleanValue) || 0;
     const updatedValues = [...subTotalValues];
     updatedValues[index] = numericValue;
     setSubTotalValues(updatedValues);
@@ -111,8 +155,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   };
 
   const handleCurrencyChange = (selectedCurrency: string) => {
-    setCurrency(selectedCurrency);
-    setCurrencyLocal(selectedCurrency);
+    const currencyCode = selectedCurrency.replace(/[^A-Z]/g, '');
+    setCurrency(currencyCode);
+    setCurrencyLocal(currencyCode);
 
     // Fake Currency Data
     const defaultQuantities: Record<string, number> = {
@@ -120,10 +165,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       EUR: 2,
       GBP: 3,
       TRY: 100
-      // Add other currencies as needed
     };
 
-    setReqQTY(defaultQuantities[selectedCurrency] || 1);
+    setReqQTY(defaultQuantities[currencyCode]);
   };
 
   const handleQtyChange = (index: number, value: number) => {
@@ -217,43 +261,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     setData(updatedData);
   };
 
-  const getPriceCurrencySymbol = (currency: string) => {
-    switch (currency) {
-      case 'USD':
-        return '$';
-      case 'EUR':
-        return '€';
-      case 'GBP':
-        return '£';
-      case 'TRY':
-        return '₺';
-      case 'RUB':
-        return '₽';
-      case 'JPY':
-        return '¥';
-      case 'CNY':
-        return '¥';
-      case 'CAD':
-        return 'C$';
-      case 'AUD':
-        return 'A$';
-      case 'CHF':
-        return 'CHF';
-      case 'SGD':
-        return 'S$';
-      case 'HKD':
-        return 'HK$';
-      case 'INR':
-        return '₹';
-      case 'BRL':
-        return 'R$';
-      case 'KRW':
-        return '₩';
-      default:
-        return '';
-    }
-  };
-
   return (
     <>
       <div className="uppersection">
@@ -274,33 +281,91 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             {/* Para Birimi Seçici */}
             <Dropdown>
               <Dropdown.Toggle variant="phoenix-secondary">
-                {currencyLocal} {getPriceCurrencySymbol(currencyLocal)}
+                {currencyLocal}
               </Dropdown.Toggle>
               <Dropdown.Menu className="py-2">
-                {[
-                  'USD',
-                  'EUR',
-                  'GBP',
-                  'RUB',
-                  'TRY',
-                  'JPY',
-                  'CNY',
-                  'CAD',
-                  'AUD',
-                  'CHF',
-                  'SGD',
-                  'HKD',
-                  'INR',
-                  'BRL',
-                  'KRW'
-                ].map(currency => (
-                  <Dropdown.Item
-                    key={currency}
-                    onClick={() => handleCurrencyChange(currency)}
-                  >
-                    {currency} {getPriceCurrencySymbol(currency)}
-                  </Dropdown.Item>
-                ))}
+                <Dropdown.Item onClick={() => handleCurrencyChange('USD$')}>
+                  USD-$
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('EUR€')}>
+                  EUR-€
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('GBP£')}>
+                  GBP-£
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('TRY₺')}>
+                  TRY-₺
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('JPY')}>
+                  JPY-¥
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('CNY¥')}>
+                  CNY-¥
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('CAD')}>
+                  CAD-CA$
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('AUD')}>
+                  AUD-A$
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('MXN')}>
+                  MXN-$
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('NZD$')}>
+                  NZD-NZ$
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('CHF')}>
+                  CHF-Fr
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('SGD')}>
+                  SGD-S$
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('HKD$')}>
+                  HKD-HK$
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('ZAR')}>
+                  ZAR-R
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('INR₹')}>
+                  INR-₹
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('BRL$')}>
+                  BRL-R$
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('KRW₩')}>
+                  KRW-₩
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('DKK kr')}>
+                  DKK-kr
+                </Dropdown.Item>
+
+                <Dropdown.Item onClick={() => handleCurrencyChange('AEDد.إ')}>
+                  AED-د.إ
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('SAR﷼')}>
+                  SAR-﷼
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('MYR')}>
+                  MYR-RM
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('THB฿')}>
+                  THB-฿
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('IDR')}>
+                  IDR-Rp
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('PLNzł')}>
+                  PLN-zł
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('CZK')}>
+                  CZK-Kč
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('HUF')}>
+                  HUF-Ft
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleCurrencyChange('ILS₪')}>
+                  ILS-₪
+                </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           </Form.Group>
@@ -581,22 +646,46 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <Form.Check
                           type="checkbox"
                           defaultChecked
-                          onChange={e =>
-                            handleSubTotalChange(0, subTotalValues[0])
-                          }
+                          onChange={e => handleSubTotalChange(0, '0')}
                         />
                       </td>
                       <td>
                         <Form.Control
                           type="text"
-                          value={formatCurrency(subTotalValues[0])}
-                          onChange={e =>
-                            handleSubTotalChange(0, e.target.value)
+                          value={
+                            currencySymbols[currencyLocal] +
+                            (displayValues[0] ||
+                              formatNumberInput(subTotalValues[0].toString()))
                           }
-                          onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
-                            e.currentTarget.blur()
-                          }
-                          placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
+                          onChange={e => {
+                            const value = e.target.value.replace(
+                              currencySymbols[currencyLocal],
+                              ''
+                            );
+                            handleSubTotalChange(0, value);
+                          }}
+                          onBlur={e => {
+                            const numericValue =
+                              parseFloat(
+                                e.target.value.replace(/[^0-9.]/g, '')
+                              ) || 0;
+
+                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
+                            const formattedNumber = numericValue.toFixed(2);
+                            const formattedValue =
+                              formatNumberInput(formattedNumber);
+
+                            const newDisplayValues = [...displayValues];
+                            newDisplayValues[0] = formattedValue;
+                            setDisplayValues(newDisplayValues);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onWheel={e => e.currentTarget.blur()}
+                          placeholder="0.00"
                           style={{
                             width: '110px',
                             paddingRight: '4px',
@@ -613,22 +702,46 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <Form.Check
                           type="checkbox"
                           defaultChecked
-                          onChange={e =>
-                            handleSubTotalChange(1, subTotalValues[1])
-                          }
+                          onChange={e => handleSubTotalChange(1, '0')}
                         />
                       </td>
                       <td>
                         <Form.Control
                           type="text"
-                          value={formatCurrency(subTotalValues[1])}
-                          onChange={e =>
-                            handleSubTotalChange(1, e.target.value)
+                          value={
+                            currencySymbols[currencyLocal] +
+                            (displayValues[1] ||
+                              formatNumberInput(subTotalValues[1].toString()))
                           }
-                          onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
-                            e.currentTarget.blur()
-                          }
-                          placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
+                          onChange={e => {
+                            const value = e.target.value.replace(
+                              currencySymbols[currencyLocal],
+                              ''
+                            );
+                            handleSubTotalChange(1, value);
+                          }}
+                          onBlur={e => {
+                            const numericValue =
+                              parseFloat(
+                                e.target.value.replace(/[^0-9.]/g, '')
+                              ) || 0;
+
+                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
+                            const formattedNumber = numericValue.toFixed(2);
+                            const formattedValue =
+                              formatNumberInput(formattedNumber);
+
+                            const newDisplayValues = [...displayValues];
+                            newDisplayValues[1] = formattedValue;
+                            setDisplayValues(newDisplayValues);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onWheel={e => e.currentTarget.blur()}
+                          placeholder="0.00"
                           style={{
                             width: '110px',
                             paddingRight: '4px',
@@ -644,22 +757,46 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Check
                           type="checkbox"
-                          onChange={e =>
-                            handleSubTotalChange(2, subTotalValues[2])
-                          }
+                          onChange={e => handleSubTotalChange(2, '0')}
                         />
                       </td>
                       <td>
                         <Form.Control
                           type="text"
-                          value={formatCurrency(subTotalValues[2])}
-                          onChange={e =>
-                            handleSubTotalChange(2, e.target.value)
+                          value={
+                            currencySymbols[currencyLocal] +
+                            (displayValues[2] ||
+                              formatNumberInput(subTotalValues[2].toString()))
                           }
-                          onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
-                            e.currentTarget.blur()
-                          }
-                          placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
+                          onChange={e => {
+                            const value = e.target.value.replace(
+                              currencySymbols[currencyLocal],
+                              ''
+                            );
+                            handleSubTotalChange(2, value);
+                          }}
+                          onBlur={e => {
+                            const numericValue =
+                              parseFloat(
+                                e.target.value.replace(/[^0-9.]/g, '')
+                              ) || 0;
+
+                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
+                            const formattedNumber = numericValue.toFixed(2);
+                            const formattedValue =
+                              formatNumberInput(formattedNumber);
+
+                            const newDisplayValues = [...displayValues];
+                            newDisplayValues[2] = formattedValue;
+                            setDisplayValues(newDisplayValues);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onWheel={e => e.currentTarget.blur()}
+                          placeholder="0.00"
                           style={{
                             width: '110px',
                             paddingRight: '4px',
@@ -675,22 +812,46 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Check
                           type="checkbox"
-                          onChange={e =>
-                            handleSubTotalChange(3, subTotalValues[3])
-                          }
+                          onChange={e => handleSubTotalChange(3, '0')}
                         />
                       </td>
                       <td>
                         <Form.Control
                           type="text"
-                          value={formatCurrency(subTotalValues[3])}
-                          onChange={e =>
-                            handleSubTotalChange(3, e.target.value)
+                          value={
+                            currencySymbols[currencyLocal] +
+                            (displayValues[3] ||
+                              formatNumberInput(subTotalValues[3].toString()))
                           }
-                          onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
-                            e.currentTarget.blur()
-                          }
-                          placeholder={`0.00 ${currencySymbols[currencyLocal]}`}
+                          onChange={e => {
+                            const value = e.target.value.replace(
+                              currencySymbols[currencyLocal],
+                              ''
+                            );
+                            handleSubTotalChange(3, value);
+                          }}
+                          onBlur={e => {
+                            const numericValue =
+                              parseFloat(
+                                e.target.value.replace(/[^0-9.]/g, '')
+                              ) || 0;
+
+                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
+                            const formattedNumber = numericValue.toFixed(2);
+                            const formattedValue =
+                              formatNumberInput(formattedNumber);
+
+                            const newDisplayValues = [...displayValues];
+                            newDisplayValues[3] = formattedValue;
+                            setDisplayValues(newDisplayValues);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onWheel={e => e.currentTarget.blur()}
+                          placeholder="0.00"
                           style={{
                             width: '110px',
                             paddingRight: '4px',
