@@ -71,6 +71,12 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     '0.00',
     '0.00'
   ]);
+  const [checkedStates, setCheckedStates] = useState([
+    true,
+    true,
+    false,
+    false
+  ]);
 
   // Para birimi sembollerini tanımlayalım
   const currencySymbols: Record<string, string> = {
@@ -259,6 +265,13 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         currencySymbols[currencyLocal] + formatNumberInput(cleanValue)
     };
     setData(updatedData);
+  };
+
+  // Checkbox değişikliğini handle eden fonksiyonu güncelliyoruz
+  const handleCheckboxChange = (index: number, checked: boolean) => {
+    const newCheckedStates = [...checkedStates];
+    newCheckedStates[index] = checked;
+    setCheckedStates(newCheckedStates);
   };
 
   return (
@@ -507,7 +520,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         onChange={e =>
                           handleCellChange(index, 'leadTime', e.target.value)
                         }
-                        style={{ width: '60px' }}
+                        style={{ width: '75px' }}
                         min={1}
                       />
                       <span className="ms-2">Days</span>
@@ -646,7 +659,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <Form.Check
                           type="checkbox"
                           defaultChecked
-                          onChange={e => handleSubTotalChange(0, '0')}
+                          checked={checkedStates[0]}
+                          onChange={e =>
+                            handleCheckboxChange(0, e.target.checked)
+                          }
                         />
                       </td>
                       <td>
@@ -702,7 +718,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <Form.Check
                           type="checkbox"
                           defaultChecked
-                          onChange={e => handleSubTotalChange(1, '0')}
+                          checked={checkedStates[1]}
+                          onChange={e =>
+                            handleCheckboxChange(1, e.target.checked)
+                          }
                         />
                       </td>
                       <td>
@@ -757,7 +776,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Check
                           type="checkbox"
-                          onChange={e => handleSubTotalChange(2, '0')}
+                          checked={checkedStates[2]}
+                          onChange={e =>
+                            handleCheckboxChange(2, e.target.checked)
+                          }
                         />
                       </td>
                       <td>
@@ -812,7 +834,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Check
                           type="checkbox"
-                          onChange={e => handleSubTotalChange(3, '0')}
+                          checked={checkedStates[3]}
+                          onChange={e =>
+                            handleCheckboxChange(3, e.target.checked)
+                          }
                         />
                       </td>
                       <td>
@@ -869,7 +894,13 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           data.reduce(
                             (acc, row) => acc + row.qty * row.unitPrice,
                             0
-                          ) + subTotalValues.reduce((sum, val) => sum + val, 0)
+                          ) +
+                            subTotalValues.reduce(
+                              (sum, val, index) =>
+                                // Sadece seçili olan checkbox'ların değerlerini topla
+                                sum + (checkedStates[index] ? val : 0),
+                              0
+                            )
                         )}
                       </strong>
                     </td>
