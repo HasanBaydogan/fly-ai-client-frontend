@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import RFQHeader from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQHeader/RFQHeader';
 import RFQContent from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQContent/RFQContent';
 import RFQAttachments from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQAttachments/RFQAttachments';
@@ -10,6 +10,10 @@ import AlternativePartList from '../../components/features/RFQRightSide/RFQRight
 import RFQRightSideFooter from '../../components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideFooter/RFQRightSideFooter';
 import { MailItemMoreDetail, RFQ } from './RfqContainerTypes';
 import { mockMailItem, mockRFQ } from './mockData';
+import {
+  RFQPart,
+  AlternativeRFQPart
+} from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 
 const QuoteListContainer = ({
   mailItem = mockMailItem,
@@ -18,7 +22,32 @@ const QuoteListContainer = ({
   mailItem?: MailItemMoreDetail;
   rfq?: RFQ;
 }) => {
+  const [parts, setParts] = useState<RFQPart[]>(rfq?.savedRFQItems || []);
+  const [alternativeParts, setAlternativeParts] = useState<
+    AlternativeRFQPart[]
+  >([]);
+
   if (!mailItem || !rfq) return null;
+
+  const handleDeletePart = (partNumber: string) => {
+    setParts(prevParts =>
+      prevParts.filter(part => part.partNumber !== partNumber)
+    );
+  };
+
+  const handleAddPart = (rfqPart: RFQPart) => {
+    setParts(prevParts => [...prevParts, rfqPart]);
+  };
+
+  const handleDeleteAlternativePartAccordingToParentRFQNumber = (
+    alternPartNumber: string
+  ) => {
+    setAlternativeParts(prevParts =>
+      prevParts.filter(
+        part => part.parentRFQPart.partNumber !== alternPartNumber
+      )
+    );
+  };
 
   return (
     <div className="rfq-container d-flex flex-wrap justify-content-around ">
@@ -33,18 +62,32 @@ const QuoteListContainer = ({
         <RFQAttachments attachments={mailItem.mailItemAttachmentResponses} />
         <StatusButtonGroup />
       </div>
-
       <div className="rfq-right">
-        <Header
-          date={rfq.lastModifiedDate}
-          rfqNumberId={rfq.rfqNumberId}
-          quoteId={rfq.quoteId}
-          clientRFQId={rfq.clientRFQNumberId}
-          clientName={rfq.client}
-          bgColor="#f57c00"
-          textColor="#ffffff"
-          status={rfq.rfqMailStatus}
-        />
+        <div>
+          <Header
+            date={rfq.lastModifiedDate}
+            rfqNumberId={rfq.rfqNumberId}
+            quoteId={rfq.quoteId}
+            clientRFQId={rfq.clientRFQNumberId}
+            clientName={rfq.client}
+            bgColor="#f57c00"
+            textColor="#ffffff"
+            status={rfq.rfqMailStatus}
+          />
+        </div>
+        <div>
+          <PartList
+            parts={parts}
+            handleDeletePart={handleDeletePart}
+            handleAddPart={handleAddPart}
+            alternativeParts={alternativeParts}
+            handleDeleteAlternativePartAccordingToParentRFQNumber={
+              handleDeleteAlternativePartAccordingToParentRFQNumber
+            }
+            setAlternativeParts={setAlternativeParts}
+          />
+          <hr className="custom-line w-100 m-0" />
+        </div>
       </div>
     </div>
   );

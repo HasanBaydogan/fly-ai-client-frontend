@@ -122,10 +122,10 @@ const PartList = ({
     // Get all suppliers
     const getAllSupplierAndCurrencies = async () => {
       setIsLoading(true);
-      const suppResp = await getAllSuppliersFromDB();
-      setSuppliers(suppResp.data);
-      const currencyResp = await getAllCurrenciesFromDB();
-      setCurrencies(currencyResp.data);
+      // const suppResp = await getAllSuppliersFromDB();
+      // setSuppliers(suppResp.data);
+      // const currencyResp = await getAllCurrenciesFromDB();
+      // setCurrencies(currencyResp.data);
 
       setIsLoading(false);
     };
@@ -134,8 +134,8 @@ const PartList = ({
 
   const handleAllSuppliersRefresh = async () => {
     setIsNewSupplierLoading(true);
-    const resp = await getAllSuppliersFromDB();
-    setSuppliers(resp.data);
+    // const resp = await getAllSuppliersFromDB();
+    // setSuppliers(resp.data);
     setIsNewSupplierLoading(false);
   };
   const formatNumber = (n: string): string => {
