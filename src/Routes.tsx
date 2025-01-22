@@ -25,6 +25,7 @@ import RFQContainer from 'smt-v1-app/containers/RFQContainer/RFQContainer';
 import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
 import RFQListContainer from 'smt-v1-app/containers/RFQListContainer/RFQListContainer';
 import PrivacyPolicy from 'smt-v1-app/components/features/authentication/PrivacyPolicy/PrivacyPolicy';
+import QuoteListContainer from 'smt-v1-app/containers/QuoteListContainer/QuoteListContainer';
 
 const routes: RouteObject[] = [
   {
@@ -68,8 +69,17 @@ const routes: RouteObject[] = [
             ]
           },
           {
-            path: 'quote',
-            element: <QuoteContainer />
+            path: 'quotes',
+            children: [
+              {
+                path: 'quote',
+                element: <QuoteContainer />
+              },
+              {
+                path: 'list',
+                element: <QuoteListContainer />
+              }
+            ]
           }
         ]
       },
