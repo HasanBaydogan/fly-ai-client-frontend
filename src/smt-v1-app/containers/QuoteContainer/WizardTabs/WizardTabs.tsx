@@ -154,6 +154,13 @@ const WizardTabs: React.FC = () => {
     setError
   };
 
+  const [checkedStates, setCheckedStates] = useState([
+    true,
+    true,
+    false,
+    false
+  ]);
+
   return (
     <MailProvider>
       <WizardFormProvider {...form}>
@@ -174,6 +181,8 @@ const WizardTabs: React.FC = () => {
                     subTotalValues={subTotalValues}
                     setSubTotalValues={setSubTotalValues}
                     setCurrency={setCurrency}
+                    checkedStates={checkedStates}
+                    setCheckedStates={setCheckedStates}
                   />
                 </WizardForm>
               </Tab.Pane>
@@ -184,6 +193,7 @@ const WizardTabs: React.FC = () => {
                     data={data}
                     subTotalValues={subTotalValues}
                     selectedDate={selectedDate}
+                    checkedStates={checkedStates}
                   />
                 </WizardForm>
               </Tab.Pane>

@@ -40,6 +40,8 @@ interface WizardSetupFormProps {
   subTotalValues: number[];
   setSubTotalValues: React.Dispatch<React.SetStateAction<number[]>>;
   setCurrency: (currency: string) => void;
+  checkedStates: boolean[];
+  setCheckedStates: React.Dispatch<React.SetStateAction<boolean[]>>;
 }
 
 interface TableRow {
@@ -60,7 +62,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   setSelectedDate,
   subTotalValues,
   setSubTotalValues,
-  setCurrency
+  setCurrency,
+  checkedStates,
+  setCheckedStates
 }) => {
   const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
@@ -70,12 +74,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     '0.00',
     '0.00',
     '0.00'
-  ]);
-  const [checkedStates, setCheckedStates] = useState([
-    true,
-    true,
-    false,
-    false
   ]);
 
   // Para birimi sembollerini tanımlayalım

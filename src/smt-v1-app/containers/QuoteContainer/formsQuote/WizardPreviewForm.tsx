@@ -31,6 +31,7 @@ interface WizardPersonalFormProps {
   data: TableRow[];
   subTotalValues: number[]; // Sub-total değerleri
   selectedDate: Date | null; // Seçilen tarih
+  checkedStates: boolean[]; // Add this new prop
 }
 
 interface TableRow {
@@ -46,7 +47,8 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
   settings,
   data,
   subTotalValues,
-  selectedDate
+  selectedDate,
+  checkedStates // Add this new prop
 }) => {
   const generatePDF = async () => {
     const element = document.getElementById('pdf-content'); // PDF içeriğini al
@@ -251,7 +253,11 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                     <tr>
                       <td className="text-sm-md">{settings.ST1}</td>
                       <td>
-                        <Form.Check type="checkbox" defaultChecked disabled />
+                        <Form.Check
+                          type="checkbox"
+                          checked={checkedStates[0]}
+                          disabled
+                        />
                       </td>
                       <td>
                         {subTotalValues[0]?.toLocaleString('en-US', {
@@ -263,7 +269,11 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                     <tr>
                       <td className="text-sm-md">{settings.ST2}</td>
                       <td>
-                        <Form.Check type="checkbox" defaultChecked disabled />
+                        <Form.Check
+                          type="checkbox"
+                          checked={checkedStates[1]}
+                          disabled
+                        />
                       </td>
                       <td>
                         {subTotalValues[1]?.toLocaleString('en-US', {
@@ -275,7 +285,11 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                     <tr>
                       <td className="text-sm-md">{settings.ST3}</td>
                       <td>
-                        <Form.Check type="checkbox" disabled />
+                        <Form.Check
+                          type="checkbox"
+                          checked={checkedStates[2]}
+                          disabled
+                        />
                       </td>
                       <td>
                         {subTotalValues[2]?.toLocaleString('en-US', {
@@ -287,7 +301,11 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                     <tr>
                       <td className="text-sm-md">{settings.ST4}</td>
                       <td>
-                        <Form.Check type="checkbox" disabled />
+                        <Form.Check
+                          type="checkbox"
+                          checked={checkedStates[3]}
+                          disabled
+                        />
                       </td>
                       <td>
                         {subTotalValues[3]?.toLocaleString('en-US', {
@@ -307,7 +325,11 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
                               (acc, row) => acc + row.qty * row.unitPrice,
                               0
                             ) +
-                            subTotalValues.reduce((sum, val) => sum + val, 0)
+                            subTotalValues.reduce(
+                              (sum, val, index) =>
+                                sum + (checkedStates[index] ? val : 0), // Update total calculation
+                              0
+                            )
                           ).toLocaleString('en-US', {
                             style: 'currency',
                             currency: settings.currency.replace(/[^A-Z]/g, '')
