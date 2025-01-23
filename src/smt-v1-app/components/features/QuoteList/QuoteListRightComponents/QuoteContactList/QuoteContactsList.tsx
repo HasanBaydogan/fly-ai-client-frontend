@@ -2,9 +2,9 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
-import CustomButton from '../../../components/base/Button';
-import { Contact } from './mockData';
-import ContactAddModal from './ContactAddModal';
+import CustomButton from '../../../../../../components/base/Button';
+import { Contact } from '../../mockData';
+import ContactAddModal from '../ContactAddModal/ContactAddModal';
 
 interface QuoteContactsListProps {
   contacts: Contact[];

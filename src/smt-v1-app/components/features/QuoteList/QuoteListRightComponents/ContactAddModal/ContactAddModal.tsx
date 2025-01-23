@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-import { Contact } from './RfqContainerTypes';
+import { Contact } from '../../../../../containers/QuoteListContainer/RfqContainerTypes';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 interface ContactAddModalProps {
   show: boolean;
@@ -73,27 +75,29 @@ const ContactAddModal: React.FC<ContactAddModalProps> = ({
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Phone</Form.Label>
-            <Form.Control
-              placeholder="Phone"
+            <PhoneInput
+              country={'tr'}
               value={phone}
-              onChange={e => setPhone(e.target.value)}
+              onChange={phone => setPhone(phone)}
+              inputStyle={{ width: '100%' }}
             />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Cell Phone</Form.Label>
-            <Form.Control
-              placeholder="Cell Phone"
+            <PhoneInput
+              country={'tr'}
               value={cellPhone}
-              onChange={e => setCellPhone(e.target.value)}
+              onChange={phone => setCellPhone(phone)}
+              inputStyle={{ width: '100%' }}
             />
           </Form.Group>
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant="danger" onClick={onHide}>
           Close
         </Button>
-        <Button variant="primary" onClick={handleSubmit}>
+        <Button variant="success" onClick={handleSubmit}>
           Add Contact
         </Button>
       </Modal.Footer>

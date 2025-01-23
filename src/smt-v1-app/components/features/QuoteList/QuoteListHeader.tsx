@@ -1,4 +1,5 @@
 import React from 'react';
+import { Badge, Form } from 'react-bootstrap';
 
 const Header = ({
   date,
@@ -7,11 +8,13 @@ const Header = ({
   status,
   quoteId,
   bgColor,
+  clientName,
   textColor
 }: {
   date: string;
   rfqNumberId: string;
   quoteId: string;
+  clientName: string;
   clientRFQId: string;
   status:
     | 'UNREAD'
@@ -40,12 +43,35 @@ const Header = ({
           style={{ gap: '250px' }}
         >
           <div className="flex-column" style={{ gap: '50px' }}>
-            <h3>
+            <h4 className="mb-3 ">
               Quote Id: <span className="valueRFQ-id">{' ' + quoteId}</span>
-            </h3>
-            <h3>
+            </h4>
+            <h4>
+              Revision:{' '}
+              <Badge bg="primary" className="small mb-3">
+                REVISION 0 {/*Props Eklenebilir  */}
+              </Badge>
+            </h4>
+            <h4 className="mb-3">
               RFQ Id: <span className="valueRFQ-id">{' ' + rfqNumberId}</span>
+            </h4>
+            <h4 className="mb-4">
+              ClientRFQ Id:{' '}
+              <span className="valueRFQ-id">{' ' + clientRFQId}</span>
+            </h4>
+            <h3 className="mb-4">
+              Client: <span className="valueRFQ-id">{' ' + clientName}</span>
             </h3>
+            <h4 className="d-flex ">
+              Comment:
+              <Form.Group
+                className="mb-3 px-3"
+                controlId="exampleForm.ControlTextarea1"
+                style={{ width: '400px' }}
+              >
+                <Form.Control as="textarea" rows={4} />
+              </Form.Group>
+            </h4>
           </div>
           <div>
             <div className="px-2 rounded" style={{ backgroundColor: bgColor }}>

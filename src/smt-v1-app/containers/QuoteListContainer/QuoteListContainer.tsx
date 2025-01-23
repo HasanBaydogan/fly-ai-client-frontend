@@ -3,18 +3,22 @@ import RFQHeader from '../../components/features/RFQLeftSide/RFQLeftSideComponen
 import RFQContent from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQContent/RFQContent';
 import RFQAttachments from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQAttachments/RFQAttachments';
 import StatusButtonGroup from '../../components/features/RFQLeftSide/RFQLeftSideComponents/StatusButtonGroup/StatusButtonGroup';
-import Header from './QuoteListHeader';
+import Header from '../../components/features/QuoteList/QuoteListHeader';
 import Client from '../../components/features/RFQRightSide/RFQRightSideComponents/Client/Client';
-import PartList from '../../components/features/RFQRightSide/RFQRightSideComponents/PartList/PartList';
 import AlternativePartList from '../../components/features/RFQRightSide/RFQRightSideComponents/AlternativePartList/AlternativePartList';
 import RFQRightSideFooter from '../../components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideFooter/RFQRightSideFooter';
 import { MailItemMoreDetail, RFQ, Contact } from './RfqContainerTypes';
-import { mockMailItem, mockRFQ } from './mockData';
+import {
+  mockMailItem,
+  mockRFQ
+} from '../../components/features/QuoteList/mockData';
 import {
   RFQPart,
   AlternativeRFQPart
 } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
-import QuoteContactsList from './QuoteContactsList';
+import QuoteContactsList from '../../components/features/QuoteList/QuoteListRightComponents/QuoteContactList/QuoteContactsList';
+import QuotePartList from '../../components/features/QuoteList/QuoteListRightComponents/QuotePartList/QuotePartList';
+import QuoteListAlternativeParts from '../../components/features/QuoteList/QuoteListRightComponents/QuoteListAlternativeParts/QuoteListAlternativeParts';
 
 const QuoteListContainer = ({
   mailItem = mockMailItem,
@@ -26,7 +30,7 @@ const QuoteListContainer = ({
   const [parts, setParts] = useState<RFQPart[]>(rfq?.savedRFQItems || []);
   const [alternativeParts, setAlternativeParts] = useState<
     AlternativeRFQPart[]
-  >([]);
+  >(rfq?.alternativeRFQPartResponses || []);
   const [contacts, setContacts] = useState(rfq?.contacts || []);
 
   if (!mailItem || !rfq) return null;
@@ -93,7 +97,7 @@ const QuoteListContainer = ({
           />
         </div>
         <div>
-          <PartList
+          <QuotePartList
             parts={parts}
             handleDeletePart={handleDeletePart}
             handleAddPart={handleAddPart}
@@ -102,6 +106,12 @@ const QuoteListContainer = ({
               handleDeleteAlternativePartAccordingToParentRFQNumber
             }
             setAlternativeParts={setAlternativeParts}
+          />
+          <QuoteListAlternativeParts
+            alternativeParts={alternativeParts}
+            handleDeleteAlternativePart={
+              handleDeleteAlternativePartAccordingToParentRFQNumber
+            }
           />
           <hr className="custom-line w-100 m-0" />
         </div>
