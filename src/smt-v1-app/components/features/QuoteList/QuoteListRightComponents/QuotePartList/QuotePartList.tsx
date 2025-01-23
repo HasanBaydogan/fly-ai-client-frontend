@@ -13,9 +13,6 @@ interface QuotePartListProps {
   handleDeletePart: (partNumber: string) => void;
   handleAddPart: (rfqPart: RFQPart) => void;
   alternativeParts: AlternativeRFQPart[];
-  handleDeleteAlternativePartAccordingToParentRFQNumber: (
-    alternPartNumber: string
-  ) => void;
   setAlternativeParts: React.Dispatch<
     React.SetStateAction<AlternativeRFQPart[]>
   >;
@@ -24,7 +21,6 @@ interface QuotePartListProps {
 const QuotePartList: React.FC<QuotePartListProps> = ({
   parts,
   alternativeParts,
-  handleDeleteAlternativePartAccordingToParentRFQNumber,
   setAlternativeParts
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);

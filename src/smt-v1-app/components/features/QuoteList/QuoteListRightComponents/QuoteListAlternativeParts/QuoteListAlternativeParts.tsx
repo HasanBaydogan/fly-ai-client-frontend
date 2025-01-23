@@ -4,12 +4,10 @@ import { AlternativeRFQPart } from '../../../../../containers/RFQContainer/RfqCo
 
 interface QuoteListAlternativePartsProps {
   alternativeParts: AlternativeRFQPart[];
-  handleDeleteAlternativePart: (alternPartNumber: string) => void;
 }
 
 const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
-  alternativeParts,
-  handleDeleteAlternativePart
+  alternativeParts
 }) => {
   const [selectedParts, setSelectedParts] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);

@@ -19,6 +19,7 @@ import {
 import QuoteContactsList from '../../components/features/QuoteList/QuoteListRightComponents/QuoteContactList/QuoteContactsList';
 import QuotePartList from '../../components/features/QuoteList/QuoteListRightComponents/QuotePartList/QuotePartList';
 import QuoteListAlternativeParts from '../../components/features/QuoteList/QuoteListRightComponents/QuoteListAlternativeParts/QuoteListAlternativeParts';
+import CustomButton from '../../../components/base/Button';
 
 const QuoteListContainer = ({
   mailItem = mockMailItem,
@@ -45,16 +46,6 @@ const QuoteListContainer = ({
     setParts(prevParts => [...prevParts, rfqPart]);
   };
 
-  const handleDeleteAlternativePartAccordingToParentRFQNumber = (
-    alternPartNumber: string
-  ) => {
-    setAlternativeParts(prevParts =>
-      prevParts.filter(
-        part => part.parentRFQPart.partNumber !== alternPartNumber
-      )
-    );
-  };
-
   const handleAddContact = (contact: Contact) => {
     setContacts(prev => [...prev, contact]);
   };
@@ -64,7 +55,7 @@ const QuoteListContainer = ({
   };
 
   return (
-    <div className="rfq-container d-flex flex-wrap justify-content-around ">
+    <div className="rfq-container d-flex flex-wrap justify-content-around">
       <div className="rfq-left">
         <RFQHeader
           subject={mailItem.subject}
@@ -102,18 +93,52 @@ const QuoteListContainer = ({
             handleDeletePart={handleDeletePart}
             handleAddPart={handleAddPart}
             alternativeParts={alternativeParts}
-            handleDeleteAlternativePartAccordingToParentRFQNumber={
-              handleDeleteAlternativePartAccordingToParentRFQNumber
-            }
             setAlternativeParts={setAlternativeParts}
           />
-          <QuoteListAlternativeParts
-            alternativeParts={alternativeParts}
-            handleDeleteAlternativePart={
-              handleDeleteAlternativePartAccordingToParentRFQNumber
-            }
-          />
+          <QuoteListAlternativeParts alternativeParts={alternativeParts} />
           <hr className="custom-line w-100 m-0" />
+        </div>
+        <div
+          className="d-flex mt-3 mb-3"
+          style={{
+            justifyContent: 'space-between'
+          }}
+        >
+          <div>
+            <CustomButton
+              variant="danger"
+              onClick={() => {
+                // Handle Go to RFQ Mail click
+                console.log('Go to RFQ Mail clicked');
+              }}
+            >
+              Go to RFQ Mail
+            </CustomButton>
+          </div>
+          <div>
+            <div>
+              <CustomButton
+                variant="secondary"
+                onClick={() => {
+                  // Handle Go to RFQ Mail click
+                  console.log('Go to RFQ Mail clicked');
+                }}
+              >
+                Go to RFQ Mail
+              </CustomButton>
+            </div>
+            <div className="mt-3">
+              <CustomButton
+                variant="success"
+                onClick={() => {
+                  // Handle Quote Wizard click
+                  console.log('Quote Wizard clicked');
+                }}
+              >
+                Quote Wizard
+              </CustomButton>
+            </div>
+          </div>
         </div>
       </div>
     </div>
