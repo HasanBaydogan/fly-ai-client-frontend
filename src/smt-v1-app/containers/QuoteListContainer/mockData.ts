@@ -1,4 +1,4 @@
-import { MailItemMoreDetail, MailItemAttachment, RFQ } from './RfqContainerTypes';
+import { MailItemMoreDetail, MailItemAttachment, RFQ, RFQMailStatus} from './RfqContainerTypes';
 
 
 const mockAttachments: MailItemAttachment[] = [
@@ -32,6 +32,26 @@ Sales manager
   senderCompanyName: 'Aerospace Solutions Inc.',
   subject: 'RFQ - Urgent Parts Request'
 };
+
+export const mockContacts: Contact[] = [
+  {
+    id: '1',
+    fullName: 'John Doe',
+    email: 'john.doe@aerospace.com',
+    title: 'Sales Manager',
+    phone: '+1 555-0123',
+    cellPhone: '+1 555-4567'
+  },
+  {
+    id: '2',
+    fullName: 'Jane Smith',
+    email: 'jane.smith@aerospace.com',
+    title: 'Technical Lead',
+    phone: '+1 555-8901',
+    cellPhone: '+1 555-2345'
+  }
+];
+
 export const mockRFQ: RFQ = {
   alternativeRFQPartResponses: [],
   clientRFQNumberId: '2785674',
@@ -46,7 +66,7 @@ export const mockRFQ: RFQ = {
   rfqId: '233234',
   quoteId: '233234',
   rfqMailId: 'mail123',
-  rfqMailStatus: 'WFS',
+  rfqMailStatus: 'WFS' as RFQMailStatus,
   rfqNumberId: '233234',
   client:'Grand China LIMITED',
   savedRFQItems: [
@@ -79,5 +99,15 @@ export const mockRFQ: RFQ = {
       airlineCompany: '',
       MSDS: ''
     }
-  ]
-}; 
+  ],
+  contacts: mockContacts
+};
+
+export interface Contact {
+  id: string;
+  fullName: string;
+  email: string;
+  title: string;
+  phone: string;
+  cellPhone: string;
+}

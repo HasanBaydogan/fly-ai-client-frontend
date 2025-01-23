@@ -8,12 +8,13 @@ import Client from '../../components/features/RFQRightSide/RFQRightSideComponent
 import PartList from '../../components/features/RFQRightSide/RFQRightSideComponents/PartList/PartList';
 import AlternativePartList from '../../components/features/RFQRightSide/RFQRightSideComponents/AlternativePartList/AlternativePartList';
 import RFQRightSideFooter from '../../components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideFooter/RFQRightSideFooter';
-import { MailItemMoreDetail, RFQ } from './RfqContainerTypes';
+import { MailItemMoreDetail, RFQ, Contact } from './RfqContainerTypes';
 import { mockMailItem, mockRFQ } from './mockData';
 import {
   RFQPart,
   AlternativeRFQPart
 } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import QuoteContactsList from './QuoteContactsList';
 
 const QuoteListContainer = ({
   mailItem = mockMailItem,
@@ -26,6 +27,7 @@ const QuoteListContainer = ({
   const [alternativeParts, setAlternativeParts] = useState<
     AlternativeRFQPart[]
   >([]);
+  const [contacts, setContacts] = useState(rfq?.contacts || []);
 
   if (!mailItem || !rfq) return null;
 
@@ -47,6 +49,14 @@ const QuoteListContainer = ({
         part => part.parentRFQPart.partNumber !== alternPartNumber
       )
     );
+  };
+
+  const handleAddContact = (contact: Contact) => {
+    setContacts(prev => [...prev, contact]);
+  };
+
+  const handleDeleteContact = (contactId: string) => {
+    setContacts(prev => prev.filter(contact => contact.id !== contactId));
   };
 
   return (
@@ -73,6 +83,13 @@ const QuoteListContainer = ({
             bgColor="#f57c00"
             textColor="#ffffff"
             status={rfq.rfqMailStatus}
+          />
+        </div>
+        <div>
+          <QuoteContactsList
+            contacts={contacts}
+            handleAddContact={handleAddContact}
+            handleDeleteContact={handleDeleteContact}
           />
         </div>
         <div>
