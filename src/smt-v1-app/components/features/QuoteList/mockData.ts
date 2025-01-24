@@ -178,7 +178,36 @@ export const mockRFQ: RFQ = {
       stockLocation: 'Istanbul',
       airlineCompany: 'Turkish Airlines',
       MSDS: 'Required'
-    }
+    },
+    {
+      partId: '3',
+      rfqPartId: '1',
+      partNumber: 'ABC123',
+      partName: 'Aircraft Component',
+      reqQTY: 5,
+      fndQTY: 5,
+      reqCND: 'NE',
+      fndCND: 'NE',
+      supplierLT: 30,
+      clientLT: 45,
+      price: 1000,
+      currency: 'USD',
+      supplier: {
+        supplierId: '1',
+        supplierName: 'Supplier A',
+      },
+      comment: '',
+      dgPackagingCost: false,
+      tagDate: '',
+      lastUpdatedDate: '2024-03-20',
+      certificateType: 'CERTIFICATE_1',
+      MSN: '',
+      wareHouse: '',
+      stock: 0,
+      stockLocation: '',
+      airlineCompany: '',
+      MSDS: ''
+    },
   ],
   contacts: mockContacts
 };

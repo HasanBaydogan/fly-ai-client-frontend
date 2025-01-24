@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
 import { AlternativeRFQPart } from '../../../../../containers/RFQContainer/RfqContainerTypes';
-
+import './QuoteListAlternativeParts';
 interface QuoteListAlternativePartsProps {
   alternativeParts: AlternativeRFQPart[];
 }
