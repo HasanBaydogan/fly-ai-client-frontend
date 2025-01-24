@@ -1,0 +1,100 @@
+.tree-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.selected-segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.selected-segment-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.remove-icon {
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+}
+
+.remove-icon:hover {
+  color: #ff4444;
+}
+
+.tree-select {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.tree-item {
+  margin: 4px 0;
+}
+
+.tree-item-header {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.tree-item-header:hover {
+  background-color: #f5f5f5;
+}
+
+.tree-item-header.selected {
+  background-color: #e3f2fd;
+}
+
+.tree-icon {
+  width: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.tree-icon-placeholder {
+  width: 20px;
+}
+
+.tree-label {
+  margin-left: 4px;
+}
+
+.tree-children {
+  margin-left: 8px;
+}
+
+/* Scrollbar styling */
+.tree-select::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tree-select::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.tree-select::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.tree-select::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
