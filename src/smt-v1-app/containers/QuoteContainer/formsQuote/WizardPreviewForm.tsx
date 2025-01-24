@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import autoTable from 'jspdf-autotable';
 
 interface WizardPersonalFormProps {
   settings: {
@@ -50,33 +51,255 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
   selectedDate,
   checkedStates // Add this new prop
 }) => {
-  const generatePDF = async () => {
-    const element = document.getElementById('pdf-content'); // PDF içeriğini al
-    const button = document.getElementById('pdf-button'); // Butonu seç
+  const generatePDF = () => {
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.width;
 
-    if (element) {
-      try {
-        // PDF butonunu gizle
-        if (button) button.style.display = 'none';
+      // Logo
+      pdf.addImage(Reka_Static, 'JPEG', 10, 10, 45, 20);
+      pdf.setFontSize(10);
 
-        // Canvas oluştur
-        const canvas = await html2canvas(element, {
-          scale: 1.2
-        } as any);
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save('quote.pdf'); // PDF'i indir
-      } catch (error) {
-        console.error('PDF oluşturma sırasında bir hata oluştu:', error);
-      } finally {
-        // PDF butonunu geri göster
-        if (button) button.style.display = '';
-      }
-    } else {
-      console.error('PDF içeriği bulunamadı!');
+      //Adres
+      const maxWidth = 80; // Metnin taşmayacağı maksimum genişlik (mm)
+      const row1Lines = pdf.splitTextToSize(settings.adress.row1, maxWidth);
+      const row2Lines = pdf.splitTextToSize(settings.adress.row2, maxWidth);
+      const row3Lines = pdf.splitTextToSize(settings.adress.row3, maxWidth);
+      let currentY = 45; // İlk satırın başlangıç Y pozisyonu
+      row1Lines.forEach(line => {
+        pdf.text(line, 10, currentY);
+        currentY += 5; // Bir sonraki satırın Y pozisyonunu ayarla
+      });
+
+      row2Lines.forEach(line => {
+        pdf.text(line, 10, currentY);
+        currentY += 5;
+      });
+
+      row3Lines.forEach(line => {
+        pdf.text(line, 10, currentY);
+        currentY += 5;
+      });
+
+      // Quote başlığı ve detayları
+      pdf.setFontSize(25);
+      pdf.setFont('helvetica', 'bold'); // Yazı tipini kalın (bold) yap
+      pdf.setTextColor(51, 102, 204); // Metin rengini mavi yap
+      pdf.text('QUOTE', pageWidth - 60, 20);
+
+      // Varsayılan renk ve yazı tipine geri dön
+      pdf.setFont('helvetica', 'normal'); // Normal yazı tipi
+      pdf.setTextColor(0, 0, 0); // Siyah renk
+      pdf.setFontSize(10);
+      pdf.text(
+        `Date: ${selectedDate?.toLocaleDateString()}`,
+        pageWidth - 60,
+        30
+      );
+      pdf.text(`Quote Number: ${settings.quotaNumber}`, pageWidth - 60, 35);
+
+      // Client bilgileri tablosu
+      autoTable(pdf, {
+        startY: 65,
+        head: [['CLIENT LOCATION', 'SHIP TO']],
+        body: [[settings.ClientLocation, settings.ShipTo]],
+        theme: 'grid',
+        headStyles: { fillColor: [51, 102, 204], textColor: 255 },
+        styles: { halign: 'center', valign: 'middle' },
+        columnStyles: {
+          0: { cellWidth: 140 },
+          1: { cellWidth: 50 }
+        },
+        margin: { left: 10 }
+      });
+
+      // Shipping detayları tablosu
+      autoTable(pdf, {
+        startY: (pdf as any).lastAutoTable?.finalY + 5 || 70,
+        head: [['REQUISITIONER', 'SHIP VIA', 'CPT', 'SHIPPING TERMS']],
+        body: [
+          [
+            settings.Requisitioner,
+            settings.ShipVia,
+            settings.CPT,
+            settings.ShippingTerms
+          ]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [51, 102, 204], textColor: 255 },
+        styles: { halign: 'center', valign: 'middle' },
+        columnStyles: {
+          0: { cellWidth: 47.5 },
+          1: { cellWidth: 47.5 },
+          2: { cellWidth: 47.5 },
+          3: { cellWidth: 47.5 }
+        },
+        margin: { left: 10 }
+      });
+
+      // Ana ürün tablosu
+      const tableBody = data.map(row => [
+        row.partNumber,
+        row.alternativeTo || '-',
+        row.description,
+        `${row.leadTime} Days`,
+        row.qty,
+        row.unitPrice.toLocaleString('en-US', {
+          style: 'currency',
+          currency: settings.currency.replace(/[^A-Z]/g, '')
+        }),
+        (row.qty * row.unitPrice).toLocaleString('en-US', {
+          style: 'currency',
+          currency: settings.currency.replace(/[^A-Z]/g, '')
+        })
+      ]);
+      autoTable(pdf, {
+        startY: (pdf as any).lastAutoTable?.finalY + 5 || 70,
+        head: [
+          [
+            'PART NUMBER',
+            'ALTERNATIVE TO',
+            'DESCRIPTION',
+            'LEAD TIME',
+            'QTY',
+            'UNIT PRICE',
+            'TOTAL'
+          ]
+        ],
+        body: tableBody,
+        theme: 'grid',
+        headStyles: { fillColor: [51, 102, 204], textColor: 255 },
+        styles: { halign: 'center', valign: 'middle' },
+        columnStyles: {
+          0: { cellWidth: 28 },
+          1: { cellWidth: 28 },
+          2: { cellWidth: 50 },
+          3: { cellWidth: 20 },
+          4: { cellWidth: 14 },
+          5: { cellWidth: 25 },
+          6: { cellWidth: 25 }
+        },
+        margin: { left: 10 }
+      });
+
+      // Alt toplam ve notlar
+      const total =
+        data.reduce((acc, row) => acc + row.qty * row.unitPrice, 0) +
+        subTotalValues.reduce(
+          (sum, val, index) => sum + (checkedStates[index] ? val : 0),
+          0
+        );
+
+      // Ana ürün tablosundan sonraki Y pozisyonu
+      const startYPosition = (pdf as any).lastAutoTable?.finalY + 5 || 70;
+
+      // Sol taraftaki Comments bölümü (sayfanın %60'ı)
+      autoTable(pdf, {
+        startY: startYPosition,
+        body: [['Comments or Special Instructions'], [settings.CoSI]],
+        theme: 'grid',
+        styles: { halign: 'left', valign: 'middle' },
+        columnStyles: { 0: { cellWidth: 105 } },
+        margin: { left: 10 }
+      });
+
+      // Sağ taraftaki Sub-total bölümü (sayfanın %40'ı)
+      const subTotal = data.reduce(
+        (acc, row) => acc + row.qty * row.unitPrice,
+        0
+      );
+      autoTable(pdf, {
+        startY: startYPosition,
+        margin: { left: 125 },
+        body: [
+          [
+            'Sub-Total',
+            '',
+            {
+              content: subTotal.toLocaleString('en-US', {
+                style: 'currency',
+                currency: settings.currency.replace(/[^A-Z]/g, '')
+              }),
+              styles: { fontStyle: 'bold' }
+            }
+          ],
+          [
+            settings.ST1,
+            checkedStates[0] ? 'Yes' : 'No',
+            subTotalValues[0]?.toLocaleString('en-US', {
+              style: 'currency',
+              currency: settings.currency.replace(/[^A-Z]/g, '')
+            })
+          ],
+          [
+            settings.ST2,
+            checkedStates[1] ? 'Yes' : 'No',
+            subTotalValues[1]?.toLocaleString('en-US', {
+              style: 'currency',
+              currency: settings.currency.replace(/[^A-Z]/g, '')
+            })
+          ],
+          [
+            settings.ST3,
+            checkedStates[2] ? 'Yes' : 'No',
+            subTotalValues[2]?.toLocaleString('en-US', {
+              style: 'currency',
+              currency: settings.currency.replace(/[^A-Z]/g, '')
+            })
+          ],
+          [
+            settings.ST4,
+            checkedStates[3] ? 'Yes' : 'No',
+            subTotalValues[3]?.toLocaleString('en-US', {
+              style: 'currency',
+              currency: settings.currency.replace(/[^A-Z]/g, '')
+            })
+          ],
+          [
+            'Total',
+            '',
+            {
+              content: total.toLocaleString('en-US', {
+                style: 'currency',
+                currency: settings.currency.replace(/[^A-Z]/g, '')
+              }),
+              styles: { fontStyle: 'bold' }
+            }
+          ]
+        ],
+        theme: 'grid',
+        styles: { halign: 'center', valign: 'middle', fontSize: 9 },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 10 },
+          2: { cellWidth: 25 }
+        }
+      });
+
+      // Alttaki diğer Comments bölümleri
+      autoTable(pdf, {
+        startY: (pdf as any).lastAutoTable?.finalY + 5,
+        body: [['Comments or Special Instructions'], [settings.CoSI2]],
+        theme: 'grid',
+        headStyles: { fillColor: [51, 102, 204], textColor: 255 },
+        styles: { halign: 'left', valign: 'middle' },
+        columnStyles: { 0: { cellWidth: 190 } },
+        margin: { left: 10 }
+      });
+
+      autoTable(pdf, {
+        startY: (pdf as any).lastAutoTable?.finalY + 5,
+        body: [[settings.CoSI3.CoSIRow1], [settings.CoSI3.CoSIRow2]],
+        theme: 'grid',
+        styles: { halign: 'left', valign: 'middle' },
+        columnStyles: { 0: { cellWidth: 190 } },
+        margin: { left: 10 }
+      });
+
+      // PDF'i kaydet
+      pdf.save('quote.pdf');
+    } catch (error) {
+      console.error('PDF oluşturma sırasında bir hata oluştu:', error);
     }
   };
 
