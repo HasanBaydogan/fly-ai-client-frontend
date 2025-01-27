@@ -5,6 +5,7 @@ import { Form, Table } from 'react-bootstrap';
 import CustomButton from '../../../../../../components/base/Button';
 import { Contact } from '../../mockData';
 import ContactAddModal from '../ContactAddModal/ContactAddModal';
+import 'react-phone-input-2/lib/style.css';
 
 interface QuoteContactsListProps {
   contacts: Contact[];

@@ -6,38 +6,43 @@ export const mockSegments = [
           {
               "segmentId": "6780f14b1a140e01c3ba8b04",
               "segmentName": "Air Conditioning Systems",
-  "isSelected": false,
+              "isSelected": false,
               "subSegments": []
           },
           {
               "segmentId": "6780f14b1a140e01c3ba8b05",
               "segmentName": "Ballast Valves",
-  "isSelected": true,
+              "isSelected": false,
               "subSegments": []
           },
           {
               "segmentId": "6780f14b1a140e01c3ba8b06",
               "segmentName": "Blankets",
+              "isSelected": true,
               "subSegments": []
           },
           {
               "segmentId": "6780f14b1a140e01c3ba8b07",
               "segmentName": "Cabin Equipment and Furnishings",
+              "isSelected": false,
               "subSegments": []
           },
           {
               "segmentId": "6780f14b1a140e01c3ba8b08",
               "segmentName": "Cargo Compartments",
+              "isSelected": true,
               "subSegments": []
           },
           {
               "segmentId": "6780f14b1a140e01c3ba8b09",
               "segmentName": "Electrostatics",
+              "isSelected": true,
               "subSegments": []
           },
           {
               "segmentId": "6780f14b1a140e01c3ba8b0a",
               "segmentName": "Engine Covers",
+              "isSelected": false,
               "subSegments": []
           },
           {

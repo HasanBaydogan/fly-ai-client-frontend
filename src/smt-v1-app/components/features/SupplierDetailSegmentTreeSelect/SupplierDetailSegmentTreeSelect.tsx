@@ -1,38 +1,45 @@
-import React, { useState } from 'react';
-import { FaChevronRight, FaChevronDown, FaTimes } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 import './TreeSelect.css';
 
 interface TreeNode {
   segmentId: string;
   segmentName: string;
+  isSelected?: boolean;
   subSegments: TreeNode[];
 }
 
 interface TreeSelectProps {
   data: TreeNode[];
-  onSelect: (segmentId: string) => void;
-  selectedIds: string[];
+  onSelect: (selectedIds: string[]) => void;
 }
 
 const TreeSelectItem = ({
   node,
   level = 0,
-  onSelect,
-  selectedIds
+  selectedIds,
+  onToggleSelect
 }: {
   node: TreeNode;
   level?: number;
-  onSelect: (segmentId: string) => void;
   selectedIds: string[];
+  onToggleSelect: (segmentId: string) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const hasChildren = node.subSegments.length > 0;
+  const isSelected = selectedIds.includes(node.segmentId);
+
+  useEffect(() => {
+    if (node.isSelected) {
+      onToggleSelect(node.segmentId);
+    }
+  }, []);
 
   const handleClick = () => {
     if (hasChildren) {
       setIsOpen(!isOpen);
     } else {
-      onSelect(node.segmentId);
+      onToggleSelect(node.segmentId);
     }
   };
 
@@ -40,7 +47,7 @@ const TreeSelectItem = ({
     <div className="tree-item" style={{ marginLeft: `${level * 20}px` }}>
       <div
         className={`tree-item-header ${
-          !hasChildren && selectedIds.includes(node.segmentId) ? 'selected' : ''
+          !hasChildren && isSelected ? 'selected' : ''
         }`}
         onClick={handleClick}
       >
@@ -49,7 +56,12 @@ const TreeSelectItem = ({
             {isOpen ? <FaChevronDown /> : <FaChevronRight />}
           </span>
         ) : (
-          <span className="tree-icon-placeholder" />
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect(node.segmentId)}
+            onClick={e => e.stopPropagation()}
+          />
         )}
         <span className="tree-label">{node.segmentName}</span>
       </div>
@@ -60,8 +72,8 @@ const TreeSelectItem = ({
               key={child.segmentId}
               node={child}
               level={level + 1}
-              onSelect={onSelect}
               selectedIds={selectedIds}
+              onToggleSelect={onToggleSelect}
             />
           ))}
         </div>
@@ -70,38 +82,62 @@ const TreeSelectItem = ({
   );
 };
 
-export const TreeSelect = ({
-  data,
-  onSelect,
-  selectedIds
-}: TreeSelectProps) => {
-  // Seçili segment isimlerini bulmak için yardımcı fonksiyon
-  const findSegmentName = (id: string, nodes: TreeNode[]): string | null => {
-    for (const node of nodes) {
-      if (node.segmentId === id) return node.segmentName;
-      const found = findSegmentName(id, node.subSegments);
-      if (found) return found;
-    }
-    return null;
+export const TreeSelect = ({ data, onSelect }: TreeSelectProps) => {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const handleToggleSelect = (segmentId: string) => {
+    setSelectedIds(prev => {
+      const newSelected = prev.includes(segmentId)
+        ? prev.filter(id => id !== segmentId)
+        : [...prev, segmentId];
+      onSelect(newSelected);
+      return newSelected;
+    });
   };
 
-  const handleRemoveSegment = (segmentId: string) => {
-    onSelect(segmentId);
-  };
+  // İlk yüklemede isSelected true olanları seç
+  useEffect(() => {
+    const getInitialSelectedIds = (nodes: TreeNode[]): string[] => {
+      return nodes.reduce((acc: string[], node) => {
+        if (node.isSelected) {
+          acc.push(node.segmentId);
+        }
+        if (node.subSegments.length > 0) {
+          acc.push(...getInitialSelectedIds(node.subSegments));
+        }
+        return acc;
+      }, []);
+    };
+
+    const initialSelected = getInitialSelectedIds(data);
+    setSelectedIds(initialSelected);
+    onSelect(initialSelected);
+  }, [data]);
 
   return (
     <div className="tree-select-container">
       <div className="selected-segments">
         {selectedIds.map(id => {
-          const name = findSegmentName(id, data);
+          const findSegmentName = (nodes: TreeNode[]): string | null => {
+            for (const node of nodes) {
+              if (node.segmentId === id) return node.segmentName;
+              const found = findSegmentName(node.subSegments);
+              if (found) return found;
+            }
+            return null;
+          };
+
+          const name = findSegmentName(data);
           return (
             name && (
               <div key={id} className="selected-segment-tag">
                 <span>{name}</span>
-                <FaTimes
+                <span
                   className="remove-icon"
-                  onClick={() => handleRemoveSegment(id)}
-                />
+                  onClick={() => handleToggleSelect(id)}
+                >
+                  ×
+                </span>
               </div>
             )
           );
@@ -112,8 +148,8 @@ export const TreeSelect = ({
           <TreeSelectItem
             key={node.segmentId}
             node={node}
-            onSelect={onSelect}
             selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
           />
         ))}
       </div>

@@ -31,11 +31,12 @@ const SupplierDetailContainer = () => {
   };
   const yourData: ContactData[] = [
     {
+      id: '1',
       name: '',
       email: '',
       phone: '',
-      contactname: '',
-      title: 30
+      cellphone: '',
+      title: ''
     }
   ];
 
@@ -70,13 +71,8 @@ const SupplierDetailContainer = () => {
     );
   };
 
-  const handleSegmentSelect = (segmentId: string) => {
-    setSelectedSegments(prev => {
-      if (prev.includes(segmentId)) {
-        return prev.filter(id => id !== segmentId);
-      }
-      return [...prev, segmentId];
-    });
+  const handleSegmentSelect = (selectedIds: string[]) => {
+    setSelectedSegments(selectedIds);
   };
 
   return (
@@ -87,11 +83,8 @@ const SupplierDetailContainer = () => {
         </Form.Group>
 
         <Form.Group className="d-flex flex-row gap-5 mt-2">
-          <Col md={7}>
+          <Col md={12}>
             <Form.Control type="text" placeholder="Company Name" />
-          </Col>
-          <Col md={4}>
-            <Form.Control type="text" placeholder="Quote Id" />
           </Col>
         </Form.Group>
       </Form>
@@ -99,11 +92,7 @@ const SupplierDetailContainer = () => {
       <Form>
         <Form.Group className="mb-5 mt-3">
           <Form.Label>Segments</Form.Label>
-          <TreeSelect
-            data={mockSegments}
-            onSelect={handleSegmentSelect}
-            selectedIds={selectedSegments}
-          />
+          <TreeSelect data={mockSegments} onSelect={handleSegmentSelect} />
         </Form.Group>
       </Form>
 
@@ -119,27 +108,6 @@ const SupplierDetailContainer = () => {
       <Form>
         {/* Select Country Dropdown */}
         <Form.Group className="d-flex flex-row gap-5 mt-3 mb-5">
-          <Col md={5}>
-            <Form.Label>Email Addresses</Form.Label>
-            <Typeahead
-              id="supplier-emails"
-              labelKey="label"
-              multiple
-              allowNew={(results, props) => {
-                const text = props.text;
-                return (
-                  !results.some(r =>
-                    typeof r === 'string' ? r === text : r.label === text
-                  ) && isValidEmail(text)
-                );
-              }}
-              newSelectionPrefix="Add email: "
-              options={emails.map(email => ({ label: email }))}
-              placeholder="Add supplier emails"
-              selected={emails.map(email => ({ label: email }))}
-              onChange={handleEmailChange}
-            />
-          </Col>
           <Col md={3}>
             <Form.Label>Select Country</Form.Label>
             <Form.Control as="select">
