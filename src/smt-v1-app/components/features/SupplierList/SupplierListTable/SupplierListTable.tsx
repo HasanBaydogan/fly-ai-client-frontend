@@ -2,28 +2,28 @@ import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'components/base/AdvanceTable';
 import { Link } from 'react-router-dom';
 import AdvanceTableFooter from 'components/base/AdvanceTableFooter';
-import { Project } from './projects';
 import Avatar from 'components/base/Avatar';
-import { ProgressBar } from 'react-bootstrap';
+import { SupplierData } from './SupplierMockData';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
-import ActionDropdownItems from 'components/common/ActionDropdownItems';
+import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import Badge from 'components/base/Badge';
 
-export const projectListTableColumns: ColumnDef<Project>[] = [
+export const projectListTableColumns: ColumnDef<SupplierData>[] = [
   {
+    id: 'supplierCompany',
     accessorKey: 'supplierCompany',
     header: 'Supplier Company',
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
-      headerProps: { style: { width: '30%' } }
+      headerProps: { style: { width: '25%' } }
     }
   },
 
   {
     header: 'Segments',
-    accessorKey: 'segment',
+    accessorKey: 'segments',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -42,7 +42,7 @@ export const projectListTableColumns: ColumnDef<Project>[] = [
     accessorKey: 'countryInfo', //------Change
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' }, className: 'ps-3' }
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
@@ -50,7 +50,7 @@ export const projectListTableColumns: ColumnDef<Project>[] = [
     header: 'Pick Up Address',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '12%' }, className: 'ps-3' }
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
@@ -58,7 +58,7 @@ export const projectListTableColumns: ColumnDef<Project>[] = [
     header: 'E-Mails',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '12%' }, className: 'ps-3' }
+      headerProps: { style: { width: '15%' }, className: 'ps-3' }
     }
   },
   {
@@ -80,10 +80,10 @@ export const projectListTableColumns: ColumnDef<Project>[] = [
   },
   {
     id: 'action',
-    cell: () => (
+    cell: ({ row: { original } }) => (
       <RevealDropdownTrigger>
         <RevealDropdown>
-          <ActionDropdownItems />
+          <ActionDropdownItems supplierId={original.id.toString()} />
         </RevealDropdown>
       </RevealDropdownTrigger>
     ),

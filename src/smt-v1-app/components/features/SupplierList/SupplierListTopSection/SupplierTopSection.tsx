@@ -5,121 +5,170 @@ import SearchBox from 'components/common/SearchBox';
 import ToggleViewButton from 'components/common/ToggleViewbutton';
 import FourGrid from 'components/icons/FourGrid';
 import NineGrid from 'components/icons/NineGrid';
-import { Project } from 'data/project-management/projects';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
-import { ChangeEvent, useMemo, useState } from 'react';
-import { Col, Row, Form } from 'react-bootstrap';
+import {
+  ChangeEvent,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef
+} from 'react';
+import { Col, Row, Form, Dropdown } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { SupplierData } from '../SupplierListTable/SupplierMockData';
+import debounce from 'lodash/debounce';
 
-interface ProjectsTopSectionInterface {
-  activeView: 'list' | 'board' | 'card';
-}
+type StatusType = 'all' | 'CONTACTED' | 'NOTCONTACTED' | 'BLACK LIST';
 
-const ProjectsTopSection = ({ activeView }: ProjectsTopSectionInterface) => {
-  const navigate = useNavigate();
-  const { setGlobalFilter, getPrePaginationRowModel, getColumn } =
-    useAdvanceTableContext<Project>();
+type SearchColumn = {
+  label: string;
+  value: keyof SupplierData | 'all';
+};
 
-  // Seçili filtreyi saklamak için local state
-  const [selectedFilter, setSelectedFilter] = useState<string>('');
+const searchColumns: SearchColumn[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Company Name', value: 'supplierCompany' },
+  { label: 'Brand', value: 'brand' },
+  { label: 'Country', value: 'countryInfo' },
+  { label: 'Email', value: 'email' },
+  { label: 'Address', value: 'pickupaddress' }
+];
 
-  // Filtre select'i değişince burası tetiklenir
-  const handleFilterSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedFilter(e.target.value);
+const SupplierTopSection = ({ activeView }: { activeView: string }) => {
+  const {
+    getPrePaginationRowModel,
+    getColumn,
+    setGlobalFilter,
+    setColumnFilters
+  } = useAdvanceTableContext<SupplierData>();
+  const [activeStatus, setActiveStatus] = useState<StatusType>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
+    searchColumns[0]
+  );
+
+  // Debounced search
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((value: string, column: SearchColumn) => {
+        if (column.value === 'all') {
+          setGlobalFilter(value || undefined);
+          setColumnFilters([]); // Reset column filters when searching all
+        } else {
+          setGlobalFilter(undefined); // Reset global filter
+          setColumnFilters([
+            {
+              id: column.value,
+              value: value
+            }
+          ]);
+        }
+      }, 300),
+    [setGlobalFilter, setColumnFilters]
+  );
+
+  // Search handler
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    debouncedSearch(value, selectedColumn);
   };
 
-  const handleFilterItemClick = (columnId: string, value: string) => {
-    const column = getColumn(columnId);
-    column?.setFilterValue(value === 'all' ? '' : value);
+  // Column selection handler
+  const handleColumnSelect = (column: SearchColumn) => {
+    setSelectedColumn(column);
+    debouncedSearch(searchTerm, column);
   };
 
-  const tabItems: FilterTabItem[] = useMemo(() => {
-    const getDataCount = (label: string) =>
-      getPrePaginationRowModel().rows.filter(
-        ({ original: { status } }) => status.label === label
-      ).length;
+  // Status değiştiğinde filtreyi uygula
+  useEffect(() => {
+    const statusColumn = getColumn('status');
+    if (statusColumn) {
+      statusColumn.setFilterValue(activeStatus === 'all' ? '' : activeStatus);
+    }
+  }, [activeStatus, getColumn]);
 
-    return [
-      {
-        label: 'All',
-        value: 'all',
-        onClick: () => handleFilterItemClick('status', 'all'),
-        count: getPrePaginationRowModel().rows.length
+  // Status sayılarını hesapla
+  const statusCounts = useMemo(() => {
+    const rows = getPrePaginationRowModel().rows;
+    return rows.reduce(
+      (acc, row) => {
+        const status = row.original.status.label;
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
       },
-      {
-        label: 'Ongoing',
-        value: 'ongoing',
-        onClick: () => handleFilterItemClick('status', 'ongoing'),
-        count: getDataCount('ongoing')
-      },
-      {
-        label: 'Cancelled',
-        value: 'cancelled',
-        onClick: () => handleFilterItemClick('status', 'cancelled'),
-        count: getDataCount('cancelled')
-      },
-      {
-        label: 'Completed',
-        value: 'completed',
-        onClick: () => handleFilterItemClick('status', 'completed'),
-        count: getDataCount('completed')
-      },
-      {
-        label: 'Critical',
-        value: 'critical',
-        onClick: () => handleFilterItemClick('status', 'critical'),
-        count: getDataCount('critical')
-      }
-    ];
+      {} as Record<string, number>
+    );
   }, [getPrePaginationRowModel]);
 
-  /**
-   * Arama kutusuna girilen değer değiştiğinde hem global filtre hem de
-   * seçili kolona özel filtreleme işini buradan yönetiyoruz.
-   */
-  const handleSearchInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const searchValue = e.target.value || '';
-
-    if (selectedFilter) {
-      // Seçili bir filtre varsa sadece ilgili kolonu filtreleyelim
-      getColumn(selectedFilter)?.setFilterValue(searchValue);
-    } else {
-      // Aksi halde genel aramaya devam
-      setGlobalFilter(searchValue || undefined);
+  const tabItems: FilterTabItem[] = [
+    {
+      label: 'All',
+      value: 'all',
+      onClick: () => setActiveStatus('all'),
+      count: getPrePaginationRowModel().rows.length
+    },
+    {
+      label: 'Contacted',
+      value: 'CONTACTED',
+      onClick: () => setActiveStatus('CONTACTED'),
+      count: statusCounts['CONTACTED'] || 0
+    },
+    {
+      label: 'Not Contacted',
+      value: 'NOTCONTACTED',
+      onClick: () => setActiveStatus('NOTCONTACTED'),
+      count: statusCounts['NOTCONTACTED'] || 0
+    },
+    {
+      label: 'Black List',
+      value: 'BLACK LIST',
+      onClick: () => setActiveStatus('BLACK LIST'),
+      count: statusCounts['BLACK LIST'] || 0
     }
-  };
+  ];
 
   return (
-    <Row className="g-3 justify-content-between align-items-center mb-4">
-      <Col xs={12} sm="auto">
-        <FilterTab tabItems={tabItems} />
-      </Col>
-      <Col xs={12} sm="auto">
-        <div className="d-flex align-items-center gap-2">
-          <SearchBox
-            onChange={handleSearchInputChange}
-            placeholder="Search projects"
-            style={{ maxWidth: '30rem' }}
-            className="me-2"
-          />
-
-          {/* Buraya filtre select'ini ekliyoruz */}
-          <Form.Select
-            value={selectedFilter}
-            onChange={handleFilterSelectChange}
-            style={{ width: '12rem' }}
-          >
-            <option value="">Filtre Seç...</option>
-            <option value="supplierCompany">Supplier Company</option>
-            <option value="segment">Segments</option>
-            <option value="brand">Brand</option>
-            <option value="countryInfo">Country Info</option>
-            <option value="email">E-Mail</option>
-          </Form.Select>
-        </div>
-      </Col>
-    </Row>
+    <div className="mb-4">
+      <Row className="g-3 justify-content-between align-items-center mb-3">
+        <Col xs={12} sm="auto">
+          <FilterTab tabItems={tabItems} />
+        </Col>
+      </Row>
+      <Row className="g-3 align-items-center">
+        <Col xs={12} md={4}>
+          <div className="d-flex gap-2">
+            <SearchBox
+              placeholder={`Search in ${selectedColumn.label.toLowerCase()}...`}
+              value={searchTerm}
+              onChange={handleSearch}
+              className="flex-grow-1"
+            />
+            <Dropdown>
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                className="text-start"
+                style={{ minWidth: '150px' }}
+              >
+                {selectedColumn.label}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {searchColumns.map(column => (
+                  <Dropdown.Item
+                    key={column.value.toString()}
+                    onClick={() => handleColumnSelect(column)}
+                  >
+                    {column.label}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+        </Col>
+      </Row>
+    </div>
   );
 };
 
-export default ProjectsTopSection;
+export default SupplierTopSection;
