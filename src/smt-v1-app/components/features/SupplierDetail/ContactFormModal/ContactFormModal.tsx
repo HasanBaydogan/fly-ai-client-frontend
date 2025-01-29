@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-import { ContactData } from '../SupplierDetailContactList';
+import { ContactData } from '../SupplierDetailContactList/SupplierDetailContactList';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 

@@ -10,7 +10,7 @@ import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
 import { useState } from 'react';
-import ContactFormModal from './ContactFormModal/ContactFormModal';
+import ContactFormModal from '../ContactFormModal/ContactFormModal';
 import { Button } from 'react-bootstrap';
 import './SupplierContactList.css';
 

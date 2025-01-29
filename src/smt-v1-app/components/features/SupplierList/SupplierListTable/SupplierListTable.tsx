@@ -125,22 +125,9 @@ const SupplierListTable = () => {
     fetchData(searchTerm);
   }, [fetchData, searchTerm]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-  };
-
   return (
     <div className="border-bottom border-translucent">
-      <div className="mb-3">
-        <input
-          type="text"
-          placeholder="Search suppliers..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="form-control"
-        />
-      </div>
+      <div className="mb-3"></div>
       <AdvanceTable
         tableProps={
           {
