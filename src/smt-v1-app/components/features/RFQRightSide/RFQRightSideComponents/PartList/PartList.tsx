@@ -122,10 +122,10 @@ const PartList = ({
     // Get all suppliers
     const getAllSupplierAndCurrencies = async () => {
       setIsLoading(true);
-      // const suppResp = await getAllSuppliersFromDB();
-      // setSuppliers(suppResp.data);
-      // const currencyResp = await getAllCurrenciesFromDB();
-      // setCurrencies(currencyResp.data);
+      const suppResp = await getAllSuppliersFromDB();
+      setSuppliers(suppResp.data);
+      const currencyResp = await getAllCurrenciesFromDB();
+      setCurrencies(currencyResp.data);
 
       setIsLoading(false);
     };
