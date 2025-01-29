@@ -1,7 +1,10 @@
 {
   "files": {
-    "main.css": "/static/css/main.a337f196.css",
-    "main.js": "/static/js/main.5b1b1324.js",
+    "main.css": "/static/css/main.98c6421a.css",
+    "main.js": "/static/js/main.32383fee.js",
+    "static/js/905.992582f4.chunk.js": "/static/js/905.992582f4.chunk.js",
+    "static/js/313.c6024fed.chunk.js": "/static/js/313.c6024fed.chunk.js",
+    "static/js/249.0a520196.chunk.js": "/static/js/249.0a520196.chunk.js",
     "static/media/travel.mp4": "/static/media/travel.1ac0084f122621360009.mp4",
     "static/media/77.mp4": "/static/media/77.03b82fffae71ed7f8ce2.mp4",
     "static/media/42.png": "/static/media/42.9910f34b028ba975d6ec.png",
@@ -102,6 +105,7 @@
     "static/media/500.png": "/static/media/500.7279d4729a8f65b05f2c.png",
     "static/media/bg-left-31.png": "/static/media/bg-left-31.5c913c58e0acc6055358.png",
     "static/media/57.webp": "/static/media/57.971121ad428013d5bb70.webp",
+    "static/media/Reka_Static.jpg": "/static/media/Reka_Static.e73b85fe0949d08e8cce.jpg",
     "static/media/404.png": "/static/media/404.d03eba114a31d75ad8f1.png",
     "static/media/bg-left-30.png": "/static/media/bg-left-30.1193230a3a18206c37d0.png",
     "static/media/bg-left-28.png": "/static/media/bg-left-28.0b7eac684bd154669b29.png",
@@ -147,7 +151,7 @@
     "static/media/spam_icon.svg": "/static/media/spam_icon.f8a404e2cbf04f7a62411176c2f01044.svg"
   },
   "entrypoints": [
-    "static/css/main.a337f196.css",
-    "static/js/main.5b1b1324.js"
+    "static/css/main.98c6421a.css",
+    "static/js/main.32383fee.js"
   ]
 }
