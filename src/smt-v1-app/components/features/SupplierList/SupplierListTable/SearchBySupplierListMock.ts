@@ -1,4 +1,3 @@
-
 export type SupplierStatus = {
   label: 'CONTACTED' | 'NOTCONTACTED' | 'BLACK LIST';
   type: 'success' | 'warning' | 'danger';
@@ -6,33 +5,33 @@ export type SupplierStatus = {
 
 export interface SupplierData {
   id: string;
-  supplierCompany:string;
+  supplierCompany: string;
   segments: string;
   brand: string;
   countryInfo: string;
   pickupaddress: string;
   email: string;
-  quoteID: string;
-  attachedID: string;
-  attachedName: string,
-  workingDetails: string,
-  userName: string,
-  certificates: string [],
-  dialogSpeed: string,
-  dialogQuality: string,
-  easeOfSupply: string,
-  supplyCapability: string,
-  euDemandOfParts: string,
-  createdBy: string,
-  createdOn: string,
-  lastModifiedBy: string,
-  lastModifiedOn: string,
   status: SupplierStatus;
+  quoteID: string | null;
+  attachedID: string | null;
+  attachedName: string | null;
+  workingDetails: string | null;
+  userName: string;
+  certificates: string[];
+  dialogSpeed: string;
+  dialogQuality: string;
+  easeOfSupply: string;
+  supplyCapability: string;
+  euDemandOfParts: string;
+  createdBy: string;
+  createdOn: string;
+  lastModifiedBy: string;
+  lastModifiedOn: string;
 }
 
-export const supplierMockData: { [key: string]: SupplierData } = {
-  '1': {
-    id: '1',
+export const mockData: SupplierData[] = [
+  {
+    id: '0',
     supplierCompany: 'Avionics Interface Technologies',
     segments: 'GENERAL',
     brand: 'VIKING',
@@ -59,8 +58,8 @@ export const supplierMockData: { [key: string]: SupplierData } = {
     lastModifiedBy: 'Hasan',
     lastModifiedOn: '28.01.2025',
   },
-  '2': {
-    id: '2',
+  {
+    id: '1',
     supplierCompany: 'Frey, Lloyd and Pena',
     segments: 'HEALTH',
     brand: 'CENTER',
@@ -87,8 +86,8 @@ export const supplierMockData: { [key: string]: SupplierData } = {
     lastModifiedBy: 'system',
     lastModifiedOn: 'system',
   },
-  '3': {
-    id: '3',
+  {
+    id: '2',
     supplierCompany: 'Adams, Mullins and Ruiz',
     segments: 'RETAIL',
     brand: 'ALWAYS',
@@ -115,8 +114,8 @@ export const supplierMockData: { [key: string]: SupplierData } = {
     lastModifiedBy: 'system',
     lastModifiedOn: 'system',
   },
-  '4': {
-    id: '4',
+  {
+    id: '3',
     supplierCompany: 'Sullivan, Wright and Aguilar',
     segments: 'RETAIL',
     brand: 'FAR',
@@ -143,8 +142,8 @@ export const supplierMockData: { [key: string]: SupplierData } = {
     lastModifiedBy: 'system',
     lastModifiedOn: '',
   },
-  '5': {
-    id: '5',
+  {
+    id: '4',
     supplierCompany: 'Johnson, Martin and Cook',
     segments: 'GENERAL',
     brand: 'TRAVEL',
@@ -170,8 +169,35 @@ export const supplierMockData: { [key: string]: SupplierData } = {
     createdOn: '',
     lastModifiedBy: 'system',
     lastModifiedOn: '',
+  },{
+    id: '5',
+    supplierCompany: 'Anderson Ltd',
+    segments: 'RETAIL',
+    brand: 'UNDERSTAND',
+    countryInfo: 'Germany',
+    pickupaddress: 'Oliverfurt/WV',
+    email: 'avilabrandy@gmail.com',
+    status: {
+      label: 'NOTCONTACTED',
+      type: 'warning',
+    },
+    quoteID: null,
+    attachedID: null,
+    attachedName: null,
+    workingDetails: null,
+    userName: 'avilabrandy',
+    certificates: [],
+    dialogSpeed: '0',
+    dialogQuality: '0',
+    easeOfSupply: '0',
+    supplyCapability: '0',
+    euDemandOfParts: '0',
+    createdBy: 'system',
+    createdOn: '',
+    lastModifiedBy: 'system',
+    lastModifiedOn: '',
   },
-  '6': {
+  {
     id: '6',
     supplierCompany: 'Anderson Ltd',
     segments: 'RETAIL',
@@ -199,4 +225,53 @@ export const supplierMockData: { [key: string]: SupplierData } = {
     lastModifiedBy: 'system',
     lastModifiedOn: '',
   },
+];
+
+export const searchBySupplierList = async (
+  searchTerm: string,
+  column?: keyof typeof mockData[0] | 'all'
+) => {
+  console.log('POST isteği alındı:', { searchTerm, column });
+  try {
+    // 500 ms gecikme simülasyonu
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    console.log('Filtreleme başlıyor...');
+    
+    const filteredData =
+      column && column !== 'all'
+        ? mockData.filter((item) => {
+            const value = item[column];
+            const match =
+              typeof value === 'string' &&
+              value.toLowerCase().includes(searchTerm.toLowerCase());
+            console.log(`Sütun: ${column}, Değer: ${value}, Eşleşme: ${match}`);
+            return match;
+
+          })
+        : mockData.filter((item) =>
+            Object.values(item).some((value) => {
+              const match =
+
+                typeof value === 'string' &&
+                value.toLowerCase().includes(searchTerm.toLowerCase());
+              console.log(`Tüm sütunlar, Değer: ${value}, Eşleşme: ${match}`);
+              return match;
+            })
+          );
+
+    console.log('Filtreleme tamamlandı, sonuçlar:', filteredData);
+
+    return {
+      statusCode: 200,
+      data: filteredData,
+      total: filteredData.length,
+    };
+  } catch (err) {
+    console.error('Filtreleme sırasında hata:', err);
+    return {
+      statusCode: 500,
+      message: 'Bir hata oluştu',
+      data: [],
+    };
+  }
 };

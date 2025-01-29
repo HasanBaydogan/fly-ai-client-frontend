@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import SupplierDetailModal from '../SupplierDetailModal';
-import { supplierMockData } from '../SupplierMockData';
+import { mockData, SupplierData } from '../SearchBySupplierListMock';
 
 interface ActionDropdownItemsProps {
   supplierId: string;
@@ -9,7 +9,7 @@ interface ActionDropdownItemsProps {
 
 const ActionDropdownItems = ({ supplierId }: ActionDropdownItemsProps) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const supplierData = supplierMockData[supplierId];
+  const supplierData = mockData[supplierId];
 
   return (
     <>

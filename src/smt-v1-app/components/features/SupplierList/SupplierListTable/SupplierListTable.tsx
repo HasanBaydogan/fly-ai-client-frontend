@@ -1,14 +1,13 @@
+import { useEffect, useMemo, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'components/base/AdvanceTable';
-import { Link } from 'react-router-dom';
 import AdvanceTableFooter from 'components/base/AdvanceTableFooter';
-import Avatar from 'components/base/Avatar';
-import { SupplierData } from './SupplierMockData';
+import Badge from 'components/base/Badge';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
+import { searchBySupplierList, SupplierData } from './SearchBySupplierListMock';
 import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
-import Badge from 'components/base/Badge';
 
 export const projectListTableColumns: ColumnDef<SupplierData>[] = [
   {
@@ -20,7 +19,6 @@ export const projectListTableColumns: ColumnDef<SupplierData>[] = [
       headerProps: { style: { width: '25%' } }
     }
   },
-
   {
     header: 'Segments',
     accessorKey: 'segments',
@@ -39,14 +37,14 @@ export const projectListTableColumns: ColumnDef<SupplierData>[] = [
   },
   {
     header: 'Country Info',
-    accessorKey: 'countryInfo', //------Change
+    accessorKey: 'countryInfo',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'pickupaddress', //------Change
+    accessorKey: 'pickupaddress',
     header: 'Pick Up Address',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
@@ -54,7 +52,7 @@ export const projectListTableColumns: ColumnDef<SupplierData>[] = [
     }
   },
   {
-    accessorKey: 'email', //------Change
+    accessorKey: 'email',
     header: 'E-Mails',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
@@ -94,17 +92,67 @@ export const projectListTableColumns: ColumnDef<SupplierData>[] = [
   }
 ];
 
-const ProjectListTable = () => {
+interface CustomTableProps {
+  className?: string;
+  data: SupplierData[];
+  columns: ColumnDef<SupplierData>[];
+}
+
+const SupplierListTable = () => {
+  const [data, setData] = useState<SupplierData[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = useMemo(
+    () => async (term: string) => {
+      setLoading(true);
+      try {
+        const response = await searchBySupplierList(term);
+        if (response && response.data) {
+          console.log('Setting Data:', response.data); // Debug için ekleyin
+          setData(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    fetchData(searchTerm);
+  }, [fetchData, searchTerm]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+  };
+
   return (
     <div className="border-bottom border-translucent">
+      <div className="mb-3">
+        <input
+          type="text"
+          placeholder="Search suppliers..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          className="form-control"
+        />
+      </div>
       <AdvanceTable
-        tableProps={{
-          className: 'phoenix-table border-top border-translucent fs-9'
-        }}
+        tableProps={
+          {
+            className: 'phoenix-table border-top border-translucent fs-9',
+            data,
+            columns: projectListTableColumns
+          } as CustomTableProps
+        }
       />
       <AdvanceTableFooter pagination className="py-1" />
     </div>
   );
 };
 
-export default ProjectListTable;
+export default SupplierListTable;

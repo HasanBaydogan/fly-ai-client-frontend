@@ -9,12 +9,16 @@ import { defaultBreadcrumbItems } from 'data/commonData';
 import useAdvanceTable from '../../components/features/SupplierList/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
-import { supplierMockData } from '../../components/features/SupplierList/SupplierListTable/SupplierMockData';
+import {
+  mockData,
+  SupplierData
+} from '../../components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
+import { ColumnDef } from '@tanstack/react-table';
 
 const ProjectListView = () => {
   const table = useAdvanceTable({
-    data: Object.values(supplierMockData),
-    columns: projectListTableColumns,
+    data: mockData,
+    columns: projectListTableColumns as ColumnDef<SupplierData>[],
     pageSize: 6,
     pagination: true,
     sortable: true

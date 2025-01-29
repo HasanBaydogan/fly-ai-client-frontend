@@ -1,25 +1,20 @@
 import { faList } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import FilterTab, { FilterTabItem } from 'components/common/FilterTab';
+import FilterTab, { FilterTabItem } from './FilterTab';
 import SearchBox from 'components/common/SearchBox';
 import ToggleViewButton from 'components/common/ToggleViewbutton';
 import FourGrid from 'components/icons/FourGrid';
 import NineGrid from 'components/icons/NineGrid';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { Col, Row, Dropdown } from 'react-bootstrap';
+import debounce from 'lodash/debounce';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import {
-  ChangeEvent,
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-  useRef
-} from 'react';
-import { Col, Row, Form, Dropdown } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import { SupplierData } from '../SupplierListTable/SupplierMockData';
-import debounce from 'lodash/debounce';
+  SupplierData,
+  searchBySupplierList
+} from '../SupplierListTable/SearchBySupplierListMock';
 
-type StatusType = 'all' | 'CONTACTED' | 'NOTCONTACTED' | 'BLACK LIST';
+type StatusType = 'all' | 'CONTACTED' | 'NOT CONTACTED' | 'BLACK LIST';
 
 type SearchColumn = {
   label: string;
@@ -27,7 +22,7 @@ type SearchColumn = {
 };
 
 const searchColumns: SearchColumn[] = [
-  { label: 'All', value: 'all' },
+  { label: 'All Columns', value: 'all' },
   { label: 'Company Name', value: 'supplierCompany' },
   { label: 'Brand', value: 'brand' },
   { label: 'Country', value: 'countryInfo' },
@@ -51,18 +46,25 @@ const SupplierTopSection = ({ activeView }: { activeView: string }) => {
   // Debounced search
   const debouncedSearch = useMemo(
     () =>
-      debounce((value: string, column: SearchColumn) => {
-        if (column.value === 'all') {
-          setGlobalFilter(value || undefined);
-          setColumnFilters([]); // Reset column filters when searching all
-        } else {
-          setGlobalFilter(undefined); // Reset global filter
-          setColumnFilters([
-            {
-              id: column.value,
-              value: value
+      debounce(async (value: string, column: SearchColumn) => {
+        try {
+          const response = await searchBySupplierList(value, column.value);
+          if (response.statusCode === 200) {
+            if (column.value === 'all') {
+              setGlobalFilter(value || undefined);
+              setColumnFilters([]);
+            } else {
+              setGlobalFilter(undefined);
+              setColumnFilters([
+                {
+                  id: column.value,
+                  value: value
+                }
+              ]);
             }
-          ]);
+          }
+        } catch (error) {
+          console.error('Search error:', error);
         }
       }, 300),
     [setGlobalFilter, setColumnFilters]
@@ -81,51 +83,34 @@ const SupplierTopSection = ({ activeView }: { activeView: string }) => {
     debouncedSearch(searchTerm, column);
   };
 
-  // Status değiştiğinde filtreyi uygula
-  useEffect(() => {
-    const statusColumn = getColumn('status');
-    if (statusColumn) {
-      statusColumn.setFilterValue(activeStatus === 'all' ? '' : activeStatus);
-    }
-  }, [activeStatus, getColumn]);
-
-  // Status sayılarını hesapla
-  const statusCounts = useMemo(() => {
-    const rows = getPrePaginationRowModel().rows;
-    return rows.reduce(
-      (acc, row) => {
-        const status = row.original.status.label;
-        acc[status] = (acc[status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-  }, [getPrePaginationRowModel]);
-
   const tabItems: FilterTabItem[] = [
     {
       label: 'All',
       value: 'all',
       onClick: () => setActiveStatus('all'),
-      count: getPrePaginationRowModel().rows.length
+      count: getPrePaginationRowModel().rows.length,
+      active: activeStatus === 'all'
     },
     {
       label: 'Contacted',
       value: 'CONTACTED',
       onClick: () => setActiveStatus('CONTACTED'),
-      count: statusCounts['CONTACTED'] || 0
+      count: 0,
+      active: activeStatus === 'CONTACTED'
     },
     {
       label: 'Not Contacted',
-      value: 'NOTCONTACTED',
-      onClick: () => setActiveStatus('NOTCONTACTED'),
-      count: statusCounts['NOTCONTACTED'] || 0
+      value: 'NOT CONTACTED',
+      onClick: () => setActiveStatus('NOT CONTACTED'),
+      count: 0,
+      active: activeStatus === 'NOT CONTACTED'
     },
     {
       label: 'Black List',
       value: 'BLACK LIST',
       onClick: () => setActiveStatus('BLACK LIST'),
-      count: statusCounts['BLACK LIST'] || 0
+      count: 0,
+      active: activeStatus === 'BLACK LIST'
     }
   ];
 
