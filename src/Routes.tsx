@@ -25,9 +25,9 @@ import RFQContainer from 'smt-v1-app/containers/RFQContainer/RFQContainer';
 import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
 import RFQListContainer from 'smt-v1-app/containers/RFQListContainer/RFQListContainer';
 import PrivacyPolicy from 'smt-v1-app/components/features/authentication/PrivacyPolicy/PrivacyPolicy';
-import QuoteListContainer from 'smt-v1-app/containers/QuoteListContainer/QuoteListContainer';
 import SupplierDetailContainer from 'smt-v1-app/containers/SupplierDetailContainer/SupplierDetailContainer';
 import SupplierListContainer from 'smt-v1-app/containers/SupplierListContainer/SupplierListContainer';
+import QuoteListContainer from 'smt-v1-app/containers/QuoteListContainer/QuoteListContainer';
 
 const routes: RouteObject[] = [
   {

@@ -53,7 +53,7 @@ const Error404 = () => {
                   <br className="d-none d-sm-block" />
                   while you wait safely.
                 </p>
-                <Button variant="primary" size="lg" as={Link} to="/">
+                <Button variant="primary" size="lg" as={Link} to="/mail-tracking">
                   Go Home
                 </Button>
               </Col>

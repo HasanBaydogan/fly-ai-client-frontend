@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
 import { AlternativeRFQPart } from '../../../../../containers/RFQContainer/RfqContainerTypes';
 import './QuoteListAlternativeParts';
+import { AlternativeQuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
 interface QuoteListAlternativePartsProps {
-  alternativeParts: AlternativeRFQPart[];
+  alternativeParts: AlternativeQuotePart[];
 }
 
 const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
@@ -83,11 +84,11 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
                 </td>
                 <td>{part.partNumber}</td>
                 <td>{part.partName}</td>
-                <td>{part.parentRFQPart.partNumber}</td>
-                <td>{part.reqQTY}</td>
-                <td>{part.fndQTY}</td>
-                <td>{part.reqCND}</td>
-                <td>{part.fndCND}</td>
+                <td>{part.parentPartNumber}</td>
+                <td>{part.reqQuantity}</td>
+                <td>{part.fndQuantity}</td>
+                <td>{part.reqCondition}</td>
+                <td>{part.fndCondition}</td>
                 <td>{part.supplierLT}</td>
                 <td>{part.clientLT}</td>
                 <td>{part.price}</td>

@@ -3,9 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
 import CustomButton from '../../../../../../components/base/Button';
-import { Contact } from '../../mockData';
 import ContactAddModal from '../ContactAddModal/ContactAddModal';
 import 'react-phone-input-2/lib/style.css';
+import { Contact } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
 
 interface QuoteContactsListProps {
   contacts: Contact[];

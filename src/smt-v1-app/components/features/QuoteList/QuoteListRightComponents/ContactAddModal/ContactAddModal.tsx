@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-import { Contact } from '../../../../../containers/QuoteListContainer/RfqContainerTypes';
+import { Contact } from '../../../../../containers/QuoteContainer/QuoteContainerTypes';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 

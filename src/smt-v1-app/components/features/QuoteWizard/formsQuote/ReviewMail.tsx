@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMail } from '../formsQuote/MailContext';
+import { useMail } from './MailContext';
 import FeatherIcon from 'feather-icons-react';
 import { EmailProps } from './WizardSendMailForm';
 

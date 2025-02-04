@@ -32,7 +32,7 @@ const Header = ({
     <>
       <div>
         {/* Last Modified Date */}
-        <div className="d-flex justify-content-end me-6">
+        <div className="d-flex justify-content-end me-1">
           <span className="last-modified">Last Modified Date:</span>
           <span className="last-modified-date">{' ' + date}</span>
         </div>

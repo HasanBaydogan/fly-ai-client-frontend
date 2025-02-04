@@ -7,14 +7,15 @@ import {
   AlternativeRFQPart
 } from '../../../../../containers/RFQContainer/RfqContainerTypes';
 import CustomButton from '../../../../../../components/base/Button';
+import { AlternativeQuotePart, QuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
 
 interface QuotePartListProps {
-  parts: RFQPart[];
+  parts: QuotePart[];
   handleDeletePart: (partNumber: string) => void;
-  handleAddPart: (rfqPart: RFQPart) => void;
-  alternativeParts: AlternativeRFQPart[];
+  handleAddPart: (quotePart: QuotePart) => void;
+  alternativeParts: AlternativeQuotePart[];
   setAlternativeParts: React.Dispatch<
-    React.SetStateAction<AlternativeRFQPart[]>
+    React.SetStateAction<AlternativeQuotePart[]>
   >;
 }
 
@@ -85,7 +86,6 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
               <th style={{ minWidth: '150px' }}>Comment</th>
               <th style={{ minWidth: '150px' }}>DG Packaging Cost</th>
               <th style={{ minWidth: '120px' }}>Tag Date</th>
-              <th style={{ minWidth: '150px' }}>Last Updated Date</th>
               <th style={{ minWidth: '120px' }}>Cert Type</th>
               <th style={{ minWidth: '100px' }}>MSN</th>
               <th style={{ minWidth: '120px' }}>Warehouse</th>
@@ -107,19 +107,18 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
                 </td>
                 <td>{part.partNumber}</td>
                 <td>{part.partName}</td>
-                <td>{part.reqQTY}</td>
-                <td>{part.fndQTY}</td>
-                <td>{part.reqCND}</td>
-                <td>{part.fndCND}</td>
+                <td>{part.reqQuantity}</td>
+                <td>{part.fndQuantity}</td>
+                <td>{part.reqCondition}</td>
+                <td>{part.fndCondition}</td>
                 <td>{part.supplierLT}</td>
                 <td>{part.clientLT}</td>
                 <td>{part.price}</td>
                 <td>{part.currency}</td>
                 <td>{String(part.supplier)}</td>
                 <td>{part.comment}</td>
-                <td>{part.dgPackagingCost ? 'Yes' : 'No'}</td>
+                <td>{part.DGPackagingCost ? 'Yes' : 'No'}</td>
                 <td>{part.tagDate}</td>
-                <td>{part.lastUpdatedDate}</td>
                 <td>{part.certificateType}</td>
                 <td>{part.MSN}</td>
                 <td>{part.wareHouse}</td>
