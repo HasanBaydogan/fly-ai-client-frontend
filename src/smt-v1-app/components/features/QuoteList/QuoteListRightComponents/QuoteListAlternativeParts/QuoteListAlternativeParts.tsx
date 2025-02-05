@@ -5,31 +5,34 @@ import './QuoteListAlternativeParts';
 import { AlternativeQuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
 interface QuoteListAlternativePartsProps {
   alternativeParts: AlternativeQuotePart[];
+  selectedAlternativeParts:string[],
+  setSelectedAlternativeParts:React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
-  alternativeParts
+  alternativeParts,
+  selectedAlternativeParts,
+  setSelectedAlternativeParts
 }) => {
-  const [selectedParts, setSelectedParts] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(true);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedParts(alternativeParts.map(part => part.quotePartId));
+      setSelectedAlternativeParts(alternativeParts.map(part => part.quotePartId));
       setSelectAll(true);
     } else {
-      setSelectedParts([]);
+      setSelectedAlternativeParts([]);
       setSelectAll(false);
     }
   };
   useEffect(() => {
       if (alternativeParts && alternativeParts.length > 0) {
-        setSelectedParts(alternativeParts.map(part => part.quotePartId));
+        setSelectedAlternativeParts(alternativeParts.map(part => part.quotePartId));
       }
     }, [alternativeParts]);
 
   const handleSelectPart = (quotePartId: string) => {
-    setSelectedParts(prev => {
+    setSelectedAlternativeParts(prev => {
       const newSelection = prev.includes(quotePartId)
         ? prev.filter(num => num !== quotePartId)
         : [...prev, quotePartId];
@@ -83,7 +86,7 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
                 <td>
                   <Form.Check
                     type="checkbox"
-                    checked={selectedParts.includes(part.quotePartId)}
+                    checked={selectedAlternativeParts.includes(part.quotePartId)}
                     onChange={() => handleSelectPart(part.quotePartId)}
                     style={{marginLeft:"10px"}}
                   />

@@ -6,11 +6,13 @@ import { QuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTy
 
 interface QuotePartListProps {
   parts: QuotePart[];
+  setSelectedParts: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedParts:string[]
 }
 
-const QuotePartList: React.FC<QuotePartListProps> = ({ parts }) => {
+const QuotePartList: React.FC<QuotePartListProps> = ({ parts,setSelectedParts,selectedParts }) => {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedParts, setSelectedParts] = useState<string[]>([]);
+
 
   // parts değiştiğinde tüm parçaları seçili duruma getiriyoruz
   useEffect(() => {

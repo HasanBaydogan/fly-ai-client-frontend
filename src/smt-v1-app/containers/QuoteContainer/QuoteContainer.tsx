@@ -49,6 +49,12 @@ const QuoteContainer = ({}: {}) => {
     bgColor: string;
     textColor: string;
   }>();
+
+  const [selectedParts, setSelectedParts] = useState<string[]>([]);
+  const [selectedAlternativeParts, setSelectedAlternativeParts] = useState<
+    string[]
+  >([]);
+
   const handleOpen = () => setShowQuoteWizardTabs(true);
   const handleClose = () => setShowQuoteWizardTabs(false);
 
@@ -70,10 +76,11 @@ const QuoteContainer = ({}: {}) => {
         setContacts(response.data.clientContacts);
         setParts(response.data.quotePartResponses);
         setAlternativeParts(response.data.alternativeQuotePartResponses);
-        console.log(response.data.rfqMailStatus);
         const returnedColor = getColorStyles(response.data.rfqMailStatus);
-        console.log(returnedColor);
-        setStatusColors({bgColor:returnedColor.bgColor,textColor:returnedColor.textColor});
+        setStatusColors({
+          bgColor: returnedColor.bgColor,
+          textColor: returnedColor.textColor
+        });
         // TODO Delete that console.
         console.log(response.data);
         setIsLoading(false);
@@ -82,13 +89,16 @@ const QuoteContainer = ({}: {}) => {
     fetchQuoteValues();
   }, []);
 
+  const handleQuoteWizardTabs = () => {
+    setShowQuoteWizardTabs(true);
+  };
+
   return (
     <>
       {isLoading ? (
-        <div className='d-flex justify-content-center align-items-center vh-100'>
+        <div className="d-flex justify-content-center align-items-center vh-100">
           <LoadingAnimation />
         </div>
-        
       ) : (
         <div className="rfq-container d-flex flex-wrap justify-content-around">
           <div className="rfq-left">
@@ -144,8 +154,16 @@ const QuoteContainer = ({}: {}) => {
               />
             </div>
             <div>
-              <QuotePartList parts={parts} />
-              <QuoteListAlternativeParts alternativeParts={alternativeParts} />
+              <QuotePartList
+                parts={parts}
+                selectedParts={selectedParts}
+                setSelectedParts={setSelectedParts}
+              />
+              <QuoteListAlternativeParts
+                alternativeParts={alternativeParts}
+                selectedAlternativeParts={selectedAlternativeParts}
+                setSelectedAlternativeParts={setSelectedAlternativeParts}
+              />
               <hr className="custom-line w-100 m-0" />
             </div>
             <div
@@ -181,8 +199,7 @@ const QuoteContainer = ({}: {}) => {
                   <CustomButton
                     variant="success"
                     onClick={() => {
-                      // Handle Quote Wizard click
-                      setShowQuoteWizardTabs(true);
+                      handleQuoteWizardTabs();
                     }}
                   >
                     Quote Wizard
@@ -194,6 +211,9 @@ const QuoteContainer = ({}: {}) => {
 
           {showQuoteWizardTabs ? (
             <QuoteWizard
+              selectedParts={selectedParts}
+              selectedAlternativeParts={selectedAlternativeParts}
+              quoteId={quoteData.quoteId}
               handleOpen={handleOpen}
               handleClose={handleClose}
               showTabs={showQuoteWizardTabs}
