@@ -1,51 +1,45 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
-import {
-  RFQPart,
-  AlternativeRFQPart
-} from '../../../../../containers/RFQContainer/RfqContainerTypes';
-import CustomButton from '../../../../../../components/base/Button';
-import { AlternativeQuotePart, QuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
+
+import { QuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
 
 interface QuotePartListProps {
   parts: QuotePart[];
-  handleDeletePart: (partNumber: string) => void;
-  handleAddPart: (quotePart: QuotePart) => void;
-  alternativeParts: AlternativeQuotePart[];
-  setAlternativeParts: React.Dispatch<
-    React.SetStateAction<AlternativeQuotePart[]>
-  >;
 }
 
-const QuotePartList: React.FC<QuotePartListProps> = ({
-  parts,
-  alternativeParts,
-  setAlternativeParts
-}) => {
+const QuotePartList: React.FC<QuotePartListProps> = ({ parts }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedParts, setSelectedParts] = useState<string[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
 
+  // parts değiştiğinde tüm parçaları seçili duruma getiriyoruz
+  useEffect(() => {
+    if (parts && parts.length > 0) {
+      setSelectedParts(parts.map(part => part.quotePartId));
+    }
+  }, [parts]);
+
+  // Hepsi seçili mi bilgisini hesaplıyoruz
+  const allSelected = selectedParts.length === parts.length;
+
+  // "Tümü seç" checkbox değiştiğinde çalışır
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedParts(parts.map(part => part.partNumber));
-      setSelectAll(true);
+      // Tüm id'leri seçili hale getir
+      setSelectedParts(parts.map(part => part.quotePartId));
     } else {
+      // Seçili dizisini sıfırla
       setSelectedParts([]);
-      setSelectAll(false);
     }
   };
 
-  const handleSelectPart = (partNumber: string) => {
+  // Tek bir part checkbox’ı değiştiğinde çalışır
+  const handleSelectPart = (quotePartId: string) => {
     setSelectedParts(prev => {
-      const newSelection = prev.includes(partNumber)
-        ? prev.filter(num => num !== partNumber)
-        : [...prev, partNumber];
-
-      setSelectAll(newSelection.length === parts.length);
-      return newSelection;
+      // Seçili dizide varsa çıkar, yoksa ekle
+      return prev.includes(quotePartId)
+        ? prev.filter(id => id !== quotePartId)
+        : [...prev, quotePartId];
     });
   };
 
@@ -54,7 +48,7 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
       <h3 className="mt-3">Parts</h3>
       <hr className="custom-line m-0" />
 
-      <div className="mx-2" style={{ height: '250px', overflowY: 'auto' }}>
+      <div className="mx-2" style={{ minHeight:"150px", overflowY: 'auto' }}>
         <Table responsive style={{ marginBottom: '0' }}>
           <thead
             style={{
@@ -68,7 +62,7 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
               <th style={{ minWidth: '50px' }}>
                 <Form.Check
                   type="checkbox"
-                  checked={selectAll}
+                  checked={allSelected}
                   onChange={handleSelectAll}
                 />
               </th>
@@ -97,12 +91,13 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
           </thead>
           <tbody>
             {parts.map(part => (
-              <tr key={part.partNumber}>
+              <tr key={part.quotePartId}>
                 <td>
                   <Form.Check
                     type="checkbox"
-                    checked={selectedParts.includes(part.partNumber)}
-                    onChange={() => handleSelectPart(part.partNumber)}
+                    checked={selectedParts.includes(part.quotePartId)}
+                    onChange={() => handleSelectPart(part.quotePartId)}
+                    style={{ marginLeft: '10px' }}
                   />
                 </td>
                 <td>{part.partNumber}</td>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
 import { AlternativeRFQPart } from '../../../../../containers/RFQContainer/RfqContainerTypes';
 import './QuoteListAlternativeParts';
@@ -11,23 +11,28 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
   alternativeParts
 }) => {
   const [selectedParts, setSelectedParts] = useState<string[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
+  const [selectAll, setSelectAll] = useState(true);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedParts(alternativeParts.map(part => part.partNumber));
+      setSelectedParts(alternativeParts.map(part => part.quotePartId));
       setSelectAll(true);
     } else {
       setSelectedParts([]);
       setSelectAll(false);
     }
   };
+  useEffect(() => {
+      if (alternativeParts && alternativeParts.length > 0) {
+        setSelectedParts(alternativeParts.map(part => part.quotePartId));
+      }
+    }, [alternativeParts]);
 
-  const handleSelectPart = (partNumber: string) => {
+  const handleSelectPart = (quotePartId: string) => {
     setSelectedParts(prev => {
-      const newSelection = prev.includes(partNumber)
-        ? prev.filter(num => num !== partNumber)
-        : [...prev, partNumber];
+      const newSelection = prev.includes(quotePartId)
+        ? prev.filter(num => num !== quotePartId)
+        : [...prev, quotePartId];
 
       setSelectAll(newSelection.length === alternativeParts.length);
       return newSelection;
@@ -39,7 +44,7 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
       <h3 className="mt-3">Alternative Parts</h3>
       <hr className="custom-line m-0" />
 
-      <div className="mx-2" style={{ height: '250px', overflowY: 'auto' }}>
+      <div className="mx-2" style={{ minHeight: '170px', overflowY: 'auto' }}>
         <Table responsive style={{ marginBottom: '0' }}>
           <thead
             style={{
@@ -74,12 +79,13 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
           </thead>
           <tbody>
             {alternativeParts.map(part => (
-              <tr key={part.partNumber}>
+              <tr key={part.quotePartId}>
                 <td>
                   <Form.Check
                     type="checkbox"
-                    checked={selectedParts.includes(part.partNumber)}
-                    onChange={() => handleSelectPart(part.partNumber)}
+                    checked={selectedParts.includes(part.quotePartId)}
+                    onChange={() => handleSelectPart(part.quotePartId)}
+                    style={{marginLeft:"10px"}}
                   />
                 </td>
                 <td>{part.partNumber}</td>

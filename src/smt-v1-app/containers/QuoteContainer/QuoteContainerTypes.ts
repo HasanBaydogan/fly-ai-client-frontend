@@ -89,7 +89,14 @@ export interface Quote {
   revisionNumber:number;
   rfqNumberId: string;
   lastModifiedDate:string;
-  rfqMailStatus: string;
+  rfqMailStatus: | 'UNREAD'
+  | 'OPEN'
+  | 'WFS'
+  | 'PQ'
+  | 'FQ'
+  | 'NOT_RFQ'
+  | 'NO_QUOTE'
+  | 'SPAM';
   
 
 }
