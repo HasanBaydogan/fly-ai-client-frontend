@@ -7,29 +7,10 @@ import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
+import { QuoteWizardData } from '../QuoteWizard';
 
 interface WizardPersonalFormProps {
-  settings: {
-    adress: { row1: string; row2: string; row3: string };
-    quotaNumber: string;
-    RevisionNumber: string;
-    ClientLocation: string;
-    ShipTo: string;
-    Requisitioner: string;
-    ShipVia: string;
-    CPT: string;
-    ShippingTerms: string;
-    CoSI: string;
-    ST1: string;
-    ST2: string;
-    ST3: string;
-    ST4: string;
-    CoSI2: string;
-    CoSI3: { CoSIRow1: string; CoSIRow2: string };
-    reqQTY: number;
-    currency: string;
-  };
-  data: TableRow[];
+  quoteWizardData: QuoteWizardData;
   subTotalValues: number[]; // Sub-total değerleri
   selectedDate: Date | null; // Seçilen tarih
   checkedStates: boolean[]; // Add this new prop
@@ -44,13 +25,14 @@ interface TableRow {
   unitPrice: number;
 }
 
-const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
-  settings,
-  data,
+const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
+  quoteWizardData,
   subTotalValues,
   selectedDate,
   checkedStates // Add this new prop
 }) => {
+  return null;
+  /*
   const generatePDF = () => {
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -595,6 +577,7 @@ const WizardPersonalForm: React.FC<WizardPersonalFormProps> = ({
       </div>
     </>
   );
+  */
 };
 
-export default WizardPersonalForm;
+export default WizardPreviewForm;

@@ -14,32 +14,22 @@ import {
 import DatePicker from 'components/base/DatePicker';
 import Reka_Static from 'assets/img/logos/Reka_Static.jpg';
 import './WizardTabs.css';
+import {
+  QuotePartRow,
+  QuoteWizardData,
+  QuoteWizardSetting
+} from '../QuoteWizard';
+import { getPriceCurrencySymbol } from '../../RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
 
 interface WizardSetupFormProps {
   id: string;
-  settings: {
-    adress: { row1: string; row2: string; row3: string };
-    quotaNumber: string;
-    ClientLocation: string;
-    ShipTo: string;
-    Requisitioner: string;
-    ShipVia: string;
-    CPT: string;
-    ShippingTerms: string;
-    CoSI: string;
-    ST1: string;
-    ST2: string;
-    ST3: string;
-    ST4: string;
-    CoSI2: string;
-    CoSI3: { CoSIRow1: string; CoSIRow2: string };
-  };
-  data: TableRow[];
-  setData: (data: any[]) => void;
+  currencies: string[];
+  quoteWizardData: QuoteWizardData;
   setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
   subTotalValues: number[];
   setSubTotalValues: React.Dispatch<React.SetStateAction<number[]>>;
   setCurrency: (currency: string) => void;
+  currency: string;
   checkedStates: boolean[];
   setCheckedStates: React.Dispatch<React.SetStateAction<boolean[]>>;
 }
@@ -56,16 +46,19 @@ interface TableRow {
 }
 
 const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
-  settings,
-  data,
-  setData,
+  currencies,
+  quoteWizardData,
   setSelectedDate,
   subTotalValues,
   setSubTotalValues,
   setCurrency,
+  currency,
   checkedStates,
   setCheckedStates
 }) => {
+  const [quotePartRows, setQuotePartRow] = useState<QuotePartRow[]>(
+    quoteWizardData.quoteWizardPartResponses
+  );
   const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
   const [currencyLocal, setCurrencyLocal] = useState('USD');
@@ -75,40 +68,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     '0.00',
     '0.00'
   ]);
-
-  // Para birimi sembollerini tanımlayalım
-  const currencySymbols: Record<string, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    TRY: '₺',
-    RUB: '₽',
-    JPY: '¥',
-    CNY: '¥',
-    CAD: 'CA$',
-    NZD: 'NZ$',
-    AUD: '$',
-    MXN: '$',
-    CHF: 'Fr',
-    SEK: 'SEK',
-    NOK: 'NOK',
-    SGD: 'S$',
-    HKD: 'HK$',
-    INR: '₹',
-    BRL: 'R$',
-    KRW: '₩',
-    DKK: 'kr',
-    ZAR: 'R',
-    AED: 'د.إ',
-    SAR: '﷼',
-    MYR: 'RM',
-    THB: '฿',
-    IDR: 'Rp',
-    PLN: 'zł',
-    CZK: 'Kč',
-    HUF: 'Ft',
-    ILS: '₪'
-  };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>): void => {
     const value = parseFloat(e.target.value);
@@ -149,13 +108,18 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   };
 
   const handleCellChange = (
-    index: number,
+    id: string,
     field: string,
     value: string | number
   ) => {
-    const updatedData = [...data];
-    updatedData[index][field] = value;
-    setData(updatedData);
+    let foundQuotePart = quotePartRows.filter(
+      quotePart => quotePart.quotePartId === id
+    );
+    const remainingQuotePart = quotePartRows.filter(
+      quotePart => quotePart.quotePartId !== id
+    );
+    const updatedData = [...remainingQuotePart];
+    setQuotePartRow(updatedData);
   };
 
   const handleCurrencyChange = (selectedCurrency: string) => {
@@ -175,33 +139,38 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   };
 
   const handleQtyChange = (index: number, value: number) => {
-    const updatedData = [...data];
-    updatedData[index].qty = value;
-    setData(updatedData);
+    const updatedData = [...quotePartRows];
+    updatedData[index].quantity = value;
+    setQuotePartRow(updatedData);
   };
 
   //fake data
 
   // Satır ekleme için fake data
   const addRow = (index: number) => {
-    const newRow: TableRow = {
+    const newRow: QuotePartRow = {
       partNumber: '',
       alternativeTo: '',
+      currency: quoteWizardData.currency,
       description: '',
-      leadTime: '',
-      qty: 1,
+      reqCondition: 'NE',
+      fndCondition: 'NE',
+      quotePartId: null,
+      leadTime: 0,
+      quantity: 1,
       unitPrice: 0.0,
-      isNew: true
+      isNew: true,
+      displayPrice: '0.00'
     };
 
-    const updatedData = [...data];
+    const updatedData = [...quotePartRows];
     updatedData.splice(index + 1, 0, newRow);
-    setData(updatedData);
+    setQuotePartRow(updatedData);
   };
 
   const deleteRow = (index: number) => {
-    const updatedData = data.filter((_, i) => i !== index);
-    setData(updatedData);
+    const updatedData = quotePartRows.filter((_, i) => i !== index);
+    setQuotePartRow(updatedData);
   };
 
   const formatNumberInput = (value: string): string => {
@@ -242,27 +211,29 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
     if (!cleanValue) {
       // Handle empty input
-      const updatedData = [...data];
+      const updatedData = [...quotePartRows];
       updatedData[index] = {
         ...updatedData[index],
-        unitPrice: 0,
-        displayPrice: ''
+        unitPrice: 0
+        //displayPrice:
       };
-      setData(updatedData);
+      setQuotePartRow(updatedData);
       return;
     }
 
     const numericValue = parseFloat(cleanValue);
     if (isNaN(numericValue)) return;
 
-    const updatedData = [...data];
+    const updatedData = [...quotePartRows];
     updatedData[index] = {
       ...updatedData[index],
-      unitPrice: numericValue,
+      unitPrice: numericValue
+      /*
       displayPrice:
         currencySymbols[currencyLocal] + formatNumberInput(cleanValue)
+        */
     };
-    setData(updatedData);
+    setQuotePartRow(updatedData);
   };
 
   // Checkbox değişikliğini handle eden fonksiyonu güncelliyoruz
@@ -294,101 +265,34 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <Dropdown.Toggle variant="phoenix-secondary">
                 {currencyLocal}
               </Dropdown.Toggle>
-              <Dropdown.Menu className="py-2">
-                <Dropdown.Item onClick={() => handleCurrencyChange('USD$')}>
-                  USD-$
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('EUR€')}>
-                  EUR-€
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('GBP£')}>
-                  GBP-£
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('TRY₺')}>
-                  TRY-₺
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('JPY')}>
-                  JPY-¥
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('CNY¥')}>
-                  CNY-¥
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('CAD')}>
-                  CAD-CA$
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('AUD')}>
-                  AUD-A$
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('MXN')}>
-                  MXN-$
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('NZD$')}>
-                  NZD-NZ$
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('CHF')}>
-                  CHF-Fr
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('SGD')}>
-                  SGD-S$
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('HKD$')}>
-                  HKD-HK$
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('ZAR')}>
-                  ZAR-R
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('INR₹')}>
-                  INR-₹
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('BRL$')}>
-                  BRL-R$
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('KRW₩')}>
-                  KRW-₩
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('DKK kr')}>
-                  DKK-kr
-                </Dropdown.Item>
 
-                <Dropdown.Item onClick={() => handleCurrencyChange('AEDد.إ')}>
-                  AED-د.إ
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('SAR﷼')}>
-                  SAR-﷼
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('MYR')}>
-                  MYR-RM
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('THB฿')}>
-                  THB-฿
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('IDR')}>
-                  IDR-Rp
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('PLNzł')}>
-                  PLN-zł
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('CZK')}>
-                  CZK-Kč
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('HUF')}>
-                  HUF-Ft
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleCurrencyChange('ILS₪')}>
-                  ILS-₪
-                </Dropdown.Item>
+              <Dropdown.Menu className="py-2">
+                {currencies &&
+                  currencies.map(currency => (
+                    <Dropdown.Item
+                      key={currency}
+                      onClick={() => handleCurrencyChange(currency)}
+                    >
+                      {currency}
+                    </Dropdown.Item>
+                  ))}
               </Dropdown.Menu>
             </Dropdown>
           </Form.Group>
 
           <Card style={{ width: '12rem' }} className="border-0 mb-5">
-            <Card.Img variant="top" src={Reka_Static} />
+            <Card.Img
+              variant="top"
+              src={quoteWizardData.quoteWizardSetting.logo}
+            />
             <Card.Body className="p-0 px-1 fs-9">
               <Card.Text className="mb-2 pt-2">
-                {settings.adress.row1}
+                {quoteWizardData.quoteWizardSetting.addressRow1}
               </Card.Text>
-              <Card.Text className="mb-2">{settings.adress.row2}</Card.Text>
-              <Card.Text>{settings.adress.row3}</Card.Text>
+              <Card.Text className="mb-2">
+                {quoteWizardData.quoteWizardSetting.addressRow2}
+              </Card.Text>
+              <Card.Text>{'Row 3'}</Card.Text>
             </Card.Body>
           </Card>
         </div>
@@ -408,7 +312,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               </Form.Group>
             </Form>
             <p className="mt-2 small mt-3">
-              <strong>Quote Number:</strong> {settings.quotaNumber}
+              <strong>Quote Number:</strong> {quoteWizardData.quoteNumberId}
             </p>
             <Badge bg="primary" className="small">
               REVISION {revisionNumber}
@@ -427,8 +331,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         </thead>
         <tbody>
           <tr className="text-center align-middle">
-            <td colSpan={3}>{settings.ClientLocation}</td>
-            <td>{settings.ShipTo}</td>
+            <td colSpan={3}>{'Client Location'}</td>
+            <td>{'SHIP TO From DB'}</td>
           </tr>
           <tr className="bg-primary text-white text-center align-middle">
             <td className="text-white" style={{ width: '25%' }}>
@@ -445,10 +349,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             </td>
           </tr>
           <tr className="text-center align-middle">
-            <td style={{ width: '25%' }}>{settings.Requisitioner}</td>
-            <td style={{ width: '25%' }}>{settings.ShipVia}</td>
-            <td style={{ width: '25%' }}>{settings.CPT}</td>
-            <td style={{ width: '25%' }}>{settings.ShippingTerms}</td>
+            <td style={{ width: '25%' }}>{'Requisitioner'}</td>
+            <td style={{ width: '25%' }}>{'ShipVia'}</td>
+            <td style={{ width: '25%' }}>{'CPT'}</td>
+            <td style={{ width: '25%' }}>{'ShippingTerms'}</td>
           </tr>
         </tbody>
       </Table>
@@ -468,7 +372,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             </tr>
           </thead>
           <tbody>
-            {data.map((row, index) => (
+            {quotePartRows.map((row, index) => (
               <tr key={index} className="text-center align-middle">
                 <td>
                   {row.isNew ? (
@@ -476,7 +380,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       type="text"
                       value={row.partNumber}
                       onChange={e =>
-                        handleCellChange(index, 'partNumber', e.target.value)
+                        handleCellChange(
+                          row.quotePartId,
+                          'partNumber',
+                          e.target.value
+                        )
                       }
                     />
                   ) : (
@@ -489,7 +397,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       type="text"
                       value={row.alternativeTo}
                       onChange={e =>
-                        handleCellChange(index, 'alternativeTo', e.target.value)
+                        handleCellChange(
+                          row.quotePartId,
+                          'alternativeTo',
+                          e.target.value
+                        )
                       }
                     />
                   ) : (
@@ -502,7 +414,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       type="text"
                       value={row.description}
                       onChange={e =>
-                        handleCellChange(index, 'description', e.target.value)
+                        handleCellChange(
+                          row.quotePartId,
+                          'description',
+                          e.target.value
+                        )
                       }
                     />
                   ) : (
@@ -516,7 +432,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         type="number"
                         value={row.leadTime}
                         onChange={e =>
-                          handleCellChange(index, 'leadTime', e.target.value)
+                          handleCellChange(
+                            row.quotePartId,
+                            'leadTime',
+                            e.target.value
+                          )
                         }
                         style={{ width: '75px' }}
                         min={1}
@@ -530,10 +450,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td>
                   <Form.Control
                     type="number"
-                    value={row.qty}
+                    value={row.quantity}
                     onChange={e =>
                       handleCellChange(
-                        index,
+                        row.quotePartId,
                         'qty',
                         parseInt(e.target.value, 10)
                       )
@@ -547,9 +467,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     value={
                       row.displayPrice ||
                       (row.unitPrice
-                        ? currencySymbols[currencyLocal] +
+                        ? getPriceCurrencySymbol(currency) +
                           formatNumberInput(row.unitPrice.toString())
-                        : currencySymbols[currencyLocal] + '0.00')
+                        : getPriceCurrencySymbol(currency) + '0.00')
                     }
                     onChange={e => handleUnitPriceChange(index, e.target.value)}
                     onBlur={e => {
@@ -557,17 +477,17 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0;
                       const hasDecimal = e.target.value.includes('.');
                       const formattedValue =
-                        currencySymbols[currencyLocal] +
+                        getPriceCurrencySymbol(currency) +
                         formatNumberInput(numericValue.toString()) +
                         (!hasDecimal ? '.00' : '');
 
-                      const updatedData = [...data];
+                      const updatedData = [...quotePartRows];
                       updatedData[index] = {
                         ...updatedData[index],
                         unitPrice: numericValue,
                         displayPrice: formattedValue
                       };
-                      setData(updatedData);
+                      setQuotePartRow(updatedData);
                     }}
                     onKeyDown={e => {
                       if (e.key === '.') {
@@ -583,7 +503,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     placeholder="0.00"
                   />
                 </td>
-                <td>{formatCurrency(row.qty * row.unitPrice)}</td>
+                <td>{formatCurrency(row.quantity * row.unitPrice)}</td>
                 <td className="button-cell">
                   <div className="action-buttons">
                     <Button
@@ -621,7 +541,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               </thead>
               <tbody>
                 <tr>
-                  <td className="p-2">{settings.CoSI}</td>
+                  <td className="p-2">{'CoSI'}</td>
                 </tr>
               </tbody>
             </Table>
@@ -638,8 +558,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <h5>
                           <span className="text-primary ms-2">
                             {formatCurrency(
-                              data.reduce(
-                                (acc, row) => acc + row.qty * row.unitPrice,
+                              quotePartRows.reduce(
+                                (acc, row) =>
+                                  acc + row.quantity * row.unitPrice,
                                 0
                               )
                             )}
@@ -650,9 +571,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {settings.ST1 && (
+                  {quoteWizardData && (
                     <tr>
-                      <td>{settings.ST1}</td>
+                      <td>{'ST1'}</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -667,13 +588,13 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <Form.Control
                           type="text"
                           value={
-                            currencySymbols[currencyLocal] +
+                            getPriceCurrencySymbol(currency) +
                             (displayValues[0] ||
                               formatNumberInput(subTotalValues[0].toString()))
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
-                              currencySymbols[currencyLocal],
+                              getPriceCurrencySymbol(currency),
                               ''
                             );
                             handleSubTotalChange(0, value);
@@ -709,9 +630,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       </td>
                     </tr>
                   )}
-                  {settings.ST2 && (
+                  {quoteWizardData && (
                     <tr>
-                      <td>{settings.ST2}</td>
+                      <td>{'ST2'}</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -726,13 +647,13 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <Form.Control
                           type="text"
                           value={
-                            currencySymbols[currencyLocal] +
+                            getPriceCurrencySymbol(currency) +
                             (displayValues[1] ||
                               formatNumberInput(subTotalValues[1].toString()))
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
-                              currencySymbols[currencyLocal],
+                              getPriceCurrencySymbol(currency),
                               ''
                             );
                             handleSubTotalChange(1, value);
@@ -768,9 +689,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       </td>
                     </tr>
                   )}
-                  {settings.ST3 && (
+                  {quoteWizardData && (
                     <tr>
-                      <td>{settings.ST3}</td>
+                      <td>{'ST3'}</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -784,13 +705,13 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <Form.Control
                           type="text"
                           value={
-                            currencySymbols[currencyLocal] +
+                            getPriceCurrencySymbol(currency) +
                             (displayValues[2] ||
                               formatNumberInput(subTotalValues[2].toString()))
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
-                              currencySymbols[currencyLocal],
+                              getPriceCurrencySymbol(currency),
                               ''
                             );
                             handleSubTotalChange(2, value);
@@ -826,9 +747,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       </td>
                     </tr>
                   )}
-                  {settings.ST4 && (
+                  {quoteWizardData && (
                     <tr>
-                      <td>{settings.ST4}</td>
+                      <td>{'ST4'}</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -842,13 +763,13 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <Form.Control
                           type="text"
                           value={
-                            currencySymbols[currencyLocal] +
+                            getPriceCurrencySymbol(currency) +
                             (displayValues[3] ||
                               formatNumberInput(subTotalValues[3].toString()))
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
-                              currencySymbols[currencyLocal],
+                              getPriceCurrencySymbol(currency),
                               ''
                             );
                             handleSubTotalChange(3, value);
@@ -889,8 +810,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     <td>
                       <strong>
                         {formatCurrency(
-                          data.reduce(
-                            (acc, row) => acc + row.qty * row.unitPrice,
+                          quotePartRows.reduce(
+                            (acc, row) => acc + row.quantity * row.unitPrice,
                             0
                           ) +
                             subTotalValues.reduce(
@@ -918,7 +839,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             </thead>
             <tbody>
               <tr>
-                <td className="p-2">{settings.CoSI2}</td>
+                <td className="p-2">{'CoSI2'}</td>
               </tr>
             </tbody>
           </Table>
@@ -926,9 +847,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             <tbody>
               <tr>
                 <td className="p-2">
-                  {settings.CoSI3.CoSIRow1}
+                  {'CoSI3.CoSIRow1'}
                   <br />
-                  {settings.CoSI3.CoSIRow2}
+                  {'CoSI3.CoSIRow2'}
                   <br />
                 </td>
               </tr>

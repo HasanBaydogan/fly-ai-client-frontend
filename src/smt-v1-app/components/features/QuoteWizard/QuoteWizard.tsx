@@ -2,6 +2,42 @@ import React, { useEffect, useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import WizardTabs from './WizardTabs/WizardTabs';
 import { quoteWizardIntro } from 'smt-v1-app/services/QuoteService';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
+import { getPriceCurrencySymbol } from '../RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
+import { getAllCurrenciesFromDB } from 'smt-v1-app/services/RFQService';
+
+export interface QuotePartRow {
+  alternativeTo: string;
+  currency: string;
+  description: string;
+  fndCondition: string;
+  leadTime: number;
+  partNumber: string;
+  quantity: number;
+  quotePartId: string;
+  reqCondition: string;
+  unitPrice: number;
+  isNew: boolean;
+  displayPrice: string;
+}
+export interface QuoteWizardSetting {
+  addressRow1: string;
+  addressRow2: string;
+  commentsSpecialInstruction: string;
+  contactInfo: string;
+  logo: string;
+  mobilePhone: string;
+  otherQuoteValues: string[];
+  phone: string;
+}
+
+export interface QuoteWizardData {
+  currency: string;
+  quoteId: string;
+  quoteNumberId: string;
+  quoteWizardPartResponses: QuotePartRow[];
+  quoteWizardSetting: QuoteWizardSetting;
+}
 
 const QuoteWizard = ({
   handleOpen,
@@ -18,14 +54,28 @@ const QuoteWizard = ({
   selectedAlternativeParts: string[];
   quoteId: string;
 }) => {
+  const [quoteWizardData, setQuoteWizardData] = useState<QuoteWizardData>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [currencies, setCurrencies] = useState([]);
   useEffect(() => {
     const getSelectedQuoteParts = async () => {
+      setIsLoading(true);
       const response = await quoteWizardIntro(
         quoteId,
         selectedParts,
         selectedAlternativeParts
       );
-      console.log(response);
+      if (response.statusCode == 200) {
+        setQuoteWizardData(response.data);
+        console.log(response.data);
+      }
+      const allCurrencies = await getAllCurrenciesFromDB();
+      if (allCurrencies.statusCode === 200) {
+        setCurrencies(allCurrencies.data);
+        console.log(allCurrencies);
+      }
+      //getPriceCurrencySymbol()
+      setIsLoading(false);
     };
     getSelectedQuoteParts();
   }, [selectedParts, selectedAlternativeParts]);
@@ -35,7 +85,14 @@ const QuoteWizard = ({
         <Modal.Title>Quote Wizard</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <WizardTabs />
+        {isLoading ? (
+          <LoadingAnimation />
+        ) : (
+          <WizardTabs
+            quoteWizardData={quoteWizardData}
+            currencies={currencies}
+          />
+        )}
       </Modal.Body>
     </Modal>
   );
