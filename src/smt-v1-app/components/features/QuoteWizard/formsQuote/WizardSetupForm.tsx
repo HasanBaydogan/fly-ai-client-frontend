@@ -301,7 +301,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     return wholeNumber + decimalPart;
   };
 
-  // Checkbox değişikliğini handle eden fonksiyonu güncelliyoruz
+  //  Handle Functions
   const handleCheckboxChange = (index: number, checked: boolean) => {
     const newCheckedStates = [...checkedStates];
     newCheckedStates[index] = checked;
@@ -346,6 +346,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       )
     );
   };
+
+  const handleReqCondition = (value: number, rowId: string) => {};
 
   return (
     <>
@@ -524,9 +526,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     <Form.Control
                       type="text"
                       value={row.reqCondition}
-                      onChange={e =>
-                        handleDescriptionChange(e.target.value, row.tempId)
-                      }
+                      onChange={e => handleReqCondition(e.target.value, row.id)}
                     />
                   ) : (
                     row.reqCondition
@@ -537,9 +537,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     <Form.Control
                       type="text"
                       value={row.fndCondition}
-                      onChange={e =>
-                        handleDescriptionChange(e.target.value, row.tempId)
-                      }
+                      onChange={e => handleFndCondition(e.target.value, row.id)}
                     />
                   ) : (
                     row.fndCondition
