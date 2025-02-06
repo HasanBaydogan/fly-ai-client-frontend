@@ -1,6 +1,6 @@
 import { WizardFormData } from 'pages/modules/forms/WizardExample';
 import { useWizardFormContext } from 'providers/WizardFormProvider';
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, FocusEvent, useEffect, useState } from 'react';
 import {
   Badge,
   Button,
@@ -34,17 +34,6 @@ interface WizardSetupFormProps {
   setCheckedStates: React.Dispatch<React.SetStateAction<boolean[]>>;
 }
 
-interface TableRow {
-  partNumber: string;
-  alternativeTo: string;
-  description: string;
-  leadTime: string;
-  qty: number;
-  unitPrice: number;
-  isNew?: boolean;
-  displayPrice?: string;
-}
-
 const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   currencies,
   quoteWizardData,
@@ -56,9 +45,22 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   checkedStates,
   setCheckedStates
 }) => {
-  const [quotePartRows, setQuotePartRow] = useState<QuotePartRow[]>(
-    quoteWizardData.quoteWizardPartResponses
-  );
+  const [quotePartRows, setQuotePartRows] = useState<QuotePartRow[]>([]);
+  useEffect(() => {
+    const formattedData = quoteWizardData.quoteWizardPartResponses.map(item => {
+      return {
+        ...item,
+        id: item.quotePartId,
+        unitPriceString: item.unitPrice
+          ? formatNumber(item.unitPrice.toString())
+          : ''
+      };
+    });
+    console.log(formattedData);
+    setQuotePartRows(formattedData);
+  }, []);
+
+  // Return revision number
   const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
   const [currencyLocal, setCurrencyLocal] = useState('USD');
@@ -69,19 +71,110 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     '0.00'
   ]);
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>): void => {
-    const value = parseFloat(e.target.value);
-    const formattedValue = formatCurrency(value);
-    e.target.value = formattedValue;
+  const [tempIdCounter, setTempIdCounter] = useState(0);
+
+  // Price Methods Start
+
+  const formatNumber = (value: string): string => {
+    return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  // Para birimi formatlaması için yardımcı fonksiyon
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: currencyLocal.replace(/[^A-Z]/g, '') // Sembolleri kaldır
-    });
+  const formatCurrency = (
+    inputValue: string,
+    currency: string,
+    blur: boolean = false
+  ): { formatted: string; numericValue: number } => {
+    // Handle empty
+    if (!inputValue) {
+      return { formatted: '', numericValue: 0 };
+    }
+
+    let inputVal = inputValue;
+    // Check if the input has a decimal place
+    if (inputVal.indexOf('.') >= 0) {
+      // Split at decimal
+      const decimalPos = inputVal.indexOf('.');
+      let leftSide = inputVal.substring(0, decimalPos);
+      let rightSide = inputVal.substring(decimalPos);
+
+      // Format left side
+      leftSide = formatNumber(leftSide);
+      // Format right side
+      rightSide = formatNumber(rightSide);
+
+      if (blur) {
+        // user left the field, so ensure trailing "00"
+        rightSide += '00';
+      }
+      // Limit decimal to only 2 digits
+      rightSide = rightSide.substring(0, 2);
+
+      // Join back
+      inputVal = `${getPriceCurrencySymbol(currency)}${leftSide}.${rightSide}`;
+    } else {
+      // no decimal entered
+      inputVal = `${getPriceCurrencySymbol(currency)}${formatNumber(inputVal)}`;
+
+      // If blur, add .00
+      if (blur) {
+        inputVal += '.00';
+      }
+    }
+
+    // Convert the formatted string to a numeric value
+    // 1) remove currency symbol
+    const parts = inputVal.split(getPriceCurrencySymbol(currency));
+    const numericString = parts[1] || '0'; // everything after the symbol
+
+    // 2) remove commas
+    const raw = numericString.replace(/,/g, '');
+    // 3) parse float
+    const parsedNumber = parseFloat(raw) || 0;
+
+    return {
+      formatted: inputVal,
+      numericValue: Math.round(parsedNumber * 100) / 100 // rounding to 2 decimals
+    };
   };
+  const handleUnitPriceChange = (newValue: string, rowId: string | number) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row => {
+        if (row.id === rowId) {
+          const { formatted, numericValue } = formatCurrency(
+            newValue,
+            row.currency
+          );
+          return {
+            ...row,
+            unitPriceString: formatted,
+            unitPrice: numericValue
+          };
+        }
+        return row;
+      })
+    );
+  };
+
+  const handleUnitPriceBlur = (newValue: string, tempId?: number) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row => {
+        if (row.tempId === tempId) {
+          const { formatted, numericValue } = formatCurrency(
+            row.unitPriceString,
+            row.currency,
+            true
+          );
+          return {
+            ...row,
+            unitPriceString: formatted,
+            unitPrice: numericValue
+          };
+        }
+        return row;
+      })
+    );
+  };
+  // Price Methods End
 
   const handleSubTotalChange = (index: number, value: string) => {
     let cleanValue = value.replace(/[^0-9.]/g, '');
@@ -107,21 +200,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     setSubTotalValues(updatedValues);
   };
 
-  const handleCellChange = (
-    id: string,
-    field: string,
-    value: string | number
-  ) => {
-    let foundQuotePart = quotePartRows.filter(
-      quotePart => quotePart.quotePartId === id
-    );
-    const remainingQuotePart = quotePartRows.filter(
-      quotePart => quotePart.quotePartId !== id
-    );
-    const updatedData = [...remainingQuotePart];
-    setQuotePartRow(updatedData);
-  };
-
   const handleCurrencyChange = (selectedCurrency: string) => {
     const currencyCode = selectedCurrency.replace(/[^A-Z]/g, '');
     setCurrency(currencyCode);
@@ -138,17 +216,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     setReqQTY(defaultQuantities[currencyCode]);
   };
 
-  const handleQtyChange = (index: number, value: number) => {
-    const updatedData = [...quotePartRows];
-    updatedData[index].quantity = value;
-    setQuotePartRow(updatedData);
-  };
-
-  //fake data
-
-  // Satır ekleme için fake data
-  const addRow = (index: number) => {
+  const addRow = () => {
+    // ***
     const newRow: QuotePartRow = {
+      id: `temp-${tempIdCounter}`,
+      tempId: tempIdCounter,
       partNumber: '',
       alternativeTo: '',
       currency: quoteWizardData.currency,
@@ -160,17 +232,28 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       quantity: 1,
       unitPrice: 0.0,
       isNew: true,
-      displayPrice: '0.00'
+      unitPriceString: '0.00'
     };
 
-    const updatedData = [...quotePartRows];
-    updatedData.splice(index + 1, 0, newRow);
-    setQuotePartRow(updatedData);
+    const updatedData = [...quotePartRows, newRow];
+    setTempIdCounter(tempIdCounter + 1);
+    console.log(updatedData);
+    setQuotePartRows(updatedData);
   };
 
-  const deleteRow = (index: number) => {
-    const updatedData = quotePartRows.filter((_, i) => i !== index);
-    setQuotePartRow(updatedData);
+  const deleteRow = (tempId: number, quotePartId: string) => {
+    // ***
+    let updatedData = quotePartRows;
+    if (tempId !== undefined) {
+      updatedData = quotePartRows.filter(quote => quote.tempId !== tempId);
+    } else if (quotePartId !== undefined && quotePartId !== null) {
+      updatedData = quotePartRows.filter(
+        quote => quote.quotePartId !== quotePartId
+      );
+    } else {
+      console.log('there is a bug in deleteRow');
+    }
+    setQuotePartRows(updatedData);
   };
 
   const formatNumberInput = (value: string): string => {
@@ -196,51 +279,50 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     return wholeNumber + decimalPart;
   };
 
-  const handleUnitPriceChange = (index: number, value: string) => {
-    let cleanValue = value.replace(/[^0-9.]/g, '');
-
-    // Handle decimal points
-    const parts = cleanValue.split('.');
-    if (parts.length > 2) {
-      cleanValue = parts[0] + '.' + parts.slice(1).join('');
-    }
-    if (parts[1] && parts[1].length > 2) {
-      parts[1] = parts[1].slice(0, 2);
-      cleanValue = parts.join('.');
-    }
-
-    if (!cleanValue) {
-      // Handle empty input
-      const updatedData = [...quotePartRows];
-      updatedData[index] = {
-        ...updatedData[index],
-        unitPrice: 0
-        //displayPrice:
-      };
-      setQuotePartRow(updatedData);
-      return;
-    }
-
-    const numericValue = parseFloat(cleanValue);
-    if (isNaN(numericValue)) return;
-
-    const updatedData = [...quotePartRows];
-    updatedData[index] = {
-      ...updatedData[index],
-      unitPrice: numericValue
-      /*
-      displayPrice:
-        currencySymbols[currencyLocal] + formatNumberInput(cleanValue)
-        */
-    };
-    setQuotePartRow(updatedData);
-  };
-
   // Checkbox değişikliğini handle eden fonksiyonu güncelliyoruz
   const handleCheckboxChange = (index: number, checked: boolean) => {
     const newCheckedStates = [...checkedStates];
     newCheckedStates[index] = checked;
     setCheckedStates(newCheckedStates);
+  };
+
+  const handlePartNumberChange = (value: string, tempId: number) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row =>
+        row.tempId === tempId ? { ...row, partNumber: value } : row
+      )
+    );
+  };
+
+  const handleAlternativePartChange = (value: string, tempId: number) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row =>
+        row.tempId === tempId ? { ...row, alternativeTo: value } : row
+      )
+    );
+  };
+
+  const handleDescriptionChange = (value: string, tempId: number) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row =>
+        row.tempId === tempId ? { ...row, description: value } : row
+      )
+    );
+  };
+
+  const handleLeadTimeChange = (value: number, tempId: number) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row =>
+        row.tempId === tempId ? { ...row, leadTime: value } : row
+      )
+    );
+  };
+  const handleQuantityChange = (value: number, rowId: string) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row =>
+        row.id === rowId ? { ...row, quantity: value } : row
+      )
+    );
   };
 
   return (
@@ -373,18 +455,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           </thead>
           <tbody>
             {quotePartRows.map((row, index) => (
-              <tr key={index} className="text-center align-middle">
+              <tr key={row.tempId} className="text-center align-middle">
                 <td>
                   {row.isNew ? (
                     <Form.Control
                       type="text"
                       value={row.partNumber}
                       onChange={e =>
-                        handleCellChange(
-                          row.quotePartId,
-                          'partNumber',
-                          e.target.value
-                        )
+                        handlePartNumberChange(e.target.value, row.tempId)
                       }
                     />
                   ) : (
@@ -397,11 +475,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       type="text"
                       value={row.alternativeTo}
                       onChange={e =>
-                        handleCellChange(
-                          row.quotePartId,
-                          'alternativeTo',
-                          e.target.value
-                        )
+                        handleAlternativePartChange(e.target.value, row.tempId)
                       }
                     />
                   ) : (
@@ -414,11 +488,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       type="text"
                       value={row.description}
                       onChange={e =>
-                        handleCellChange(
-                          row.quotePartId,
-                          'description',
-                          e.target.value
-                        )
+                        handleDescriptionChange(e.target.value, row.tempId)
                       }
                     />
                   ) : (
@@ -432,10 +502,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         type="number"
                         value={row.leadTime}
                         onChange={e =>
-                          handleCellChange(
-                            row.quotePartId,
-                            'leadTime',
-                            e.target.value
+                          handleLeadTimeChange(
+                            Number(e.target.value),
+                            row.tempId
                           )
                         }
                         style={{ width: '75px' }}
@@ -452,11 +521,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     type="number"
                     value={row.quantity}
                     onChange={e =>
-                      handleCellChange(
-                        row.quotePartId,
-                        'qty',
-                        parseInt(e.target.value, 10)
-                      )
+                      handleQuantityChange(parseInt(e.target.value, 10), row.id)
                     }
                     min={1}
                   />
@@ -464,60 +529,40 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td>
                   <Form.Control
                     type="text"
-                    value={
-                      row.displayPrice ||
-                      (row.unitPrice
-                        ? getPriceCurrencySymbol(currency) +
-                          formatNumberInput(row.unitPrice.toString())
-                        : getPriceCurrencySymbol(currency) + '0.00')
+                    value={row.unitPriceString}
+                    onChange={e =>
+                      handleUnitPriceChange(e.target.value, row.id)
                     }
-                    onChange={e => handleUnitPriceChange(index, e.target.value)}
-                    onBlur={e => {
-                      const numericValue =
-                        parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0;
-                      const hasDecimal = e.target.value.includes('.');
-                      const formattedValue =
-                        getPriceCurrencySymbol(currency) +
-                        formatNumberInput(numericValue.toString()) +
-                        (!hasDecimal ? '.00' : '');
-
-                      const updatedData = [...quotePartRows];
-                      updatedData[index] = {
-                        ...updatedData[index],
-                        unitPrice: numericValue,
-                        displayPrice: formattedValue
-                      };
-                      setQuotePartRow(updatedData);
-                    }}
-                    onKeyDown={e => {
-                      if (e.key === '.') {
-                        const currentValue = e.currentTarget.value;
-                        if (!currentValue.includes('.')) {
-                          const newValue = currentValue + '.';
-                          handleUnitPriceChange(index, newValue);
-                        }
-                        e.preventDefault();
-                      }
-                    }}
-                    onWheel={e => e.currentTarget.blur()}
-                    placeholder="0.00"
+                    onBlur={e =>
+                      handleUnitPriceBlur(e.target.value, row.tempId)
+                    }
+                    onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
+                      e.currentTarget.blur()
+                    }
+                    placeholder={
+                      getPriceCurrencySymbol(row.currency) + '1,000,000.00'
+                    }
                   />
                 </td>
-                <td>{formatCurrency(row.quantity * row.unitPrice)}</td>
+                <td>
+                  {getPriceCurrencySymbol(currency) +
+                    ' ' +
+                    formatNumber((row.quantity * row.unitPrice).toString())}
+                </td>
                 <td className="button-cell">
                   <div className="action-buttons">
                     <Button
                       variant="success"
                       size="sm"
                       className="me-2"
-                      onClick={() => addRow(index)}
+                      onClick={() => addRow()}
                     >
                       +
                     </Button>
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => deleteRow(index)}
+                      onClick={() => deleteRow(row.tempId, row.quotePartId)}
                     >
                       -
                     </Button>
@@ -557,13 +602,13 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <div className="mt-3 text-center">
                         <h5>
                           <span className="text-primary ms-2">
-                            {formatCurrency(
+                            {/* formatCurrency(
                               quotePartRows.reduce(
                                 (acc, row) =>
                                   acc + row.quantity * row.unitPrice,
                                 0
                               )
-                            )}
+                            ) */}
                           </span>
                         </h5>
                       </div>
@@ -809,17 +854,19 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     <td colSpan={2}>Total:</td>
                     <td>
                       <strong>
-                        {formatCurrency(
+                        {formatNumber(
                           quotePartRows.reduce(
                             (acc, row) => acc + row.quantity * row.unitPrice,
                             0
                           ) +
-                            subTotalValues.reduce(
-                              (sum, val, index) =>
-                                // Sadece seçili olan checkbox'ların değerlerini topla
-                                sum + (checkedStates[index] ? val : 0),
-                              0
-                            )
+                            subTotalValues
+                              .reduce(
+                                (sum, val, index) =>
+                                  // Sadece seçili olan checkbox'ların değerlerini topla
+                                  sum + (checkedStates[index] ? val : 0),
+                                0
+                              )
+                              .toString()
                         )}
                       </strong>
                     </td>

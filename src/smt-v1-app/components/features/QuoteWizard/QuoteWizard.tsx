@@ -18,7 +18,9 @@ export interface QuotePartRow {
   reqCondition: string;
   unitPrice: number;
   isNew: boolean;
-  displayPrice: string;
+  unitPriceString: string;
+  tempId: number | undefined;
+  id: string;
 }
 export interface QuoteWizardSetting {
   addressRow1: string;
