@@ -78,6 +78,28 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const formatNumber = (value: string): string => {
     return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
+  const formatRowTotal = (value: string): string => {
+    // Split the input on the decimal point.
+    const [integerPartRaw, fractionalPartRaw] = value.split('.');
+
+    // Remove non-digit characters from the integer part.
+    const integerDigits = integerPartRaw.replace(/\D/g, '');
+
+    // Format the integer part with commas.
+    const formattedInteger = integerDigits.replace(
+      /\B(?=(\d{3})+(?!\d))/g,
+      ','
+    );
+
+    // If there's a fractional part, remove non-digit characters from it as well.
+    if (fractionalPartRaw !== undefined) {
+      const fractionalDigits = fractionalPartRaw.replace(/\D/g, '');
+      // Re-join the formatted integer part and the fractional part.
+      return `${formattedInteger}.${fractionalDigits}`;
+    } else {
+      return formattedInteger;
+    }
+  };
 
   const formatCurrency = (
     inputValue: string,
@@ -446,6 +468,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <td className="text-white align-middle">PART NUMBER (PN)</td>
               <td className="text-white align-middle">ALTERNATIVE TO</td>
               <td className="text-white align-middle">DESCRIPTION</td>
+              <td className="text-white align-middle">REQ CND</td>
+              <td className="text-white align-middle">FND CND</td>
               <td className="text-white align-middle">LEAD TIME (DAYS)</td>
               <td className="text-white align-middle">QTY</td>
               <td className="text-white align-middle">UNIT PRICE</td>
@@ -493,6 +517,32 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     />
                   ) : (
                     row.description
+                  )}
+                </td>
+                <td>
+                  {row.isNew ? (
+                    <Form.Control
+                      type="text"
+                      value={row.reqCondition}
+                      onChange={e =>
+                        handleDescriptionChange(e.target.value, row.tempId)
+                      }
+                    />
+                  ) : (
+                    row.reqCondition
+                  )}
+                </td>
+                <td>
+                  {row.isNew ? (
+                    <Form.Control
+                      type="text"
+                      value={row.fndCondition}
+                      onChange={e =>
+                        handleDescriptionChange(e.target.value, row.tempId)
+                      }
+                    />
+                  ) : (
+                    row.fndCondition
                   )}
                 </td>
                 <td>
@@ -547,14 +597,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td>
                   {getPriceCurrencySymbol(currency) +
                     ' ' +
-                    formatNumber((row.quantity * row.unitPrice).toString())}
+                    formatRowTotal((row.quantity * row.unitPrice).toString())}
                 </td>
                 <td className="button-cell">
                   <div className="action-buttons">
                     <Button
                       variant="success"
                       size="sm"
-                      className="me-2"
+                      className="me-1"
                       onClick={() => addRow()}
                     >
                       +
