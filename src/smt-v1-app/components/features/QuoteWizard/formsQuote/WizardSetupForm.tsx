@@ -63,7 +63,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   // Return revision number
   const [revisionNumber] = useState(0);
   const [reqQTY, setReqQTY] = useState(1);
-  const [currencyLocal, setCurrencyLocal] = useState('USD');
+  const [currencyLocal, setCurrencyLocal] = useState(currency);
   const [displayValues, setDisplayValues] = useState([
     '0.00',
     '0.00',
@@ -347,7 +347,20 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     );
   };
 
-  const handleReqCondition = (value: number, rowId: string) => {};
+  const handleReqCondition = (value: string, rowId: string) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row =>
+        row.id === rowId ? { ...row, reqCondition: value } : row
+      )
+    );
+  };
+  const handleFndCondition = (value: string, rowId: string) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row =>
+        row.id === rowId ? { ...row, fndCondition: value } : row
+      )
+    );
+  };
 
   return (
     <>
@@ -367,23 +380,16 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             />
 
             {/* Para Birimi Seçici */}
-            <Dropdown>
-              <Dropdown.Toggle variant="phoenix-secondary">
-                {currencyLocal}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="py-2">
-                {currencies &&
-                  currencies.map(currency => (
-                    <Dropdown.Item
-                      key={currency}
-                      onClick={() => handleCurrencyChange(currency)}
-                    >
-                      {currency}
-                    </Dropdown.Item>
-                  ))}
-              </Dropdown.Menu>
-            </Dropdown>
+            <Form.Select
+              value={currencyLocal}
+              onChange={e => setCurrencyLocal(e.target.value)}
+            >
+              {currencies.map(currency => (
+                <option key={currency} value={currency}>
+                  {currency}
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
 
           <Card style={{ width: '12rem' }} className="border-0 mb-5">
@@ -475,7 +481,12 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <td className="text-white align-middle">LEAD TIME (DAYS)</td>
               <td className="text-white align-middle">QTY</td>
               <td className="text-white align-middle">UNIT PRICE</td>
-              <td className="text-white align-middle">TOTAL</td>
+              <td
+                className="text-white align-middle"
+                style={{ minWidth: '100px' }}
+              >
+                TOTAL
+              </td>
               <td className="text-white align-middle">ACTIONS</td>
             </tr>
           </thead>
@@ -523,22 +534,40 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 </td>
                 <td>
                   {row.isNew ? (
-                    <Form.Control
-                      type="text"
+                    <Form.Select
                       value={row.reqCondition}
                       onChange={e => handleReqCondition(e.target.value, row.id)}
-                    />
+                    >
+                      <option value="NE">NE</option>
+                      <option value="FN">FN</option>
+                      <option value="NS">NS</option>
+                      <option value="OH">OH</option>
+                      <option value="SV">SV</option>
+                      <option value="AR">AR</option>
+                      <option value="RP">RP</option>
+                      <option value="IN">IN</option>
+                      <option value="TST">TST</option>
+                    </Form.Select>
                   ) : (
                     row.reqCondition
                   )}
                 </td>
                 <td>
                   {row.isNew ? (
-                    <Form.Control
-                      type="text"
+                    <Form.Select
                       value={row.fndCondition}
                       onChange={e => handleFndCondition(e.target.value, row.id)}
-                    />
+                    >
+                      <option value="NE">NE</option>
+                      <option value="FN">FN</option>
+                      <option value="NS">NS</option>
+                      <option value="OH">OH</option>
+                      <option value="SV">SV</option>
+                      <option value="AR">AR</option>
+                      <option value="RP">RP</option>
+                      <option value="IN">IN</option>
+                      <option value="TST">TST</option>
+                    </Form.Select>
                   ) : (
                     row.fndCondition
                   )}
@@ -650,13 +679,15 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <div className="mt-3 text-center">
                         <h5>
                           <span className="text-primary ms-2">
-                            {/* formatCurrency(
-                              quotePartRows.reduce(
-                                (acc, row) =>
-                                  acc + row.quantity * row.unitPrice,
-                                0
-                              )
-                            ) */}
+                            {formatNumber(
+                              quotePartRows
+                                .reduce(
+                                  (acc, row) =>
+                                    acc + row.quantity * row.unitPrice,
+                                  0
+                                )
+                                .toString()
+                            )}
                           </span>
                         </h5>
                       </div>
@@ -666,7 +697,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <tbody>
                   {quoteWizardData && (
                     <tr>
-                      <td>{'ST1'}</td>
+                      <td>
+                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[0]}
+                      </td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -725,7 +758,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   )}
                   {quoteWizardData && (
                     <tr>
-                      <td>{'ST2'}</td>
+                      <td>
+                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[1]}
+                      </td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -784,7 +819,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   )}
                   {quoteWizardData && (
                     <tr>
-                      <td>{'ST3'}</td>
+                      <td>
+                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[2]}
+                      </td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -842,7 +879,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   )}
                   {quoteWizardData && (
                     <tr>
-                      <td>{'ST4'}</td>
+                      <td>
+                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[3]}
+                      </td>
                       <td>
                         <Form.Check
                           type="checkbox"

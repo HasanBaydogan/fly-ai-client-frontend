@@ -82,7 +82,7 @@ const QuoteWizard = ({
     getSelectedQuoteParts();
   }, [selectedParts, selectedAlternativeParts]);
   return (
-    <Modal show={showTabs} onHide={handleClose} size="xl" centered>
+    <Modal show={showTabs} onHide={handleClose} fullscreen centered>
       <Modal.Header closeButton>
         <Modal.Title>Quote Wizard</Modal.Title>
       </Modal.Header>
