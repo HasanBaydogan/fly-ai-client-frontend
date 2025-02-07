@@ -54,7 +54,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         ...item,
         id: item.quotePartId,
         unitPriceString: item.unitPrice
-          ? formatNumber(item.unitPrice.toString())
+          ? formatNumberWithDecimals(item.unitPrice.toString())
           : ''
       };
     });
@@ -101,6 +101,16 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     } else {
       return formattedInteger;
     }
+  };
+  const formatNumberWithDecimals = (value: string): string => {
+    // Split on the decimal point.
+    const [integerPart, decimalPart] = value.split('.');
+    // Format the integer part.
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    // Return with the decimal part (if it exists)
+    return decimalPart !== undefined
+      ? `${formattedInteger}.${decimalPart}`
+      : formattedInteger;
   };
 
   const formatCurrency = (
@@ -179,10 +189,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     );
   };
 
-  const handleUnitPriceBlur = (newValue: string, tempId?: number) => {
+  const handleUnitPriceBlur = (newValue: string, rowId: string | number) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row => {
-        if (row.tempId === tempId) {
+        if (row.tempId === rowId) {
           const { formatted, numericValue } = formatCurrency(
             row.unitPriceString,
             row.currency,
@@ -615,9 +625,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     onChange={e =>
                       handleUnitPriceChange(e.target.value, row.id)
                     }
-                    onBlur={e =>
-                      handleUnitPriceBlur(e.target.value, row.tempId)
-                    }
+                    onBlur={e => handleUnitPriceBlur(e.target.value, row.id)}
                     onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
                       e.currentTarget.blur()
                     }
@@ -689,7 +697,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <div className="mt-3 text-center">
                         <h5>
                           <span className="text-primary ms-2">
-                            {formatNumber(
+                            {formatNumberWithDecimals(
                               quotePartRows
                                 .reduce(
                                   (acc, row) =>
@@ -697,7 +705,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                                   0
                                 )
                                 .toString()
-                            )}
+                            )}{' '}
+                            {getPriceCurrencySymbol(currency)}
                           </span>
                         </h5>
                       </div>
@@ -951,7 +960,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     <td colSpan={2}>Total:</td>
                     <td>
                       <strong>
-                        {formatNumber(
+                        {formatNumberWithDecimals(
                           (
                             quotePartRows.reduce(
                               (acc, row) => acc + row.quantity * row.unitPrice,
@@ -963,7 +972,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               0
                             )
                           ).toString() // Convert the final sum to a string AFTER calculation
-                        )}
+                        )}{' '}
+                        {getPriceCurrencySymbol(currency)}
                       </strong>
                     </td>
                   </tr>
