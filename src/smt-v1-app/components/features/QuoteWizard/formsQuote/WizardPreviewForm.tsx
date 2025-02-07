@@ -94,10 +94,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         headStyles: { fillColor: [51, 102, 204], textColor: 255 },
         styles: { halign: 'center', valign: 'middle' },
         columnStyles: {
-          0: { cellWidth: 140 },
-          1: { cellWidth: 50 }
+          0: { cellWidth: 143 },
+          1: { cellWidth: 53 }
         },
-        margin: { left: 10 }
+        margin: { left: 7 }
       });
 
       // Shipping details table
@@ -109,12 +109,12 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         headStyles: { fillColor: [51, 102, 204], textColor: 255 },
         styles: { halign: 'center', valign: 'middle' },
         columnStyles: {
-          0: { cellWidth: 47.5 },
-          1: { cellWidth: 47.5 },
-          2: { cellWidth: 47.5 },
-          3: { cellWidth: 47.5 }
+          0: { cellWidth: 48.5 },
+          1: { cellWidth: 48.5 },
+          2: { cellWidth: 49.5 },
+          3: { cellWidth: 49.5 }
         },
-        margin: { left: 10 }
+        margin: { left: 7 }
       });
 
       // Main product table
@@ -122,6 +122,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         row.partNumber,
         row.alternativeTo || '-',
         row.description,
+        row.reqCondition,
+        row.fndCondition,
         `${row.leadTime} Days`,
         row.quantity,
         row.unitPrice.toLocaleString('en-US', {
@@ -140,6 +142,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             'PART NUMBER',
             'ALTERNATIVE TO',
             'DESCRIPTION',
+            'REQ CND',
+            'FND CND',
             'LEAD TIME',
             'QTY',
             'UNIT PRICE',
@@ -151,15 +155,17 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         headStyles: { fillColor: [51, 102, 204], textColor: 255 },
         styles: { halign: 'center', valign: 'middle' },
         columnStyles: {
-          0: { cellWidth: 28 },
+          0: { cellWidth: 29 },
           1: { cellWidth: 28 },
-          2: { cellWidth: 50 },
-          3: { cellWidth: 20 },
-          4: { cellWidth: 14 },
-          5: { cellWidth: 25 },
-          6: { cellWidth: 25 }
+          2: { cellWidth: 35 },
+          3: { cellWidth: 11 },
+          4: { cellWidth: 11 },
+          5: { cellWidth: 20 },
+          6: { cellWidth: 12 },
+          7: { cellWidth: 24 },
+          8: { cellWidth: 26 }
         },
-        margin: { left: 10 }
+        margin: { left: 7 }
       });
 
       // Calculate totals
@@ -249,16 +255,16 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         styles: { halign: 'center', valign: 'middle', fontSize: 9 },
         // Adjust the column widths to fill the sub-total area
         columnStyles: {
-          0: { cellWidth: subTotalWidth * 0.5 },
+          0: { cellWidth: subTotalWidth * 0.51 },
           1: { cellWidth: subTotalWidth * 0.15 },
-          2: { cellWidth: subTotalWidth * 0.35 }
+          2: { cellWidth: subTotalWidth * 0.37 }
         }
       });
 
       // 2. Comments section (full width, placed below the Sub-total block)
       autoTable(pdf, {
         startY: (pdf as any).lastAutoTable?.finalY + 5,
-        margin: { left: 10 },
+        margin: { left: 7 },
         body: [
           [
             {
@@ -271,11 +277,11 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         theme: 'grid',
         styles: { halign: 'left', valign: 'middle' },
         // Make sure the table uses the full available width (pageWidth minus left/right margins)
-        columnStyles: { 0: { cellWidth: pageWidth - 20 } }
+        columnStyles: { 0: { cellWidth: pageWidth - 15 } }
       });
 
       // (Optional) Additional sections such as centered contact info can follow…
-      const tableWidth = 190;
+      const tableWidth = 195;
       const leftMargin = (pageWidth - tableWidth) / 2;
       autoTable(pdf, {
         startY: (pdf as any).lastAutoTable?.finalY + 5,
@@ -379,6 +385,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 <td className="text-white align-middle">PART NUMBER (PN)</td>
                 <td className="text-white align-middle">ALTERNATIVE TO</td>
                 <td className="text-white align-middle">DESCRIPTION</td>
+                <td className="text-white align-middle">REQ CND</td>
+                <td className="text-white align-middle">FND CND</td>
                 <td className="text-white align-middle">LEAD TIME (DAYS)</td>
                 <td className="text-white align-middle">QTY</td>
                 <td className="text-white align-middle">UNIT PRICE</td>
@@ -391,6 +399,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   <td>{row.partNumber}</td>
                   <td>{row.alternativeTo || '-'}</td>
                   <td>{row.description}</td>
+                  <td>{row.reqCondition}</td>
+                  <td>{row.fndCondition}</td>
                   <td>{row.leadTime} Days</td>
                   <td>{row.quantity}</td>
                   <td>
