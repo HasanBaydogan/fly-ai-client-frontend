@@ -331,29 +331,29 @@ export const routes: RouteItems[] = [
         ]
       },
       {
-        name: 'Customers',
+        name: 'Clients',
         active: true,
         icon: 'lock', //----------
         flat: true,
         pages: [
           {
-            name: 'Customer',
+            name: 'Client',
             active: true,
             icon: 'mail', //----------
             flat: true,
             pages: [
               {
-                name: 'Customer List',
-                path: '/',
-                pathName: 'customer-list',
+                name: 'Client List',
+                path: '/client/list',
+                pathName: 'Client-list',
                 icon: 'mail',
                 active: true,
                 next: false
               },
               {
-                name: 'Add New Customer',
+                name: 'Add New Client',
                 path: '/',
-                pathName: 'new-customer',
+                pathName: 'new-Client',
                 icon: 'mail',
                 active: true,
                 next: false
@@ -391,33 +391,33 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Customer vs RFQ Stats',
+                name: 'Client vs RFQ Stats',
                 path: '/',
-                pathName: 'customer-rfq-stats',
+                pathName: 'Client-rfq-stats',
                 icon: 'mail',
                 active: true,
                 next: false
               },
               {
-                name: 'Customer vs Quote Stats',
+                name: 'Client vs Quote Stats',
                 path: '/',
-                pathName: 'customer-quote-stats',
+                pathName: 'Client-quote-stats',
                 icon: 'mail',
                 active: true,
                 next: false
               },
               {
-                name: 'Customer vs Parts Stats',
+                name: 'Client vs Parts Stats',
                 path: '/',
-                pathName: 'customer-parts-stats',
+                pathName: 'Client-parts-stats',
                 icon: 'mail',
                 active: true,
                 next: false
               },
               {
-                name: 'Customer vs Invoice Stats',
+                name: 'Client vs Invoice Stats',
                 path: '/',
-                pathName: 'customer-invoice-stats',
+                pathName: 'Client-invoice-stats',
                 icon: 'mail',
                 active: true,
                 next: false

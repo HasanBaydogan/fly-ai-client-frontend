@@ -30,7 +30,10 @@ import SupplierListContainer from 'smt-v1-app/containers/SupplierListContainer/S
 import QuoteListContainer from 'smt-v1-app/containers/QuoteListContainer/QuoteListContainer';
 
 import SupplierEditContainer from 'smt-v1-app/containers/SupplierEditContainer/SupplierEditContainer';
+
 import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
+
+import ClientListContainer from 'smt-v1-app/containers/ClientListContainer/ClientListContainer';
 
 const routes: RouteObject[] = [
   {
@@ -100,6 +103,15 @@ const routes: RouteObject[] = [
               {
                 path: 'edit',
                 element: <SupplierEditContainer />
+              }
+            ]
+          },
+          {
+            path: 'client',
+            children: [
+              {
+                path: 'list',
+                element: <ClientListContainer />
               }
             ]
           }
