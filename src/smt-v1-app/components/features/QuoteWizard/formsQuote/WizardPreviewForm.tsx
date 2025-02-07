@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
-import Reka_Static from 'assets/img/logos/Reka_Static.jpg';
 import './WizardTabs.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileLines } from '@fortawesome/free-solid-svg-icons';
@@ -308,7 +307,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         <div className="uppersection">
           <div className="upperleftsection">
             <Card style={{ width: '12rem' }} className="border-0 mb-5">
-              <Card.Img variant="top" src={Reka_Static} />
+              <Card.Img variant="top" src={settings.logo} />
               <Card.Body className="p-0 px-1 fs-9">
                 <Card.Text className="mb-2 pt-2">
                   {settings.addressRow1}

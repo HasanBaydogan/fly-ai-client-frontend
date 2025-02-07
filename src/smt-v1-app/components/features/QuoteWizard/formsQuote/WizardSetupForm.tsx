@@ -1,24 +1,8 @@
-import { WizardFormData } from 'pages/modules/forms/WizardExample';
-import { useWizardFormContext } from 'providers/WizardFormProvider';
-import React, { ChangeEvent, FocusEvent, useEffect, useState } from 'react';
-import {
-  Badge,
-  Button,
-  Card,
-  Col,
-  Dropdown,
-  Form,
-  Row,
-  Table
-} from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Badge, Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import DatePicker from 'components/base/DatePicker';
-import Reka_Static from 'assets/img/logos/Reka_Static.jpg';
 import './WizardTabs.css';
-import {
-  QuotePartRow,
-  QuoteWizardData,
-  QuoteWizardSetting
-} from '../QuoteWizard';
+import { QuotePartRow, QuoteWizardData } from '../QuoteWizard';
 import { getPriceCurrencySymbol } from '../../RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
 
 interface WizardSetupFormProps {

@@ -156,7 +156,12 @@ const WizardTabs = ({
 
               <Tab.Pane eventKey={3}>
                 <WizardForm step={3}>
-                  {/*  <WizardSendMailForm emailProps={emailProps} /> */}
+                  {
+                    <WizardSendMailForm
+                      emailProps={emailProps}
+                      quoteId={quoteWizardData.quoteId}
+                    />
+                  }
                 </WizardForm>
               </Tab.Pane>
               <Tab.Pane eventKey={4}>

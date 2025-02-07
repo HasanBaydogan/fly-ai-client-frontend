@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Form, Row, Col, Alert, Badge } from 'react-bootstrap';
 import TinymceEditor from 'components/base/TinymceEditor';
 import Dropzone from 'components/base/Dropzone';
@@ -8,6 +8,8 @@ import 'react-bootstrap-typeahead/css/Typeahead.css';
 import { defaultMailTemplate } from './defaultMailTemplate';
 import { MailProvider } from './MailContext';
 import ReviewMail from './ReviewMail';
+import { getPreEmailSendingParameters } from 'smt-v1-app/services/QuoteService';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const MAX_TOTAL_SIZE = 22 * 1024 * 1024; // 22MB in bytes
 
@@ -38,11 +40,20 @@ interface TypeaheadOption {
 interface WizardSendMailFormProps {
   onNext?: () => void;
   emailProps: EmailProps;
+  quoteId: string;
+}
+
+interface EmailParams {
+  body: string;
+  ccEmails: string[];
+  subject: string;
+  toEmails: string[];
 }
 
 const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
   onNext,
-  emailProps
+  emailProps,
+  quoteId
 }) => {
   const {
     toEmails,
@@ -165,98 +176,132 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     setEmailList(uniqueEmails);
   };
 
+  // States
+  const [emailParams, setEmailParams] = useState<EmailParams>();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const getPreEmailParams = async () => {
+      setIsLoading(true);
+      const response = await getPreEmailSendingParameters(quoteId);
+      setEmailParams(response.data);
+      console.log(response.data);
+      setIsLoading(false);
+    };
+    getPreEmailParams();
+  }, []);
+  const setEmailBody = (body: string) => {
+    setEmailParams({
+      ...emailParams,
+      body: body
+    });
+  };
+  const handleSubjectChange = (subject: string) => {
+    setEmailParams({
+      ...emailParams,
+      subject: subject
+    });
+  };
+
   return (
     <div className="p-4">
-      <Form>
-        {error && (
-          <Alert variant="danger" dismissible onClose={() => setError('')}>
-            {error}
-          </Alert>
-        )}
-        <Row className="mb-3">
-          <Form.Group as={Col} md={12}>
-            <Form.Label>To</Form.Label>
-            <Typeahead
-              id="to-emails"
-              labelKey="label"
-              multiple
-              allowNew={(results: Array<string | { label: string }>, props) => {
-                const text = props.text;
-                return (
-                  !results.some(r =>
-                    typeof r === 'string' ? r === text : r.label === text
-                  ) && isValidEmail(text)
-                );
-              }}
-              newSelectionPrefix="Add email: "
-              options={toEmails.map(email => ({ label: email }))}
-              placeholder="Add recipient emails"
-              selected={toEmails.map(email => ({ label: email }))}
-              onChange={(selected: TypeaheadOption[]) => {
-                handleEmailChange(selected, setToEmails);
-              }}
+      {isLoading ? (
+        <LoadingAnimation />
+      ) : (
+        <Form>
+          {error && (
+            <Alert variant="danger" dismissible onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
+          <Row className="mb-3">
+            <Form.Group as={Col} md={12}>
+              <Form.Label>To</Form.Label>
+              <Typeahead
+                id="to-emails"
+                labelKey="label"
+                multiple
+                allowNew={(
+                  results: Array<string | { label: string }>,
+                  props
+                ) => {
+                  const text = props.text;
+                  return (
+                    !results.some(r =>
+                      typeof r === 'string' ? r === text : r.label === text
+                    ) && isValidEmail(text)
+                  );
+                }}
+                newSelectionPrefix="Add email: "
+                options={emailParams.toEmails.map(email => ({ label: email }))}
+                placeholder="Add recipient emails"
+                selected={emailParams.toEmails.map(email => ({ label: email }))}
+                onChange={(selected: TypeaheadOption[]) => {
+                  handleEmailChange(selected, setToEmails);
+                }}
+              />
+            </Form.Group>
+          </Row>
+          <Row className="mb-3">
+            <Form.Group as={Col} md={6}>
+              <Form.Label>CC</Form.Label>
+              <Typeahead
+                id="cc-emails"
+                labelKey="label"
+                multiple
+                allowNew
+                newSelectionPrefix="Add new email: "
+                options={emailParams.ccEmails.map(email => ({ label: email }))}
+                placeholder="Add CC emails"
+                selected={emailParams.ccEmails.map(email => ({ label: email }))}
+                onChange={(selected: TypeaheadOption[]) => {
+                  handleEmailChange(selected, setCcEmails);
+                }}
+              />
+            </Form.Group>
+            <Form.Group as={Col} md={6}>
+              <Form.Label>BCC</Form.Label>
+              <Typeahead
+                id="bcc-emails"
+                labelKey="label"
+                multiple
+                allowNew
+                newSelectionPrefix="Add new email: "
+                options={bccEmails.map(email => ({ label: email }))}
+                placeholder="Add BCC emails"
+                selected={bccEmails.map(email => ({ label: email }))}
+                onChange={(selected: TypeaheadOption[]) => {
+                  handleEmailChange(selected, setBccEmails);
+                }}
+              />
+            </Form.Group>
+          </Row>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Subject</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter subject"
+              value={emailParams.subject}
+              onChange={e => handleSubjectChange(e.target.value)}
             />
           </Form.Group>
-        </Row>
-        <Row className="mb-3">
-          <Form.Group as={Col} md={6}>
-            <Form.Label>CC</Form.Label>
-            <Typeahead
-              id="cc-emails"
-              labelKey="label"
-              multiple
-              allowNew
-              newSelectionPrefix="Add new email: "
-              options={ccEmails.map(email => ({ label: email }))}
-              placeholder="Add CC emails"
-              selected={ccEmails.map(email => ({ label: email }))}
-              onChange={(selected: TypeaheadOption[]) => {
-                handleEmailChange(selected, setCcEmails);
+
+          <div className="border p-3 mb-3">
+            <Dropzone onDrop={handleDrop} />
+          </div>
+
+          <Form.Group className="mb-3">
+            <TinymceEditor
+              options={{
+                height: '30rem'
               }}
+              value={emailParams.body}
+              onChange={(body: string) => setEmailBody(body)}
             />
           </Form.Group>
-          <Form.Group as={Col} md={6}>
-            <Form.Label>BCC</Form.Label>
-            <Typeahead
-              id="bcc-emails"
-              labelKey="label"
-              multiple
-              allowNew
-              newSelectionPrefix="Add new email: "
-              options={bccEmails.map(email => ({ label: email }))}
-              placeholder="Add BCC emails"
-              selected={bccEmails.map(email => ({ label: email }))}
-              onChange={(selected: TypeaheadOption[]) => {
-                handleEmailChange(selected, setBccEmails);
-              }}
-            />
-          </Form.Group>
-        </Row>
-
-        <Form.Group className="mb-3">
-          <Form.Label>Subject</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter subject"
-            value={subject}
-            onChange={e => setSubject(e.target.value)}
-          />
-        </Form.Group>
-
-        <div className="border p-3 mb-3">
-          <Dropzone onDrop={handleDrop} />
-        </div>
-
-        <Form.Group className="mb-3">
-          <TinymceEditor
-            options={{
-              height: '30rem'
-            }}
-            value={content}
-            onChange={(content: string) => setContent(content)}
-          />
-        </Form.Group>
-      </Form>
+        </Form>
+      )}
     </div>
   );
 };
