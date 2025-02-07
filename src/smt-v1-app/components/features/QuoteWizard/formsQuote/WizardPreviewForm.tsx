@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import Reka_Static from 'assets/img/logos/Reka_Static.jpg';
 import './WizardTabs.css';
@@ -75,7 +75,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
       pdf.setTextColor(51, 102, 204);
       pdf.text('QUOTE', pageWidth - 60, 20);
 
-      pdf.setFont('helvetica', 'normal');
+      pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(10);
       pdf.text(
@@ -198,7 +198,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         body: [
           [
             'Sub-Total',
-            '',
+            'Include',
             {
               content: subTotal.toLocaleString('en-US', {
                 style: 'currency',
@@ -256,8 +256,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         // Adjust the column widths to fill the sub-total area
         columnStyles: {
           0: { cellWidth: subTotalWidth * 0.51 },
-          1: { cellWidth: subTotalWidth * 0.15 },
-          2: { cellWidth: subTotalWidth * 0.37 }
+          1: { cellWidth: subTotalWidth * 0.17 },
+          2: { cellWidth: subTotalWidth * 0.35 }
         }
       });
 
@@ -298,6 +298,9 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
     }
   };
+  useEffect(() => {
+    console.log(quotePartRows);
+  }, [quotePartRows]);
 
   return (
     <>

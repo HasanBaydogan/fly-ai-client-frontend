@@ -2,7 +2,6 @@ import WizardSetupForm from '../formsQuote/WizardSetupForm';
 import WizardSendMailForm from '../formsQuote/WizardSendMailForm';
 import WizardFormFooter from '../wizardQuote/WizardFormFooter';
 import WizardForm from '../wizardQuote/WizardForm';
-import WizardNav from '../wizardQuote/WizardNav';
 import useWizardForm from 'hooks/useWizardForm';
 import WizardFormProvider from 'providers/WizardFormProvider';
 import { Card, Tab } from 'react-bootstrap';
@@ -13,6 +12,7 @@ import ReviewMail from '../formsQuote/ReviewMail';
 import { defaultMailTemplate } from '../formsQuote/defaultMailTemplate';
 import { QuotePartRow, QuoteWizardData } from '../QuoteWizard';
 import WizardPreviewForm from '../formsQuote/WizardPreviewForm';
+import QuoteWizardNav from '../wizardQuote/QuoteWizardNav';
 
 interface WizardSetupFormProps {
   id: string;
@@ -115,7 +115,7 @@ const WizardTabs = ({
       <WizardFormProvider {...form}>
         <Card className="theme-wizard">
           <Card.Header className="bg-body-highlight pt-3 pb-2 border-bottom-0">
-            <WizardNav />
+            <QuoteWizardNav />
           </Card.Header>
           <Card.Body>
             <Tab.Content>

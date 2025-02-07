@@ -7,7 +7,7 @@ import {
 import { Nav } from 'react-bootstrap';
 import WizardNavItem from './WizardNavItem';
 
-const WizardNav = () => {
+const QuoteWizardNav = () => {
   return (
     <Nav className="justify-content-between nav-wizard nav-wizard-success">
       <WizardNavItem icon={faFileAlt} step={1} label="Setup" />
@@ -17,4 +17,4 @@ const WizardNav = () => {
   );
 };
 
-export default WizardNav;
+export default QuoteWizardNav;
