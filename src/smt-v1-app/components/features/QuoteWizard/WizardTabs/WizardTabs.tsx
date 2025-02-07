@@ -73,7 +73,7 @@ const WizardTabs = ({
   const [subTotalValues, setSubTotalValues] = useState<number[]>([0, 0, 0, 0]);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState(quoteWizardData.currency);
   const [toEmails, setToEmails] = useState<string[]>([]);
   const [ccEmails, setCcEmails] = useState<string[]>([]);
   const [bccEmails, setBccEmails] = useState<string[]>([]);
@@ -108,6 +108,7 @@ const WizardTabs = ({
     false,
     false
   ]);
+  const [quotePartRows, setQuotePartRows] = useState<QuotePartRow[]>([]);
 
   return (
     <MailProvider>
@@ -122,6 +123,8 @@ const WizardTabs = ({
                 <WizardForm step={1}>
                   <WizardSetupForm
                     id="progress"
+                    quotePartRows={quotePartRows}
+                    setQuotePartRows={setQuotePartRows}
                     currencies={currencies}
                     quoteWizardData={quoteWizardData}
                     setSelectedDate={setSelectedDate}
@@ -137,13 +140,17 @@ const WizardTabs = ({
               </Tab.Pane>
               <Tab.Pane eventKey={2}>
                 <WizardForm step={2}>
-                  {/*
-                  <WizardPreviewForm
-                    quoteWizardData={quoteWizardData}
-                    subTotalValues={subTotalValues}
-                    selectedDate={selectedDate}
-                    checkedStates={checkedStates}
-                  /> */}
+                  {
+                    <WizardPreviewForm
+                      quotePartRows={quotePartRows}
+                      settings={quoteWizardData.quoteWizardSetting}
+                      quoteNumber={quoteWizardData.quoteNumberId}
+                      subTotalValues={subTotalValues}
+                      currency={currency}
+                      selectedDate={selectedDate}
+                      checkedStates={checkedStates}
+                    />
+                  }
                 </WizardForm>
               </Tab.Pane>
 

@@ -25,6 +25,8 @@ interface WizardSetupFormProps {
   id: string;
   currencies: string[];
   quoteWizardData: QuoteWizardData;
+  quotePartRows: QuotePartRow[];
+  setQuotePartRows: React.Dispatch<React.SetStateAction<QuotePartRow[]>>;
   setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
   selectedDate: Date;
   subTotalValues: number[];
@@ -37,6 +39,8 @@ interface WizardSetupFormProps {
 
 const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   currencies,
+  quotePartRows,
+  setQuotePartRows,
   quoteWizardData,
   setSelectedDate,
   selectedDate,
@@ -47,7 +51,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   checkedStates,
   setCheckedStates
 }) => {
-  const [quotePartRows, setQuotePartRows] = useState<QuotePartRow[]>([]);
   useEffect(() => {
     const formattedData = quoteWizardData.quoteWizardPartResponses.map(item => {
       return {

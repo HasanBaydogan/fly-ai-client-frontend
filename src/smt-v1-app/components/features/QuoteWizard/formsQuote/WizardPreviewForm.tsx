@@ -7,13 +7,20 @@ import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
-import { QuoteWizardData } from '../QuoteWizard';
+import {
+  QuotePartRow,
+  QuoteWizardData,
+  QuoteWizardSetting
+} from '../QuoteWizard';
 
 interface WizardPersonalFormProps {
-  quoteWizardData: QuoteWizardData;
+  settings: QuoteWizardSetting;
+  quotePartRows: QuotePartRow[];
   subTotalValues: number[]; // Sub-total değerleri
   selectedDate: Date | null; // Seçilen tarih
-  checkedStates: boolean[]; // Add this new prop
+  checkedStates: boolean[];
+  quoteNumber: string; // Add this new prop
+  currency: string;
 }
 
 interface TableRow {
@@ -26,65 +33,63 @@ interface TableRow {
 }
 
 const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
-  quoteWizardData,
+  settings,
   subTotalValues,
   selectedDate,
-  checkedStates // Add this new prop
+  checkedStates,
+  quotePartRows,
+  quoteNumber, // Add this new prop,
+  currency
 }) => {
-  return null;
-  /*
   const generatePDF = () => {
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.width;
 
       // Logo
-      pdf.addImage(Reka_Static, 'JPEG', 10, 10, 45, 20);
+      pdf.addImage(settings.logo, 'JPEG', 10, 10, 60, 20);
       pdf.setFontSize(10);
 
-      //Adres
-      const maxWidth = 80; // Metnin taşmayacağı maksimum genişlik (mm)
-      const row1Lines = pdf.splitTextToSize(settings.adress.row1, maxWidth);
-      const row2Lines = pdf.splitTextToSize(settings.adress.row2, maxWidth);
-      const row3Lines = pdf.splitTextToSize(settings.adress.row3, maxWidth);
-      let currentY = 45; // İlk satırın başlangıç Y pozisyonu
+      // Address (split into rows)
+      const maxWidth = 80;
+      const row1Lines = pdf.splitTextToSize(settings.addressRow1, maxWidth);
+      const row2Lines = pdf.splitTextToSize(settings.addressRow2, maxWidth);
+      const row3Lines = pdf.splitTextToSize(settings.mobilePhone, maxWidth);
+      let currentY = 45;
       row1Lines.forEach(line => {
         pdf.text(line, 10, currentY);
-        currentY += 5; // Bir sonraki satırın Y pozisyonunu ayarla
+        currentY += 5;
       });
-
       row2Lines.forEach(line => {
         pdf.text(line, 10, currentY);
         currentY += 5;
       });
-
       row3Lines.forEach(line => {
         pdf.text(line, 10, currentY);
         currentY += 5;
       });
 
-      // Quote başlığı ve detayları
+      // Quote header and details
       pdf.setFontSize(25);
-      pdf.setFont('helvetica', 'bold'); // Yazı tipini kalın (bold) yap
-      pdf.setTextColor(51, 102, 204); // Metin rengini mavi yap
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(51, 102, 204);
       pdf.text('QUOTE', pageWidth - 60, 20);
 
-      // Varsayılan renk ve yazı tipine geri dön
-      pdf.setFont('helvetica', 'normal'); // Normal yazı tipi
-      pdf.setTextColor(0, 0, 0); // Siyah renk
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(10);
       pdf.text(
         `Date: ${selectedDate?.toLocaleDateString()}`,
         pageWidth - 60,
         30
       );
-      pdf.text(`Quote Number: ${settings.quotaNumber}`, pageWidth - 60, 35);
+      pdf.text(`Quote Number: ${quoteNumber}`, pageWidth - 60, 35);
 
-      // Client bilgileri tablosu
+      // Client info table
       autoTable(pdf, {
         startY: 65,
         head: [['CLIENT LOCATION', 'SHIP TO']],
-        body: [[settings.ClientLocation, settings.ShipTo]],
+        body: [['', '']],
         theme: 'grid',
         headStyles: { fillColor: [51, 102, 204], textColor: 255 },
         styles: { halign: 'center', valign: 'middle' },
@@ -95,18 +100,11 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         margin: { left: 10 }
       });
 
-      // Shipping detayları tablosu
+      // Shipping details table
       autoTable(pdf, {
         startY: (pdf as any).lastAutoTable?.finalY + 5 || 70,
         head: [['REQUISITIONER', 'SHIP VIA', 'CPT', 'SHIPPING TERMS']],
-        body: [
-          [
-            settings.Requisitioner,
-            settings.ShipVia,
-            settings.CPT,
-            settings.ShippingTerms
-          ]
-        ],
+        body: [['', '', '', '']],
         theme: 'grid',
         headStyles: { fillColor: [51, 102, 204], textColor: 255 },
         styles: { halign: 'center', valign: 'middle' },
@@ -119,20 +117,20 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         margin: { left: 10 }
       });
 
-      // Ana ürün tablosu
-      const tableBody = data.map(row => [
+      // Main product table
+      const tableBody = quotePartRows.map(row => [
         row.partNumber,
         row.alternativeTo || '-',
         row.description,
         `${row.leadTime} Days`,
-        row.qty,
+        row.quantity,
         row.unitPrice.toLocaleString('en-US', {
           style: 'currency',
-          currency: settings.currency.replace(/[^A-Z]/g, '')
+          currency: currency.replace(/[^A-Z]/g, '')
         }),
-        (row.qty * row.unitPrice).toLocaleString('en-US', {
+        (row.quantity * row.unitPrice).toLocaleString('en-US', {
           style: 'currency',
-          currency: settings.currency.replace(/[^A-Z]/g, '')
+          currency: currency.replace(/[^A-Z]/g, '')
         })
       ]);
       autoTable(pdf, {
@@ -164,35 +162,33 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         margin: { left: 10 }
       });
 
-      // Alt toplam ve notlar
+      // Calculate totals
+      const subTotal = quotePartRows.reduce(
+        (acc, row) => acc + row.quantity * row.unitPrice,
+        0
+      );
       const total =
-        data.reduce((acc, row) => acc + row.qty * row.unitPrice, 0) +
+        quotePartRows.reduce(
+          (acc, row) => acc + row.quantity * row.unitPrice,
+          0
+        ) +
         subTotalValues.reduce(
           (sum, val, index) => sum + (checkedStates[index] ? val : 0),
           0
         );
 
-      // Ana ürün tablosundan sonraki Y pozisyonu
+      // Use the Y position after the main product table
       const startYPosition = (pdf as any).lastAutoTable?.finalY + 5 || 70;
 
-      // Sol taraftaki Comments bölümü (sayfanın %60'ı)
-      autoTable(pdf, {
-        startY: startYPosition,
-        body: [['Comments or Special Instructions'], [settings.CoSI]],
-        theme: 'grid',
-        styles: { halign: 'left', valign: 'middle' },
-        columnStyles: { 0: { cellWidth: 105 } },
-        margin: { left: 10 }
-      });
+      // --- Revised Layout ---
 
-      // Sağ taraftaki Sub-total bölümü (sayfanın %40'ı)
-      const subTotal = data.reduce(
-        (acc, row) => acc + row.qty * row.unitPrice,
-        0
-      );
+      // 1. Sub-total section (occupies 40% of the page width, aligned to the right)
+      const subTotalWidth = pageWidth * 0.4; // Sub-total table width (40% of the page)
+      const leftMarginForSubTotal = pageWidth - subTotalWidth - 10; // 40% of page width
       autoTable(pdf, {
         startY: startYPosition,
-        margin: { left: 125 },
+        // Set the left margin so that the table occupies the right 40%
+        margin: { left: leftMarginForSubTotal },
         body: [
           [
             'Sub-Total',
@@ -200,41 +196,41 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             {
               content: subTotal.toLocaleString('en-US', {
                 style: 'currency',
-                currency: settings.currency.replace(/[^A-Z]/g, '')
+                currency: currency.replace(/[^A-Z]/g, '')
               }),
               styles: { fontStyle: 'bold' }
             }
           ],
           [
-            settings.ST1,
+            settings.otherQuoteValues[0],
             checkedStates[0] ? 'Yes' : 'No',
             subTotalValues[0]?.toLocaleString('en-US', {
               style: 'currency',
-              currency: settings.currency.replace(/[^A-Z]/g, '')
+              currency: currency.replace(/[^A-Z]/g, '')
             })
           ],
           [
-            settings.ST2,
+            settings.otherQuoteValues[1],
             checkedStates[1] ? 'Yes' : 'No',
             subTotalValues[1]?.toLocaleString('en-US', {
               style: 'currency',
-              currency: settings.currency.replace(/[^A-Z]/g, '')
+              currency: currency.replace(/[^A-Z]/g, '')
             })
           ],
           [
-            settings.ST3,
+            settings.otherQuoteValues[2],
             checkedStates[2] ? 'Yes' : 'No',
             subTotalValues[2]?.toLocaleString('en-US', {
               style: 'currency',
-              currency: settings.currency.replace(/[^A-Z]/g, '')
+              currency: currency.replace(/[^A-Z]/g, '')
             })
           ],
           [
-            settings.ST4,
+            settings.otherQuoteValues[3],
             checkedStates[3] ? 'Yes' : 'No',
             subTotalValues[3]?.toLocaleString('en-US', {
               style: 'currency',
-              currency: settings.currency.replace(/[^A-Z]/g, '')
+              currency: currency.replace(/[^A-Z]/g, '')
             })
           ],
           [
@@ -243,7 +239,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             {
               content: total.toLocaleString('en-US', {
                 style: 'currency',
-                currency: settings.currency.replace(/[^A-Z]/g, '')
+                currency: currency.replace(/[^A-Z]/g, '')
               }),
               styles: { fontStyle: 'bold' }
             }
@@ -251,35 +247,47 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         ],
         theme: 'grid',
         styles: { halign: 'center', valign: 'middle', fontSize: 9 },
+        // Adjust the column widths to fill the sub-total area
         columnStyles: {
-          0: { cellWidth: 40 },
-          1: { cellWidth: 10 },
-          2: { cellWidth: 25 }
+          0: { cellWidth: subTotalWidth * 0.5 },
+          1: { cellWidth: subTotalWidth * 0.15 },
+          2: { cellWidth: subTotalWidth * 0.35 }
         }
       });
 
-      // Alttaki diğer Comments bölümleri
+      // 2. Comments section (full width, placed below the Sub-total block)
       autoTable(pdf, {
         startY: (pdf as any).lastAutoTable?.finalY + 5,
-        body: [['Comments or Special Instructions'], [settings.CoSI2]],
+        margin: { left: 10 },
+        body: [
+          [
+            {
+              content: 'Comments or Special Instructions',
+              styles: { halign: 'center', fontStyle: 'bold' }
+            }
+          ],
+          [settings.commentsSpecialInstruction]
+        ],
         theme: 'grid',
-        headStyles: { fillColor: [51, 102, 204], textColor: 255 },
         styles: { halign: 'left', valign: 'middle' },
-        columnStyles: { 0: { cellWidth: 190 } },
-        margin: { left: 10 }
+        // Make sure the table uses the full available width (pageWidth minus left/right margins)
+        columnStyles: { 0: { cellWidth: pageWidth - 20 } }
       });
 
+      // (Optional) Additional sections such as centered contact info can follow…
+      const tableWidth = 190;
+      const leftMargin = (pageWidth - tableWidth) / 2;
       autoTable(pdf, {
         startY: (pdf as any).lastAutoTable?.finalY + 5,
-        body: [[settings.CoSI3.CoSIRow1], [settings.CoSI3.CoSIRow2]],
+        body: [[settings.contactInfo + '\n' + settings.phone]],
         theme: 'grid',
-        styles: { halign: 'left', valign: 'middle' },
-        columnStyles: { 0: { cellWidth: 190 } },
-        margin: { left: 10 }
+        styles: { halign: 'center', valign: 'middle' },
+        columnStyles: { 0: { cellWidth: tableWidth } },
+        margin: { left: leftMargin }
       });
 
-      // PDF'i kaydet
-      pdf.save('quote.pdf');
+      // Save the PDF
+      pdf.save('quote-' + quoteNumber + '.pdf');
     } catch (error) {
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
     }
@@ -294,10 +302,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
               <Card.Img variant="top" src={Reka_Static} />
               <Card.Body className="p-0 px-1 fs-9">
                 <Card.Text className="mb-2 pt-2">
-                  {settings.adress.row1}
+                  {settings.addressRow1}
                 </Card.Text>
-                <Card.Text className="mb-2">{settings.adress.row2}</Card.Text>
-                <Card.Text>{settings.adress.row3}</Card.Text>
+                <Card.Text className="mb-2">{settings.addressRow2}</Card.Text>
+                <Card.Text>{settings.mobilePhone}</Card.Text>
               </Card.Body>
             </Card>
           </div>
@@ -319,10 +327,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 <strong>Date:</strong>{' '}
                 {selectedDate
                   ? selectedDate.toLocaleDateString()
-                  : 'No date selected'}
+                  : new Date().toLocaleDateString()}
               </p>
               <p className=" mt-3">
-                <strong>Quote Number:</strong> {settings.quotaNumber}
+                <strong>Quote Number:</strong> {quoteNumber}
               </p>
             </div>
           </div>
@@ -338,8 +346,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
           </thead>
           <tbody>
             <tr className="text-center align-middle">
-              <td colSpan={3}>{settings.ClientLocation}</td>
-              <td>{settings.ShipTo}</td>
+              <td colSpan={3}>{'ClientLocation'}</td>
+              <td>{'ShipTo'}</td>
             </tr>
             <tr className="bg-primary text-white text-center align-middle">
               <td className="text-white" style={{ width: '25%' }}>
@@ -356,10 +364,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
               </td>
             </tr>
             <tr className="text-center align-middle">
-              <td style={{ width: '25%' }}>{settings.Requisitioner}</td>
-              <td style={{ width: '25%' }}>{settings.ShipVia}</td>
-              <td style={{ width: '25%' }}>{settings.CPT}</td>
-              <td style={{ width: '25%' }}>{settings.ShippingTerms}</td>
+              <td style={{ width: '25%' }}>{'Requisitioner'}</td>
+              <td style={{ width: '25%' }}>{'ShipVia'}</td>
+              <td style={{ width: '25%' }}>{'CPT'}</td>
+              <td style={{ width: '25%' }}>{'ShippingTerms'}</td>
             </tr>
           </tbody>
         </Table>
@@ -378,23 +386,23 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
               </tr>
             </thead>
             <tbody>
-              {data.map((row, index) => (
+              {quotePartRows.map((row, index) => (
                 <tr key={index} className="text-center align-middle">
                   <td>{row.partNumber}</td>
                   <td>{row.alternativeTo || '-'}</td>
                   <td>{row.description}</td>
                   <td>{row.leadTime} Days</td>
-                  <td>{row.qty}</td>
+                  <td>{row.quantity}</td>
                   <td>
                     {row.unitPrice.toLocaleString('en-US', {
                       style: 'currency',
-                      currency: settings.currency.replace(/[^A-Z]/g, '')
+                      currency: currency.replace(/[^A-Z]/g, '')
                     })}
                   </td>
                   <td>
-                    {(row.qty * row.unitPrice).toLocaleString('en-US', {
+                    {(row.quantity * row.unitPrice).toLocaleString('en-US', {
                       style: 'currency',
-                      currency: settings.currency.replace(/[^A-Z]/g, '')
+                      currency: currency.replace(/[^A-Z]/g, '')
                     })}
                   </td>
                 </tr>
@@ -415,7 +423,9 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="p-2">{settings.CoSI}</td>
+                    <td className="p-2">
+                      {settings.commentsSpecialInstruction}
+                    </td>
                   </tr>
                 </tbody>
               </Table>
@@ -436,17 +446,15 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                         <div className="mt-3 text-center">
                           <h5>
                             <span className="text-primary ms-2">
-                              {data
+                              {quotePartRows
                                 .reduce(
-                                  (acc, row) => acc + row.qty * row.unitPrice,
+                                  (acc, row) =>
+                                    acc + row.quantity * row.unitPrice,
                                   0
                                 )
                                 .toLocaleString('en-US', {
                                   style: 'currency',
-                                  currency: settings.currency.replace(
-                                    /[^A-Z]/g,
-                                    ''
-                                  )
+                                  currency: currency.replace(/[^A-Z]/g, '')
                                 })}
                             </span>
                           </h5>
@@ -456,7 +464,9 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="text-sm-md">{settings.ST1}</td>
+                      <td className="text-sm-md">
+                        {settings.otherQuoteValues[0]}
+                      </td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -467,12 +477,14 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         {subTotalValues[0]?.toLocaleString('en-US', {
                           style: 'currency',
-                          currency: settings.currency.replace(/[^A-Z]/g, '')
+                          currency: currency.replace(/[^A-Z]/g, '')
                         })}
                       </td>
                     </tr>
                     <tr>
-                      <td className="text-sm-md">{settings.ST2}</td>
+                      <td className="text-sm-md">
+                        {settings.otherQuoteValues[1]}
+                      </td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -483,12 +495,14 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         {subTotalValues[1]?.toLocaleString('en-US', {
                           style: 'currency',
-                          currency: settings.currency.replace(/[^A-Z]/g, '')
+                          currency: currency.replace(/[^A-Z]/g, '')
                         })}
                       </td>
                     </tr>
                     <tr>
-                      <td className="text-sm-md">{settings.ST3}</td>
+                      <td className="text-sm-md">
+                        {settings.otherQuoteValues[2]}
+                      </td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -499,12 +513,14 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         {subTotalValues[2]?.toLocaleString('en-US', {
                           style: 'currency',
-                          currency: settings.currency.replace(/[^A-Z]/g, '')
+                          currency: currency.replace(/[^A-Z]/g, '')
                         })}
                       </td>
                     </tr>
                     <tr>
-                      <td className="text-sm-md">{settings.ST4}</td>
+                      <td className="text-sm-md">
+                        {settings.otherQuoteValues[3]}
+                      </td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -515,7 +531,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         {subTotalValues[3]?.toLocaleString('en-US', {
                           style: 'currency',
-                          currency: settings.currency.replace(/[^A-Z]/g, '')
+                          currency: currency.replace(/[^A-Z]/g, '')
                         })}
                       </td>
                     </tr>
@@ -526,8 +542,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         <strong>
                           {(
-                            data.reduce(
-                              (acc, row) => acc + row.qty * row.unitPrice,
+                            quotePartRows.reduce(
+                              (acc, row) => acc + row.quantity * row.unitPrice,
                               0
                             ) +
                             subTotalValues.reduce(
@@ -537,7 +553,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                             )
                           ).toLocaleString('en-US', {
                             style: 'currency',
-                            currency: settings.currency.replace(/[^A-Z]/g, '')
+                            currency: currency.replace(/[^A-Z]/g, '')
                           })}
                         </strong>
                       </td>
@@ -556,7 +572,11 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
               </thead>
               <tbody>
                 <tr>
-                  <td className="p-2">{settings.CoSI2}</td>
+                  <td className="p-2">
+                    {
+                      'Delivery: Destination - Custom and related TAX and costs shall be paid by Client.'
+                    }
+                  </td>
                 </tr>
               </tbody>
             </Table>
@@ -564,9 +584,9 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
               <tbody>
                 <tr>
                   <td className="p-2">
-                    {settings.CoSI3.CoSIRow1}
+                    {settings.contactInfo}
                     <br />
-                    {settings.CoSI3.CoSIRow2}
+                    {settings.phone}
                     <br />
                   </td>
                 </tr>
@@ -577,7 +597,6 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
       </div>
     </>
   );
-  */
 };
 
 export default WizardPreviewForm;
