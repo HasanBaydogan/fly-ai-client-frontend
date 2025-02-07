@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-import { ContactData } from '../SupplierDetailContactList/SupplierDetailContactList';
+import { ContactData } from '../SupplierDetailComponents/ContactListSection';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
@@ -31,14 +31,25 @@ const ContactFormModal = ({
       setTitle(editContact.title.toString());
       setPhone(editContact.phone);
       setCellPhone(editContact.cellphone);
+    } else {
+      resetForm();
     }
-  }, [editContact]);
+    setErrors({});
+  }, [editContact, show]);
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!fullName.trim()) newErrors.fullName = 'Full name is required';
-    if (!email.trim()) newErrors.email = 'Email is required';
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!isValidEmail(email.trim())) {
+      newErrors.email = 'Please enter a valid email address';
+    }
     if (!title.trim()) newErrors.title = 'Title is required';
     if (!phone.trim()) newErrors.phone = 'Phone is required';
 

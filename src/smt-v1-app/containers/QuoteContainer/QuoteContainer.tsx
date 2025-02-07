@@ -30,7 +30,7 @@ import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/Load
 import { getColorByBgColor } from 'helpers/utils';
 import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowHelper';
 
-const QuoteContainer = ({}: {}) => {
+const QuoteContainer = () => {
   const [searchParams] = useSearchParams();
   const quoteId = searchParams.get('quoteId');
 

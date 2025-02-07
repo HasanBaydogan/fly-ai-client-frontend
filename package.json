@@ -17,6 +17,7 @@
     "@fullcalendar/react": "^6.1.9",
     "@fullcalendar/timegrid": "^6.1.9",
     "@iconscout/react-unicons": "^2.0.2",
+    "@iconscout/unicons": "^4.2.0",
     "@picmo/popup-picker": "^5.8.5",
     "@react-leaflet/core": "^2.1.0",
     "@reduxjs/toolkit": "^2.5.0",

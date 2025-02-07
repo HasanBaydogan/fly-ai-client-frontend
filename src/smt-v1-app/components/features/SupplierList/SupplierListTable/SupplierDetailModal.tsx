@@ -1,24 +1,31 @@
+import { faPencilAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
-import { Modal, Row, Col, Table, Badge } from 'react-bootstrap';
+import { Modal, Row, Col, Table, Badge, ModalBody } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import { getAttachedFile } from 'smt-v1-app/services/SupplierServices';
 
 interface SupplierDetailModalProps {
   show: boolean;
   onHide: () => void;
   supplierData: {
     id: string;
-    supplierCompany: string;
-    segments: string;
+    companyName: string;
+    segments: { segmentName: string }[];
     brand: string;
-    countryInfo: string;
-    pickupaddress: string;
-    email: string;
+    country: string;
+    address: string;
+    email?: string;
+    contacts: { email: string }[];
     status: {
       label: string;
       type: string;
     };
     quoteID: string | null;
-    attachedID: string | null;
-    attachedName: string | null;
+    attachments: {
+      attachmentId: string | null;
+      attachmentName: string | null;
+    }[];
     workingDetails: string | null;
     userName: string;
     certificates: string[];
@@ -39,10 +46,82 @@ const SupplierDetailModal = ({
   onHide,
   supplierData
 }: SupplierDetailModalProps) => {
+  const openPdfInNewTab = (file: {
+    data: string;
+    contentType: string | null;
+    fileName: string;
+  }) => {
+    if (!file?.data) {
+      console.error('No file data found.');
+      return;
+    }
+    try {
+      const base64Data = file.data.split(',')[1];
+
+      // Base64 stringini binary formatına çevir
+      const binaryData = atob(base64Data);
+      const arrayBuffer = new Uint8Array(binaryData.length);
+      for (let i = 0; i < binaryData.length; i++) {
+        arrayBuffer[i] = binaryData.charCodeAt(i);
+      }
+
+      // Blob nesnesi oluştur
+      const blob = new Blob([arrayBuffer], {
+        type: file.contentType || 'application/pdf'
+      });
+      const url = URL.createObjectURL(blob);
+
+      // Yeni sekmede aç
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (error) {
+      console.error('Error opening PDF:', error);
+    }
+  };
+
+  const getStatusColor = (type: string) => {
+    switch (type) {
+      case 'CONTACTED':
+        return 'success';
+      case 'NOT_CONTACTED':
+        return 'warning';
+      case 'BLACK_LISTED':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  };
+
+  // Belirli bir attachment ID için dosyayı getir
+  const handleAttachedClick = async (attachmentId: string | null) => {
+    if (!attachmentId) return;
+    console.log(`Fetching attachment for ID: ${attachmentId}`);
+
+    try {
+      const response = await getAttachedFile(attachmentId);
+      console.log('Attachment Response:', response);
+
+      if (response?.data) {
+        openPdfInNewTab(response.data);
+      } else {
+        console.error('Invalid attachment response');
+      }
+    } catch (error) {
+      console.error('Error fetching attachment:', error);
+    }
+  };
+  // /supplier/edit?supplierId={props}
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
-      <Modal.Header closeButton>
+      <Modal.Header closeButton className="gap-5">
         <Modal.Title>Supplier Details</Modal.Title>
+        <Link
+          className="btn btn-primary px-3"
+          to={`/supplier/edit?supplierId=${supplierData.id}`}
+        >
+          <FontAwesomeIcon icon={faPencilAlt} className="me-2" />
+          Edit Supplier
+        </Link>
       </Modal.Header>
       <Modal.Body>
         <Row>
@@ -51,11 +130,21 @@ const SupplierDetailModal = ({
               <tbody>
                 <tr>
                   <td className="fw-bold">Company:</td>
-                  <td>{supplierData.supplierCompany}</td>
+                  <td>{supplierData.companyName}</td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Segments:</td>
-                  <td>{supplierData.segments}</td>
+                  <td>
+                    {supplierData.segments.length > 0 ? (
+                      <ul className="list-unstyled mb-0">
+                        {supplierData.segments.map((segment, index) => (
+                          <li key={index}>• {segment.segmentName}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      'N/A'
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Brand:</td>
@@ -63,20 +152,20 @@ const SupplierDetailModal = ({
                 </tr>
                 <tr>
                   <td className="fw-bold">Country:</td>
-                  <td>{supplierData.countryInfo}</td>
+                  <td>{supplierData.country}</td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Address:</td>
-                  <td>{supplierData.pickupaddress}</td>
+                  <td>{supplierData.address}</td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Email:</td>
-                  <td>{supplierData.email}</td>
+                  <td>{supplierData.contacts?.[0]?.email}</td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Status:</td>
                   <td>
-                    <Badge bg={supplierData.status.type}>
+                    <Badge bg={getStatusColor(supplierData.status.label)}>
                       {supplierData.status.label}
                     </Badge>
                   </td>
@@ -110,25 +199,35 @@ const SupplierDetailModal = ({
                   <td>{supplierData.euDemandOfParts}</td>
                 </tr>
                 <tr>
-                  <td className="fw-bold">Quote ID:</td>
-                  <td>{supplierData.quoteID || 'N/A'}</td>
-                </tr>
-                <tr>
-                  <td className="fw-bold">Attached ID:</td>
-                  <td>{supplierData.attachedID || 'N/A'}</td>
-                </tr>
-                <tr>
-                  <td className="fw-bold">Attached Name:</td>
-                  <td>{supplierData.attachedName || 'N/A'}</td>
+                  <td className="fw-bold">Attachments:</td>
+                  <td>
+                    {supplierData.attachments?.length > 0
+                      ? supplierData.attachments.map((attachment, index) => (
+                          <span
+                            key={index}
+                            className="text-primary text-decoration-underline d-block"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() =>
+                              handleAttachedClick(attachment.attachmentId)
+                            }
+                          >
+                            • {attachment.attachmentName || 'Unknown File'}
+                          </span>
+                        ))
+                      : ''}
+                  </td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Working Details:</td>
-                  <td>{supplierData.workingDetails || 'N/A'}</td>
+                  <td>{supplierData.workingDetails}</td>
                 </tr>
               </tbody>
             </Table>
           </Col>
         </Row>
+      </Modal.Body>
+
+      <Modal.Body>
         <Row className="mt-4">
           <Col>
             <Table borderless>

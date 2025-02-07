@@ -1,0 +1,11 @@
+.suppliercreatezoneattachmentsdropzonefileuploadcontainer {
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px; /* Köşeleri hafif yuvarlak yapmak için */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px; /* Minimum yükseklik ekleyerek daha belirgin hale getirme */
+  }
+  

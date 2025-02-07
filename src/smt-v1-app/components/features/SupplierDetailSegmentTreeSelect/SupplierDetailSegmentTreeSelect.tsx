@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 import './TreeSelect.css';
 
-interface TreeNode {
+export interface TreeNode {
   segmentId: string;
   segmentName: string;
-  isSelected?: boolean;
+  isSelected?: boolean; // true: seçili, false: seçili değil
   subSegments: TreeNode[];
 }
 
 interface TreeSelectProps {
   data: TreeNode[];
-  onSelect: (selectedIds: string[]) => void;
+  setSelected: (selectedIds: string[]) => void;
+  setSegments: (segments: TreeNode[]) => void; // `segments` state'ini de güncellemek için
 }
 
 const TreeSelectItem = ({
@@ -26,14 +27,8 @@ const TreeSelectItem = ({
   onToggleSelect: (segmentId: string) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const hasChildren = node.subSegments.length > 0;
+  const hasChildren = node.subSegments && node.subSegments.length > 0;
   const isSelected = selectedIds.includes(node.segmentId);
-
-  useEffect(() => {
-    if (node.isSelected) {
-      onToggleSelect(node.segmentId);
-    }
-  }, []);
 
   const handleClick = () => {
     if (hasChildren) {
@@ -46,9 +41,7 @@ const TreeSelectItem = ({
   return (
     <div className="tree-item" style={{ marginLeft: `${level * 20}px` }}>
       <div
-        className={`tree-item-header ${
-          !hasChildren && isSelected ? 'selected' : ''
-        }`}
+        className={`tree-item-header ${isSelected ? 'selected' : ''}`}
         onClick={handleClick}
       >
         {hasChildren ? (
@@ -82,40 +75,82 @@ const TreeSelectItem = ({
   );
 };
 
-export const TreeSelect = ({ data, onSelect }: TreeSelectProps) => {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+export const TreeSelect = ({
+  data,
+  setSelected,
+  setSegments
+}: TreeSelectProps) => {
+  // isSelected: true olanları başlangıçta bul
+  const getInitialSelectedIds = (nodes: TreeNode[]): string[] => {
+    return nodes.reduce((acc: string[], node: TreeNode) => {
+      if (node.isSelected === true) {
+        acc.push(node.segmentId);
+      }
+      if (node.subSegments && node.subSegments.length > 0) {
+        acc.push(...getInitialSelectedIds(node.subSegments));
+      }
+      return acc;
+    }, []);
+  };
+
+  // Başlangıç seçimleri
+  const [selectedIds, setSelectedIds] = useState<string[]>(() =>
+    getInitialSelectedIds(data)
+  );
+
+  // Yeni bir segment seçildiğinde veya kaldırıldığında `isSelected` değerini günceller.
+  const updateIsSelectedInSegments = (
+    segments: TreeNode[],
+    segmentId: string,
+    isSelected: boolean
+  ) => {
+    return segments.map(segment => ({
+      ...segment,
+      isSelected:
+        segment.segmentId === segmentId ? isSelected : segment.isSelected,
+      subSegments: updateIsSelectedInSegments(
+        segment.subSegments,
+        segmentId,
+        isSelected
+      )
+    }));
+  };
+
+  // Backend verisi geldiğinde `isSelected` değerlerini state'e güncelle
+  useEffect(() => {
+    const initialSelected = getInitialSelectedIds(data);
+    if (initialSelected.length > 0 && selectedIds.length === 0) {
+      setSelectedIds(initialSelected);
+    }
+  }, [data, selectedIds]);
+
+  // Seçili segmentleri parent'a bildir
+  useEffect(() => {
+    setSelected(selectedIds);
+  }, [selectedIds, setSelected]);
 
   const handleToggleSelect = (segmentId: string) => {
     setSelectedIds(prev => {
-      const newSelected = prev.includes(segmentId)
+      const isCurrentlySelected = prev.includes(segmentId);
+      const newSelectedIds = isCurrentlySelected
         ? prev.filter(id => id !== segmentId)
         : [...prev, segmentId];
-      onSelect(newSelected);
-      return newSelected;
+
+      // `segments` state'ini güncelle
+      const updatedSegments = updateIsSelectedInSegments(
+        data,
+        segmentId,
+        !isCurrentlySelected
+      );
+      setSegments(updatedSegments);
+
+      return newSelectedIds;
     });
   };
 
-  // İlk yüklemede isSelected true olanları seç
-  useEffect(() => {
-    const getInitialSelectedIds = (nodes: TreeNode[]): string[] => {
-      return nodes.reduce((acc: string[], node) => {
-        if (node.isSelected) {
-          acc.push(node.segmentId);
-        }
-        if (node.subSegments.length > 0) {
-          acc.push(...getInitialSelectedIds(node.subSegments));
-        }
-        return acc;
-      }, []);
-    };
-
-    const initialSelected = getInitialSelectedIds(data);
-    setSelectedIds(initialSelected);
-    onSelect(initialSelected);
-  }, [data]);
-
   return (
     <div className="tree-select-container">
+      {/* Seçili Öğeleri Göster */}
       <div className="selected-segments">
         {selectedIds.map(id => {
           const findSegmentName = (nodes: TreeNode[]): string | null => {
@@ -143,6 +178,8 @@ export const TreeSelect = ({ data, onSelect }: TreeSelectProps) => {
           );
         })}
       </div>
+
+      {/* Ağaç Seçim Bileşeni */}
       <div className="tree-select">
         {data.map(node => (
           <TreeSelectItem

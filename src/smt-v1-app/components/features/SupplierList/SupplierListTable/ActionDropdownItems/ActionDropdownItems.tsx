@@ -1,27 +1,28 @@
 import { useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import SupplierDetailModal from '../SupplierDetailModal';
-import { mockData, SupplierData } from '../SearchBySupplierListMock';
+import { SupplierData } from 'smt-v1-app/services/SupplierServices';
+import { Link } from 'react-router-dom';
 
 interface ActionDropdownItemsProps {
   supplierId: string;
+  supplierData: SupplierData; // supplierData'yı props olarak alıyoruz
 }
 
-const ActionDropdownItems = ({ supplierId }: ActionDropdownItemsProps) => {
+const ActionDropdownItems = ({
+  supplierId,
+  supplierData
+}: ActionDropdownItemsProps) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const supplierData = mockData[supplierId];
 
   return (
     <>
       <Dropdown.Item onClick={() => setShowDetailModal(true)}>
         View
       </Dropdown.Item>
-      <Dropdown.Item eventKey="2">Export</Dropdown.Item>
-      <Dropdown.Divider />
-      <Dropdown.Item eventKey="4" className="text-danger">
-        Remove
+      <Dropdown.Item as={Link} to={`/supplier/edit?supplierId=${supplierId}`}>
+        Edit
       </Dropdown.Item>
-
       <SupplierDetailModal
         show={showDetailModal}
         onHide={() => setShowDetailModal(false)}

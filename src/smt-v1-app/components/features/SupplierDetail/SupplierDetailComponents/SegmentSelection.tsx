@@ -1,17 +1,30 @@
+import React from 'react';
 import Form from 'react-bootstrap/Form';
-import { TreeSelect } from '../../SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
-import { mockSegments } from '../../../../containers/SupplierDetailContainer/segmentMockData';
+import {
+  TreeSelect,
+  TreeNode
+} from '../../SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
 
 interface SegmentSelectionProps {
-  onSelect: (selectedIds: string[]) => void;
+  data: TreeNode[];
+  setSegmentIds: (selectedIds: string[]) => void;
+  setSegments: (segments: TreeNode[]) => void;
 }
 
-const SegmentSelection = ({ onSelect }: SegmentSelectionProps) => {
+const SegmentSelection: React.FC<SegmentSelectionProps> = ({
+  data,
+  setSegmentIds,
+  setSegments
+}) => {
   return (
     <Form>
       <Form.Group className="mb-5 mt-3">
         <Form.Label>Segments</Form.Label>
-        <TreeSelect data={mockSegments} onSelect={onSelect} />
+        <TreeSelect
+          data={data}
+          setSelected={setSegmentIds}
+          setSegments={setSegments}
+        />
       </Form.Group>
     </Form>
   );

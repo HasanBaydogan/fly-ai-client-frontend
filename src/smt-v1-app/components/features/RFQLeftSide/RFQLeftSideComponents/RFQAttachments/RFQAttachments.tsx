@@ -17,7 +17,6 @@ const RFQAttachments = ({
   const openPdfInNewTab = file => {
     // Decode the Base64 string
     const binaryData = atob(file.data);
-
     // Convert the binary data to a Uint8Array
     const arrayBuffer = new Uint8Array(binaryData.length);
     for (let i = 0; i < binaryData.length; i++) {

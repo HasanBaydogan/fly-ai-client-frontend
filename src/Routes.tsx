@@ -22,12 +22,15 @@ import RegisterContainer from 'smt-v1-app/containers/authentication/RegisterCont
 import ForgetPasswordContainer from 'smt-v1-app/containers/authentication/ForgetPasswordContainer/ForgetPasswordContainer';
 import MailTrackingContainer from 'smt-v1-app/containers/MailTrackingContainer/MailTrackingContainer';
 import RFQContainer from 'smt-v1-app/containers/RFQContainer/RFQContainer';
-import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
 import RFQListContainer from 'smt-v1-app/containers/RFQListContainer/RFQListContainer';
 import PrivacyPolicy from 'smt-v1-app/components/features/authentication/PrivacyPolicy/PrivacyPolicy';
 import SupplierDetailContainer from 'smt-v1-app/containers/SupplierDetailContainer/SupplierDetailContainer';
 import SupplierListContainer from 'smt-v1-app/containers/SupplierListContainer/SupplierListContainer';
+
 import QuoteListContainer from 'smt-v1-app/containers/QuoteListContainer/QuoteListContainer';
+
+import SupplierEditContainer from 'smt-v1-app/containers/SupplierEditContainer/SupplierEditContainer';
+import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
 
 const routes: RouteObject[] = [
   {
@@ -78,7 +81,7 @@ const routes: RouteObject[] = [
                 element: <QuoteContainer />
               },
               {
-                path: 'list',
+                path: 'quotelist',
                 element: <QuoteListContainer />
               }
             ]
@@ -87,12 +90,16 @@ const routes: RouteObject[] = [
             path: 'supplier',
             children: [
               {
-                path: 'detail',
+                path: 'new-supplier',
                 element: <SupplierDetailContainer />
               },
               {
                 path: 'list',
                 element: <SupplierListContainer />
+              },
+              {
+                path: 'edit',
+                element: <SupplierEditContainer />
               }
             ]
           }
