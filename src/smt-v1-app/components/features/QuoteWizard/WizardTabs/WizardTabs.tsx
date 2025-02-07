@@ -72,7 +72,7 @@ const WizardTabs = ({
 
   const [subTotalValues, setSubTotalValues] = useState<number[]>([0, 0, 0, 0]);
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [currency, setCurrency] = useState('USD');
   const [toEmails, setToEmails] = useState<string[]>([]);
   const [ccEmails, setCcEmails] = useState<string[]>([]);
@@ -103,8 +103,8 @@ const WizardTabs = ({
   };
 
   const [checkedStates, setCheckedStates] = useState([
-    true,
-    true,
+    false,
+    false,
     false,
     false
   ]);
@@ -125,6 +125,7 @@ const WizardTabs = ({
                     currencies={currencies}
                     quoteWizardData={quoteWizardData}
                     setSelectedDate={setSelectedDate}
+                    selectedDate={selectedDate}
                     subTotalValues={subTotalValues}
                     setSubTotalValues={setSubTotalValues}
                     currency={currency}

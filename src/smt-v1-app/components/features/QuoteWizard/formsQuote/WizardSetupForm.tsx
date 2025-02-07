@@ -26,6 +26,7 @@ interface WizardSetupFormProps {
   currencies: string[];
   quoteWizardData: QuoteWizardData;
   setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
+  selectedDate: Date;
   subTotalValues: number[];
   setSubTotalValues: React.Dispatch<React.SetStateAction<number[]>>;
   setCurrency: (currency: string) => void;
@@ -38,6 +39,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   currencies,
   quoteWizardData,
   setSelectedDate,
+  selectedDate,
   subTotalValues,
   setSubTotalValues,
   setCurrency,
@@ -61,7 +63,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   }, []);
 
   // Return revision number
-  const [revisionNumber] = useState(0);
+  const [revisionNumber] = useState(quoteWizardData.revisionNumber);
   const [reqQTY, setReqQTY] = useState(1);
   const [currencyLocal, setCurrencyLocal] = useState(currency);
   const [displayValues, setDisplayValues] = useState([
@@ -392,19 +394,21 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             </Form.Select>
           </Form.Group>
 
-          <Card style={{ width: '12rem' }} className="border-0 mb-5">
+          <Card style={{ width: '18rem' }} className="border-0 mb-5">
             <Card.Img
               variant="top"
               src={quoteWizardData.quoteWizardSetting.logo}
             />
-            <Card.Body className="p-0 px-1 fs-9">
+            <Card.Body className="p-0 px-1 fs-9 w-100">
               <Card.Text className="mb-2 pt-2">
                 {quoteWizardData.quoteWizardSetting.addressRow1}
               </Card.Text>
               <Card.Text className="mb-2">
                 {quoteWizardData.quoteWizardSetting.addressRow2}
               </Card.Text>
-              <Card.Text>{'Row 3'}</Card.Text>
+              <Card.Text>
+                {quoteWizardData.quoteWizardSetting.mobilePhone}
+              </Card.Text>
             </Card.Body>
           </Card>
         </div>
@@ -416,6 +420,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <Form.Group className="mb-3">
                 <DatePicker
                   placeholder="Select a date"
+                  value={selectedDate}
                   onChange={selectedDates => {
                     selectedDates[0];
                     setSelectedDate(selectedDates[0]);
@@ -663,7 +668,12 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               </thead>
               <tbody>
                 <tr>
-                  <td className="p-2">{'CoSI'}</td>
+                  <td className="p-2">
+                    {
+                      quoteWizardData.quoteWizardSetting
+                        .commentsSpecialInstruction
+                    }
+                  </td>
                 </tr>
               </tbody>
             </Table>
@@ -942,18 +952,17 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     <td>
                       <strong>
                         {formatNumber(
-                          quotePartRows.reduce(
-                            (acc, row) => acc + row.quantity * row.unitPrice,
-                            0
-                          ) +
-                            subTotalValues
-                              .reduce(
-                                (sum, val, index) =>
-                                  // Sadece seçili olan checkbox'ların değerlerini topla
-                                  sum + (checkedStates[index] ? val : 0),
-                                0
-                              )
-                              .toString()
+                          (
+                            quotePartRows.reduce(
+                              (acc, row) => acc + row.quantity * row.unitPrice,
+                              0
+                            ) +
+                            subTotalValues.reduce(
+                              (sum, val, index) =>
+                                sum + (checkedStates[index] ? val : 0),
+                              0
+                            )
+                          ).toString() // Convert the final sum to a string AFTER calculation
                         )}
                       </strong>
                     </td>
@@ -973,7 +982,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             </thead>
             <tbody>
               <tr>
-                <td className="p-2">{'CoSI2'}</td>
+                <td className="p-2">
+                  {
+                    'Delivery: Destination - Custom and related TAX and costs shall be paid by Client.'
+                  }
+                </td>
               </tr>
             </tbody>
           </Table>
@@ -981,9 +994,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             <tbody>
               <tr>
                 <td className="p-2">
-                  {'CoSI3.CoSIRow1'}
+                  {quoteWizardData.quoteWizardSetting.contactInfo}
                   <br />
-                  {'CoSI3.CoSIRow2'}
+                  {quoteWizardData.quoteWizardSetting.phone}
                   <br />
                 </td>
               </tr>

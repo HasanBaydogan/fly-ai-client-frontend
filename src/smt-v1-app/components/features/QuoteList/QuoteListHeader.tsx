@@ -4,6 +4,7 @@ import { Badge, Form } from 'react-bootstrap';
 const Header = ({
   date,
   rfqNumberId,
+  revisionNumber,
   clientRFQId,
   status,
   quoteId,
@@ -16,6 +17,7 @@ const Header = ({
   quoteId: string;
   clientName: string;
   clientRFQId: string;
+  revisionNumber: number;
   status:
     | 'UNREAD'
     | 'OPEN'
@@ -49,7 +51,7 @@ const Header = ({
             <h4>
               Revision:{' '}
               <Badge bg="primary" className="small mb-3">
-                REVISION 0 {/*Props Eklenebilir  */}
+                REVISION {revisionNumber}
               </Badge>
             </h4>
             <h4 className="mb-3">

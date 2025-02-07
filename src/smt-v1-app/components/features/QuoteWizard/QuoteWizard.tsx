@@ -39,6 +39,7 @@ export interface QuoteWizardData {
   quoteNumberId: string;
   quoteWizardPartResponses: QuotePartRow[];
   quoteWizardSetting: QuoteWizardSetting;
+  revisionNumber: number;
 }
 
 const QuoteWizard = ({

@@ -136,6 +136,7 @@ const QuoteContainer = ({}: {}) => {
               {
                 <Header
                   date={quoteData && quoteData.lastModifiedDate}
+                  revisionNumber={quoteData.revisionNumber}
                   rfqNumberId={quoteData && quoteData.rfqNumberId}
                   quoteId={quoteData && quoteData.quoteNumberId}
                   clientRFQId={quoteData && quoteData.clientRFQId}
