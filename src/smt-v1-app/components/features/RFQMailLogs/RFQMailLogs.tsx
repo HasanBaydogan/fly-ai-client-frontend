@@ -9,7 +9,10 @@ const RFQMailLogs = ({ rfqMailId }: { rfqMailId: string }) => {
   const fetchRfqMails = async (id: string) => {
     try {
       const response = await getRFQMailLogsFromDB(id);
-      setRFQMailLogs(response.data); // Gelen veriyi state'e yaz
+      if (response) {
+        setRFQMailLogs(response.data);
+      }
+      // Gelen veriyi state'e yaz
     } catch (err) {
       setError('Error fetching RFQ Mail Logs');
       console.error(err);

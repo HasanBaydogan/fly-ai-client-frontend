@@ -68,7 +68,7 @@ const PartList = ({
   const [partNumber, setPartNumber] = useState<string>('');
   const [reqQTY, setReqQTY] = useState<number>(0);
   const [fndQTY, setFndQTY] = useState<number>(0);
-  const [reqCND, setReqCND] = useState<string>('');
+  const [reqCND, setReqCND] = useState<string>('NE');
   const [fndCND, setFndCND] = useState<string>('');
   const [supplierLT, setSupplierLT] = useState<number>(0);
   const [clientLT, setClientLT] = useState<number>(0);
@@ -826,10 +826,12 @@ const PartList = ({
                   }}
                 >
                   <option value="">Select Cerf.</option>
-                  <option value="CERTIFICATE_1">CERTIFICATE_1</option>
-                  <option value="CERTIFICATE_2">CERTIFICATE_2</option>
-                  <option value="CERTIFICATE_3">CERTIFICATE_3</option>
-                  <option value="CERTIFICATE_4">CERTIFICATE_4</option>
+                  <option value="FAA_8130_3 ">FAA 8130-3</option>
+                  <option value="EASA_Form_1">EASA Form-1</option>
+                  <option value="ANAC_SEGVOO3">ANAC SEGVOO3</option>
+                  <option value="CAA_Form_1">CAA Form 1</option>
+                  <option value="CAAC">CAAC</option>
+                  <option value="CofC">CofC</option>
                 </Form.Select>
               </td>
               {/* Certificate Type END */}

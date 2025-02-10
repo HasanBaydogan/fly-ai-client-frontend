@@ -847,10 +847,12 @@ const AlternativePartList = ({
                     }}
                   >
                     <option value="">Select Cerf.</option>
-                    <option value="CERTIFICATE_1">CERTIFICATE_1</option>
-                    <option value="CERTIFICATE_2">CERTIFICATE_2</option>
-                    <option value="CERTIFICATE_3">CERTIFICATE_3</option>
-                    <option value="CERTIFICATE_4">CERTIFICATE_4</option>
+                    <option value="FAA_8130_3 ">FAA 8130-3</option>
+                    <option value="EASA_Form_1">EASA Form-1</option>
+                    <option value="ANAC_SEGVOO3">ANAC SEGVOO3</option>
+                    <option value="CAA_Form_1">CAA Form 1</option>
+                    <option value="CAAC">CAAC</option>
+                    <option value="CofC">CofC</option>
                   </Form.Select>
                 </td>
                 {/* Certificate Type END */}

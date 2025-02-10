@@ -118,15 +118,15 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
         rfqMailDetail.rfqMailNumberRefId + ' is converted to Quote'
       );
       setTimeout(() => {
-        window.location.assign(
-          '/quotes/quote?quoteId=' + response.data.quoteId
-        );
+        navigation('/quotes/quote?quoteId=' + response.data.quoteId);
         setIsLoading(false);
         setConvertToQuoteIsLoading(false);
       }, 1500);
     } else {
       toastError('Unknown Error', 'There is unknown error');
-      console.log(response);
+      //console.log(response);
+      setIsLoading(false);
+      setConvertToQuoteIsLoading(false);
     }
   };
 

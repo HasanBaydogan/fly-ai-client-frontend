@@ -56,6 +56,16 @@ const RfqMailRowItem = ({
       setIsNoQuoteActive(true);
       setSpamActive(true);
       return;
+    } else if (rfqMailStatus === 'WFS') {
+      setIsNotRFQActive(true);
+      setIsNoQuoteActive(false);
+      setSpamActive(true);
+      return;
+    } else if (rfqMailStatus === 'PQ') {
+      setIsNotRFQActive(true);
+      setIsNoQuoteActive(true);
+      setSpamActive(true);
+      return;
     }
     // Sadece aktif olanı `true` yapıyoruz
     if (rfqMail.isNotRFQ) {
