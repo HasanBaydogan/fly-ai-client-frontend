@@ -13,7 +13,7 @@ interface SupplierInfoProps {
   currencies: string[];
 }
 
-const SupplierInfo = ({
+const ClientInfo = ({
   setCompanyName,
   companyName,
   setSubCompany,
@@ -57,7 +57,7 @@ const SupplierInfo = ({
     <Col md={12}>
       <Form>
         <Form.Group className="mt-3">
-          <Form.Label className="fw-bold fs-8">Supplier Information</Form.Label>
+          <Form.Label className="fw-bold fs-8">Client </Form.Label>
         </Form.Group>
 
         <Form.Group className="d-flex flex-row gap-6 mt-2">
@@ -83,29 +83,19 @@ const SupplierInfo = ({
             />
           </Col>
           <Form.Group className="d-flex align-items-center gap-3 mb-5">
-            <Form.Control
-              value={reqQTY}
-              onWheel={e => (e.target as HTMLInputElement).blur()}
-              type="number"
-              onChange={e => {
-                setReqQTY(parseInt(e.target.value, 10) || 1);
-              }}
-              required
-              style={{ width: '80px', paddingRight: '8px' }}
-              min={1}
-            />
-
             {/* Para Birimi Seçici */}
-            <Form.Select
-              value={currencyLocal}
-              onChange={e => setCurrencyLocal(e.target.value)}
-            >
-              {currencies.map(currency => (
-                <option key={currency} value={currency}>
-                  {currency}
-                </option>
-              ))}
-            </Form.Select>
+            <Col md={3}>
+              <Form.Select
+                value={currencyLocal}
+                onChange={e => setCurrencyLocal(e.target.value)}
+              >
+                {currencies.map(currency => (
+                  <option key={currency} value={currency}>
+                    {currency}
+                  </option>
+                ))}
+              </Form.Select>
+            </Col>
           </Form.Group>
         </Form.Group>
         <Form.Group className="mt-3">
@@ -129,4 +119,4 @@ const SupplierInfo = ({
   );
 };
 
-export default SupplierInfo;
+export default ClientInfo;

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FormattedContactData } from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/ContactListSection';
 import { RatingData } from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/RatingComponent';
 import SegmentSelection from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/SegmentSelection';
-import SupplierInfo from 'smt-v1-app/components/features/NewClient/SupplierInfo';
+import SupplierInfo from 'smt-v1-app/components/features/NewClient/ClientInfo';
 import {
   Certypes,
   SupplierStatus
@@ -16,6 +16,9 @@ import {
   postSupplierCreate,
   TreeNode
 } from 'smt-v1-app/services/SupplierServices';
+import AddressDetails from 'smt-v1-app/components/features/NewClient/AddressDetails';
+import RatingSection from 'smt-v1-app/components/features/NewClient/RatingComponent';
+import FileUpload from 'smt-v1-app/components/features/NewClient/NewClientAttachment/FileUpload';
 
 // const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
 // const [errorSegments, setErrorSegments] = useState<string | null>(null);
@@ -27,12 +30,14 @@ const NewClientContainer = () => {
 
   // Data states
   const [companyName, setCompanyName] = useState<string>('');
+  const [clientMail, setClientMail] = useState<string>('');
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
   const [subCompany, setSubCompany] = useState('');
   const [legalAddress, setLegalAddress] = useState('');
   const [selectedCountryId, setSelectedCountryId] = useState('');
   const [pickUpAddress, setPickUpAddress] = useState('');
   const [currencies, setCurrencies] = useState([]);
+  const [clientWebsite, setClientWebsite] = useState('');
 
   const [selectedStatus, setSelectedStatus] = useState<SupplierStatus | ''>('');
   const [base64Files, setBase64Files] = useState<
@@ -210,9 +215,9 @@ const NewClientContainer = () => {
     }
   };
 
-  //   const handleStatusChange = (value: string) => {
-  //     setSelectedStatus(value as unknown as SupplierStatus);
-  //   };
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value as unknown as SupplierStatus);
+  };
 
   const handleCertificateTypesChange = (values: string[]) => {
     setCertificateTypes(
@@ -297,7 +302,8 @@ const NewClientContainer = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* Supplier Info */}
+
+      {/* Client Info */}
       <SupplierInfo
         setCompanyName={setCompanyName}
         companyName={companyName}
@@ -323,30 +329,36 @@ const NewClientContainer = () => {
       {/* Other Sections */}
       <Row className="mt-3">
         <Col md={7}>
-          {/* <AddressDetails
+          <AddressDetails
             onCountryChange={setSelectedCountryId}
             onStatusChange={handleStatusChange}
             getbyCountryList={countryList}
             pickUpAddress={pickUpAddress}
             setPickUpAddress={setPickUpAddress}
             onCertificateTypes={handleCertificateTypesChange}
-          /> */}
+            setClientMail={setClientMail}
+            clientMail={clientMail}
+            setClientWebsite={setClientWebsite}
+            clientWebsite={clientWebsite}
+          />
         </Col>
         <Col
           md={5}
-          className="d-flex justify-content-center align-items-center"
+          className="d-flex justify-content-center align-items-center mt-1"
         >
-          {/* <RatingSection
+          <RatingSection
             onRatingsChange={handleRatingsChange}
             ratings={ratings}
-          /> */}
+          />
         </Col>
       </Row>
+
+      <FileUpload onFilesUpload={handleFilesUpload} />
       {/* <WorkingDetails
         workingDetails={workingDetails}
         setWorkingDetails={setWorkingDetails}
       />
-      <FileUpload onFilesUpload={handleFilesUpload} />
+      
       <AccountInfo
         username={username}
         setUsername={setUsername}
