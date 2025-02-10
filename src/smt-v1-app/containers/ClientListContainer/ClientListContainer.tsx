@@ -1,7 +1,7 @@
 import React from 'react';
 
 const ClientListContainer = () => {
-  return <></>;
+  return <>Client List Container</>;
 };
 
 export default ClientListContainer;

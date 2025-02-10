@@ -352,7 +352,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: 'Add New Client',
-                path: '/',
+                path: '/client/new-client',
                 pathName: 'new-Client',
                 icon: 'mail',
                 active: true,
