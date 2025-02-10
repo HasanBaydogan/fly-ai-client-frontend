@@ -158,7 +158,7 @@ const RFQMailLog: React.FC<RFQMailLog> = (props: RFQMailLog) => {
   };
   useEffect(() => {
     logGenerating();
-  });
+  }, []);
 
   return (
     <>

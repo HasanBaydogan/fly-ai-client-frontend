@@ -8,6 +8,7 @@ import {
   isOpenRFQMail,
   reverseRFQMail
 } from 'smt-v1-app/services/MailTrackingService';
+import { convertRFQToQuote } from 'smt-v1-app/services/QuoteService';
 
 interface RFQActionButtonsProps {
   rfqMailDetail: RFQMailDetail;
@@ -107,6 +108,27 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
       toastError('Error', 'Unknown Error');
     }
   };
+  const handleConvertToQuote = async () => {
+    setIsLoading(true);
+    setConvertToQuoteIsLoading(true);
+    const response = await convertRFQToQuote(rfqMailDetail.rfqMailId);
+    if (response && response.statusCode === 200) {
+      toastSuccess(
+        'Successful Quote',
+        rfqMailDetail.rfqMailNumberRefId + ' is converted to Quote'
+      );
+      setTimeout(() => {
+        window.location.assign(
+          '/quotes/quote?quoteId=' + response.data.quoteId
+        );
+        setIsLoading(false);
+        setConvertToQuoteIsLoading(false);
+      }, 1500);
+    } else {
+      toastError('Unknown Error', 'There is unknown error');
+      console.log(response);
+    }
+  };
 
   const renderActionButtons = () => {
     switch (statusType) {
@@ -151,7 +173,11 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
             >
               {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
             </Button>
-            <Button variant="outline-success" disabled={isLoading}>
+            <Button
+              variant="outline-success"
+              disabled={isLoading}
+              onClick={handleConvertToQuote}
+            >
               {convertToQuoteIsLoading ? (
                 <LoadingAnimation />
               ) : (
@@ -171,7 +197,11 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
             >
               {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
             </Button>
-            <Button variant="outline-success" disabled={isLoading}>
+            <Button
+              variant="outline-success"
+              disabled={isLoading}
+              onClick={handleConvertToQuote}
+            >
               {convertToQuoteIsLoading ? (
                 <LoadingAnimation />
               ) : (
@@ -191,7 +221,11 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
             >
               {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
             </Button>
-            <Button variant="outline-success" disabled={isLoading}>
+            <Button
+              variant="outline-success"
+              disabled={isLoading}
+              onClick={handleConvertToQuote}
+            >
               {convertToQuoteIsLoading ? (
                 <LoadingAnimation />
               ) : (
