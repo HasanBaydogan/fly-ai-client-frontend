@@ -9,7 +9,7 @@ interface SupplierInfoProps {
   setLegalAddress: (value: string) => void;
   legalAddress: string;
   currency: string;
-  setCurrency: (value: string) => void; // New prop for updating currency
+  setCurrency: (value: string) => void; // Currency güncellemesi için yeni prop
   currencies: string[];
 }
 
@@ -24,19 +24,25 @@ const ClientInfo = ({
   setCurrency,
   currencies
 }: SupplierInfoProps) => {
-  const [error, setError] = useState<string | null>(null);
+  // Şirket adı ve legal address için ayrı hata durumları oluşturduk.
+  const [companyError, setCompanyError] = useState<string | null>(null);
+  const [legalAddressError, setLegalAddressError] = useState<string | null>(
+    null
+  );
 
   const handleCompanyNameChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const value = event.target.value;
     setCompanyName(value);
-    setError(value.trim() === '' ? 'Company Name cannot be empty.' : null);
+    setCompanyError(
+      value.trim() === '' ? 'Company Name cannot be empty.' : null
+    );
   };
 
-  const handleBlur = () => {
+  const handleCompanyBlur = () => {
     if (companyName.trim() === '') {
-      setError('Company Name cannot be empty.');
+      setCompanyError('Company Name cannot be empty.');
     }
   };
 
@@ -44,8 +50,20 @@ const ClientInfo = ({
     setSubCompany(event.target.value);
   };
 
-  const handleLegalAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLegalAddress(event.target.value);
+  const handleLegalAddressChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = event.target.value;
+    setLegalAddress(value);
+    setLegalAddressError(
+      value.trim() === '' ? 'Legal Address cannot be empty.' : null
+    );
+  };
+
+  const handleLegalAddressBlur = () => {
+    if (legalAddress.trim() === '') {
+      setLegalAddressError('Legal Address cannot be empty.');
+    }
   };
 
   return (
@@ -62,11 +80,11 @@ const ClientInfo = ({
               placeholder="Company Name*"
               value={companyName}
               onChange={handleCompanyNameChange}
-              onBlur={handleBlur}
-              isInvalid={!!error}
+              onBlur={handleCompanyBlur}
+              isInvalid={!!companyError}
             />
             <Form.Control.Feedback type="invalid">
-              {error}
+              {companyError}
             </Form.Control.Feedback>
           </Col>
           <Col md={5}>
@@ -99,8 +117,13 @@ const ClientInfo = ({
                 placeholder="Address"
                 style={{ height: '100px' }}
                 value={legalAddress}
-                onChange={handleLegalAddress}
+                onChange={handleLegalAddressChange}
+                onBlur={handleLegalAddressBlur}
+                isInvalid={!!legalAddressError}
               />
+              <Form.Control.Feedback type="invalid">
+                {legalAddressError}
+              </Form.Control.Feedback>
             </FloatingLabel>
           </Col>
         </Form.Group>

@@ -11,6 +11,7 @@ import {
 } from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
 import {
   getbyCurrencyController,
+  getByMarginTable,
   postClientCreate
 } from 'smt-v1-app/services/ClientServices';
 import {
@@ -26,6 +27,7 @@ import RatingSection from 'smt-v1-app/components/features/NewClient/RatingCompon
 import FileUpload from 'smt-v1-app/components/features/NewClient/NewClientAttachment/FileUpload';
 import ContactListSection from 'smt-v1-app/components/features/NewClient/NewClientContact/ContactListSection';
 import ClientBottomSection from 'smt-v1-app/components/features/NewClient/ClientBottomSection';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 // const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
 // const [errorSegments, setErrorSegments] = useState<string | null>(null);
@@ -73,6 +75,7 @@ const NewClientContainer = () => {
   // Initialized data
   const [segments, setSegments] = useState<TreeNode[]>([]);
   const [countryList, setCountryList] = useState<any>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Alerts & modals
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
@@ -86,6 +89,7 @@ const NewClientContainer = () => {
     comment: userComments.length > 0 ? userComments[0].comment : '',
     severity: userComments.length > 0 ? userComments[0].severity : ''
   };
+  const [priceMargins, setMarginTable] = useState({});
 
   // Sonuç modalı için state'ler
   const [showResultModal, setShowResultModal] = useState(false);
@@ -124,6 +128,27 @@ const NewClientContainer = () => {
   }, []);
 
   useEffect(() => {
+    const fetchMarginTable = async () => {
+      try {
+        const response = await getByMarginTable();
+
+        // API'den dönen verinin nesne olduğunu varsayalım.
+        if (
+          response &&
+          response.statusCode === 200 &&
+          typeof response.data === 'object'
+        ) {
+          setMarginTable(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching Margin Table:', error);
+      }
+    };
+
+    fetchMarginTable();
+  }, []);
+
+  useEffect(() => {
     const fetchSegments = async () => {
       try {
         const response = await getbySegmentList();
@@ -133,22 +158,9 @@ const NewClientContainer = () => {
         setErrorSegments('Failed to load segments.');
         setLoadingSegments(false);
       }
+      setIsLoading(false);
     };
     fetchSegments();
-  }, []);
-
-  useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        const response = await getbyCountryList();
-        if (response?.data) {
-          setCountryList(response);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchCountries();
   }, []);
 
   const handleFilesUpload = (files: { name: string; base64: string }[]) => {
@@ -204,6 +216,14 @@ const NewClientContainer = () => {
       return;
     }
 
+    const numericMarginTable = Object.fromEntries(
+      Object.entries(priceMargins).map(([key, value]) => {
+        // Virgülü nokta ile değiştirip Number'a dönüştürüyoruz.
+        const numericValue = Number(value.toString().replace(',', '.'));
+        return [key, isNaN(numericValue) ? 0 : numericValue];
+      })
+    );
+
     const clientPayload = {
       companyName: clientCompanyName,
       legalAddress: legalAddress,
@@ -225,7 +245,11 @@ const NewClientContainer = () => {
       password: password,
       // contacts: contacts,
 
-      userComments: commentPayload,
+      userComments: userComments.map(item => ({
+        comment: item.comment,
+        severity: item.severity
+      })),
+      clientPriceMarginTableRequest: numericMarginTable,
 
       dialogSpeed: ratings.dialogSpeed,
       dialogQuality: ratings.dialogQuality,
@@ -270,176 +294,195 @@ const NewClientContainer = () => {
 
   return (
     <>
-      {/* Alert */}
-      {showAlert && (
-        <div className="alert-overlay">
-          <Alert
-            variant={isSuccess ? 'success' : 'danger'}
-            className="text-white alert-center"
-            onClose={() => setShowAlert(false)}
-            dismissible
-          >
-            <Alert.Heading>{isSuccess ? 'Success!' : 'Notice!'}</Alert.Heading>
-            <p>{alertMessage}</p>
-          </Alert>
-        </div>
-      )}
-      {/* Cancel Modal */}
-      <Modal
-        show={showCancelModal}
-        onHide={() => setShowCancelModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Cancellation</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to discard all changes?</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
-            No, Keep Changes
-          </Button>
-          <Button variant="danger" onClick={handleCancel}>
-            Yes, Discard
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      {/* Save Confirmation Modal */}
-      <Modal
-        show={showSaveModal}
-        onHide={() => setShowSaveModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Save</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to save the client information?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowSaveModal(false)}>
-            No, Cancel
-          </Button>
-          <Button variant="success" onClick={handleSave}>
-            Yes, Save
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      {/* Sonuç Modalı */}
-      <Modal
-        show={showResultModal}
-        onHide={() => setShowResultModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>{resultModalTitle}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>{resultModalMessage}</Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={() => setShowResultModal(false)}>
-            OK
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Client Info */}
-      <SupplierInfo
-        setCompanyName={setCompanyName}
-        companyName={clientCompanyName}
-        setSubCompany={setSubCompany}
-        subCompany={subCompany}
-        setLegalAddress={setLegalAddress}
-        legalAddress={legalAddress}
-        currencies={currencies}
-        currency={selectedCurrency}
-        setCurrency={setSelectedCurrency} // new prop to update currency
-      />
-      {/* Segment Selection */}
-      {loadingSegments ? (
-        <p>Loading segments...</p>
-      ) : errorSegments ? (
-        <p className="text-danger">{errorSegments}</p>
+      {isLoading ? (
+        <LoadingAnimation />
       ) : (
-        <SegmentSelection
-          data={segments}
-          setSegmentIds={setSegmentIds}
-          setSegments={setSegments}
-        />
-      )}
-      {/* Other Sections */}
-      <Row className="mt-3">
-        <Col md={7}>
-          <AddressDetails
-            onStatusChange={handleStatusChange}
-            clientDetail={clientDetail}
-            setClientDetail={setClientDetail}
-            setClientMail={setClientMail}
-            clientMail={clientMail}
-            setClientWebsite={setClientWebsite}
-            clientWebsite={clientWebsite}
-            phone={phone} // Phone state prop olarak ekleniyor
-            setPhone={setPhone} // Phone güncelleme fonksiyonu da gönderiliyor
-          />
-        </Col>
-        <Col
-          md={5}
-          className="d-flex justify-content-center align-items-center mt-1"
-        >
-          <RatingSection
-            onRatingsChange={handleRatingsChange}
-            ratings={ratings}
-          />
-        </Col>
-      </Row>
-
-      <FileUpload onFilesUpload={handleFilesUpload} />
-
-      <ClientBottomSection
-        userComments={userComments}
-        setUserComments={setUserComments}
-      />
-      <ContactListSection onContactsChange={setContacts} />
-      {/* Buttons ve Loading Overlay */}
-      <div style={{ position: 'relative', minHeight: '70px' }}>
-        {loadingSave && (
-          <div
-            className="loading-overlay"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: 'rgba(255,255,255,0.7)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 10
-            }}
+        <>
+          {' '}
+          {/* Alert */}
+          {showAlert && (
+            <div className="alert-overlay">
+              <Alert
+                variant={isSuccess ? 'success' : 'danger'}
+                className="text-white alert-center"
+                onClose={() => setShowAlert(false)}
+                dismissible
+              >
+                <Alert.Heading>
+                  {isSuccess ? 'Success!' : 'Notice!'}
+                </Alert.Heading>
+                <p>{alertMessage}</p>
+              </Alert>
+            </div>
+          )}
+          {/* Cancel Modal */}
+          <Modal
+            show={showCancelModal}
+            onHide={() => setShowCancelModal(false)}
+            centered
           >
-            <Spinner animation="border" role="status" variant="primary">
-              <span className="visually-hidden">Saving data...</span>
-            </Spinner>
-            <p>Saving data, please wait...</p>
+            <Modal.Header closeButton>
+              <Modal.Title>Confirm Cancellation</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              Are you sure you want to discard all changes?
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => setShowCancelModal(false)}
+              >
+                No, Keep Changes
+              </Button>
+              <Button variant="danger" onClick={handleCancel}>
+                Yes, Discard
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          {/* Save Confirmation Modal */}
+          <Modal
+            show={showSaveModal}
+            onHide={() => setShowSaveModal(false)}
+            centered
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Confirm Save</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              Are you sure you want to save the client information?
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => setShowSaveModal(false)}
+              >
+                No, Cancel
+              </Button>
+              <Button variant="success" onClick={handleSave}>
+                Yes, Save
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          {/* Sonuç Modalı */}
+          <Modal
+            show={showResultModal}
+            onHide={() => setShowResultModal(false)}
+            centered
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>{resultModalTitle}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>{resultModalMessage}</Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="primary"
+                onClick={() => setShowResultModal(false)}
+              >
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          {/* Client Info */}
+          <SupplierInfo
+            setCompanyName={setCompanyName}
+            companyName={clientCompanyName}
+            setSubCompany={setSubCompany}
+            subCompany={subCompany}
+            setLegalAddress={setLegalAddress}
+            legalAddress={legalAddress}
+            currencies={currencies}
+            currency={selectedCurrency}
+            setCurrency={setSelectedCurrency} // new prop to update currency
+          />
+          {/* Segment Selection */}
+          {loadingSegments ? (
+            <p>Loading segments...</p>
+          ) : errorSegments ? (
+            <p className="text-danger">{errorSegments}</p>
+          ) : (
+            <SegmentSelection
+              data={segments}
+              setSegmentIds={setSegmentIds}
+              setSegments={setSegments}
+            />
+          )}
+          {/* Other Sections */}
+          <Row className="mt-3">
+            <Col md={7}>
+              <AddressDetails
+                onStatusChange={handleStatusChange}
+                clientDetail={clientDetail}
+                setClientDetail={setClientDetail}
+                setClientMail={setClientMail}
+                clientMail={clientMail}
+                setClientWebsite={setClientWebsite}
+                clientWebsite={clientWebsite}
+                phone={phone} // Phone state prop olarak ekleniyor
+                setPhone={setPhone} // Phone güncelleme fonksiyonu da gönderiliyor
+              />
+            </Col>
+            <Col
+              md={5}
+              className="d-flex justify-content-center align-items-center mt-1"
+            >
+              <RatingSection
+                onRatingsChange={handleRatingsChange}
+                ratings={ratings}
+              />
+            </Col>
+          </Row>
+          <FileUpload onFilesUpload={handleFilesUpload} />
+          <ClientBottomSection
+            priceMargins={priceMargins}
+            setMarginTable={setMarginTable}
+            userComments={userComments}
+            setUserComments={setUserComments}
+          />
+          <ContactListSection onContactsChange={setContacts} />
+          {/* Buttons ve Loading Overlay */}
+          <div style={{ position: 'relative', minHeight: '70px' }}>
+            {loadingSave && (
+              <div
+                className="loading-overlay"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  background: 'rgba(255,255,255,0.7)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 10
+                }}
+              >
+                <Spinner animation="border" role="status" variant="primary">
+                  <span className="visually-hidden">Saving data...</span>
+                </Spinner>
+                <p>Saving data, please wait...</p>
+              </div>
+            )}
+            <div className="d-flex mt-3 gap-3 mx-5 justify-content-end">
+              <CustomButton
+                variant="secondary"
+                onClick={confirmCancel}
+                disabled={loadingSave}
+              >
+                Cancel
+              </CustomButton>
+              <CustomButton
+                variant="success"
+                onClick={confirmSave}
+                disabled={loadingSave}
+              >
+                Save
+              </CustomButton>
+            </div>
           </div>
-        )}
-        <div className="d-flex mt-3 gap-3 mx-5 justify-content-end">
-          <CustomButton
-            variant="secondary"
-            onClick={confirmCancel}
-            disabled={loadingSave}
-          >
-            Cancel
-          </CustomButton>
-          <CustomButton
-            variant="success"
-            onClick={confirmSave}
-            disabled={loadingSave}
-          >
-            Save
-          </CustomButton>
-        </div>
-      </div>
+        </>
+      )}
     </>
   );
 };

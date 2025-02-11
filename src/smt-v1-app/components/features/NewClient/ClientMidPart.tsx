@@ -1,4 +1,3 @@
-// ClientMidPart.tsx (AddressDetails)
 import { useEffect, useState } from 'react';
 import { Col, FloatingLabel, Row, Form } from 'react-bootstrap';
 import PhoneInput from 'react-phone-input-2';
@@ -29,8 +28,8 @@ const ClientMidPart = ({
   setPhone
 }: AddressDetailsProps) => {
   const [selectedStatus, setSelectedStatus] = useState('');
+  // Tek bir hata nesnesi kullanıyoruz; örneğin, email veya phone için.
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (defaultStatus) {
@@ -48,29 +47,38 @@ const ClientMidPart = ({
     setClientDetail(e.target.value);
   };
 
-  const handleClientMailChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = event.target.value;
+  const handleClientMailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
     setClientMail(value);
-
-    if (value.trim() === '') {
-      setError('Client Mail cannot be empty.');
-    } else {
-      setError(null);
+    // Eğer değer boş değilse email hatasını temizleyelim.
+    if (value.trim() !== '') {
+      setErrors(prev => ({ ...prev, email: '' }));
     }
   };
 
-  const handleBlur = () => {
-    if (clientMail.trim() === '') {
-      setError('Client Mail cannot be empty.');
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // İsim çakışmasını önlemek için fonksiyon adını validateClientMail olarak değiştirdik.
+  const validateClientMail = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!clientMail.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!isValidEmail(clientMail.trim())) {
+      newErrors.email = 'Please enter a valid email address';
     }
+
+    setErrors(prev => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleClientWebsiteChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setClientWebsite(event.target.value);
+    setClientWebsite(e.target.value);
   };
 
   return (
@@ -108,14 +116,16 @@ const ClientMidPart = ({
       <Row className="mb-2">
         <Col md={6}>
           <Form.Control
-            type="text"
             placeholder="Mail*"
             value={clientMail}
             onChange={handleClientMailChange}
-            onBlur={handleBlur}
-            isInvalid={!!error}
+            onBlur={validateClientMail}
+            type="email"
+            isInvalid={!!errors.email}
           />
-          <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+          <Form.Control.Feedback type="invalid">
+            {errors.email}
+          </Form.Control.Feedback>
         </Col>
         <Col md={6}>
           <Form.Control

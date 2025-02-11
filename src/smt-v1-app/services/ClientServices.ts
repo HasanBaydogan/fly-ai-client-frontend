@@ -94,6 +94,77 @@ export const getbyCurrencyController = async () => {
   }
 };
 
+export const getByMarginTable = async () => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const DefaultMarginTable = await api().get(`/client/default-margin-table`, {
+      headers
+    });
+    console.log('Margin Table Get Response', DefaultMarginTable);
+
+    if (DefaultMarginTable.data.statusCode === 200) {
+      return DefaultMarginTable.data;
+    } else if (DefaultMarginTable.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/client/default-margin-table`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (DefaultMarginTable.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('SegmentDetailList Permission Error');
+  }
+};
+
 //     ---     POST        ---
 export interface CreateClient {
   companyName: string;
@@ -111,7 +182,10 @@ export interface CreateClient {
     fileName: string;
     data: string;
   }[];
-
+  userComments: {
+    comment: string;
+    severity: string;
+  }[];
   dialogSpeed: number;
   dialogQuality: number;
   easeOfSupply: number;
@@ -119,7 +193,7 @@ export interface CreateClient {
   euDemandParts: number;
 }
 
-export const postClientCreate = async (newSupplier: CreateClient) => {
+export const postClientCreate = async (newClient: CreateClient) => {
   try {
     const access_token = Cookies.get('access_token');
     const headers: Record<string, string> = {};
@@ -131,7 +205,7 @@ export const postClientCreate = async (newSupplier: CreateClient) => {
       return;
     }
 
-    const response = await api().post(`/client/create`, newSupplier, {
+    const response = await api().post(`/client/create`, newClient, {
       headers
     });
     console.log('Client Payload', response);
@@ -158,7 +232,7 @@ export const postClientCreate = async (newSupplier: CreateClient) => {
 
           let rfqMailResponseAfterRefresh = await api().post(
             `/client/create`,
-            newSupplier,
+            newClient,
             {
               headers: {
                 Authorization: `Bearer ${refreshTokenresponse.data.data.access_token}`

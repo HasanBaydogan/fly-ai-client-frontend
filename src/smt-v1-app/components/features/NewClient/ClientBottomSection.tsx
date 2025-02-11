@@ -9,33 +9,20 @@ interface Comment {
 }
 
 interface ClientBottomSectionProps {
-  // Fiyat marjlarını yerel tutmaya devam edebilirsiniz.
+  priceMargins: { [key: string]: number | string };
+  setMarginTable: React.Dispatch<
+    React.SetStateAction<{ [key: string]: number | string }>
+  >;
   userComments: Comment[];
   setUserComments: React.Dispatch<React.SetStateAction<Comment[]>>;
 }
 
 const ClientBottomSection = ({
+  priceMargins,
+  setMarginTable,
   userComments,
   setUserComments
 }: ClientBottomSectionProps) => {
-  const initialPriceMargins = {
-    below200: 0,
-    btw200and500: 0,
-    btw500and1_000: 0,
-    btw1_000and5_000: 0,
-    btw5_000and10_000: 0,
-    btw10_000and50_000: 0,
-    btw50_000and100_000: 0,
-    btw100_000and150_000: 0,
-    btw150_000and200_000: 0,
-    btw200_000and400_000: 0,
-    btw400_000and800_000: 0,
-    btw800_000and1_000_000: 0,
-    btw1_000_000and2_000_000: 0,
-    btw2_000_000and4_000_000: 0,
-    above4_000_000: 0
-  };
-
   const keyDisplayMap = {
     below200: 'Below 200',
     btw200and500: 'Btw 200-500',
@@ -54,14 +41,11 @@ const ClientBottomSection = ({
     above4_000_000: 'Above 4,000,000'
   };
 
-  const [priceMargins, setPriceMargins] = React.useState(initialPriceMargins);
-
   const handlePriceChange = (key: string, inputValue: string) => {
     let value = inputValue.trim();
+    // Nokta yerine virgül kullanılıyor.
     value = value.replace('.', ',');
-
     const endsWithComma = value.endsWith(',');
-
     const parts = value.split(',');
     let integerPart = parts[0].replace(/\D/g, '');
     let decimalPart = parts[1] ? parts[1].replace(/\D/g, '') : '';
@@ -88,7 +72,7 @@ const ClientBottomSection = ({
       formattedValue += ',';
     }
 
-    setPriceMargins(prev => ({ ...prev, [key]: formattedValue }));
+    setMarginTable(prev => ({ ...prev, [key]: formattedValue }));
   };
 
   const handleCommentChange = (
@@ -125,9 +109,6 @@ const ClientBottomSection = ({
     setUserComments(updatedComments);
   };
 
-  // handleSubmit fonksiyonu (örnek payload oluşturma vs.) parent'ta da kullanılabilir.
-  // Eğer ClientBottomSection içinden submit işlemi yapılmayacaksa bu fonksiyonu kaldırabilirsiniz.
-
   return (
     <>
       <Row className="mt-5 gap-4">
@@ -143,26 +124,31 @@ const ClientBottomSection = ({
           >
             <thead className="table-light">
               <tr>
-                <th style={{ width: '75%' }}>Key</th>
+                <th style={{ width: '75%' }}>Interval</th>
                 <th style={{ width: '25%' }}>Value</th>
               </tr>
             </thead>
             <tbody>
-              {Object.entries(priceMargins).map(([key, value]) => (
-                <tr key={key}>
-                  <td className="align-middle">{keyDisplayMap[key] || key}</td>
-                  <td className="align-middle">
-                    <input
-                      type="text"
-                      className="form-control text-center p-0"
-                      value={value}
-                      onChange={e => handlePriceChange(key, e.target.value)}
-                      style={{ width: '80px', height: '25px' }}
-                      placeholder="Ör: 1,234"
-                    />
-                  </td>
-                </tr>
-              ))}
+              {Object.entries(priceMargins)
+                // Filtreleyerek boş (''), null veya undefined olan değerleri göstermiyoruz.
+                .filter(([_, value]) => value !== '' && value != null)
+                .map(([key, value]) => (
+                  <tr key={key}>
+                    <td className="align-middle">
+                      {keyDisplayMap[key] || key}
+                    </td>
+                    <td className="align-middle">
+                      <input
+                        type="text"
+                        className="form-control text-center p-0"
+                        value={value}
+                        onChange={e => handlePriceChange(key, e.target.value)}
+                        style={{ width: '80px', height: '25px' }}
+                        placeholder="Ör: 1,234"
+                      />
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </Table>
         </Col>
@@ -196,7 +182,7 @@ const ClientBottomSection = ({
                         }
                         placeholder="Enter comment"
                         style={{ width: '95%', resize: 'vertical' }}
-                        rows={1} // Başlangıç yüksekliği 1 satır
+                        rows={1}
                       />
                     ) : (
                       <span>{item.comment}</span>
