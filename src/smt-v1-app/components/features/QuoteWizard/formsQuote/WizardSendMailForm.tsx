@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Row, Col, Alert, Badge } from 'react-bootstrap';
+import { Form, Row, Col, Alert } from 'react-bootstrap';
 import TinymceEditor from 'components/base/TinymceEditor';
-import Dropzone from 'components/base/Dropzone';
-import { useMail } from './MailContext';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
-import { defaultMailTemplate } from './defaultMailTemplate';
-import { MailProvider } from './MailContext';
-import ReviewMail from './ReviewMail';
+
 import { getPreEmailSendingParameters } from 'smt-v1-app/services/QuoteService';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-
-const MAX_TOTAL_SIZE = 22 * 1024 * 1024; // 22MB in bytes
+import DropzoneQuoteWizard from './DropzoneQuoteWizard';
 
 export interface EmailProps {
   toEmails: string[];
@@ -41,6 +36,9 @@ interface WizardSendMailFormProps {
   onNext?: () => void;
   emailProps: EmailProps;
   quoteId: string;
+  base64Pdf: string;
+  base64PdfFileName: string;
+  isPdfConvertedToBase64: boolean;
 }
 
 interface EmailParams {
@@ -53,7 +51,10 @@ interface EmailParams {
 const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
   onNext,
   emailProps,
-  quoteId
+  quoteId,
+  base64Pdf,
+  base64PdfFileName,
+  isPdfConvertedToBase64
 }) => {
   const {
     toEmails,
@@ -73,6 +74,10 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     error,
     setError
   } = emailProps;
+
+  const [base64Files, setBase64Files] = useState<
+    { name: string; base64: string }[]
+  >([]);
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -99,57 +104,6 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     setEmailList: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
     setEmailList(emailList.filter((_, i) => i !== index));
-  };
-
-  const renderEmailTags = (
-    emailList: string[],
-    setEmailList: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-        {emailList.map((email, index) => (
-          <div
-            key={index}
-            style={{
-              background: '#e0f7fa',
-              borderRadius: '4px',
-              padding: '4px 8px',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            {email}
-            <button
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#d32f2f',
-                marginLeft: '8px',
-                cursor: 'pointer'
-              }}
-              onClick={() => handleRemoveEmail(index, emailList, setEmailList)}
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const handleDrop = (acceptedFiles: File[]) => {
-    const totalSize = acceptedFiles.reduce(
-      (acc, file) => acc + file.size,
-      attachments.reduce((acc, file) => acc + file.size, 0)
-    );
-
-    if (totalSize > MAX_TOTAL_SIZE) {
-      setError('Total attachment size cannot exceed 22MB.');
-      return;
-    }
-
-    setError(null); // Hata mesajını sıfırla
-    setAttachments(prev => [...prev, ...acceptedFiles]);
   };
 
   const handleEmailChange = (
@@ -185,11 +139,15 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
       setIsLoading(true);
       const response = await getPreEmailSendingParameters(quoteId);
       setEmailParams(response.data);
-      console.log(response.data);
+
       setIsLoading(false);
     };
     getPreEmailParams();
   }, []);
+  useEffect(() => {
+    setBase64Files([{ name: base64PdfFileName, base64: base64Pdf }]);
+  }, [base64Pdf]);
+
   const setEmailBody = (body: string) => {
     setEmailParams({
       ...emailParams,
@@ -202,10 +160,13 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
       subject: subject
     });
   };
+  const handleFilesUpload = (files: { name: string; base64: string }[]) => {
+    setBase64Files(files);
+  };
 
   return (
     <div className="p-4">
-      {isLoading ? (
+      {isLoading || isPdfConvertedToBase64 ? (
         <LoadingAnimation />
       ) : (
         <Form>
@@ -288,7 +249,12 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
           </Form.Group>
 
           <div className="border p-3 mb-3">
-            <Dropzone onDrop={handleDrop} />
+            <DropzoneQuoteWizard
+              onFilesUpload={handleFilesUpload}
+              alreadyUploadedFiles={[
+                { id: undefined, name: base64PdfFileName, base64: base64Pdf }
+              ]}
+            />
           </div>
 
           <Form.Group className="mb-3">

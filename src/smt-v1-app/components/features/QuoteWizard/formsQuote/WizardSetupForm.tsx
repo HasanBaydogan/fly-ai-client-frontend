@@ -24,6 +24,7 @@ interface WizardSetupFormProps {
 const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   currencies,
   quotePartRows,
+
   setQuotePartRows,
   quoteWizardData,
   setSelectedDate,

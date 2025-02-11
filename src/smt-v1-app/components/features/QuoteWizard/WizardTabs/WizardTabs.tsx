@@ -71,6 +71,8 @@ const WizardTabs = ({
   });
 
   const [subTotalValues, setSubTotalValues] = useState<number[]>([0, 0, 0, 0]);
+  const [base64Pdf, setBase64Pdf] = useState<string>('');
+  const [base64PdfFileName, setBase64PdfFileName] = useState<string>('');
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [currency, setCurrency] = useState(quoteWizardData.currency);
@@ -82,6 +84,7 @@ const WizardTabs = ({
   const [attachments, setAttachments] = useState<File[]>([]);
   const [inputValue, setInputValue] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [isPdfConvertedToBase64, setIsPdfConvertedToBase64] = useState(true);
 
   const emailProps = {
     toEmails,
@@ -138,10 +141,13 @@ const WizardTabs = ({
                   />
                 </WizardForm>
               </Tab.Pane>
-              <Tab.Pane eventKey={2}>
+              <Tab.Pane eventKey={2} unmountOnExit>
                 <WizardForm step={2}>
                   {
                     <WizardPreviewForm
+                      setBase64Pdf={setBase64Pdf}
+                      setIsPdfConvertedToBase64={setIsPdfConvertedToBase64}
+                      setBase64PdfFileName={setBase64PdfFileName}
                       quotePartRows={quotePartRows}
                       settings={quoteWizardData.quoteWizardSetting}
                       quoteNumber={quoteWizardData.quoteNumberId}
@@ -159,6 +165,9 @@ const WizardTabs = ({
                   {
                     <WizardSendMailForm
                       emailProps={emailProps}
+                      isPdfConvertedToBase64={isPdfConvertedToBase64}
+                      base64Pdf={base64Pdf}
+                      base64PdfFileName={base64PdfFileName}
                       quoteId={quoteWizardData.quoteId}
                     />
                   }
