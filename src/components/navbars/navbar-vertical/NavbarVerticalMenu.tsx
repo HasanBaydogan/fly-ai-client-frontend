@@ -27,6 +27,7 @@ const NavItem = ({ route, level }: NavItemProps) => {
     config: { isNavbarVerticalCollapsed }
   } = useAppContext();
   const { setOpenItems, openItems } = useNavbarVerticalCollapse();
+
   return (
     <Nav.Item as="li">
       <NavLink
@@ -60,34 +61,22 @@ const NavItem = ({ route, level }: NavItemProps) => {
                   <FeatherIcon icon={route.icon} size={16} />
                 )}
               </span>
-              <span className="nav-link-text-wrapper">
-                <span className="nav-link-text">{capitalize(route.name)}</span>
-                {route.new && !isNavbarVerticalCollapsed && (
-                  <Badge variant="phoenix" bg="warning" className="ms-2">
-                    New
-                  </Badge>
-                )}
-                {route.next && !isNavbarVerticalCollapsed && (
-                  <Badge variant="phoenix" bg="primary" className="ms-2">
-                    next
-                  </Badge>
-                )}
-              </span>
+              {/* Metin direkt ikonun yanına geliyor */}
+              <span className="ms-2">{capitalize(route.name)}</span>
             </>
           ) : (
-            <>
-              <span className="nav-link-text">{capitalize(route.name)}</span>
-              {route.new && (
-                <Badge variant="phoenix" bg="warning" className="ms-2">
-                  New
-                </Badge>
-              )}
-              {route.next && (
-                <Badge variant="phoenix" bg="primary" className="ms-2">
-                  next
-                </Badge>
-              )}
-            </>
+            <span>{capitalize(route.name)}</span>
+          )}
+
+          {(!isNavbarVerticalCollapsed || level !== 1) && route.new && (
+            <Badge variant="phoenix" bg="warning" className="ms-2">
+              New
+            </Badge>
+          )}
+          {(!isNavbarVerticalCollapsed || level !== 1) && route.next && (
+            <Badge variant="phoenix" bg="primary" className="ms-2">
+              Next
+            </Badge>
           )}
         </div>
       </NavLink>

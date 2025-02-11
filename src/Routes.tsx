@@ -34,6 +34,7 @@ import SupplierEditContainer from 'smt-v1-app/containers/SupplierEditContainer/S
 import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
 
 import ClientListContainer from 'smt-v1-app/containers/ClientListContainer/ClientListContainer';
+import NewClientContainer from 'smt-v1-app/containers/NewClientContainer/NewClientContainer';
 
 const routes: RouteObject[] = [
   {
@@ -112,6 +113,10 @@ const routes: RouteObject[] = [
               {
                 path: 'list',
                 element: <ClientListContainer />
+              },
+              {
+                path: 'new-client',
+                element: <NewClientContainer />
               }
             ]
           }
