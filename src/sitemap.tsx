@@ -44,32 +44,32 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Incoming Mail View',
+                name: '• Incoming Mail View',
                 path: '/',
                 pathName: 'mail-incoming-mail-view',
-                icon: 'inbox',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Mail List',
+                name: '• Mail List',
                 path: '/',
                 pathName: 'mail-list',
-                icon: 'database',
+                icon: '',
                 active: true
               },
               {
-                name: 'RFQ Mails',
+                name: '• RFQ Mails',
                 path: '/',
                 pathName: 'rfq-mail',
-                icon: 'file-text',
+                icon: '',
                 active: true
               },
               {
-                name: 'Spam Mails',
+                name: '• Spam Mails',
                 path: '/',
                 pathName: 'spam-mail',
-                icon: 'alert-circle',
+                icon: '',
                 active: true
               }
             ]
@@ -81,25 +81,25 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Mail vs RFQ Stats',
+                name: '• Mail vs RFQ Stats',
                 path: '/',
                 pathName: 'mail-incoming-mail-view',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Mail vs RFQ Part Stats',
+                name: '• Mail vs RFQ Part Stats',
                 path: '/',
                 pathName: 'mail-list',
-                icon: 'mail',
+                icon: '',
                 active: true
               },
               {
-                name: 'User vs Mail Response Stats',
+                name: '• User vs Mail Response Stats',
                 path: '/',
                 pathName: 'rfq-mail',
-                icon: 'mail',
+                icon: '',
                 active: true
               }
             ]
@@ -119,26 +119,26 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'RFQ List',
+                name: '• RFQ List',
                 path: 'rfqs/list',
                 pathName: 'rfq-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Quote List',
+                name: '• Quote List',
                 path: '/quotes/quotelist',
                 pathName: 'quote-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Create New RFQ',
+                name: '• Create New RFQ',
                 path: '/quotes/quote',
                 pathName: 'create-new-rfq',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -151,18 +151,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Daily RFQs',
+                name: '• Daily RFQs',
                 path: '/',
                 pathName: 'daily-rfqs',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Daily Quotes',
+                name: '• Daily Quotes',
                 path: '/',
                 pathName: 'daily-quotes',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -183,18 +183,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'PO List',
+                name: '• PO List',
                 path: '/',
                 pathName: 'po-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Add New PO',
+                name: '• Add New PO',
                 path: '/',
                 pathName: 'new-po',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -207,26 +207,26 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'PI List',
+                name: '• PI List',
                 path: '/',
                 pathName: 'pi-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'PI Trace',
+                name: '• PI Trace',
                 path: '/',
                 pathName: 'pi-trace',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'PI Deadline Track',
+                name: '• PI Deadline Track',
                 path: '/',
                 pathName: 'pi-deadline-track',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -239,18 +239,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'LOT List',
+                name: '• LOT List',
                 path: '/',
                 pathName: 'lot-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Add New LOT',
+                name: '• Add New LOT',
                 path: '/',
                 pathName: 'add-new-lot',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -261,7 +261,7 @@ export const routes: RouteItems[] = [
       {
         name: 'Parts/Spares',
         active: true,
-        icon: 'sliders', //----------
+        icon: 'package', //----------
         flat: true,
         pages: [
           {
@@ -271,18 +271,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Part List',
+                name: '• Part List',
                 path: '/',
                 pathName: 'part-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Add New Part',
+                name: '• Add New Part',
                 path: '/',
                 pathName: 'new-part',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -295,34 +295,34 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Waiting Parts',
+                name: '• Waiting Parts',
                 path: '/',
                 pathName: 'waiting-parts',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Parts vs Sale Stats',
+                name: '• Parts vs Sale Stats',
                 path: '/',
                 pathName: 'parts-sale-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Parts vs Quote Stats',
+                name: '• Parts vs Quote Stats',
                 path: '/',
                 pathName: 'parts-quote-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Parts vs Inoice Stats',
+                name: '• Parts vs Inoice Stats',
                 path: '/',
                 pathName: 'parts-invoice-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -333,7 +333,7 @@ export const routes: RouteItems[] = [
       {
         name: 'Clients',
         active: true,
-        icon: 'lock', //----------
+        icon: 'user-check', //----------
         flat: true,
         pages: [
           {
@@ -343,18 +343,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Client List',
+                name: '• Client List',
                 path: '/client/list',
                 pathName: 'Client-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Add New Client',
+                name: '• Add New Client',
                 path: '/client/new-client',
                 pathName: 'new-Client',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -367,18 +367,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Logistic List',
+                name: '• Logistic List',
                 path: '/',
                 pathName: 'logistic-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Add New Logistic',
+                name: '• Add New Logistic',
                 path: '/',
                 pathName: 'new-logistic',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -391,34 +391,34 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Client vs RFQ Stats',
+                name: '• Client vs RFQ Stats',
                 path: '/',
                 pathName: 'Client-rfq-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Client vs Quote Stats',
+                name: '• Client vs Quote Stats',
                 path: '/',
                 pathName: 'Client-quote-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Client vs Parts Stats',
+                name: '• Client vs Parts Stats',
                 path: '/',
                 pathName: 'Client-parts-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Client vs Invoice Stats',
+                name: '• Client vs Invoice Stats',
                 path: '/',
                 pathName: 'Client-invoice-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -429,7 +429,7 @@ export const routes: RouteItems[] = [
       {
         name: 'Suppliers',
         active: true,
-        icon: 'send',
+        icon: 'briefcase',
         flat: true,
         pages: [
           {
@@ -439,18 +439,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Supplier List',
+                name: '• Supplier List',
                 path: '/supplier/list',
                 pathName: 'supplier-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Add New Supplier',
+                name: '• Add New Supplier',
                 path: '/supplier/new-supplier',
                 pathName: 'new-supplier',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -463,18 +463,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Supplier vs Parts Stats',
+                name: '• Supplier vs Parts Stats',
                 path: '/',
                 pathName: 'supplier-parts-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Supplier vs RFQ Stats',
+                name: '• Supplier vs RFQ Stats',
                 path: '/',
                 pathName: 'supplier-rfq-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -495,18 +495,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'User List',
+                name: '• User List',
                 path: '/',
                 pathName: 'user-list',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Add New User',
+                name: '• Add New User',
                 path: '/',
                 pathName: 'new-user',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -519,26 +519,26 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'User vs Quote Stats',
+                name: '• User vs Quote Stats',
                 path: '/',
                 pathName: 'user-quote-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'User vs Priced Parts Stats',
+                name: '• User vs Priced Parts Stats',
                 path: '/',
                 pathName: 'user-priced-parts-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'User vs Quote Monetization Stats',
+                name: '• User vs Quote MNT Stats',
                 path: '/',
-                pathName: 'user-quote-monetization-stats',
-                icon: 'mail',
+                pathName: 'user-quote-mnt-stats',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -551,26 +551,26 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'User vs Invoice Stats',
+                name: '• User vs Invoice Stats',
                 path: '/',
                 pathName: 'user-invoice-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'User vs Sold Parts Stats',
+                name: '• User vs Sold Parts Stats',
                 path: '/',
                 pathName: 'user-sold-parts-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'User vs Invoice Monetization Stats',
+                name: '• User vs Invoice MNT Stats',
                 path: '/',
                 pathName: 'user-invoice-monetization-stats',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -581,22 +581,22 @@ export const routes: RouteItems[] = [
       {
         name: 'Finance',
         active: true,
-        icon: 'bar-chart', //----------
+        icon: 'dollar-sign', //----------
         flat: true,
         pages: [
           {
-            name: 'Core Expences',
+            name: '• Core Expences',
             path: '/',
             pathName: 'core-expances',
-            icon: 'mail',
+            icon: '',
             active: true,
             next: false
           },
           {
-            name: 'Profit Analysis',
+            name: '• Profit Analysis',
             path: '/',
             pathName: 'profit-analysis',
-            icon: 'mail',
+            icon: '',
             active: true,
             next: false
           }
@@ -609,18 +609,18 @@ export const routes: RouteItems[] = [
         flat: true,
         pages: [
           {
-            name: 'Edit Settings',
+            name: '• Edit Settings',
             path: '/',
             pathName: 'edit-settings',
-            icon: 'mail',
+            icon: '',
             active: true,
             next: false
           },
           {
-            name: 'Backup',
+            name: '• Backup',
             path: '/',
             pathName: 'backup',
-            icon: 'mail',
+            icon: '',
             active: true,
             next: false
           }
@@ -639,18 +639,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Log Window',
+                name: '• Log Window',
                 path: '/',
                 pathName: 'log-windows',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'Analysis Window',
+                name: '• Analysis Window',
                 path: '/',
                 pathName: 'analysis-window',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -663,10 +663,10 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'Search and Filter',
+                name: '• Search and Filter',
                 path: '/',
                 pathName: 'serach-filter',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -679,18 +679,18 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: 'PartsBase Web Page',
+                name: '• PartsBase Web Page',
                 path: '/',
                 pathName: 'partsbase-web-page',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               },
               {
-                name: 'ILS Web Page',
+                name: '• ILS Web Page',
                 path: '/',
                 pathName: 'ils-web-page',
-                icon: 'mail',
+                icon: '',
                 active: true,
                 next: false
               }
@@ -705,18 +705,18 @@ export const routes: RouteItems[] = [
         flat: true,
         pages: [
           {
-            name: 'Help List',
+            name: '• Help List',
             path: '/',
             pathName: 'help-list',
-            icon: 'mail',
+            icon: '',
             active: true,
             next: false
           },
           {
-            name: 'About',
+            name: '• About',
             path: '/',
             pathName: 'about',
-            icon: 'mail',
+            icon: '',
             active: true,
             next: false
           }
