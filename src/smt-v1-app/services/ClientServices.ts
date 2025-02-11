@@ -39,7 +39,7 @@ export const getbyCurrencyController = async () => {
     const CurrencyController = await api().get(`/currency/all`, {
       headers
     });
-    console.log('SupplierId Get Response', CurrencyController);
+    // console.log('SupplierId Get Response', CurrencyController);
 
     if (CurrencyController.data.statusCode === 200) {
       return CurrencyController.data;
@@ -107,7 +107,7 @@ export const getByMarginTable = async () => {
     const DefaultMarginTable = await api().get(`/client/default-margin-table`, {
       headers
     });
-    console.log('Margin Table Get Response', DefaultMarginTable);
+    // console.log('Margin Table Get Response', DefaultMarginTable);
 
     if (DefaultMarginTable.data.statusCode === 200) {
       return DefaultMarginTable.data;
@@ -208,7 +208,7 @@ export const postClientCreate = async (newClient: CreateClient) => {
     const response = await api().post(`/client/create`, newClient, {
       headers
     });
-    console.log('Client Payload', response);
+    // console.log('Client Payload', response);
 
     if (response.data.statusCode === 200) {
       return response.data;

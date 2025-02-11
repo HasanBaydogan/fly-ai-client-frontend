@@ -257,7 +257,7 @@ const NewClientContainer = () => {
       supplyCapability: ratings.supplyCapability,
       euDemandParts: ratings.euDemandOfParts
     };
-    console.log('Client Payload', clientPayload);
+    // console.log('Client Payload', clientPayload);
 
     setLoadingSave(true);
     try {
