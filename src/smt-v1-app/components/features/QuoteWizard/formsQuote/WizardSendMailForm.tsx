@@ -4,10 +4,7 @@ import TinymceEditor from 'components/base/TinymceEditor';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 
-import {
-  getPreEmailSendingParameters,
-  sendQuoteEmail
-} from 'smt-v1-app/services/QuoteService';
+import { getPreEmailSendingParameters } from 'smt-v1-app/services/QuoteService';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import DropzoneQuoteWizard from './DropzoneQuoteWizard';
 

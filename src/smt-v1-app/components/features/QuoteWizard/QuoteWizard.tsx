@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Modal } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 import WizardTabs from './WizardTabs/WizardTabs';
 import { quoteWizardIntro } from 'smt-v1-app/services/QuoteService';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import { getPriceCurrencySymbol } from '../RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
 import { getAllCurrenciesFromDB } from 'smt-v1-app/services/RFQService';
 
 export interface QuotePartRow {
@@ -70,12 +69,10 @@ const QuoteWizard = ({
       );
       if (response.statusCode == 200) {
         setQuoteWizardData(response.data);
-        console.log(response.data);
       }
       const allCurrencies = await getAllCurrenciesFromDB();
       if (allCurrencies.statusCode === 200) {
         setCurrencies(allCurrencies.data);
-        console.log(allCurrencies);
       }
       //getPriceCurrencySymbol()
       setIsLoading(false);

@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import RFQHeader from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQHeader/RFQHeader';
 import RFQContent from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQContent/RFQContent';
 import RFQAttachments from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQAttachments/RFQAttachments';
-import StatusButtonGroup from '../../components/features/RFQLeftSide/RFQLeftSideComponents/StatusButtonGroup/StatusButtonGroup';
+
 import Header from '../../components/features/QuoteList/QuoteListHeader';
-import Client from '../../components/features/RFQRightSide/RFQRightSideComponents/Client/Client';
-import AlternativePartList from '../../components/features/RFQRightSide/RFQRightSideComponents/AlternativePartList/AlternativePartList';
-import RFQRightSideFooter from '../../components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideFooter/RFQRightSideFooter';
+
 import {
   MailItemMoreDetail,
   Contact,
@@ -15,10 +13,6 @@ import {
   QuotePart
 } from './QuoteContainerTypes';
 
-import {
-  RFQPart,
-  AlternativeRFQPart
-} from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import QuoteContactsList from '../../components/features/QuoteList/QuoteListRightComponents/QuoteContactList/QuoteContactsList';
 import QuotePartList from '../../components/features/QuoteList/QuoteListRightComponents/QuotePartList/QuotePartList';
 import QuoteListAlternativeParts from '../../components/features/QuoteList/QuoteListRightComponents/QuoteListAlternativeParts/QuoteListAlternativeParts';
@@ -27,7 +21,6 @@ import QuoteWizard from '../../components/features/QuoteWizard/QuoteWizard';
 import { getQuoteDetailsById } from 'smt-v1-app/services/QuoteService';
 import { useSearchParams } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import { getColorByBgColor } from 'helpers/utils';
 import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowHelper';
 
 const QuoteContainer = () => {
@@ -81,8 +74,7 @@ const QuoteContainer = () => {
           bgColor: returnedColor.bgColor,
           textColor: returnedColor.textColor
         });
-        // TODO Delete that console.
-        console.log(response.data);
+
         setIsLoading(false);
       }
     };
