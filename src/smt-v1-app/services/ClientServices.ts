@@ -6,7 +6,7 @@ import {
   Certypes,
   SupplierStatus
 } from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
-import { FormattedContactData } from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/ContactListSection';
+import { FormattedContactData } from 'smt-v1-app/components/features/NewClient/NewClientContact/ContactListSection';
 export interface TreeNode {
   segmentId: string;
   segmentName: string;
@@ -24,28 +24,99 @@ const api = () => {
   });
 };
 
+//  ---     GET     ---
+
+export const getbyCurrencyController = async () => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const CurrencyController = await api().get(`/currency/all`, {
+      headers
+    });
+    console.log('SupplierId Get Response', CurrencyController);
+
+    if (CurrencyController.data.statusCode === 200) {
+      return CurrencyController.data;
+    } else if (CurrencyController.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(`/currency/all`, {
+            headers: {
+              Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+            }
+          });
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (CurrencyController.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('SegmentDetailList Permission Error');
+  }
+};
+
 //     ---     POST        ---
 export interface CreateClient {
-  //   supplierCompanyName: string;
-  segmentIds: string[];
-  //   brand: string;
-  //   countryId: string;
-  //   pickUpAddress: string;
-  //   supplierStatus: SupplierStatus;
-  //   attachments: {
-  //     fileName: string;
-  //     data: string;
-  //   }[];
-  //   workingDetails: string;
-  //   username: string;
-  //   password: string;
-  //   contacts: FormattedContactData[];
-  //   certificateTypes: Certypes[];
-  //   dialogSpeed: number;
-  //   dialogQuality: number;
-  //   easeOfSupply: number;
-  //   supplyCapability: number;
-  //   euDemandParts: number;
+  companyName: string;
+  legalAddress: string;
+  subCompanyName: string;
+  currencyPreference: string;
+  segmentIdList: string[];
+  details: string;
+  clientStatus: SupplierStatus;
+  phone: string;
+  website: string;
+  mail: string;
+  contactRequests: FormattedContactData[];
+  attachmentRequests: {
+    fileName: string;
+    data: string;
+  }[];
+
+  dialogSpeed: number;
+  dialogQuality: number;
+  easeOfSupply: number;
+  supplyCapability: number;
+  euDemandParts: number;
 }
 
 export const postClientCreate = async (newSupplier: CreateClient) => {
@@ -60,9 +131,10 @@ export const postClientCreate = async (newSupplier: CreateClient) => {
       return;
     }
 
-    const response = await api().post(`/supplier/create`, newSupplier, {
+    const response = await api().post(`/client/create`, newSupplier, {
       headers
     });
+    console.log('Client Payload', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -85,7 +157,7 @@ export const postClientCreate = async (newSupplier: CreateClient) => {
           );
 
           let rfqMailResponseAfterRefresh = await api().post(
-            `/supplier/create`,
+            `/client/create`,
             newSupplier,
             {
               headers: {

@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Col, FloatingLabel } from 'react-bootstrap';
-import Form from 'react-bootstrap/Form';
+import { Col, FloatingLabel, Form } from 'react-bootstrap';
 
 interface SupplierInfoProps {
   setCompanyName: (value: string) => void;
@@ -10,6 +9,7 @@ interface SupplierInfoProps {
   setLegalAddress: (value: string) => void;
   legalAddress: string;
   currency: string;
+  setCurrency: (value: string) => void; // New prop for updating currency
   currencies: string[];
 }
 
@@ -20,24 +20,18 @@ const ClientInfo = ({
   subCompany,
   setLegalAddress,
   legalAddress,
-  currencies,
-  currency
+  currency,
+  setCurrency,
+  currencies
 }: SupplierInfoProps) => {
-  const [error, setError] = useState<string | null>(null); // Hata mesajı
-  const [reqQTY, setReqQTY] = useState(1);
-  const [currencyLocal, setCurrencyLocal] = useState(currency);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCompanyNameChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const value = event.target.value;
     setCompanyName(value);
-
-    if (value.trim() === '') {
-      setError('Company Name cannot be empty.');
-    } else {
-      setError(null);
-    }
+    setError(value.trim() === '' ? 'Company Name cannot be empty.' : null);
   };
 
   const handleBlur = () => {
@@ -45,6 +39,7 @@ const ClientInfo = ({
       setError('Company Name cannot be empty.');
     }
   };
+
   const handleSubCompany = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSubCompany(event.target.value);
   };
@@ -57,10 +52,10 @@ const ClientInfo = ({
     <Col md={12}>
       <Form>
         <Form.Group className="mt-3">
-          <Form.Label className="fw-bold fs-8">Client </Form.Label>
+          <Form.Label className="fw-bold fs-8">Client</Form.Label>
         </Form.Group>
 
-        <Form.Group className="d-flex flex-row gap-6 mt-2">
+        <Form.Group className="d-flex flex-row gap-6 my-3">
           <Col md={5}>
             <Form.Control
               type="text"
@@ -74,7 +69,7 @@ const ClientInfo = ({
               {error}
             </Form.Control.Feedback>
           </Col>
-          <Col md={4}>
+          <Col md={5}>
             <Form.Control
               type="text"
               placeholder="SubCompany"
@@ -82,28 +77,23 @@ const ClientInfo = ({
               onChange={handleSubCompany}
             />
           </Col>
-          <Form.Group className="d-flex align-items-center gap-3 mb-5">
-            {/* Para Birimi Seçici */}
-            <Col md={3}>
-              <Form.Select
-                value={currencyLocal}
-                onChange={e => setCurrencyLocal(e.target.value)}
-              >
-                {currencies.map(currency => (
-                  <option key={currency} value={currency}>
-                    {currency}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-          </Form.Group>
-        </Form.Group>
-        <Form.Group className="mt-3">
-          <Col md={12}>
-            <FloatingLabel
-              controlId="floatingTextarea2"
-              label="Pick Up Address"
+          {/* Currency Selector */}
+          <Col md={1}>
+            <Form.Select
+              value={currency}
+              onChange={e => setCurrency(e.target.value)}
             >
+              {currencies.map(curr => (
+                <option key={curr} value={curr}>
+                  {curr}
+                </option>
+              ))}
+            </Form.Select>
+          </Col>
+        </Form.Group>
+        <Form.Group>
+          <Col md={12}>
+            <FloatingLabel controlId="floatingTextarea2" label="Legal Address">
               <Form.Control
                 as="textarea"
                 placeholder="Address"

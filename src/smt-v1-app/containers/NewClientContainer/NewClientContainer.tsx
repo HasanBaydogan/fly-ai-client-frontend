@@ -9,16 +9,23 @@ import {
   Certypes,
   SupplierStatus
 } from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
-import { postClientCreate } from 'smt-v1-app/services/ClientServices';
+import {
+  getbyCurrencyController,
+  postClientCreate
+} from 'smt-v1-app/services/ClientServices';
 import {
   getbyCountryList,
   getbySegmentList,
   postSupplierCreate,
   TreeNode
 } from 'smt-v1-app/services/SupplierServices';
-import AddressDetails from 'smt-v1-app/components/features/NewClient/AddressDetails';
+import CustomButton from '../../../components/base/Button';
+
+import AddressDetails from 'smt-v1-app/components/features/NewClient/ClientMidPart';
 import RatingSection from 'smt-v1-app/components/features/NewClient/RatingComponent';
 import FileUpload from 'smt-v1-app/components/features/NewClient/NewClientAttachment/FileUpload';
+import ContactListSection from 'smt-v1-app/components/features/NewClient/NewClientContact/ContactListSection';
+import ClientBottomSection from 'smt-v1-app/components/features/NewClient/ClientBottomSection';
 
 // const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
 // const [errorSegments, setErrorSegments] = useState<string | null>(null);
@@ -29,14 +36,20 @@ const NewClientContainer = () => {
   const navigate = useNavigate();
 
   // Data states
-  const [companyName, setCompanyName] = useState<string>('');
+  const [userComments, setUserComments] = useState([
+    { comment: '', severity: '', isEditing: true }
+  ]);
+  const [clientCompanyName, setCompanyName] = useState<string>('');
   const [clientMail, setClientMail] = useState<string>('');
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
   const [subCompany, setSubCompany] = useState('');
   const [legalAddress, setLegalAddress] = useState('');
   const [selectedCountryId, setSelectedCountryId] = useState('');
-  const [pickUpAddress, setPickUpAddress] = useState('');
-  const [currencies, setCurrencies] = useState([]);
+  const [clientDetail, setClientDetail] = useState('');
+  const [phone, setPhone] = useState('');
+
+  const [currencies, setCurrencies] = useState<string[]>([]);
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('');
   const [clientWebsite, setClientWebsite] = useState('');
 
   const [selectedStatus, setSelectedStatus] = useState<SupplierStatus | ''>('');
@@ -69,6 +82,10 @@ const NewClientContainer = () => {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
+  const commentPayload = {
+    comment: userComments.length > 0 ? userComments[0].comment : '',
+    severity: userComments.length > 0 ? userComments[0].severity : ''
+  };
 
   // Sonuç modalı için state'ler
   const [showResultModal, setShowResultModal] = useState(false);
@@ -81,6 +98,30 @@ const NewClientContainer = () => {
   const handleRatingsChange = (updatedRatings: RatingData) => {
     setRatings(updatedRatings);
   };
+
+  useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const response = await getbyCurrencyController();
+        // Adjust the next lines according to your API response structure.
+        if (
+          response &&
+          response.statusCode === 200 &&
+          Array.isArray(response.data)
+        ) {
+          setCurrencies(response.data);
+          // Optionally set the default selected currency:
+          if (response.data.length > 0) {
+            setSelectedCurrency(response.data[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching currencies:', error);
+      }
+    };
+
+    fetchCurrencies();
+  }, []);
 
   useEffect(() => {
     const fetchSegments = async () => {
@@ -135,22 +176,22 @@ const NewClientContainer = () => {
   const handleSave = async () => {
     setShowSaveModal(false);
 
-    if (!companyName.trim()) {
+    if (!clientCompanyName.trim()) {
       setAlertMessage('Company Name cannot be empty.');
       setIsSuccess(false);
       setShowAlert(true);
       return;
     }
 
-    if (!segmentIds || segmentIds.length === 0) {
-      setAlertMessage('Please select at least one Segment.');
-      setIsSuccess(false);
-      setShowAlert(true);
-      return;
-    }
+    // if (!segmentIds || segmentIds.length === 0) {
+    //   setAlertMessage('Please select at least one Segment.');
+    //   setIsSuccess(false);
+    //   setShowAlert(true);
+    //   return;
+    // }
 
-    if (!selectedCountryId) {
-      setAlertMessage('Please select a Country.');
+    if (!legalAddress) {
+      setAlertMessage('Legal Address cannot be empty..');
       setIsSuccess(false);
       setShowAlert(true);
       return;
@@ -163,43 +204,51 @@ const NewClientContainer = () => {
       return;
     }
 
-    const payload = {
-      supplierCompanyName: companyName,
-      segmentIds: segmentIds,
-      subCompany: subCompany,
-      countryId: selectedCountryId,
-      pickUpAddress: pickUpAddress,
-      supplierStatus: selectedStatus,
-      attachments: base64Files.map(file => ({
+    const clientPayload = {
+      companyName: clientCompanyName,
+      legalAddress: legalAddress,
+      subCompanyName: subCompany,
+      currencyPreference: selectedCurrency,
+      segmentIdList: segmentIds,
+      details: clientDetail,
+      clientStatus: selectedStatus,
+      phone: phone,
+      website: clientWebsite,
+      mail: clientMail,
+      contactRequests: contacts,
+      attachmentRequests: base64Files.map(file => ({
         fileName: file.name,
         data: file.base64
       })),
       workingDetails: workingDetails,
       username: username,
       password: password,
-      contacts: contacts,
-      certificateTypes: certificateTypes,
+      // contacts: contacts,
+
+      userComments: commentPayload,
+
       dialogSpeed: ratings.dialogSpeed,
       dialogQuality: ratings.dialogQuality,
       easeOfSupply: ratings.easeOfSupply,
       supplyCapability: ratings.supplyCapability,
       euDemandParts: ratings.euDemandOfParts
     };
+    console.log('Client Payload', clientPayload);
 
     setLoadingSave(true);
     try {
-      const response = await postClientCreate(payload);
+      const response = await postClientCreate(clientPayload);
 
       if (response && response.statusCode === 200) {
-        setResultModalTitle('Supplier addition successful');
+        setResultModalTitle('Client addition successful');
         setResultModalMessage(
-          'Supplier information has been successfully saved!'
+          'Client information has been successfully saved!'
         );
         setShowResultModal(true);
 
         // 2 saniye sonra yönlendirme
         setTimeout(() => {
-          navigate('/supplier/list');
+          navigate('/client/list');
         }, 2000);
       } else {
         setResultModalTitle('Undefined');
@@ -217,17 +266,6 @@ const NewClientContainer = () => {
 
   const handleStatusChange = (value: string) => {
     setSelectedStatus(value as unknown as SupplierStatus);
-  };
-
-  const handleCertificateTypesChange = (values: string[]) => {
-    setCertificateTypes(
-      values as (
-        | 'CERTIFICATE_1'
-        | 'CERTIFICATE_2'
-        | 'CERTIFICATE_3'
-        | 'CERTIFICATE_4'
-      )[]
-    );
   };
 
   return (
@@ -275,7 +313,7 @@ const NewClientContainer = () => {
           <Modal.Title>Confirm Save</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to save the supplier information?
+          Are you sure you want to save the client information?
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowSaveModal(false)}>
@@ -306,13 +344,14 @@ const NewClientContainer = () => {
       {/* Client Info */}
       <SupplierInfo
         setCompanyName={setCompanyName}
-        companyName={companyName}
+        companyName={clientCompanyName}
         setSubCompany={setSubCompany}
         subCompany={subCompany}
         setLegalAddress={setLegalAddress}
         legalAddress={legalAddress}
         currencies={currencies}
-        currency={''}
+        currency={selectedCurrency}
+        setCurrency={setSelectedCurrency} // new prop to update currency
       />
       {/* Segment Selection */}
       {loadingSegments ? (
@@ -330,16 +369,15 @@ const NewClientContainer = () => {
       <Row className="mt-3">
         <Col md={7}>
           <AddressDetails
-            onCountryChange={setSelectedCountryId}
             onStatusChange={handleStatusChange}
-            getbyCountryList={countryList}
-            pickUpAddress={pickUpAddress}
-            setPickUpAddress={setPickUpAddress}
-            onCertificateTypes={handleCertificateTypesChange}
+            clientDetail={clientDetail}
+            setClientDetail={setClientDetail}
             setClientMail={setClientMail}
             clientMail={clientMail}
             setClientWebsite={setClientWebsite}
             clientWebsite={clientWebsite}
+            phone={phone} // Phone state prop olarak ekleniyor
+            setPhone={setPhone} // Phone güncelleme fonksiyonu da gönderiliyor
           />
         </Col>
         <Col
@@ -354,18 +392,12 @@ const NewClientContainer = () => {
       </Row>
 
       <FileUpload onFilesUpload={handleFilesUpload} />
-      {/* <WorkingDetails
-        workingDetails={workingDetails}
-        setWorkingDetails={setWorkingDetails}
+
+      <ClientBottomSection
+        userComments={userComments}
+        setUserComments={setUserComments}
       />
-      
-      <AccountInfo
-        username={username}
-        setUsername={setUsername}
-        password={password}
-        setPassword={setPassword}
-      /> */}
-      {/* <ContactListSection onContactsChange={setContacts} /> */}
+      <ContactListSection onContactsChange={setContacts} />
       {/* Buttons ve Loading Overlay */}
       <div style={{ position: 'relative', minHeight: '70px' }}>
         {loadingSave && (
@@ -392,20 +424,20 @@ const NewClientContainer = () => {
           </div>
         )}
         <div className="d-flex mt-3 gap-3 mx-5 justify-content-end">
-          {/* <CustomButton
-              variant="secondary"
-              onClick={confirmCancel}
-              disabled={loadingSave}
-            >
-              Cancel
-            </CustomButton>
-            <CustomButton
-              variant="success"
-              onClick={confirmSave}
-              disabled={loadingSave}
-            >
-              Save
-            </CustomButton> */}
+          <CustomButton
+            variant="secondary"
+            onClick={confirmCancel}
+            disabled={loadingSave}
+          >
+            Cancel
+          </CustomButton>
+          <CustomButton
+            variant="success"
+            onClick={confirmSave}
+            disabled={loadingSave}
+          >
+            Save
+          </CustomButton>
         </div>
       </div>
     </>
