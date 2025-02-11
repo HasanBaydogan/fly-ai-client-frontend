@@ -68,7 +68,6 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             subTotalValues,
             checkedStates
           );
-
           setBase64Pdf(response);
           setBase64PdfFileName('quote-' + quoteNumber + '.pdf');
           setTimeout(() => {

@@ -11,12 +11,14 @@ const WizardFormFooter = ({
   className,
   nextBtnLabel = 'Next',
   hidePrevBtn,
-  handleSubmit
+  handleSubmit,
+  handleSendQuoteEmail
 }: {
   className?: string;
   nextBtnLabel?: string;
   hidePrevBtn?: boolean;
   handleSubmit?: () => void;
+  handleSendQuoteEmail: () => void;
 }) => {
   const { selectedStep, goToStep, getCanNextPage, getCanPreviousPage } =
     useWizardFormContext();
@@ -44,6 +46,9 @@ const WizardFormFooter = ({
         onClick={() => {
           if (getCanNextPage) {
             goToStep(selectedStep + 1);
+            if (selectedStep === 3) {
+              handleSendQuoteEmail();
+            }
           } else {
             if (handleSubmit) {
               handleSubmit();

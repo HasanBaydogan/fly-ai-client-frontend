@@ -3,7 +3,9 @@ import WizardSendMailForm from '../formsQuote/WizardSendMailForm';
 import WizardFormFooter from '../wizardQuote/WizardFormFooter';
 import WizardForm from '../wizardQuote/WizardForm';
 import useWizardForm from 'hooks/useWizardForm';
-import WizardFormProvider from 'providers/WizardFormProvider';
+import WizardFormProvider, {
+  useWizardFormContext
+} from 'providers/WizardFormProvider';
 import { Card, Tab } from 'react-bootstrap';
 import classNames from 'classnames';
 import { useState } from 'react';
@@ -13,6 +15,7 @@ import { defaultMailTemplate } from '../formsQuote/defaultMailTemplate';
 import { QuotePartRow, QuoteWizardData } from '../QuoteWizard';
 import WizardPreviewForm from '../formsQuote/WizardPreviewForm';
 import QuoteWizardNav from '../wizardQuote/QuoteWizardNav';
+import { sendQuoteEmail } from 'smt-v1-app/services/QuoteService';
 
 interface WizardSetupFormProps {
   id: string;
@@ -36,29 +39,6 @@ interface WizardSetupFormProps {
   };
 }
 
-interface WizardFormData {
-  name: string;
-  accept_terms: boolean;
-  email: string;
-  password: string;
-  confirm_password: string;
-  phone: string;
-  dob: string;
-  address: string;
-  country: string;
-  zip: number;
-  date_of_expire: string;
-  cvv: number;
-}
-interface TableRow {
-  partNumber: string;
-  alternativeTo: string;
-  description: string;
-  leadTime: string;
-  qty: number;
-  unitPrice: number;
-  isNew?: boolean;
-}
 const WizardTabs = ({
   quoteWizardData,
   currencies
@@ -73,6 +53,10 @@ const WizardTabs = ({
   const [subTotalValues, setSubTotalValues] = useState<number[]>([0, 0, 0, 0]);
   const [base64Pdf, setBase64Pdf] = useState<string>('');
   const [base64PdfFileName, setBase64PdfFileName] = useState<string>('');
+
+  const [base64Files, setBase64Files] = useState<
+    { name: string; base64: string }[]
+  >([]);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [currency, setCurrency] = useState(quoteWizardData.currency);
@@ -97,8 +81,8 @@ const WizardTabs = ({
     setSubject,
     content,
     setContent,
-    attachments,
-    setAttachments,
+    base64Files,
+    setBase64Files,
     inputValue,
     setInputValue,
     error,
@@ -112,6 +96,28 @@ const WizardTabs = ({
     false
   ]);
   const [quotePartRows, setQuotePartRows] = useState<QuotePartRow[]>([]);
+  const { selectedStep, goToStep, getCanNextPage, getCanPreviousPage } =
+    useWizardFormContext();
+
+  const handleSendQuoteEmail = async () => {
+    const attachments: {
+      filename: string;
+      data: string;
+    }[] = base64Files.map(attach => {
+      return { filename: attach.name, data: attach.base64 };
+    });
+    const payload = {
+      to: toEmails,
+      cc: ccEmails,
+      subject: subject,
+      attachments: attachments,
+      body: content
+    };
+    console.log(payload);
+
+    const response = await sendQuoteEmail(payload);
+    console.log(response);
+  };
 
   return (
     <MailProvider>
@@ -175,7 +181,7 @@ const WizardTabs = ({
               </Tab.Pane>
               <Tab.Pane eventKey={4}>
                 <WizardForm step={4}>
-                  {/* <ReviewMail emailProps={emailProps} /> */}
+                  {<ReviewMail emailProps={emailProps} />}
                 </WizardForm>
               </Tab.Pane>
             </Tab.Content>
@@ -183,6 +189,7 @@ const WizardTabs = ({
           <Card.Footer className="border-top-0">
             <WizardFormFooter
               className={classNames({ 'd-none': !form.getCanNextPage })}
+              handleSendQuoteEmail={handleSendQuoteEmail}
             />
           </Card.Footer>
         </Card>

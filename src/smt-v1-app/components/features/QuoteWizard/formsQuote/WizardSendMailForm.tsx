@@ -4,9 +4,23 @@ import TinymceEditor from 'components/base/TinymceEditor';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 
-import { getPreEmailSendingParameters } from 'smt-v1-app/services/QuoteService';
+import {
+  getPreEmailSendingParameters,
+  sendQuoteEmail
+} from 'smt-v1-app/services/QuoteService';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import DropzoneQuoteWizard from './DropzoneQuoteWizard';
+
+export interface SendEmailProps {
+  to: string[];
+  cc: string[];
+  subject: string;
+  attachments: {
+    filename: string;
+    data: string;
+  }[];
+  body: string;
+}
 
 export interface EmailProps {
   toEmails: string[];
@@ -19,8 +33,19 @@ export interface EmailProps {
   setSubject: React.Dispatch<React.SetStateAction<string>>;
   content: string;
   setContent: React.Dispatch<React.SetStateAction<string>>;
-  attachments: File[];
-  setAttachments: React.Dispatch<React.SetStateAction<File[]>>;
+  base64Files: {
+    name: string;
+    base64: string;
+  }[];
+  setBase64Files: React.Dispatch<
+    React.SetStateAction<
+      {
+        name: string;
+        base64: string;
+      }[]
+    >
+  >;
+
   inputValue: string;
   setInputValue: React.Dispatch<React.SetStateAction<string>>;
   error: string;
@@ -39,13 +64,6 @@ interface WizardSendMailFormProps {
   base64Pdf: string;
   base64PdfFileName: string;
   isPdfConvertedToBase64: boolean;
-}
-
-interface EmailParams {
-  body: string;
-  ccEmails: string[];
-  subject: string;
-  toEmails: string[];
 }
 
 const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
@@ -67,22 +85,24 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     setSubject,
     content,
     setContent,
-    attachments,
-    setAttachments,
+    base64Files,
+    setBase64Files,
     inputValue,
     setInputValue,
     error,
     setError
   } = emailProps;
 
-  const [base64Files, setBase64Files] = useState<
-    { name: string; base64: string }[]
-  >([]);
+  // This state is used for files in base64 format.
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simple email validation
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  // Optional key handler if you want to support Enter or comma key to add emails.
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     emailList: string[],
@@ -106,6 +126,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     setEmailList(emailList.filter((_, i) => i !== index));
   };
 
+  // This function is used by the Typeahead onChange for To, CC, and BCC fields.
   const handleEmailChange = (
     selected: TypeaheadOption[],
     setEmailList: React.Dispatch<React.SetStateAction<string[]>>
@@ -116,7 +137,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     // Get current emails without the last one
     const currentEmails = selected.slice(0, -1).map(item => item.label);
 
-    // Check if the last email already exists
+    // Check if the last email is a duplicate
     if (lastEmail && currentEmails.includes(lastEmail)) {
       setError(`Email address "${lastEmail}" is already added.`);
       // Remove the duplicate email from selection
@@ -130,36 +151,26 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     setEmailList(uniqueEmails);
   };
 
-  // States
-  const [emailParams, setEmailParams] = useState<EmailParams>();
-  const [isLoading, setIsLoading] = useState(true);
-
+  // Fetch the pre-email parameters from the API and set the email fields.
   useEffect(() => {
     const getPreEmailParams = async () => {
       setIsLoading(true);
       const response = await getPreEmailSendingParameters(quoteId);
-      setEmailParams(response.data);
-
+      // Assuming response.data has the structure: { body, ccEmails, subject, toEmails }
+      setToEmails(response.data.toEmails);
+      setCcEmails(response.data.ccEmails);
+      setSubject(response.data.subject);
+      setContent(response.data.body);
       setIsLoading(false);
     };
     getPreEmailParams();
-  }, []);
+  }, [quoteId, setToEmails, setCcEmails, setSubject, setContent]);
+
+  // Update the file state when base64Pdf changes.
   useEffect(() => {
     setBase64Files([{ name: base64PdfFileName, base64: base64Pdf }]);
-  }, [base64Pdf]);
+  }, [base64Pdf, base64PdfFileName]);
 
-  const setEmailBody = (body: string) => {
-    setEmailParams({
-      ...emailParams,
-      body: body
-    });
-  };
-  const handleSubjectChange = (subject: string) => {
-    setEmailParams({
-      ...emailParams,
-      subject: subject
-    });
-  };
   const handleFilesUpload = (files: { name: string; base64: string }[]) => {
     setBase64Files(files);
   };
@@ -182,10 +193,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                 id="to-emails"
                 labelKey="label"
                 multiple
-                allowNew={(
-                  results: Array<string | { label: string }>,
-                  props
-                ) => {
+                allowNew={(results, props) => {
                   const text = props.text;
                   return (
                     !results.some(r =>
@@ -194,9 +202,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                   );
                 }}
                 newSelectionPrefix="Add email: "
-                options={emailParams.toEmails.map(email => ({ label: email }))}
+                options={toEmails.map(email => ({ label: email }))}
                 placeholder="Add recipient emails"
-                selected={emailParams.toEmails.map(email => ({ label: email }))}
+                selected={toEmails.map(email => ({ label: email }))}
                 onChange={(selected: TypeaheadOption[]) => {
                   handleEmailChange(selected, setToEmails);
                 }}
@@ -212,9 +220,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                 multiple
                 allowNew
                 newSelectionPrefix="Add new email: "
-                options={emailParams.ccEmails.map(email => ({ label: email }))}
+                options={ccEmails.map(email => ({ label: email }))}
                 placeholder="Add CC emails"
-                selected={emailParams.ccEmails.map(email => ({ label: email }))}
+                selected={ccEmails.map(email => ({ label: email }))}
                 onChange={(selected: TypeaheadOption[]) => {
                   handleEmailChange(selected, setCcEmails);
                 }}
@@ -243,8 +251,8 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
             <Form.Control
               type="text"
               placeholder="Enter subject"
-              value={emailParams.subject}
-              onChange={e => handleSubjectChange(e.target.value)}
+              value={subject}
+              onChange={e => setSubject(e.target.value)}
             />
           </Form.Group>
 
@@ -262,8 +270,8 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
               options={{
                 height: '30rem'
               }}
-              value={emailParams.body}
-              onChange={(body: string) => setEmailBody(body)}
+              value={content}
+              onChange={(body: string) => setContent(body)}
             />
           </Form.Group>
         </Form>
