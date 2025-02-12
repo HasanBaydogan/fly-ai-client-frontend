@@ -26,6 +26,282 @@ const api = () => {
 
 //  ---     GET     ---
 
+export interface ClientData {
+  clientId: string;
+  companyName: string;
+  segments: { segmentName: string }[];
+  currencyPreference: string;
+  website: string;
+  legalAddress: string;
+  email?: string;
+  contacts: { email: string }[];
+  clientStatus: SupplierStatus;
+  quoteID: string | null;
+  attachments: {
+    attachmentId: string | null;
+    attachmentName: string | null;
+  }[];
+  details: string | null;
+  subCompanyName: string;
+  certificates: string[];
+  dialogSpeed: string;
+  dialogQuality: string;
+  easeOfSupply: string;
+  supplyCapability: string;
+  euDemandOfParts: string;
+  createdBy: string;
+  createdOn: string;
+  lastModifiedBy: string;
+  lastModifiedOn: string;
+}
+
+export const searchByClientList = async (
+  term: string,
+  pageNo: number,
+  pageSize: number = 6
+) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers: Record<string, string> = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+      return;
+    }
+
+    // Term varsa query string olarak ekliyoruz
+    const url = term
+      ? `/client/all/${pageNo}/${pageSize}?${term}`
+      : `/client/all/${pageNo}/${pageSize}`;
+
+    const suppList = await api().get(url, { headers });
+    console.log('Response from searchByClientList:', suppList);
+
+    if (suppList.data.statusCode === 200) {
+      return suppList.data;
+    } else if (suppList.data.statusCode === 498) {
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          const clientListAfterRefresh = await api().get(url, {
+            headers: {
+              Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+            }
+          });
+
+          return clientListAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('[searchByClientList] User not found. Redirecting.');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log('[searchByClientList] Refresh token error:', err);
+      }
+    } else if (suppList.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[searchByClientList] Supplier List Permission Error:', err);
+  }
+};
+
+export interface ClientDataDetail {
+  clientId: string;
+  companyName: string;
+  segments: { segmentName: string }[];
+  currencyPreference: string;
+  website: string;
+  legalAddress: string;
+  email?: string;
+  contacts: { email: string }[];
+  clientStatus: SupplierStatus;
+  quoteID: string | null;
+  attachments: {
+    attachmentId: string | null;
+    attachmentName: string | null;
+  }[];
+  details: string | null;
+  subCompanyName: string;
+  certificates: string[];
+  dialogSpeed: string;
+  dialogQuality: string;
+  easeOfSupply: string;
+  supplyCapability: string;
+  euDemandOfParts: string;
+  createdBy: string;
+  createdOn: string;
+  lastModifiedBy: string;
+  lastModifiedOn: string;
+}
+
+export const getByClientDetailList = async (clientId: string) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().get(`/client/id/detail/${clientId}`, {
+      headers
+    });
+    console.log('Response from getByClientDetailList:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/client/id/detail/${clientId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log(
+      '[getByClientDetailList] Client Detail List Permission Error:',
+      err
+    );
+  }
+};
+
+export const getAttachedFile = async (attachmentId: string) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().get(`/attachment/id/${attachmentId}`, {
+      headers
+    });
+    // console.log('Response from getAttachedFile:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/attachment/id/${attachmentId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('Attachment File Permission Error');
+  }
+};
+
 export const getbyCurrencyController = async () => {
   try {
     const accessToken = Cookies.get('access_token');

@@ -39,7 +39,7 @@ export const routes: RouteItems[] = [
         flat: true,
         pages: [
           {
-            name: 'İncoming E-Mails',
+            name: 'Incoming E-Mails',
             active: true,
             flat: true,
             pages: [
