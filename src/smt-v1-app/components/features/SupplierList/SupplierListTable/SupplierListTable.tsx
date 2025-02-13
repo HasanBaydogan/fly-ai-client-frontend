@@ -144,7 +144,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const pageSize = 6;
+  const pageSize = 10;
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<SupplierData>();

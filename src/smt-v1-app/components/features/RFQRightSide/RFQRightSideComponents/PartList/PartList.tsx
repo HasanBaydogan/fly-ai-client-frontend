@@ -142,6 +142,10 @@ const PartList = ({
     return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
+  const handleNewSupplier = () => {
+    window.open('/supplier/new-supplier', '_blank');
+  };
+
   const formatCurrency = (inputValue: string, blur: string = ''): string => {
     if (inputValue === '') return '';
 
@@ -697,7 +701,11 @@ const PartList = ({
               {/* SUPPLIER START */}
               <td style={{ overflow: 'visible' }}>
                 <div className="d-flex">
-                  <Button variant="primary" className="px-3 py-1 me-3">
+                  <Button
+                    variant="primary"
+                    className="px-3 py-1 me-3"
+                    onClick={handleNewSupplier}
+                  >
                     <span style={{ fontSize: '16px' }}>+</span>
                   </Button>
                   <div className="d-flex justify-content-center align-items-center">
