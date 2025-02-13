@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Button, Col, Modal, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FormattedContactData } from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/ContactListSection';
-import { RatingData } from 'smt-v1-app/components/features/NewClient/RatingComponent';
+import { RatingData } from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';
 import SegmentSelection from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/SegmentSelection';
-import SupplierInfo from 'smt-v1-app/components/features/NewClient/ClientInfo';
+import SupplierInfo from 'smt-v1-app/components/features/Client/NewClient/ClientInfo';
 import {
   Certypes,
   SupplierStatus
@@ -20,13 +20,13 @@ import {
   postSupplierCreate,
   TreeNode
 } from 'smt-v1-app/services/SupplierServices';
-import CustomButton from '../../../components/base/Button';
+import CustomButton from '../../../../components/base/Button';
 
-import AddressDetails from 'smt-v1-app/components/features/NewClient/ClientMidPart';
-import RatingSection from 'smt-v1-app/components/features/NewClient/RatingComponent';
-import FileUpload from 'smt-v1-app/components/features/NewClient/NewClientAttachment/FileUpload';
-import ContactListSection from 'smt-v1-app/components/features/NewClient/NewClientContact/ContactListSection';
-import ClientBottomSection from 'smt-v1-app/components/features/NewClient/ClientBottomSection';
+import AddressDetails from 'smt-v1-app/components/features/Client/NewClient/ClientMidPart';
+import RatingSection from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';
+import FileUpload from 'smt-v1-app/components/features/Client/NewClient/NewClientAttachment/FileUpload';
+import ContactListSection from 'smt-v1-app/components/features/Client/NewClient/NewClientContact/ContactListSection';
+import ClientBottomSection from 'smt-v1-app/components/features/Client/NewClient/ClientBottomSection';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 // const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
@@ -46,7 +46,6 @@ const NewClientContainer = () => {
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
   const [subCompany, setSubCompany] = useState('');
   const [legalAddress, setLegalAddress] = useState('');
-  const [selectedCountryId, setSelectedCountryId] = useState('');
   const [clientDetail, setClientDetail] = useState('');
   const [phone, setPhone] = useState('');
 
@@ -62,8 +61,6 @@ const NewClientContainer = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [contacts, setContacts] = useState<FormattedContactData[]>([]);
-  const [certificateTypes, setCertificateTypes] = useState<Certypes[]>([]);
-
   const [ratings, setRatings] = useState<RatingData>({
     dialogQuality: 0,
     volumeOfOrder: 0,
@@ -74,7 +71,6 @@ const NewClientContainer = () => {
 
   // Initialized data
   const [segments, setSegments] = useState<TreeNode[]>([]);
-  const [countryList, setCountryList] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Alerts & modals
@@ -258,7 +254,7 @@ const NewClientContainer = () => {
         easeOfDelivery: ratings.easeOfDelivery
       }
     };
-    console.log('Client Payload', clientPayload);
+    // console.log('Client Payload', clientPayload);
 
     setLoadingSave(true);
     try {

@@ -74,7 +74,7 @@ const ClientDetailModal = ({
   ClientDataDetail
 }: ClientDetailModalProps) => {
   useEffect(() => {
-    console.log('ClientDataDetail received in Modal:', ClientDataDetail);
+    // console.log('ClientDataDetail received in Modal:', ClientDataDetail);
   }, [ClientDataDetail]);
 
   const openPdfInNewTab = (file: {
@@ -267,7 +267,13 @@ const ClientDetailModal = ({
           <Row>
             <Col>
               <Table borderless className="table-sm">
-                <h4 className="mb-3"> Margin Table</h4>
+                <thead>
+                  <tr>
+                    <th>
+                      <h4 className="mb-3"> Margin Table</h4>
+                    </th>
+                  </tr>
+                </thead>
                 <tbody>
                   {ClientDataDetail.marginTable &&
                     Object.entries(ClientDataDetail.marginTable).map(

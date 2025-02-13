@@ -19,12 +19,12 @@ const ActionDropdownItems = ({ clientId }: ActionDropdownItemsProps) => {
 
   const handleViewClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
-    console.log(`Fetching client for ID: ${clientId}`);
+    // console.log(`Fetching client for ID: ${clientId}`);
 
     try {
       // clientId ile veriyi çekiyoruz
       const response = await getByClientDetailList(clientId);
-      console.log('Response from getByClientDetailList:', response);
+      // console.log('Response from getByClientDetailList:', response);
       // Gelen veriyi state'e atıyoruz.
       setFetchedClientData(response.data);
     } catch (error) {

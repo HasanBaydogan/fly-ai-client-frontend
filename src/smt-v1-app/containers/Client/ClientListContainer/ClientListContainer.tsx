@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import ProjectsTopSection from '../../components/features/ClientList/ClientTopSection';
+import ProjectsTopSection from '../../../components/features/Client/ClientList/ClientTopSection';
 import ClientList, {
   ClientTableColumns
-} from '../../components/features/ClientList/ClientListTable';
-import useAdvanceTable from '../../components/features/ClientList/useAdvanceTable';
+} from '../../../components/features/Client/ClientList/ClientListTable';
+import useAdvanceTable from '../../../components/features/Client/ClientList/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import {
