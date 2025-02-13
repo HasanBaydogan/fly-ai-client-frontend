@@ -1,33 +1,51 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import ClientDetailModal from '../ClientDetailModal';
-import { ClientDataDetail } from 'smt-v1-app/services/ClientServices';
+import {
+  ClientDataDetail,
+  getByClientDetailList
+} from 'smt-v1-app/services/ClientServices';
 import { Link } from 'react-router-dom';
 
 interface ActionDropdownItemsProps {
   clientId: string;
-  ClientDataDetail: ClientDataDetail; // clientData'yı props olarak alıyoruz
+  clientDataDetail: ClientDataDetail; // prop adını camelCase olarak tanımladık
 }
 
-const ActionDropdownItems = ({
-  clientId,
-  ClientDataDetail
-}: ActionDropdownItemsProps) => {
+const ActionDropdownItems = ({ clientId }: ActionDropdownItemsProps) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [fetchedClientData, setFetchedClientData] =
+    useState<ClientDataDetail | null>(null);
+
+  const handleViewClick = async (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    console.log(`Fetching client for ID: ${clientId}`);
+
+    try {
+      // clientId ile veriyi çekiyoruz
+      const response = await getByClientDetailList(clientId);
+      console.log('Response from getByClientDetailList:', response);
+      // Gelen veriyi state'e atıyoruz.
+      setFetchedClientData(response.data);
+    } catch (error) {
+      console.error('Error fetching client details:', error);
+    }
+    setShowDetailModal(true);
+  };
 
   return (
     <>
-      <Dropdown.Item onClick={() => setShowDetailModal(true)}>
-        View
-      </Dropdown.Item>
+      <Dropdown.Item onClick={handleViewClick}>View</Dropdown.Item>
       <Dropdown.Item as={Link} to={`/client/edit?clientId=${clientId}`}>
         Edit
       </Dropdown.Item>
-      <ClientDetailModal
-        show={showDetailModal}
-        onHide={() => setShowDetailModal(false)}
-        ClientDataDetail={ClientDataDetail}
-      />
+      {showDetailModal && (
+        <ClientDetailModal
+          show={showDetailModal}
+          onHide={() => setShowDetailModal(false)}
+          ClientDataDetail={fetchedClientData}
+        />
+      )}
     </>
   );
 };

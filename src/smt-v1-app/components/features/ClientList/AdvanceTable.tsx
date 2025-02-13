@@ -109,7 +109,7 @@ const AdvanceTable = ({
                   <RevealDropdown>
                     <ActionDropdownItems
                       clientId={row.clientId}
-                      ClientDataDetail={row}
+                      clientDataDetail={row}
                     />
                   </RevealDropdown>
                 </RevealDropdownTrigger>

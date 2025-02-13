@@ -83,7 +83,7 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
         <RevealDropdown>
           <ActionDropdownItems
             clientId={original.clientId ? original.clientId.toString() : ''}
-            ClientDataDetail={original}
+            clientDataDetail={original} // Prop adını güncelledik
           />
         </RevealDropdown>
       </RevealDropdownTrigger>
@@ -176,36 +176,49 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
             type: 'warning'
           },
           quoteID: null,
-          attachments: Array.isArray(item.attachments)
-            ? item.attachments.map((att: any) => ({
+          attachmentResponses: Array.isArray(item.attachmentResponses)
+            ? item.attachmentResponses.map((att: any) => ({
                 attachmentId: att.attachmentId || '',
                 attachmentName: att.attachmentName || ''
               }))
             : [],
           details: item.details || '',
           subCompanyName: item.subCompanyName || '',
-          certificates: item.certificateType || [],
-          dialogSpeed:
-            item.dialogSpeed !== undefined ? item.dialogSpeed.toString() : '',
-          dialogQuality:
-            item.dialogQuality !== undefined
-              ? item.dialogQuality.toString()
-              : '',
-          easeOfSupply:
-            item.easeOfSupply !== undefined ? item.easeOfSupply.toString() : '',
-          supplyCapability:
-            item.supplyCapability !== undefined
-              ? item.supplyCapability.toString()
-              : '',
-          euDemandOfParts:
-            item.euDemandOfParts !== undefined
-              ? item.euDemandOfParts.toString()
-              : '',
+          phone: item.phone || '',
+          clientRatings: item.clientRatings || {
+            dialogQuality: 0,
+            volumeOfOrder: 0,
+            continuityOfOrder: 0,
+            easeOfPayment: 0,
+            easeOfDelivery: 0
+          },
+          // marginTable alanını ekliyoruz:
+          marginTable: item.marginTable || {
+            below200: 0,
+            btw200and500: 0,
+            btw500and1_000: 0,
+            btw1_000and5_000: 0,
+            btw5_000and10_000: 0,
+            btw10_000and50_000: 0,
+            btw50_000and100_000: 0,
+            btw100_000and150_000: 0,
+            btw150_000and200_000: 0,
+            btw200_000and400_000: 0,
+            btw400_000and800_000: 0,
+            btw800_000and1_000_000: 0,
+            btw1_000_000and2_000_000: 0,
+            btw2_000_000and4_000_000: 0,
+            above4_000_000: 0,
+            lastModifiedBy: ''
+          },
+          // Düzeltme: "commet" yerine "comment" kullanıyoruz:
+          comment: item.comment || '',
           createdBy: handleNullValue(item.createdBy || ''),
           createdOn: item.createdOn || '',
           lastModifiedBy: handleNullValue(item.lastModifiedBy || ''),
           lastModifiedOn: item.lastModifiedOn || ''
         }));
+
         setData(mappedData);
         setTotalItems(response.data.totalItems);
       } else {

@@ -1,7 +1,7 @@
-import { faPencilAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect } from 'react';
+import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React from 'react';
-import { Modal, Row, Col, Table, Badge, ModalBody } from 'react-bootstrap';
+import { Modal, Row, Col, Table, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { getAttachedFile } from 'smt-v1-app/services/ClientServices';
 
@@ -11,29 +11,47 @@ interface ClientDetailModalProps {
   ClientDataDetail: {
     clientId: string;
     companyName: string;
-    segments: { segmentName: string }[];
+    segments?: { segmentName: string }[];
     currencyPreference: string;
     website: string;
     legalAddress: string;
-    email?: string;
+    mail?: string;
     contacts: { email: string }[];
-    clientStatus: {
-      label: string;
-      type: string;
-    };
+    clientStatus?: any; // API'den string gelebilir, nesne de olabilir
     quoteID: string | null;
-    attachments: {
+    attachmentResponses?: {
       attachmentId: string | null;
       attachmentName: string | null;
     }[];
     details: string | null;
+    phone: string;
     subCompanyName: string;
-    certificates: string[];
-    dialogSpeed: string;
-    dialogQuality: string;
-    easeOfSupply: string;
-    supplyCapability: string;
-    euDemandOfParts: string;
+    clientRatings: {
+      dialogQuality: number;
+      volumeOfOrder: number;
+      continuityOfOrder: number;
+      easeOfPayment: number;
+      easeOfDelivery: number;
+    };
+    marginTable: {
+      below200: number;
+      btw200and500: number;
+      btw500and1_000: number;
+      btw1_000and5_000: number;
+      btw5_000and10_000: number;
+      btw10_000and50_000: number;
+      btw50_000and100_000: number;
+      btw100_000and150_000: number;
+      btw150_000and200_000: number;
+      btw200_000and400_000: number;
+      btw400_000and800_000: number;
+      btw800_000and1_000_000: number;
+      btw1_000_000and2_000_000: number;
+      btw2_000_000and4_000_000: number;
+      above4_000_000: number;
+      lastModifiedBy: string;
+    };
+    comment: string;
     createdBy: string;
     createdOn: string;
     lastModifiedBy: string;
@@ -41,11 +59,25 @@ interface ClientDetailModalProps {
   };
 }
 
+// Yardımcı fonksiyon: marginTable anahtarlarını okunabilir formata çevirir
+const formatMarginKey = (key: string) => {
+  // Örneğin, "btw200and500" -> "Between 200 and 500"
+  return key
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/_/g, ' ')
+    .replace(/^btw/, 'Between ')
+    .replace(/and/, ' and ');
+};
+
 const ClientDetailModal = ({
   show,
   onHide,
   ClientDataDetail
 }: ClientDetailModalProps) => {
+  useEffect(() => {
+    console.log('ClientDataDetail received in Modal:', ClientDataDetail);
+  }, [ClientDataDetail]);
+
   const openPdfInNewTab = (file: {
     data: string;
     contentType: string | null;
@@ -57,21 +89,15 @@ const ClientDetailModal = ({
     }
     try {
       const base64Data = file.data.split(',')[1];
-
-      // Base64 stringini binary formatına çevir
       const binaryData = atob(base64Data);
       const arrayBuffer = new Uint8Array(binaryData.length);
       for (let i = 0; i < binaryData.length; i++) {
         arrayBuffer[i] = binaryData.charCodeAt(i);
       }
-
-      // Blob nesnesi oluştur
       const blob = new Blob([arrayBuffer], {
         type: file.contentType || 'application/pdf'
       });
       const url = URL.createObjectURL(blob);
-
-      // Yeni sekmede aç
       window.open(url, '_blank');
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch (error) {
@@ -80,7 +106,7 @@ const ClientDetailModal = ({
   };
 
   const getStatusColor = (type: string) => {
-    switch (type) {
+    switch (type.toUpperCase()) {
       case 'CONTACTED':
         return 'success';
       case 'NOT_CONTACTED':
@@ -92,15 +118,24 @@ const ClientDetailModal = ({
     }
   };
 
-  // Belirli bir attachment ID için dosyayı getir
+  const statusLabel =
+    ClientDataDetail.clientStatus &&
+    typeof ClientDataDetail.clientStatus === 'string'
+      ? ClientDataDetail.clientStatus
+      : ClientDataDetail.clientStatus?.label || 'N/A';
+
+  const statusColor =
+    ClientDataDetail.clientStatus &&
+    typeof ClientDataDetail.clientStatus === 'string'
+      ? getStatusColor(ClientDataDetail.clientStatus)
+      : getStatusColor(ClientDataDetail.clientStatus?.label || '');
+
   const handleAttachedClick = async (attachmentId: string | null) => {
     if (!attachmentId) return;
     console.log(`Fetching attachment for ID: ${attachmentId}`);
-
     try {
       const response = await getAttachedFile(attachmentId);
       console.log('Attachment Response:', response);
-
       if (response?.data) {
         openPdfInNewTab(response.data);
       } else {
@@ -110,7 +145,7 @@ const ClientDetailModal = ({
       console.error('Error fetching attachment:', error);
     }
   };
-  // /client/edit?clientId={props}
+
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton className="gap-5">
@@ -143,11 +178,13 @@ const ClientDetailModal = ({
                 <tr>
                   <td className="fw-bold">Segments:</td>
                   <td>
-                    {ClientDataDetail.segments.length > 0 ? (
+                    {(ClientDataDetail.segments || []).length > 0 ? (
                       <ul className="list-unstyled mb-0">
-                        {ClientDataDetail.segments.map((segment, index) => (
-                          <li key={index}>• {segment.segmentName}</li>
-                        ))}
+                        {(ClientDataDetail.segments || []).map(
+                          (segment, index) => (
+                            <li key={index}>• {segment.segmentName}</li>
+                          )
+                        )}
                       </ul>
                     ) : (
                       'N/A'
@@ -161,56 +198,50 @@ const ClientDetailModal = ({
                 <tr>
                   <td className="fw-bold">Status:</td>
                   <td>
-                    <Badge
-                      bg={getStatusColor(ClientDataDetail.clientStatus.label)}
-                    >
-                      {ClientDataDetail.clientStatus.label}
-                    </Badge>
+                    <Badge bg={statusColor}>{statusLabel}</Badge>
                   </td>
                 </tr>
-
                 <tr>
                   <td className="fw-bold">Website:</td>
                   <td>{ClientDataDetail.website}</td>
                 </tr>
                 <tr>
-                  <td className="fw-bold">Address:</td>
+                  <td className="fw-bold">Legal Address:</td>
                   <td>{ClientDataDetail.legalAddress}</td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Email:</td>
-                  <td>{ClientDataDetail.email}</td>
-                </tr>
-
-                <tr>
-                  <td className="fw-bold">Certificates:</td>
-                  <td>{ClientDataDetail.certificates.join(', ')}</td>
+                  <td>{ClientDataDetail.mail}</td>
                 </tr>
                 <tr>
-                  <td className="fw-bold">Dialog Speed:</td>
-                  <td>{ClientDataDetail.dialogSpeed}</td>
+                  <td className="fw-bold">Phone:</td>
+                  <td>{ClientDataDetail.phone}</td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Dialog Quality:</td>
-                  <td>{ClientDataDetail.dialogQuality}</td>
+                  <td>{ClientDataDetail.clientRatings.dialogQuality}</td>
                 </tr>
                 <tr>
-                  <td className="fw-bold">Ease of Supply:</td>
-                  <td>{ClientDataDetail.easeOfSupply}</td>
+                  <td className="fw-bold">Volume of Order:</td>
+                  <td>{ClientDataDetail.clientRatings.volumeOfOrder}</td>
                 </tr>
                 <tr>
-                  <td className="fw-bold">Supply Capability:</td>
-                  <td>{ClientDataDetail.supplyCapability}</td>
+                  <td className="fw-bold">Continuity of Order:</td>
+                  <td>{ClientDataDetail.clientRatings.continuityOfOrder}</td>
                 </tr>
                 <tr>
-                  <td className="fw-bold">EU Demand of Parts:</td>
-                  <td>{ClientDataDetail.euDemandOfParts}</td>
+                  <td className="fw-bold">Ease of Payment:</td>
+                  <td>{ClientDataDetail.clientRatings.easeOfPayment}</td>
+                </tr>
+                <tr>
+                  <td className="fw-bold">Ease of Delivery:</td>
+                  <td>{ClientDataDetail.clientRatings.easeOfDelivery}</td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Attachments:</td>
                   <td>
-                    {ClientDataDetail.attachments?.length > 0
-                      ? ClientDataDetail.attachments.map(
+                    {(ClientDataDetail.attachmentResponses || []).length > 0
+                      ? (ClientDataDetail.attachmentResponses || []).map(
                           (attachment, index) => (
                             <span
                               key={index}
@@ -232,33 +263,58 @@ const ClientDetailModal = ({
           </Col>
         </Row>
       </Modal.Body>
-
-      <Modal.Body>
-        <Row className="mt-4">
-          <Col>
-            <Table borderless>
-              <tbody>
-                <tr>
-                  <td className="fw-bold">Created By:</td>
-                  <td>{ClientDataDetail.createdBy}</td>
-                </tr>
-                <tr>
-                  <td className="fw-bold">Created On:</td>
-                  <td>{ClientDataDetail.createdOn}</td>
-                </tr>
-                <tr>
-                  <td className="fw-bold">Last Modified By:</td>
-                  <td>{ClientDataDetail.lastModifiedBy}</td>
-                </tr>
-                <tr>
-                  <td className="fw-bold">Last Modified On:</td>
-                  <td>{ClientDataDetail.lastModifiedOn}</td>
-                </tr>
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
-      </Modal.Body>
+      <div className="d-flex content-row">
+        <Modal.Dialog>
+          <Row>
+            <Col>
+              <Table borderless className="table-sm">
+                <h4 className="mb-3"> Margin Table</h4>
+                <tbody>
+                  {ClientDataDetail.marginTable &&
+                    Object.entries(ClientDataDetail.marginTable).map(
+                      ([key, value]) => (
+                        <tr key={key}>
+                          <td className="fw-bold">{formatMarginKey(key)}:</td>
+                          <td>{value}</td>
+                        </tr>
+                      )
+                    )}
+                </tbody>
+              </Table>
+            </Col>
+          </Row>
+        </Modal.Dialog>
+        <Modal.Dialog className="mt-9">
+          <Row>
+            <Col>
+              <Table borderless>
+                <tbody>
+                  <tr>
+                    <td className="fw-bold">Comment:</td>
+                    <td>{ClientDataDetail.comment}</td>
+                  </tr>
+                  <tr>
+                    <td className="fw-bold">Created By:</td>
+                    <td>{ClientDataDetail.createdBy}</td>
+                  </tr>
+                  <tr>
+                    <td className="fw-bold">Created On:</td>
+                    <td>{ClientDataDetail.createdOn}</td>
+                  </tr>
+                  <tr>
+                    <td className="fw-bold">Last Modified By:</td>
+                    <td>{ClientDataDetail.lastModifiedBy}</td>
+                  </tr>
+                  <tr>
+                    <td className="fw-bold">Last Modified On:</td>
+                    <td>{ClientDataDetail.lastModifiedOn}</td>
+                  </tr>
+                </tbody>
+              </Table>
+            </Col>
+          </Row>
+        </Modal.Dialog>
+      </div>
     </Modal>
   );
 };
