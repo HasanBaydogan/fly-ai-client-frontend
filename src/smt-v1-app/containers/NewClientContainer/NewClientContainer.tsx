@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Button, Col, Modal, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FormattedContactData } from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/ContactListSection';
-import { RatingData } from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/RatingComponent';
+import { RatingData } from 'smt-v1-app/components/features/NewClient/RatingComponent';
 import SegmentSelection from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/SegmentSelection';
 import SupplierInfo from 'smt-v1-app/components/features/NewClient/ClientInfo';
 import {
@@ -65,11 +65,11 @@ const NewClientContainer = () => {
   const [certificateTypes, setCertificateTypes] = useState<Certypes[]>([]);
 
   const [ratings, setRatings] = useState<RatingData>({
-    easeOfSupply: 0,
-    dialogSpeed: 0,
     dialogQuality: 0,
-    supplyCapability: 0,
-    euDemandOfParts: 0
+    volumeOfOrder: 0,
+    continuityOfOrder: 0,
+    easeOfPayment: 0,
+    easeOfDelivery: 0
   });
 
   // Initialized data
@@ -250,14 +250,15 @@ const NewClientContainer = () => {
         severity: item.severity
       })),
       clientPriceMarginTableRequest: numericMarginTable,
-
-      dialogSpeed: ratings.dialogSpeed,
-      dialogQuality: ratings.dialogQuality,
-      easeOfSupply: ratings.easeOfSupply,
-      supplyCapability: ratings.supplyCapability,
-      euDemandParts: ratings.euDemandOfParts
+      clientRatings: {
+        dialogQuality: ratings.dialogQuality,
+        volumeOfOrder: ratings.volumeOfOrder,
+        continuityOfOrder: ratings.continuityOfOrder,
+        easeOfPayment: ratings.easeOfPayment,
+        easeOfDelivery: ratings.easeOfDelivery
+      }
     };
-    // console.log('Client Payload', clientPayload);
+    console.log('Client Payload', clientPayload);
 
     setLoadingSave(true);
     try {

@@ -39,7 +39,7 @@ export interface ClientData {
   quoteID: string | null;
   attachmentResponses: {
     attachmentId: string | null;
-    attachmentName: string | null;
+    fileName: string | null;
   }[];
   details: string | null;
   subCompanyName: string;
@@ -163,7 +163,7 @@ export interface ClientDataDetail {
   quoteID: string | null;
   attachmentResponses: {
     attachmentId: string | null;
-    attachmentName: string | null;
+    fileName: string | null;
   }[];
   details: string | null;
   subCompanyName: string;
@@ -194,7 +194,6 @@ export interface ClientDataDetail {
     above4_000_000: number;
     lastModifiedBy: string;
   };
-  comment: string;
   createdBy: string;
   createdOn: string;
   lastModifiedBy: string;
@@ -506,11 +505,13 @@ export interface CreateClient {
     comment: string;
     severity: string;
   }[];
-  dialogSpeed: number;
-  dialogQuality: number;
-  easeOfSupply: number;
-  supplyCapability: number;
-  euDemandParts: number;
+  clientRatings: {
+    dialogQuality: number;
+    volumeOfOrder: number;
+    continuityOfOrder: number;
+    easeOfPayment: number;
+    easeOfDelivery: number;
+  };
 }
 
 export const postClientCreate = async (newClient: CreateClient) => {

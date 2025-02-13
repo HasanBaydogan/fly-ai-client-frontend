@@ -179,7 +179,7 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
           attachmentResponses: Array.isArray(item.attachmentResponses)
             ? item.attachmentResponses.map((att: any) => ({
                 attachmentId: att.attachmentId || '',
-                attachmentName: att.attachmentName || ''
+                fileName: att.fileName || ''
               }))
             : [],
           details: item.details || '',

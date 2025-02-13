@@ -21,7 +21,7 @@ interface ClientDetailModalProps {
     quoteID: string | null;
     attachmentResponses?: {
       attachmentId: string | null;
-      attachmentName: string | null;
+      fileName: string | null;
     }[];
     details: string | null;
     phone: string;
@@ -51,7 +51,6 @@ interface ClientDetailModalProps {
       above4_000_000: number;
       lastModifiedBy: string;
     };
-    comment: string;
     createdBy: string;
     createdOn: string;
     lastModifiedBy: string;
@@ -251,7 +250,7 @@ const ClientDetailModal = ({
                                 handleAttachedClick(attachment.attachmentId)
                               }
                             >
-                              • {attachment.attachmentName || 'Unknown File'}
+                              • {attachment.fileName || 'Unknown File'}
                             </span>
                           )
                         )
@@ -289,10 +288,6 @@ const ClientDetailModal = ({
             <Col>
               <Table borderless>
                 <tbody>
-                  <tr>
-                    <td className="fw-bold">Comment:</td>
-                    <td>{ClientDataDetail.comment}</td>
-                  </tr>
                   <tr>
                     <td className="fw-bold">Created By:</td>
                     <td>{ClientDataDetail.createdBy}</td>
