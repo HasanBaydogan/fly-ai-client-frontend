@@ -8,7 +8,15 @@ import DropdownSearchBox from 'components/common/DropdownSearchBox';
 import SearchResult from 'components/common/SearchResult';
 import { useBreakpoints } from 'providers/BreakpointsProvider';
 
-const NavbarTopDefault = () => {
+const NavbarTopDefault = ({
+  userId,
+  userFullName,
+  logo
+}: {
+  userId?: string;
+  userFullName?: string;
+  logo?: string;
+}) => {
   const {
     config: { navbarTopShape, navbarTopAppearance }
   } = useAppContext();
@@ -26,14 +34,14 @@ const NavbarTopDefault = () => {
       data-navbar-appearance={navbarTopAppearance === 'darker' ? 'darker' : ''}
     >
       <div className="navbar-collapse justify-content-between">
-        <NavbarBrand />
+        <NavbarBrand logo={logo} />
 
         {navbarTopShape === 'default' ? (
           <>
             {breakpoints.up('lg') && (
               <p className="logo-text ms-2 d-none d-sm-block"></p>
             )}
-            <NavItems />
+            <NavItems userFullName={userFullName} userId={userId} />
           </>
         ) : (
           <NavItemsSlim />

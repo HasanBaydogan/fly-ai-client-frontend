@@ -13,7 +13,13 @@ import DropdownSearchBox from 'components/common/DropdownSearchBox';
 import SearchResult from 'components/common/SearchResult';
 import classNames from 'classnames';
 
-const NavItems = () => {
+const NavItems = ({
+  userFullName,
+  userId
+}: {
+  userFullName?: string;
+  userId?: string;
+}) => {
   const {
     config: { navbarPosition }
   } = useAppContext();
@@ -86,7 +92,7 @@ const NavItems = () => {
           >
             <Avatar src={avatar57} size="l" />
           </Dropdown.Toggle>
-          <ProfileDropdownMenu />
+          <ProfileDropdownMenu userFullName={userFullName} userId={userId} />
         </Dropdown>
       </Nav.Item>
 

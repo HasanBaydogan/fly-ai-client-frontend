@@ -8,7 +8,15 @@ import Scrollbar from 'components/base/Scrollbar';
 import classNames from 'classnames';
 import { removeCookies } from 'smt-v1-app/services/CookieService';
 
-const ProfileDropdownMenu = ({ className }: { className?: string }) => {
+const ProfileDropdownMenu = ({
+  className,
+  userFullName,
+  userId
+}: {
+  className?: string;
+  userFullName?: string;
+  userId?: string;
+}) => {
   const [navItems] = useState([
     /*{
       label: 'Profile',
@@ -25,15 +33,18 @@ const ProfileDropdownMenu = ({ className }: { className?: string }) => {
     */
     {
       label: 'Settings & Privacy ',
-      icon: 'settings'
+      icon: 'settings',
+      url: '/user-settings?userId=' + userId
     },
     {
       label: 'Help Center',
-      icon: 'help-circle'
+      icon: 'help-circle',
+      url: '/help-center'
     },
     {
       label: 'Language',
-      icon: 'globe'
+      icon: 'globe',
+      url: ''
     }
   ]);
   return (
@@ -48,7 +59,7 @@ const ProfileDropdownMenu = ({ className }: { className?: string }) => {
         <Card.Body className="p-0">
           <div className="d-flex flex-column align-items-center justify-content-center gap-2 pt-4 pb-3">
             <Avatar src={avatar} size="xl" />
-            <h6 className="text-body-emphasis">Jerry Seinfield</h6>
+            <h6 className="text-body-emphasis">{userFullName}</h6>
           </div>
           {/*<div className="mb-3 mx-3">
             <Form.Control
@@ -62,7 +73,7 @@ const ProfileDropdownMenu = ({ className }: { className?: string }) => {
               <Nav className="nav flex-column mb-2 pb-1">
                 {navItems.map(item => (
                   <Nav.Item key={item.label}>
-                    <Nav.Link href="#!" className="px-3">
+                    <Nav.Link href={item.url} className="px-3">
                       <FeatherIcon
                         icon={item.icon}
                         size={16}
