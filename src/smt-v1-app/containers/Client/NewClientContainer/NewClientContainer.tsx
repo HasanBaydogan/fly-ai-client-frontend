@@ -1,25 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Col, Modal, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { FormattedContactData } from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/ContactListSection';
+import { FormattedContactData } from 'smt-v1-app/components/features/Client/NewClient/NewClientContact/ContactListSection';
 import { RatingData } from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';
-import SegmentSelection from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/SegmentSelection';
-import SupplierInfo from 'smt-v1-app/components/features/Client/NewClient/ClientInfo';
-import {
-  Certypes,
-  SupplierStatus
-} from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
+import SegmentSelection from 'smt-v1-app/components/features/GlobalComponents/SegmentSelection';
+import ClientInfo from 'smt-v1-app/components/features/Client/NewClient/ClientInfo';
 import {
   getbyCurrencyController,
   getByMarginTable,
   postClientCreate
 } from 'smt-v1-app/services/ClientServices';
 import {
-  getbyCountryList,
   getbySegmentList,
-  postSupplierCreate,
-  TreeNode
-} from 'smt-v1-app/services/SupplierServices';
+  TreeNode,
+  Status
+} from 'smt-v1-app/services/GlobalServices';
 import CustomButton from '../../../../components/base/Button';
 
 import AddressDetails from 'smt-v1-app/components/features/Client/NewClient/ClientMidPart';
@@ -53,13 +48,11 @@ const NewClientContainer = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<string>('');
   const [clientWebsite, setClientWebsite] = useState('');
 
-  const [selectedStatus, setSelectedStatus] = useState<SupplierStatus | ''>('');
+  const [selectedStatus, setSelectedStatus] = useState<Status | ''>('');
   const [base64Files, setBase64Files] = useState<
     { name: string; base64: string }[]
   >([]);
   const [workingDetails, setWorkingDetails] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [contacts, setContacts] = useState<FormattedContactData[]>([]);
   const [ratings, setRatings] = useState<RatingData>({
     dialogQuality: 0,
@@ -173,7 +166,7 @@ const NewClientContainer = () => {
     setIsSuccess(false);
     setShowAlert(true);
     setTimeout(() => {
-      navigate('/supplier/list');
+      navigate('/Client/list');
     }, 1000);
   };
 
@@ -237,8 +230,6 @@ const NewClientContainer = () => {
         data: file.base64
       })),
       workingDetails: workingDetails,
-      username: username,
-      password: password,
       // contacts: contacts,
 
       userComments: userComments.map(item => ({
@@ -273,12 +264,12 @@ const NewClientContainer = () => {
         }, 2000);
       } else {
         setResultModalTitle('Undefined');
-        setResultModalMessage('An error occurred while saving supplier info.');
+        setResultModalMessage('An error occurred while saving Client info.');
         setShowResultModal(true);
       }
     } catch (error) {
       setResultModalTitle('Error');
-      setResultModalMessage('An error occurred while saving supplier info.');
+      setResultModalMessage('An error occurred while saving Client info.');
       setShowResultModal(true);
     } finally {
       setLoadingSave(false);
@@ -286,7 +277,7 @@ const NewClientContainer = () => {
   };
 
   const handleStatusChange = (value: string) => {
-    setSelectedStatus(value as unknown as SupplierStatus);
+    setSelectedStatus(value as unknown as Status);
   };
 
   return (
@@ -380,7 +371,7 @@ const NewClientContainer = () => {
             </Modal.Footer>
           </Modal>
           {/* Client Info */}
-          <SupplierInfo
+          <ClientInfo
             setCompanyName={setCompanyName}
             companyName={clientCompanyName}
             setSubCompany={setSubCompany}
@@ -414,8 +405,8 @@ const NewClientContainer = () => {
                 clientMail={clientMail}
                 setClientWebsite={setClientWebsite}
                 clientWebsite={clientWebsite}
-                phone={phone} // Phone state prop olarak ekleniyor
-                setPhone={setPhone} // Phone güncelleme fonksiyonu da gönderiliyor
+                phone={phone}
+                setPhone={setPhone}
               />
             </Col>
             <Col

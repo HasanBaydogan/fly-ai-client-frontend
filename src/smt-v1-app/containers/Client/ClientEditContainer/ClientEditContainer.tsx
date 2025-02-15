@@ -1,35 +1,31 @@
 import { Row, Col, Alert, Modal, Button, Spinner } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import SupplierInfo from '../../../components/features/Client/NewClient/ClientInfo';
-import SegmentSelection from '../../../components/features/SupplierDetail/SupplierDetailComponents/SegmentSelection';
-import AddressDetails from '../../../components/features/SupplierDetail/SupplierDetailComponents/AddressDetails';
+import ClientInfo from '../../../components/features/Client/NewClient/ClientInfo';
+import SegmentSelection from '../../../components/features/GlobalComponents/SegmentSelection';
+import AddressDetails from 'smt-v1-app/components/features/Client/NewClient/ClientMidPart';
 import RatingSection from '../../../components/features/Client/NewClient/RatingComponent';
 import { RatingData } from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';
-
-import WorkingDetails from '../../../components/features/SupplierDetail/SupplierDetailComponents/WorkingDetails';
-import FileUpload from '../../../components/features/SupplierDetail/SupplierDetailComponents/FileUpload';
-import AccountInfo from '../../../components/features/SupplierDetail/SupplierDetailComponents/AccountInfo';
+import FileUpload from '../../../components/features/GlobalComponents/FileUpload';
 import ContactListSection, {
   FormattedContactData
-} from '../../../components/features/SupplierDetail/SupplierDetailComponents/ContactListSection';
-import CustomButton from '../../../../components/base/Button';
-import {
-  getbySegmentList,
-  getbyCountryList,
-  getAttachedFile
-} from '../../../services/SupplierServices';
+} from '../../../components/features/Client/NewClient/NewClientContact/ContactListSection'; //
+import CustomButton from '../../../../components/base/Button'; //
 import {
   getByClientId,
-  putByClientUpdate
-} from '../../../services/ClientServices';
-import { TreeNode } from '../../../components/features/SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
+  putByClientUpdate,
+  getbyCurrencyController
+} from '../../../services/ClientServices'; //
 import {
-  SupplierStatus,
+  getbySegmentList,
+  getAttachedFile,
+  TreeNode,
+  Status,
   Certypes
-} from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
-import { FileAttachment } from '../../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
-import AttachmentPreview from '../../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
+} from 'smt-v1-app/services/GlobalServices';
+import { FileAttachment } from '../../../components/features/Client/NewClient/NewClientAttachment/AttachmentPreview';
+import AttachmentPreview from '../../../components/features/Client/NewClient/NewClientAttachment/AttachmentPreview';
+import ClientBottomSection from 'smt-v1-app/components/features/Client/NewClient/ClientBottomSection';
 
 /**
  * Dosyayı base64 verisinden açmak / indirmek için fonksiyon.
@@ -83,11 +79,9 @@ const ClientEditContainer = () => {
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
   const [subCompany, setSubCompany] = useState('');
   const [legalAddress, setLegalAddress] = useState('');
-  const [selectedCountryId, setSelectedCountryId] = useState('');
   const [pickUpAddress, setPickUpAddress] = useState('');
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
-  const [countryList, setCountryList] = useState<any>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [base64Files, setBase64Files] = useState<
     { id: string; name: string; base64: string }[]
@@ -121,8 +115,8 @@ const ClientEditContainer = () => {
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultModalTitle, setResultModalTitle] = useState('');
   const [resultModalMessage, setResultModalMessage] = useState('');
-  // Supplier verisi yüklenirken kullanılan loading state.
-  const [loadingSupplier, setLoadingSupplier] = useState<boolean>(true);
+  // Client verisi yüklenirken kullanılan loading state.
+  const [loadingClient, setLoadingClient] = useState<boolean>(true);
   // PUT isteği sırasında loading state.
   const [loadingSave, setLoadingSave] = useState<boolean>(false);
 
@@ -150,6 +144,30 @@ const ClientEditContainer = () => {
   };
 
   useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const response = await getbyCurrencyController();
+        // Adjust the next lines according to your API response structure.
+        if (
+          response &&
+          response.statusCode === 200 &&
+          Array.isArray(response.data)
+        ) {
+          setCurrencies(response.data);
+          // Optionally set the default selected currency:
+          if (response.data.length > 0) {
+            setSelectedCurrency(response.data[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching currencies:', error);
+      }
+    };
+
+    fetchCurrencies();
+  }, []);
+
+  useEffect(() => {
     const fetchSegments = async () => {
       try {
         const response = await getbySegmentList();
@@ -165,55 +183,43 @@ const ClientEditContainer = () => {
   }, []);
 
   useEffect(() => {
-    const fetchCountries = async () => {
+    const fetchClientData = async () => {
       try {
-        const response = await getbyCountryList();
-        if (response?.data) {
-          setCountryList(response);
-        }
-      } catch (error) {
-        console.error('Error fetching country list:', error);
-      }
-    };
-    fetchCountries();
-  }, []);
-
-  useEffect(() => {
-    const fetchSupplierData = async () => {
-      try {
-        setLoadingSupplier(true);
+        setLoadingClient(true);
         const response = await getByClientId(clientId!);
         if (response && response.data) {
-          const supplier = response.data;
-          console.log('Supplier data:', supplier);
-          setCompanyName(supplier.companyName);
-          setSubCompany(supplier.subCompanyName);
+          const client = response.data;
+          // console.log('Client data:', client);
+          setCompanyName(client.companyName);
+          setSubCompany(client.subCompanyName);
+          setLegalAddress(client.legalAddress);
+          setClientMail(client.mail);
+          setClientWebsite(client.website);
+          setClientDetail(client.details);
+          setPhone(client.phone);
+          setUserComments(client.userComments);
+          setMarginTable(client.marginTable);
           // Özyinelemeli olarak tüm true olan segmentlerin id'sini alıyoruz.
           const selectedSupplierSegmentIds = getInitialSelectedIds(
-            supplier.segments
+            client.segments
           );
           setSegmentIds(selectedSupplierSegmentIds);
           // Eğer segment ağacını da güncellemek istiyorsanız:
-          setSegments(supplier.segments);
-          setPickUpAddress(supplier.details);
-          setSelectedStatus(supplier.clientStatus);
-          setWorkingDetails(supplier.workingDetails);
-          setUsername(supplier.username);
-          setPassword(supplier.password);
-          setContacts(supplier.contacts);
-          setRatings({
-            dialogQuality: ratings.dialogQuality,
-            volumeOfOrder: ratings.volumeOfOrder,
-            continuityOfOrder: ratings.continuityOfOrder,
-            easeOfPayment: ratings.easeOfPayment,
-            easeOfDelivery: ratings.easeOfDelivery
-          });
+          setSegments(client.segments);
+          setPickUpAddress(client.details);
+          setSelectedStatus(client.clientStatus);
+          setSelectedCurrency(client.currencyPreference);
+          setWorkingDetails(client.workingDetails);
+          setContacts(client.contacts);
+          if (client.clientRatings) {
+            setRatings(client.clientRatings);
+          }
           if (
-            supplier.attachmentResponses &&
-            supplier.attachmentResponses.length > 0
+            client.attachmentResponses &&
+            client.attachmentResponses.length > 0
           ) {
             setInitialAttachments(
-              supplier.attachmentResponses.map((att: any) => ({
+              client.attachmentResponses.map((att: any) => ({
                 id: att.attachmentId,
                 name: att.fileName,
                 contentType: att.contentType || 'application/octet-stream',
@@ -223,17 +229,17 @@ const ClientEditContainer = () => {
           }
         }
       } catch (error) {
-        // console.error('Error fetching supplier data:', error);
-        // setAlertMessage('Supplier data could not be loaded.');
+        // console.error('Error fetching client data:', error);
+        // setAlertMessage('Client data could not be loaded.');
         setIsSuccess(false);
         // setShowAlert(true);
       } finally {
-        setLoadingSupplier(false);
+        setLoadingClient(false);
       }
     };
 
     if (clientId) {
-      fetchSupplierData();
+      fetchClientData();
     }
   }, [clientId]);
 
@@ -243,7 +249,7 @@ const ClientEditContainer = () => {
     setAlertMessage('Changes have been discarded.');
     setIsSuccess(false);
     setShowAlert(true);
-    setTimeout(() => navigate('/supplier/list'), 1000);
+    setTimeout(() => navigate('/Client/list'), 1000);
   };
 
   const confirmSave = () => setShowSaveModal(true);
@@ -263,12 +269,12 @@ const ClientEditContainer = () => {
     //   setShowAlert(true);
     //   return;
     // }
-    if (!selectedCountryId) {
-      setAlertMessage('Please select a Country.');
-      setIsSuccess(false);
-      setShowAlert(true);
-      return;
-    }
+    // if (!selectedCountryId) {
+    //   setAlertMessage('Please select a Country.');
+    //   setIsSuccess(false);
+    //   setShowAlert(true);
+    //   return;
+    // }
     if (!selectedStatus) {
       setAlertMessage('Please select a Status.');
       setIsSuccess(false);
@@ -297,14 +303,15 @@ const ClientEditContainer = () => {
       })
     );
 
-    const payload = {
+    const editPayload = {
+      clientId: clientId,
       companyName: clientCompanyName,
       legalAddress: legalAddress,
       subCompanyName: subCompany,
       currencyPreference: selectedCurrency,
       segmentIdList: segmentIds,
       details: clientDetail,
-      clientStatus: selectedStatus,
+      clientStatus: selectedStatus as unknown as Status,
       phone: phone,
       website: clientWebsite,
       mail: clientMail,
@@ -313,11 +320,6 @@ const ClientEditContainer = () => {
         fileName: file.name,
         data: file.base64
       })),
-      workingDetails: workingDetails,
-      username: username,
-      password: password,
-      // contacts: contacts,
-
       userComments: userComments.map(item => ({
         comment: item.comment,
         severity: item.severity
@@ -332,32 +334,30 @@ const ClientEditContainer = () => {
       }
     };
 
-    console.log('Payload to be sent:', payload);
+    // console.log('Payload to be sent:', editPayload);
 
     setLoadingSave(true);
     try {
-      const response = await putByClientUpdate(payload);
-      console.log('Response from putBySupplierUpdate:', response);
+      const response = await putByClientUpdate(editPayload);
+      // console.log('Response from putByClientUpdate:', response);
       if (response && response.statusCode === 200) {
-        setResultModalTitle('Supplier update successful');
+        setResultModalTitle('Client update successful');
         setResultModalMessage(
-          'Supplier information has been successfully updated!'
+          'Client information has been successfully updated!'
         );
         setShowResultModal(true);
         setTimeout(() => {
-          navigate('/supplier/list');
+          navigate('/client/list');
         }, 2000);
       } else {
         setResultModalTitle('Error');
-        setResultModalMessage(
-          'An error occurred while updating supplier info.'
-        );
+        setResultModalMessage('An error occurred while updating Client info.');
         setShowResultModal(true);
       }
     } catch (error) {
-      console.error('Error updating supplier data:', error);
+      console.error('Error updating Client data:', error);
       setResultModalTitle('Error');
-      setResultModalMessage('An error occurred while updating supplier info.');
+      setResultModalMessage('An error occurred while updating Client info.');
       setShowResultModal(true);
     } finally {
       // İstek tamamlandığında loading state'i false yapıyoruz.
@@ -423,12 +423,11 @@ const ClientEditContainer = () => {
     setAttachmentToDelete(null);
   };
 
-  // Eğer supplier verisi yükleniyorsa, loading göstergesi render edelim.
-  if (loadingSupplier) {
+  if (loadingClient) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
         <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading supplier data...</span>
+          <span className="visually-hidden">Loading Client data...</span>
         </Spinner>
       </div>
     );
@@ -476,7 +475,7 @@ const ClientEditContainer = () => {
           <Modal.Title>Confirm Save</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to update the supplier information?
+          Are you sure you want to update the Client information?
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowSaveModal(false)}>
@@ -523,7 +522,7 @@ const ClientEditContainer = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <SupplierInfo
+      <ClientInfo
         setCompanyName={setCompanyName}
         companyName={clientCompanyName}
         setSubCompany={setSubCompany}
@@ -542,15 +541,16 @@ const ClientEditContainer = () => {
       <Row className="mt-3">
         <Col md={7}>
           <AddressDetails
-            onCountryChange={setSelectedCountryId}
             onStatusChange={handleStatusChange}
-            getbyCountryList={countryList}
-            pickUpAddress={pickUpAddress}
-            setPickUpAddress={setPickUpAddress}
-            onCertificateTypes={handleCertificateTypesChange}
-            defaultCountry={selectedCountryId}
             defaultStatus={selectedStatus}
-            defaultCertificateTypes={certificateTypes}
+            clientDetail={clientDetail}
+            setClientDetail={setClientDetail}
+            setClientMail={setClientMail}
+            clientMail={clientMail}
+            setClientWebsite={setClientWebsite}
+            clientWebsite={clientWebsite}
+            phone={phone}
+            setPhone={setPhone}
           />
         </Col>
         <Col
@@ -563,10 +563,7 @@ const ClientEditContainer = () => {
           />
         </Col>
       </Row>
-      <WorkingDetails
-        workingDetails={workingDetails}
-        setWorkingDetails={setWorkingDetails}
-      />
+
       <div className="mt-5">
         <h5 className="mb-3"> Existing Attachments</h5>
         {initialAttachments.map(att => (
@@ -583,11 +580,11 @@ const ClientEditContainer = () => {
         ))}
         <FileUpload onFilesUpload={handleFilesUpload} />
       </div>
-      <AccountInfo
-        username={username}
-        setUsername={setUsername}
-        password={password}
-        setPassword={setPassword}
+      <ClientBottomSection
+        priceMargins={priceMargins}
+        setMarginTable={setMarginTable}
+        userComments={userComments}
+        setUserComments={setUserComments}
       />
       <ContactListSection
         onContactsChange={setContacts}

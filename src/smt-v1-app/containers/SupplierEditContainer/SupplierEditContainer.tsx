@@ -2,13 +2,13 @@ import { Row, Col, Alert, Modal, Button, Spinner } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import SupplierInfo from '../../components/features/SupplierDetail/SupplierDetailComponents/SupplierInfo';
-import SegmentSelection from '../../components/features/SupplierDetail/SupplierDetailComponents/SegmentSelection';
+import SegmentSelection from '../../components/features/GlobalComponents/SegmentSelection';
 import AddressDetails from '../../components/features/SupplierDetail/SupplierDetailComponents/AddressDetails';
 import RatingSection, {
   RatingData
 } from '../../components/features/SupplierDetail/SupplierDetailComponents/RatingComponent';
 import WorkingDetails from '../../components/features/SupplierDetail/SupplierDetailComponents/WorkingDetails';
-import FileUpload from '../../components/features/SupplierDetail/SupplierDetailComponents/FileUpload';
+import FileUpload from '../../components/features/GlobalComponents/FileUpload';
 import AccountInfo from '../../components/features/SupplierDetail/SupplierDetailComponents/AccountInfo';
 import ContactListSection, {
   FormattedContactData
@@ -17,15 +17,15 @@ import CustomButton from '../../../components/base/Button';
 import {
   getBySupplierId,
   putBySupplierUpdate,
-  getbySegmentList,
-  getbyCountryList,
-  getAttachedFile
+  getbyCountryList
 } from '../../services/SupplierServices';
-import { TreeNode } from '../../components/features/SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
 import {
-  SupplierStatus,
-  Certypes
-} from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
+  getbySegmentList,
+  TreeNode,
+  Certypes,
+  getAttachedFile
+} from 'smt-v1-app/services/GlobalServices';
+
 import { FileAttachment } from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
 import AttachmentPreview from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
 

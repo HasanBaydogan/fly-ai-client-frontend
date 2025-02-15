@@ -9,6 +9,7 @@ interface ClientDetailModalProps {
   show: boolean;
   onHide: () => void;
   ClientDataDetail: {
+    id: string;
     clientId: string;
     companyName: string;
     segments?: { segmentName: string }[];
@@ -151,7 +152,7 @@ const ClientDetailModal = ({
         <Modal.Title>Client Details</Modal.Title>
         <Link
           className="btn btn-primary px-3"
-          to={`/client/edit?clientId=${ClientDataDetail.clientId}`}
+          to={`/client/edit?clientId=${ClientDataDetail.id}`}
         >
           <FontAwesomeIcon icon={faPencilAlt} className="me-2" />
           Edit Client

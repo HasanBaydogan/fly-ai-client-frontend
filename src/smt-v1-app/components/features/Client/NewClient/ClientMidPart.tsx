@@ -130,7 +130,7 @@ const ClientMidPart = ({
         <Col md={6}>
           <Form.Control
             type="text"
-            placeholder="Brand"
+            placeholder="Client Website"
             value={clientWebsite}
             onChange={handleClientWebsiteChange}
           />

@@ -27,6 +27,7 @@ const api = () => {
 //  ---     GET     ---
 
 export interface ClientData {
+  id: string;
   clientId: string;
   companyName: string;
   segments: { segmentName: string }[];
@@ -151,6 +152,7 @@ export const searchByClientList = async (
 };
 
 export interface ClientDataDetail {
+  id: string;
   clientId: string;
   companyName: string;
   segments: { segmentName: string }[];
@@ -200,7 +202,7 @@ export interface ClientDataDetail {
   lastModifiedOn: string;
 }
 
-export const getByClientId = async (supplierId: string) => {
+export const getByClientId = async (clientIdId: string) => {
   try {
     const accessToken = Cookies.get('access_token');
     const headers = {};
@@ -210,10 +212,10 @@ export const getByClientId = async (supplierId: string) => {
       window.location.assign('/');
     }
 
-    const response = await api().get(`/client/id/more-detail/${supplierId}`, {
+    const response = await api().get(`/client/id/more-detail/${clientIdId}`, {
       headers
     });
-    console.log('clientId Get Response', response);
+    // console.log('clientId Get Response', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -233,7 +235,7 @@ export const getByClientId = async (supplierId: string) => {
             refreshTokenresponse.data.data.refresh_token
           );
           let rfqMailResponseAfterRefresh = await api().get(
-            `/client/id/more-detail/${supplierId}`,
+            `/client/id/more-detail/${clientIdId}`,
             {
               headers: {
                 Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
@@ -661,6 +663,7 @@ export const postClientCreate = async (newClient: CreateClient) => {
 };
 
 export interface UpdateClientPayload {
+  clientId: string;
   companyName: string;
   legalAddress: string;
   subCompanyName: string;
@@ -680,7 +683,7 @@ export interface UpdateClientPayload {
     comment: string;
     severity: string;
   }[];
-  clientPriceMarginTableRequest: string;
+  clientPriceMarginTableRequest: { [k: string]: number };
   clientRatings: {
     dialogQuality: number;
     volumeOfOrder: number;
@@ -699,10 +702,12 @@ export const putByClientUpdate = async (payload: UpdateClientPayload) => {
     } else {
       window.location.assign('/');
     }
+    // console.log('Client editPayload1', payload);
 
-    const response = await api().put(`/supplier/update`, payload, {
+    const response = await api().put(`/client/update`, payload, {
       headers
     });
+    // console.log('Client editPayload2', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -722,7 +727,7 @@ export const putByClientUpdate = async (payload: UpdateClientPayload) => {
             refreshTokenresponse.data.data.refresh_token
           );
           let rfqMailResponseAfterRefresh = await api().put(
-            `/supplier/update`,
+            `/client/update`,
             {},
             {
               headers: {
@@ -760,3 +765,75 @@ export const putByClientUpdate = async (payload: UpdateClientPayload) => {
     console.log('Supplier Update Permission Error');
   }
 };
+
+// export const putByClientUpdate = async (editPayload: UpdateClientPayload) => {
+//   try {
+//     const accessToken = Cookies.get('access_token');
+//     const headers = {};
+//     if (accessToken) {
+//       headers['Authorization'] = `Bearer ${accessToken}`;
+//     } else {
+//       window.location.assign('/');
+//     }
+
+//     const response = await api().put(`/client/update`, editPayload, {
+//       headers
+//     });
+//     console.log('Client editPayload2', response);
+
+//     if (response.data.statusCode === 200) {
+//       return response.data;
+//     } else if (response.data.statusCode === 498) {
+//       Expired JWT
+//       try {
+//         const refreshTokenresponse = await api().post('/auth/refresh-token', {
+//           refresh_token: Cookies.get('refresh_token')
+//         });
+//         if (refreshTokenresponse.data.statusCode === 200) {
+//           setCookie(
+//             'access_token',
+//             refreshTokenresponse.data.data.access_token
+//           );
+//           setCookie(
+//             'refresh_token',
+//             refreshTokenresponse.data.data.refresh_token
+//           );
+//           let rfqMailResponseAfterRefresh = await api().put(
+//             `/client/update`,
+//             {},
+//             {
+//               headers: {
+//                 Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+//               }
+//             }
+//           );
+
+//           return rfqMailResponseAfterRefresh.data;
+//         } else if (refreshTokenresponse.data.statusCode === 498) {
+//           Expired Refresh Token
+//           Cookies.remove('access_token');
+//           Cookies.remove('refresh_token');
+//           window.location.assign('/');
+//         } else if (refreshTokenresponse.data.statusCode === 411) {
+//           Invalid Refresh Token
+//           Cookies.remove('access_token');
+//           Cookies.remove('refresh_token');
+//           window.location.assign('/');
+//         } else if (refreshTokenresponse.data.statusCode === 404) {
+//           console.log('User not found');
+//           Cookies.remove('access_token');
+//           Cookies.remove('refresh_token');
+//           window.location.assign('/');
+//         }
+//       } catch (err) {
+//         console.log(err);
+//       }
+//     } else if (response.data.statusCode === 401) {
+//       Cookies.remove('access_token');
+//       Cookies.remove('refresh_token');
+//       window.location.assign('/');
+//     }
+//   } catch (err) {
+//     console.log('Supplier Update Permission Error');
+//   }
+// };

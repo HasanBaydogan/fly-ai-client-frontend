@@ -157,6 +157,7 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
       const clients = response?.data?.clients || [];
       if (Array.isArray(clients)) {
         const mappedData: ClientData[] = clients.map((item: any) => ({
+          id: item.id,
           clientId: item.clientId,
           companyName: item.companyName,
           segments: Array.isArray(item.segments)

@@ -2,13 +2,13 @@ import { Row, Col, Alert, Modal, Button, Spinner } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SupplierInfo from '../../components/features/SupplierDetail/SupplierDetailComponents/SupplierInfo';
-import SegmentSelection from '../../components/features/SupplierDetail/SupplierDetailComponents/SegmentSelection';
+import SegmentSelection from '../../components/features/GlobalComponents/SegmentSelection';
 import AddressDetails from '../../components/features/SupplierDetail/SupplierDetailComponents/AddressDetails';
 import RatingSection, {
   RatingData
 } from '../../components/features/SupplierDetail/SupplierDetailComponents/RatingComponent';
 import WorkingDetails from '../../components/features/SupplierDetail/SupplierDetailComponents/WorkingDetails';
-import FileUpload from '../../components/features/SupplierDetail/SupplierDetailComponents/FileUpload';
+import FileUpload from '../../components/features/GlobalComponents/FileUpload';
 import AccountInfo from '../../components/features/SupplierDetail/SupplierDetailComponents/AccountInfo';
 import ContactListSection, {
   FormattedContactData

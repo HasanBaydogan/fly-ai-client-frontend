@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 
 interface ActionDropdownItemsProps {
   clientId: string;
-  clientDataDetail: ClientDataDetail; // prop adını camelCase olarak tanımladık
+  clientDataDetail: ClientDataDetail;
 }
 
 const ActionDropdownItems = ({ clientId }: ActionDropdownItemsProps) => {
@@ -22,10 +22,8 @@ const ActionDropdownItems = ({ clientId }: ActionDropdownItemsProps) => {
     // console.log(`Fetching client for ID: ${clientId}`);
 
     try {
-      // clientId ile veriyi çekiyoruz
       const response = await getByClientDetailList(clientId);
-      // console.log('Response from getByClientDetailList:', response);
-      // Gelen veriyi state'e atıyoruz.
+
       setFetchedClientData(response.data);
     } catch (error) {
       console.error('Error fetching client details:', error);
