@@ -35,6 +35,7 @@ import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer'
 
 import ClientListContainer from 'smt-v1-app/containers/ClientListContainer/ClientListContainer';
 import NewClientContainer from 'smt-v1-app/containers/NewClientContainer/NewClientContainer';
+import AlreadyOpenedRfqBySomeoneError from 'smt-v1-app/components/error/AlreadyOpenedRfqBySomeoneError/AlreadyOpenedRfqBySomeoneError';
 
 const routes: RouteObject[] = [
   {
@@ -175,6 +176,10 @@ const routes: RouteObject[] = [
           {
             path: '500',
             element: <Error500 />
+          },
+          {
+            path: 'already-opened-rfq-by-someone',
+            element: <AlreadyOpenedRfqBySomeoneError />
           }
         ]
       },

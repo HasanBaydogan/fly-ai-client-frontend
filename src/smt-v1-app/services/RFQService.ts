@@ -34,6 +34,8 @@ export const openRFQ = async (rfqMailId: string) => {
 
     if (rfqMailResp.data.statusCode === 200) {
       return rfqMailResp.data;
+    } else if (rfqMailResp.data.statusCode === 406) {
+      window.location.assign('/pages/errors/already-opened-rfq-by-someone');
     } else if (rfqMailResp.data.statusCode === 498) {
       // Expired JWT
       try {

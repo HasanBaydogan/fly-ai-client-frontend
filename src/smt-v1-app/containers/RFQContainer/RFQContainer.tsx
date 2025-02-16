@@ -18,6 +18,7 @@ const RFQContainer = () => {
     const openRFQMail = async () => {
       setIsLoading(true);
       const response = await openRFQ(rfqMailId);
+      console.log(response);
       setRfq(response.data);
       setIsLoading(false);
     };
