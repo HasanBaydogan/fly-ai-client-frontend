@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Nav, Tab, Table } from 'react-bootstrap';
+import { Nav, Tab } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import MailTrackingHeader from 'smt-v1-app/components/features/MailTrackingHeader/MailTrackingHeader';
@@ -8,8 +8,8 @@ import {
   getAllRFQMails,
   searchByRfqNumberId
 } from 'smt-v1-app/services/MailTrackingService';
-import { getActiveStatusFromStringStatus } from './MailTrackingHelper';
 import './MailTrackingContainer.css';
+import { getActiveStatusFromStringStatus } from './MailTrackingHelper';
 import CustomPagination from 'smt-v1-app/components/common/CustomPagination/CustomPagination';
 import MailTrackingItemsBody from 'smt-v1-app/components/features/MailTrackingItemsBody/MailTrackingItemsBody';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
@@ -28,6 +28,7 @@ const links = [
   'NO Quote',
   'Released 120 Hours'
 ];
+
 type StatusType =
   | 'UNREAD'
   | 'OPEN'
@@ -53,41 +54,29 @@ type filterType =
 const MailTrackingContainer = () => {
   const dispatch = useDispatch();
 
-  // loading until everything ready (state)
   const [loading, setLoading] = useState(false);
-  // date since from (state)
   const [sinceFromDate, setSinceFromDate] = useState(() => {
     const date = new Date();
     date.setDate(date.getDate() - 3); // Subtract 2 days
     return date;
   });
-  // refresh spin active (state),
-  const [isActiveRefreshSpin, setIsActiveRefreshSprin] = useState(false);
-
-  // page no (state)
+  const [isActiveRefreshSpin, setIsActiveRefreshSpin] = useState(false);
   const [pageNo, setPageNo] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
-  // page size (state)
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10); // Default page size
   const [totalRFQMail, setTotalRFQMail] = useState(0);
-
-  // page activestatus(state)
   const [filterType, setFilterType] = useState<filterType>('ALL');
   const [stringActiveStatus, setStringActiveStatus] = useState('All');
-  // data (state)
   const [rfqNumberSearchrfqMails, setRfqNumberSearchrfqMails] = useState<
     RFQMail[]
   >([]);
   const [isShowRFQNumberSearch, setIsShowRFQNumberSearch] = useState(false);
-
-  // ToastContainer
   const [isShow, setIsShow] = useState(false);
   const [variant, setVariant] = useState('danger');
   const [messageHeader, setMessageHeader] = useState('');
   const [messageBodyText, setMessageBodyText] = useState('');
   const [position, setPosition] = useState<ToastPosition>('middle-end');
 
-  // useEffect data fetch
   useEffect(() => {
     const getRFQMailsFromDB = async () => {
       try {
@@ -109,22 +98,27 @@ const MailTrackingContainer = () => {
         setTotalRFQMail(response.data.totalItems);
         setTotalPage(response.data.totalPage);
         setLoading(false);
-      } catch (err) {}
+      } catch (err) {
+        // Handle error
+        setLoading(false);
+        console.error('Error fetching RFQ mails:', err);
+      }
     };
-    getRFQMailsFromDB();
-  }, [pageNo, pageSize, filterType, sinceFromDate]);
 
-  // handle Not RFQ , No Quote and Spam icons
-  // handle refresh button
-  // onSelect data fetching
+    getRFQMailsFromDB();
+  }, [pageNo, pageSize, filterType, sinceFromDate, dispatch]);
 
   const handleRFQNumberIdSearch = async (rfqNumberId: string) => {
     setLoading(true);
     if (rfqNumberId) {
-      const response = await searchByRfqNumberId(rfqNumberId, 1, 10);
-      if (response && response.data) {
-        setRfqNumberSearchrfqMails(response.data);
-        setIsShowRFQNumberSearch(true);
+      try {
+        const response = await searchByRfqNumberId(rfqNumberId, 1, 10);
+        if (response && response.data) {
+          setRfqNumberSearchrfqMails(response.data);
+          setIsShowRFQNumberSearch(true);
+        }
+      } catch (error) {
+        console.error('Error searching RFQ by number ID:', error);
       }
     } else {
       setIsShowRFQNumberSearch(false);
@@ -135,11 +129,16 @@ const MailTrackingContainer = () => {
 
   const handleTabSelect = (stringStatus: string | null) => {
     if (stringStatus) {
-      setStringActiveStatus(stringStatus); // Update the active tab key
+      setStringActiveStatus(stringStatus);
       const filterType = getActiveStatusFromStringStatus(stringStatus);
       setPageNo(1);
       setFilterType(filterType);
     }
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setPageNo(1); // Reset to first page when page size changes
   };
 
   return (
@@ -150,6 +149,8 @@ const MailTrackingContainer = () => {
         setSinceFromDate={setSinceFromDate}
         handleRFQNumberIdSearch={handleRFQNumberIdSearch}
         setPageNo={setPageNo}
+        pageSize={pageSize}
+        handlePageSizeChange={handlePageSizeChange}
       />
       {isShowRFQNumberSearch ? (
         <RFQMailRfqNumberIdSearch

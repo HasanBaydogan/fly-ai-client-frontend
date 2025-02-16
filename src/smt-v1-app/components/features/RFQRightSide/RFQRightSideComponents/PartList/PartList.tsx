@@ -134,8 +134,8 @@ const PartList = ({
 
   const handleAllSuppliersRefresh = async () => {
     setIsNewSupplierLoading(true);
-    // const resp = await getAllSuppliersFromDB();
-    // setSuppliers(resp.data);
+    const resp = await getAllSuppliersFromDB();
+    setSuppliers(resp.data);
     setIsNewSupplierLoading(false);
   };
   const formatNumber = (n: string): string => {
@@ -700,49 +700,55 @@ const PartList = ({
 
               {/* SUPPLIER START */}
               <td style={{ overflow: 'visible' }}>
-                <div className="d-flex">
-                  <Button
-                    variant="primary"
-                    className="px-3 py-1 me-3"
-                    onClick={handleNewSupplier}
-                  >
-                    <span style={{ fontSize: '16px' }}>+</span>
-                  </Button>
+                {isNewSupplierLoading ? (
                   <div className="d-flex justify-content-center align-items-center">
-                    <FontAwesomeIcon
-                      icon={faArrowRotateRight}
-                      className="me-3"
-                      size="lg"
-                      spin={isNewSupplierLoading}
-                      onClick={handleAllSuppliersRefresh}
-                    />
+                    {' '}
+                    <LoadingAnimation />
                   </div>
-
-                  {
-                    <Form.Group style={{ width: '200px' }}>
-                      <Typeahead
-                        id="searchable-select"
-                        labelKey="supplierName"
-                        options={suppliers}
-                        placeholder="Select a supplier"
-                        multiple={false}
-                        positionFixed
-                        style={{ zIndex: 100 }}
-                        //If it is empty then it returns [] otherwise It returns selected
-                        selected={supplier}
-                        onChange={selected => {
-                          if (selected.length > 0) {
-                            setSupplier(selected as Supplier[]);
-                            console.log('Selected Supplier:', selected); // For debugging
-                          } else {
-                            setSupplier([]);
-                            console.log('Supplier cleared.'); // For debugging
-                          }
-                        }}
+                ) : (
+                  <div className="d-flex">
+                    <Button
+                      variant="primary"
+                      className="px-3 py-1 me-3"
+                      onClick={handleNewSupplier}
+                    >
+                      <span style={{ fontSize: '16px' }}>+</span>
+                    </Button>
+                    <div className="d-flex justify-content-center align-items-center">
+                      <FontAwesomeIcon
+                        icon={faArrowRotateRight}
+                        className="me-3"
+                        size="lg"
+                        onClick={handleAllSuppliersRefresh}
                       />
-                    </Form.Group>
-                  }
-                </div>
+                    </div>
+
+                    {
+                      <Form.Group style={{ width: '200px' }}>
+                        <Typeahead
+                          id="searchable-select"
+                          labelKey="supplierName"
+                          options={suppliers}
+                          placeholder="Select a supplier"
+                          multiple={false}
+                          positionFixed
+                          style={{ zIndex: 100 }}
+                          //If it is empty then it returns [] otherwise It returns selected
+                          selected={supplier}
+                          onChange={selected => {
+                            if (selected.length > 0) {
+                              setSupplier(selected as Supplier[]);
+                              console.log('Selected Supplier:', selected); // For debugging
+                            } else {
+                              setSupplier([]);
+                              console.log('Supplier cleared.'); // For debugging
+                            }
+                          }}
+                        />
+                      </Form.Group>
+                    }
+                  </div>
+                )}
               </td>
               {/* SUPPLIER END */}
 

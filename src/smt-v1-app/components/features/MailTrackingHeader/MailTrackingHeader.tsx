@@ -10,13 +10,17 @@ const MailTrackingHeader = ({
   sinceFromDate,
   setSinceFromDate,
   handleRFQNumberIdSearch,
-  setPageNo
+  setPageNo,
+  pageSize,
+  handlePageSizeChange
 }: {
   loading: boolean;
   sinceFromDate: Date;
   setSinceFromDate: React.Dispatch<React.SetStateAction<Date>>;
   handleRFQNumberIdSearch: (rfqNumberId: string) => void;
   setPageNo: React.Dispatch<React.SetStateAction<number>>;
+  pageSize: number;
+  handlePageSizeChange: (size: number) => void;
 }) => {
   return (
     <Row className="mb-3">
@@ -37,13 +41,32 @@ const MailTrackingHeader = ({
             />
           </Form.Group>
         </div>
-
-        <SearchBox
-          placeholder="Search by RFQ Id"
-          className="pt-3"
-          inputClassName="rounded-pill my-4"
-          onChange={e => handleRFQNumberIdSearch(e.target.value)}
-        />
+        <div className="d-flex justify-content-center align-items-center">
+          <SearchBox
+            placeholder="Search by RFQ Id"
+            className="pt-3"
+            inputClassName="rounded-pill my-4"
+            onChange={e => handleRFQNumberIdSearch(e.target.value)}
+          />
+          <Form.Select
+            size="sm"
+            style={{
+              width: '70px',
+              height: '40px',
+              padding: '0px',
+              paddingLeft: '10px',
+              marginLeft: '10px',
+              marginTop: '11px'
+            }}
+            value={pageSize}
+            onChange={e => handlePageSizeChange(Number(e.target.value))}
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </Form.Select>
+        </div>
       </div>
     </Row>
   );
