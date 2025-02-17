@@ -3,7 +3,7 @@ import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal, Row, Col, Table, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { getAttachedFile } from 'smt-v1-app/services/ClientServices';
+import { getAttachedFile } from 'smt-v1-app/services/GlobalServices';
 
 interface ClientDetailModalProps {
   show: boolean;

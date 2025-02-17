@@ -369,17 +369,6 @@ const ClientEditContainer = () => {
     setSelectedStatus(value as unknown as string);
   };
 
-  const handleCertificateTypesChange = (values: string[]) => {
-    setCertificateTypes(
-      values as (
-        | 'CERTIFICATE_1'
-        | 'CERTIFICATE_2'
-        | 'CERTIFICATE_3'
-        | 'CERTIFICATE_4'
-      )[]
-    );
-  };
-
   const handleFilesUpload = (
     files: { id: string; name: string; base64: string }[]
   ) => {

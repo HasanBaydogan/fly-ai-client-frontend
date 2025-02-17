@@ -6,7 +6,7 @@ import Badge from 'components/base/Badge';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
-import { Col, Row, Dropdown } from 'react-bootstrap';
+import { Col, Row, Dropdown, Button } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
@@ -132,7 +132,8 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const pageSize = 6;
+  const [pageSize, setPageSize] = useState<number>(5); // Page size state,
+  // console.log('Page Size', pageSize);
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<ClientData>();
@@ -266,12 +267,12 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
 
   useEffect(() => {
     fetchData(searchTerm, pageIndex, selectedColumn);
-  }, [pageIndex]);
+  }, [pageIndex, pageSize]);
 
   return (
     <div>
       {/* Üst kısım: Arama ve filtreleme */}
-      <div className="mb-4">
+      <div className="mb-4 ">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>
             <div className="d-flex gap-2">
@@ -303,6 +304,34 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
               </Dropdown>
             </div>
           </Col>
+
+          {/* Items per page selector */}
+          <Col xs="auto" className="d-flex gap-2 ms-auto">
+            <Dropdown>
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                size="sm"
+                id="dropdown-items-per-page"
+                style={{ minWidth: '100px' }}
+              >
+                {pageSize} Clients
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {[5, 10, 25, 50, 100].map(size => (
+                  <Dropdown.Item
+                    key={size}
+                    active={pageSize === size}
+                    onClick={() => {
+                      setPageSize(size);
+                      setPageIndex(0); // Reset to first page
+                    }}
+                  >
+                    {size} Items
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </Col>
         </Row>
       </div>
 
@@ -322,6 +351,8 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
           totalItems={totalItems}
           pageIndex={pageIndex}
           setPageIndex={setPageIndex}
+          pageSize={pageSize} // Pass pageSize here
+          setPageSize={setPageSize} // Allow page size change
         />
       </div>
     </div>
