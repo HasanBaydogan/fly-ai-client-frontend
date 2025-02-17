@@ -1,30 +1,30 @@
 .dropdown-menu {
-    --phoenix-dropdown-min-width: 5.5rem;
-  }
+  --phoenix-dropdown-min-width: 5.5rem;
+}
 
-  .action-buttons {
-    position: absolute;
-    right: -15px;
-  }
-  
-  /* #client-info-form1{
+.action-buttons {
+  position: absolute;
+  right: -15px;
+}
+
+/* #client-info-form1{
     max-width: 90%;
   } */
-  .button-cell {
-    position: relative;
-    width: 100px; /* Buton hücresine sabit genişlik veriyoruz */
-  }
-  
-  .action-buttons {
-    position: absolute;
-    right: 0; /* Butonları hücrenin sağına hizalar */
-    top: 50%; /* Butonları dikey olarak ortalar */
-    transform: translateY(-50%); /* Dikey ortalama için */
-    display: flex;
-    justify-content: flex-end; /* Butonları sağa hizalar */
-    gap: 0.5rem; /* Butonlar arasına boşluk ekler */
-  }
-  /* Küçük ekranlar için responsive düzen */
+.button-cell {
+  position: relative;
+  width: 100px; /* Buton hücresine sabit genişlik veriyoruz */
+}
+
+.action-buttons {
+  position: absolute;
+  right: 0; /* Butonları hücrenin sağına hizalar */
+  top: 50%; /* Butonları dikey olarak ortalar */
+  transform: translateY(-50%); /* Dikey ortalama için */
+  display: flex;
+  justify-content: flex-end; /* Butonları sağa hizalar */
+  gap: 0.5rem; /* Butonlar arasına boşluk ekler */
+}
+/* Küçük ekranlar için responsive düzen */
 @media (max-width: 576px) {
   .action-buttons {
     justify-content: center;
@@ -41,16 +41,15 @@
   min-width: 100px;
 }
 
-.uppersection{
+.uppersection {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 }
 
-.upperrightsection{
-  display: flex
-  ;
-      align-items: center;
+.upperrightsection {
+  display: flex;
+  align-items: center;
 }
 /* small ile medium arasında özel bir yazı boyutu */
 .text-sm-md {
@@ -87,4 +86,17 @@
   .upperrightsection .quote-section {
     text-align: center; /* 992px altında merkeze hizalanır */
   }
+}
+#client-info-form1 {
+  table-layout: fixed;
+  width: 100%;
+}
+
+#client-info-form1 td {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  vertical-align: top;
+  min-height: 32.84px;
+  padding: 0.5rem; /* optional */
 }

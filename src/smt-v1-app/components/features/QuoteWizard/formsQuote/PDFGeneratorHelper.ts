@@ -9,7 +9,13 @@ export const generatePDF = (
   currency: string,
   quotePartRows: QuotePartRow[],
   subTotalValues,
-  checkedStates
+  checkedStates,
+  clientLocation: string,
+  shipTo: string,
+  requisitioner: string,
+  shipVia: string,
+  CPT: string,
+  shippingTerms: string
 ): jsPDF | void => {
   try {
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -54,7 +60,7 @@ export const generatePDF = (
     autoTable(pdf, {
       startY: 65,
       head: [['CLIENT LOCATION', 'SHIP TO']],
-      body: [['', '']],
+      body: [[clientLocation, shipTo]],
       theme: 'grid',
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
       styles: { halign: 'center', valign: 'middle' },
@@ -69,7 +75,7 @@ export const generatePDF = (
     autoTable(pdf, {
       startY: (pdf as any).lastAutoTable?.finalY + 5 || 70,
       head: [['REQUISITIONER', 'SHIP VIA', 'CPT', 'SHIPPING TERMS']],
-      body: [['', '', '', '']],
+      body: [[requisitioner, shipVia, CPT, shippingTerms]],
       theme: 'grid',
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
       styles: { halign: 'center', valign: 'middle' },
@@ -270,7 +276,13 @@ export const downloadPDF = (
   currency: string,
   quotePartRows: QuotePartRow[],
   subTotalValues,
-  checkedStates
+  checkedStates,
+  clientLocation: string,
+  shipTo: string,
+  requisitioner: string,
+  shipVia: string,
+  CPT: string,
+  shippingTerms: string
 ) => {
   try {
     const pdf = generatePDF(
@@ -280,7 +292,13 @@ export const downloadPDF = (
       currency,
       quotePartRows,
       subTotalValues,
-      checkedStates
+      checkedStates,
+      clientLocation,
+      shipTo,
+      requisitioner,
+      shipVia,
+      CPT,
+      shippingTerms
     );
     if (pdf) {
       pdf.save('quote-' + quoteNumber + '.pdf');
@@ -297,7 +315,13 @@ export const returnPdfAsBase64String = async (
   currency: string,
   quotePartRows: QuotePartRow[],
   subTotalValues,
-  checkedStates
+  checkedStates,
+  clientLocation: string,
+  shipTo: string,
+  requisitioner: string,
+  shipVia: string,
+  CPT: string,
+  shippingTerms: string
 ): Promise<string | undefined> => {
   try {
     const pdf = generatePDF(
@@ -307,7 +331,13 @@ export const returnPdfAsBase64String = async (
       currency,
       quotePartRows,
       subTotalValues,
-      checkedStates
+      checkedStates,
+      clientLocation,
+      shipTo,
+      requisitioner,
+      shipVia,
+      CPT,
+      shippingTerms
     );
     if (pdf) {
       const pdfBlob = pdf.output('blob');

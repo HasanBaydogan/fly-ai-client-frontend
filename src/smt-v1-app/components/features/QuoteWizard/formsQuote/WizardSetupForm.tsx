@@ -19,12 +19,25 @@ interface WizardSetupFormProps {
   currency: string;
   checkedStates: boolean[];
   setCheckedStates: React.Dispatch<React.SetStateAction<boolean[]>>;
+  setupOtherProps: {
+    clientLocation: string;
+    setClientLocation: React.Dispatch<React.SetStateAction<string>>;
+    shipTo: string;
+    setShipTo: React.Dispatch<React.SetStateAction<string>>;
+    requisitioner: string;
+    setRequisitioner: React.Dispatch<React.SetStateAction<string>>;
+    shipVia: string;
+    setShipVia: React.Dispatch<React.SetStateAction<string>>;
+    CPT: string;
+    setCPT: React.Dispatch<React.SetStateAction<string>>;
+    shippingTerms: string;
+    setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
+  };
 }
 
 const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   currencies,
   quotePartRows,
-
   setQuotePartRows,
   quoteWizardData,
   setSelectedDate,
@@ -34,7 +47,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   setCurrency,
   currency,
   checkedStates,
-  setCheckedStates
+  setCheckedStates,
+  setupOtherProps
 }) => {
   useEffect(() => {
     const formattedData = quoteWizardData.quoteWizardPartResponses.map(item => {
@@ -446,8 +460,32 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         </thead>
         <tbody>
           <tr className="text-center align-middle">
-            <td colSpan={3}>{'Client Location'}</td>
-            <td>{'SHIP TO From DB'}</td>
+            <td colSpan={3}>
+              {
+                <div className="d-flex justify-content-center align-items-center">
+                  <Form.Control
+                    type="text"
+                    value={setupOtherProps.clientLocation}
+                    onChange={e =>
+                      setupOtherProps.setClientLocation(e.target.value)
+                    }
+                    style={{ width: '85%' }}
+                  />
+                </div>
+              }
+            </td>
+            <td>
+              {
+                <div className="d-flex justify-content-center align-items-center">
+                  <Form.Control
+                    type="text"
+                    value={setupOtherProps.shipTo}
+                    onChange={e => setupOtherProps.setShipTo(e.target.value)}
+                    style={{ width: '85%' }}
+                  />
+                </div>
+              }
+            </td>
           </tr>
           <tr className="bg-primary text-white text-center align-middle">
             <td className="text-white" style={{ width: '25%' }}>
@@ -464,10 +502,50 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             </td>
           </tr>
           <tr className="text-center align-middle">
-            <td style={{ width: '25%' }}>{'Requisitioner'}</td>
-            <td style={{ width: '25%' }}>{'ShipVia'}</td>
-            <td style={{ width: '25%' }}>{'CPT'}</td>
-            <td style={{ width: '25%' }}>{'ShippingTerms'}</td>
+            <td style={{ width: '25%' }}>
+              <div className="d-flex justify-content-center align-items-center">
+                <Form.Control
+                  type="text"
+                  value={setupOtherProps.requisitioner}
+                  onChange={e =>
+                    setupOtherProps.setRequisitioner(e.target.value)
+                  }
+                  style={{ width: '85%' }}
+                />
+              </div>
+            </td>
+            <td style={{ width: '25%' }}>
+              <div className="d-flex justify-content-center align-items-center">
+                <Form.Control
+                  type="text"
+                  value={setupOtherProps.shipVia}
+                  onChange={e => setupOtherProps.setShipVia(e.target.value)}
+                  style={{ width: '85%' }}
+                />
+              </div>
+            </td>
+            <td style={{ width: '25%' }}>
+              <div className="d-flex justify-content-center align-items-center">
+                <Form.Control
+                  type="text"
+                  value={setupOtherProps.CPT}
+                  onChange={e => setupOtherProps.setCPT(e.target.value)}
+                  style={{ width: '85%' }}
+                />
+              </div>
+            </td>
+            <td style={{ width: '25%' }}>
+              <div className="d-flex justify-content-center align-items-center">
+                <Form.Control
+                  type="text"
+                  value={setupOtherProps.shippingTerms}
+                  onChange={e =>
+                    setupOtherProps.setShippingTerms(e.target.value)
+                  }
+                  style={{ width: '85%' }}
+                />
+              </div>
+            </td>
           </tr>
         </tbody>
       </Table>

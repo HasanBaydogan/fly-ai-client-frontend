@@ -18,7 +18,10 @@ import QuotePartList from '../../components/features/QuoteList/QuoteListRightCom
 import QuoteListAlternativeParts from '../../components/features/QuoteList/QuoteListRightComponents/QuoteListAlternativeParts/QuoteListAlternativeParts';
 import CustomButton from '../../../components/base/Button';
 import QuoteWizard from '../../components/features/QuoteWizard/QuoteWizard';
-import { getQuoteDetailsById } from 'smt-v1-app/services/QuoteService';
+import {
+  getQuoteDetailsById,
+  getRFQMailIdToGoToRFQMail
+} from 'smt-v1-app/services/QuoteService';
 import { useSearchParams } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowHelper';
@@ -83,6 +86,19 @@ const QuoteContainer = () => {
 
   const handleQuoteWizardTabs = () => {
     setShowQuoteWizardTabs(true);
+  };
+
+  const handleGoToRFQMail = async () => {
+    const response = await getRFQMailIdToGoToRFQMail(quoteId);
+    if (response && response.statusCode === 200) {
+      window.location.assign('/rfqs/rfq?rfqMailId=' + response.data.rfqMailId);
+    } else {
+      console.log('An error occurs when Go To RFQ Mail');
+    }
+  };
+
+  const handleCancel = () => {
+    window.location.assign('/mail-tracking');
   };
 
   return (
@@ -170,7 +186,7 @@ const QuoteContainer = () => {
                   variant="danger"
                   onClick={() => {
                     // Handle Go to RFQ Mail click
-                    console.log('Go to RFQ Mail clicked');
+                    handleCancel();
                   }}
                 >
                   Cancel
@@ -182,7 +198,7 @@ const QuoteContainer = () => {
                     variant="secondary"
                     onClick={() => {
                       // Handle Go to RFQ Mail click
-                      console.log('Go to RFQ Mail clicked');
+                      handleGoToRFQMail();
                     }}
                   >
                     Go to RFQ Mail

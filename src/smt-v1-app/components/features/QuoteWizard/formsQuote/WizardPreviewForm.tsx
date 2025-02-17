@@ -24,6 +24,20 @@ interface WizardPersonalFormProps {
   setBase64PdfFileName: React.Dispatch<React.SetStateAction<string>>;
   setBase64Pdf: React.Dispatch<React.SetStateAction<string>>;
   setIsPdfConvertedToBase64: React.Dispatch<React.SetStateAction<boolean>>;
+  setupOtherProps: {
+    clientLocation: string;
+    setClientLocation: React.Dispatch<React.SetStateAction<string>>;
+    shipTo: string;
+    setShipTo: React.Dispatch<React.SetStateAction<string>>;
+    requisitioner: string;
+    setRequisitioner: React.Dispatch<React.SetStateAction<string>>;
+    shipVia: string;
+    setShipVia: React.Dispatch<React.SetStateAction<string>>;
+    CPT: string;
+    setCPT: React.Dispatch<React.SetStateAction<string>>;
+    shippingTerms: string;
+    setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
+  };
 }
 
 const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
@@ -36,7 +50,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
   quotePartRows,
   quoteNumber, // Add this new prop,
   currency,
-  setIsPdfConvertedToBase64
+  setIsPdfConvertedToBase64,
+  setupOtherProps
 }) => {
   const handleGeneratePDF = () => {
     try {
@@ -47,7 +62,13 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         currency,
         quotePartRows,
         subTotalValues,
-        checkedStates
+        checkedStates,
+        setupOtherProps.clientLocation,
+        setupOtherProps.shipTo,
+        setupOtherProps.requisitioner,
+        setupOtherProps.shipVia,
+        setupOtherProps.CPT,
+        setupOtherProps.shippingTerms
       );
     } catch (error) {
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
@@ -66,7 +87,13 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             currency,
             quotePartRows,
             subTotalValues,
-            checkedStates
+            checkedStates,
+            setupOtherProps.clientLocation,
+            setupOtherProps.shipTo,
+            setupOtherProps.requisitioner,
+            setupOtherProps.shipVia,
+            setupOtherProps.CPT,
+            setupOtherProps.shippingTerms
           );
           setBase64Pdf(response);
           setBase64PdfFileName('quote-' + quoteNumber + '.pdf');
@@ -132,9 +159,21 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             </tr>
           </thead>
           <tbody>
-            <tr className="text-center align-middle">
-              <td colSpan={3}>{'ClientLocation'}</td>
-              <td>{'ShipTo'}</td>
+            <tr className="text-center">
+              <td colSpan={3}>
+                {setupOtherProps.clientLocation.trim() === '' ? (
+                  <span>&nbsp;</span>
+                ) : (
+                  setupOtherProps.clientLocation
+                )}
+              </td>
+              <td>
+                {setupOtherProps.shipTo.trim() === '' ? (
+                  <span>&nbsp;</span>
+                ) : (
+                  setupOtherProps.shipTo
+                )}
+              </td>
             </tr>
             <tr className="bg-primary text-white text-center align-middle">
               <td className="text-white" style={{ width: '25%' }}>
@@ -150,11 +189,35 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 SHIPPING TERMS
               </td>
             </tr>
-            <tr className="text-center align-middle">
-              <td style={{ width: '25%' }}>{'Requisitioner'}</td>
-              <td style={{ width: '25%' }}>{'ShipVia'}</td>
-              <td style={{ width: '25%' }}>{'CPT'}</td>
-              <td style={{ width: '25%' }}>{'ShippingTerms'}</td>
+            <tr className="text-center">
+              <td style={{ width: '25%' }}>
+                {setupOtherProps.requisitioner.trim() === '' ? (
+                  <span>&nbsp;</span>
+                ) : (
+                  setupOtherProps.requisitioner
+                )}
+              </td>
+              <td style={{ width: '25%' }}>
+                {setupOtherProps.shipVia.trim() === '' ? (
+                  <span>&nbsp;</span>
+                ) : (
+                  setupOtherProps.shipVia
+                )}
+              </td>
+              <td style={{ width: '25%' }}>
+                {setupOtherProps.CPT.trim() === '' ? (
+                  <span>&nbsp;</span>
+                ) : (
+                  setupOtherProps.CPT
+                )}
+              </td>
+              <td style={{ width: '25%' }}>
+                {setupOtherProps.shippingTerms.trim() === '' ? (
+                  <span>&nbsp;</span>
+                ) : (
+                  setupOtherProps.shippingTerms
+                )}
+              </td>
             </tr>
           </tbody>
         </Table>

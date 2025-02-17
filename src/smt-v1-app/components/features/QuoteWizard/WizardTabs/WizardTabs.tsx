@@ -95,9 +95,8 @@ const WizardTabs = ({
     false,
     false
   ]);
+
   const [quotePartRows, setQuotePartRows] = useState<QuotePartRow[]>([]);
-  const { selectedStep, goToStep, getCanNextPage, getCanPreviousPage } =
-    useWizardFormContext();
 
   const handleSendQuoteEmail = async () => {
     const attachments: {
@@ -117,6 +116,28 @@ const WizardTabs = ({
 
     const response = await sendQuoteEmail(payload);
     console.log(response);
+  };
+
+  const [clientLocation, setClientLocation] = useState<string>('');
+  const [shipTo, setShipTo] = useState<string>('');
+  const [requisitioner, setRequisitioner] = useState<string>('');
+  const [shipVia, setShipVia] = useState<string>('');
+  const [CPT, setCPT] = useState<string>('');
+  const [shippingTerms, setShippingTerms] = useState<string>('');
+
+  const setupOtherProps = {
+    clientLocation,
+    setClientLocation,
+    shipTo,
+    setShipTo,
+    requisitioner,
+    setRequisitioner,
+    shipVia,
+    setShipVia,
+    CPT,
+    setCPT,
+    shippingTerms,
+    setShippingTerms
   };
 
   return (
@@ -144,6 +165,7 @@ const WizardTabs = ({
                     setCurrency={setCurrency}
                     checkedStates={checkedStates}
                     setCheckedStates={setCheckedStates}
+                    setupOtherProps={setupOtherProps}
                   />
                 </WizardForm>
               </Tab.Pane>
@@ -161,6 +183,7 @@ const WizardTabs = ({
                       currency={currency}
                       selectedDate={selectedDate}
                       checkedStates={checkedStates}
+                      setupOtherProps={setupOtherProps}
                     />
                   }
                 </WizardForm>
