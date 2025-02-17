@@ -310,7 +310,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
                 id="dropdown-items-per-page"
                 style={{ minWidth: '100px' }}
               >
-                {pageSize} Clients
+                {pageSize} Suppliers
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 {[5, 10, 25, 50, 100].map(size => (
