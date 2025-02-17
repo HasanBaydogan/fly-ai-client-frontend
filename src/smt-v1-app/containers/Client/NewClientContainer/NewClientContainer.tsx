@@ -1,32 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Col, Modal, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { FormattedContactData } from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/ContactListSection';
-import { RatingData } from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/RatingComponent';
-import SegmentSelection from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/SegmentSelection';
-import SupplierInfo from 'smt-v1-app/components/features/NewClient/ClientInfo';
-import {
-  Certypes,
-  SupplierStatus
-} from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
+import { FormattedContactData } from 'smt-v1-app/components/features/Client/NewClient/NewClientContact/ContactListSection';
+import { RatingData } from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';
+import SegmentSelection from 'smt-v1-app/components/features/GlobalComponents/SegmentSelection';
+import ClientInfo from 'smt-v1-app/components/features/Client/NewClient/ClientInfo';
 import {
   getbyCurrencyController,
   getByMarginTable,
   postClientCreate
 } from 'smt-v1-app/services/ClientServices';
 import {
-  getbyCountryList,
   getbySegmentList,
-  postSupplierCreate,
-  TreeNode
-} from 'smt-v1-app/services/SupplierServices';
-import CustomButton from '../../../components/base/Button';
+  TreeNode,
+  Status
+} from 'smt-v1-app/services/GlobalServices';
+import CustomButton from '../../../../components/base/Button';
 
-import AddressDetails from 'smt-v1-app/components/features/NewClient/ClientMidPart';
-import RatingSection from 'smt-v1-app/components/features/NewClient/RatingComponent';
-import FileUpload from 'smt-v1-app/components/features/NewClient/NewClientAttachment/FileUpload';
-import ContactListSection from 'smt-v1-app/components/features/NewClient/NewClientContact/ContactListSection';
-import ClientBottomSection from 'smt-v1-app/components/features/NewClient/ClientBottomSection';
+import AddressDetails from 'smt-v1-app/components/features/Client/NewClient/ClientMidPart';
+import RatingSection from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';
+import FileUpload from 'smt-v1-app/components/features/Client/NewClient/NewClientAttachment/FileUpload';
+import ContactListSection from 'smt-v1-app/components/features/Client/NewClient/NewClientContact/ContactListSection';
+import ClientBottomSection from 'smt-v1-app/components/features/Client/NewClient/ClientBottomSection';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 // const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
@@ -46,7 +41,6 @@ const NewClientContainer = () => {
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
   const [subCompany, setSubCompany] = useState('');
   const [legalAddress, setLegalAddress] = useState('');
-  const [selectedCountryId, setSelectedCountryId] = useState('');
   const [clientDetail, setClientDetail] = useState('');
   const [phone, setPhone] = useState('');
 
@@ -54,27 +48,22 @@ const NewClientContainer = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<string>('');
   const [clientWebsite, setClientWebsite] = useState('');
 
-  const [selectedStatus, setSelectedStatus] = useState<SupplierStatus | ''>('');
+  const [selectedStatus, setSelectedStatus] = useState<Status | ''>('');
   const [base64Files, setBase64Files] = useState<
     { name: string; base64: string }[]
   >([]);
   const [workingDetails, setWorkingDetails] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [contacts, setContacts] = useState<FormattedContactData[]>([]);
-  const [certificateTypes, setCertificateTypes] = useState<Certypes[]>([]);
-
   const [ratings, setRatings] = useState<RatingData>({
-    easeOfSupply: 0,
-    dialogSpeed: 0,
     dialogQuality: 0,
-    supplyCapability: 0,
-    euDemandOfParts: 0
+    volumeOfOrder: 0,
+    continuityOfOrder: 0,
+    easeOfPayment: 0,
+    easeOfDelivery: 0
   });
 
   // Initialized data
   const [segments, setSegments] = useState<TreeNode[]>([]);
-  const [countryList, setCountryList] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Alerts & modals
@@ -177,7 +166,7 @@ const NewClientContainer = () => {
     setIsSuccess(false);
     setShowAlert(true);
     setTimeout(() => {
-      navigate('/supplier/list');
+      navigate('/Client/list');
     }, 1000);
   };
 
@@ -241,8 +230,6 @@ const NewClientContainer = () => {
         data: file.base64
       })),
       workingDetails: workingDetails,
-      username: username,
-      password: password,
       // contacts: contacts,
 
       userComments: userComments.map(item => ({
@@ -250,12 +237,13 @@ const NewClientContainer = () => {
         severity: item.severity
       })),
       clientPriceMarginTableRequest: numericMarginTable,
-
-      dialogSpeed: ratings.dialogSpeed,
-      dialogQuality: ratings.dialogQuality,
-      easeOfSupply: ratings.easeOfSupply,
-      supplyCapability: ratings.supplyCapability,
-      euDemandParts: ratings.euDemandOfParts
+      clientRatings: {
+        dialogQuality: ratings.dialogQuality,
+        volumeOfOrder: ratings.volumeOfOrder,
+        continuityOfOrder: ratings.continuityOfOrder,
+        easeOfPayment: ratings.easeOfPayment,
+        easeOfDelivery: ratings.easeOfDelivery
+      }
     };
     // console.log('Client Payload', clientPayload);
 
@@ -276,12 +264,12 @@ const NewClientContainer = () => {
         }, 2000);
       } else {
         setResultModalTitle('Undefined');
-        setResultModalMessage('An error occurred while saving supplier info.');
+        setResultModalMessage('An error occurred while saving Client info.');
         setShowResultModal(true);
       }
     } catch (error) {
       setResultModalTitle('Error');
-      setResultModalMessage('An error occurred while saving supplier info.');
+      setResultModalMessage('An error occurred while saving Client info.');
       setShowResultModal(true);
     } finally {
       setLoadingSave(false);
@@ -289,7 +277,7 @@ const NewClientContainer = () => {
   };
 
   const handleStatusChange = (value: string) => {
-    setSelectedStatus(value as unknown as SupplierStatus);
+    setSelectedStatus(value as unknown as Status);
   };
 
   return (
@@ -383,7 +371,7 @@ const NewClientContainer = () => {
             </Modal.Footer>
           </Modal>
           {/* Client Info */}
-          <SupplierInfo
+          <ClientInfo
             setCompanyName={setCompanyName}
             companyName={clientCompanyName}
             setSubCompany={setSubCompany}
@@ -417,8 +405,8 @@ const NewClientContainer = () => {
                 clientMail={clientMail}
                 setClientWebsite={setClientWebsite}
                 clientWebsite={clientWebsite}
-                phone={phone} // Phone state prop olarak ekleniyor
-                setPhone={setPhone} // Phone güncelleme fonksiyonu da gönderiliyor
+                phone={phone}
+                setPhone={setPhone}
               />
             </Col>
             <Col

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import styles from '../../SupplierDetail/SupplierDetailComponents/FileUpload.module.css';
+import styles from 'smt-v1-app/components/features/GlobalComponents/FileUpload.module.css';
 
 import Dropzone from '../../SupplierDetail/SupplierDetailComponents/Dropzone';
 import AttachmentPreview, {

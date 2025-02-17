@@ -200,7 +200,7 @@ export const postSupplierCreate = async (newSupplier: CreateSupplier) => {
     const response = await api().post(`/supplier/create`, newSupplier, {
       headers
     });
-
+    console.log(response);
     if (response.data.statusCode === 200) {
       return response.data;
     } else if (response.data.statusCode === 498) {
@@ -357,77 +357,6 @@ export const searchBySupplierList = async (
     }
   } catch (err) {
     console.log('[searchBySupplierList] Supplier List Permission Error:', err);
-  }
-};
-
-export const getAttachedFile = async (attachmentId: string) => {
-  try {
-    const accessToken = Cookies.get('access_token');
-    const headers = {};
-    if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
-    } else {
-      window.location.assign('/');
-    }
-
-    const response = await api().get(`/attachment/id/${attachmentId}`, {
-      headers
-    });
-    // console.log('Response from getAttachedFile:', response);
-
-    if (response.data.statusCode === 200) {
-      return response.data;
-    } else if (response.data.statusCode === 498) {
-      // Expired JWT
-      try {
-        const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refresh_token: Cookies.get('refresh_token')
-        });
-        if (refreshTokenresponse.data.statusCode === 200) {
-          setCookie(
-            'access_token',
-            refreshTokenresponse.data.data.access_token
-          );
-          setCookie(
-            'refresh_token',
-            refreshTokenresponse.data.data.refresh_token
-          );
-          let rfqMailResponseAfterRefresh = await api().get(
-            `/attachment/id/${attachmentId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
-              }
-            }
-          );
-
-          return rfqMailResponseAfterRefresh.data;
-        } else if (refreshTokenresponse.data.statusCode === 498) {
-          // Expired Refresh Token
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 411) {
-          // Invalid Refresh Token
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 404) {
-          console.log('User not found');
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    } else if (response.data.statusCode === 401) {
-      Cookies.remove('access_token');
-      Cookies.remove('refresh_token');
-      window.location.assign('/');
-    }
-  } catch (err) {
-    console.log('Attachment File Permission Error');
   }
 };
 

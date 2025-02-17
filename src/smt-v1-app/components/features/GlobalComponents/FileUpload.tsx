@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import Dropzone from './Dropzone';
+import Dropzone from '../SupplierDetail/SupplierDetailComponents/Dropzone';
 import styles from './FileUpload.module.css';
-import AttachmentPreview, { FileAttachment } from './AttachmentPreview';
+import AttachmentPreview, {
+  FileAttachment
+} from '../SupplierDetail/SupplierDetailComponents/AttachmentPreview';
 
 const MAX_TOTAL_SIZE = 16 * 1024 * 1024;
 

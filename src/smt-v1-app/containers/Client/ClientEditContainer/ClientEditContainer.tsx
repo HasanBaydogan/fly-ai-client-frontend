@@ -1,33 +1,31 @@
 import { Row, Col, Alert, Modal, Button, Spinner } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import SupplierInfo from '../../components/features/SupplierDetail/SupplierDetailComponents/SupplierInfo';
-import SegmentSelection from '../../components/features/GlobalComponents/SegmentSelection';
-import AddressDetails from '../../components/features/SupplierDetail/SupplierDetailComponents/AddressDetails';
-import RatingSection, {
-  RatingData
-} from '../../components/features/SupplierDetail/SupplierDetailComponents/RatingComponent';
-import WorkingDetails from '../../components/features/SupplierDetail/SupplierDetailComponents/WorkingDetails';
-import FileUpload from '../../components/features/GlobalComponents/FileUpload';
-import AccountInfo from '../../components/features/SupplierDetail/SupplierDetailComponents/AccountInfo';
+import ClientInfo from '../../../components/features/Client/NewClient/ClientInfo';
+import SegmentSelection from '../../../components/features/GlobalComponents/SegmentSelection';
+import AddressDetails from 'smt-v1-app/components/features/Client/NewClient/ClientMidPart';
+import RatingSection from '../../../components/features/Client/NewClient/RatingComponent';
+import { RatingData } from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';
+import FileUpload from '../../../components/features/GlobalComponents/FileUpload';
 import ContactListSection, {
   FormattedContactData
-} from '../../components/features/SupplierDetail/SupplierDetailComponents/ContactListSection';
-import CustomButton from '../../../components/base/Button';
+} from '../../../components/features/Client/NewClient/NewClientContact/ContactListSection'; //
+import CustomButton from '../../../../components/base/Button'; //
 import {
-  getBySupplierId,
-  putBySupplierUpdate,
-  getbyCountryList
-} from '../../services/SupplierServices';
+  getByClientId,
+  putByClientUpdate,
+  getbyCurrencyController
+} from '../../../services/ClientServices'; //
 import {
   getbySegmentList,
+  getAttachedFile,
   TreeNode,
-  Certypes,
-  getAttachedFile
+  Status,
+  Certypes
 } from 'smt-v1-app/services/GlobalServices';
-
-import { FileAttachment } from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
-import AttachmentPreview from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
+import { FileAttachment } from '../../../components/features/Client/NewClient/NewClientAttachment/AttachmentPreview';
+import AttachmentPreview from '../../../components/features/Client/NewClient/NewClientAttachment/AttachmentPreview';
+import ClientBottomSection from 'smt-v1-app/components/features/Client/NewClient/ClientBottomSection';
 
 /**
  * Dosyayı base64 verisinden açmak / indirmek için fonksiyon.
@@ -63,35 +61,46 @@ const openFileInNewTab = (file: {
   }
 };
 
-const SupplierEditContainer = () => {
+const ClientEditContainer = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const supplierId = searchParams.get('supplierId');
+  const clientId = searchParams.get('clientId');
+  const [phone, setPhone] = useState('');
+  const [clientWebsite, setClientWebsite] = useState('');
+  const [userComments, setUserComments] = useState([
+    { comment: '', severity: '', isEditing: true }
+  ]);
+  const [clientMail, setClientMail] = useState<string>('');
+  const [clientDetail, setClientDetail] = useState('');
 
-  const [companyName, setCompanyName] = useState<string>('');
+  const [currencies, setCurrencies] = useState<string[]>([]);
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('');
+  const [clientCompanyName, setCompanyName] = useState<string>('');
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
-  const [brandInput, setBrandInput] = useState('');
-  const [selectedCountryId, setSelectedCountryId] = useState('');
+  const [subCompany, setSubCompany] = useState('');
+  const [legalAddress, setLegalAddress] = useState('');
   const [pickUpAddress, setPickUpAddress] = useState('');
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
-  const [countryList, setCountryList] = useState<any>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [base64Files, setBase64Files] = useState<
     { id: string; name: string; base64: string }[]
   >([]);
+  const [priceMargins, setMarginTable] = useState({});
+
   const [workingDetails, setWorkingDetails] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [contacts, setContacts] = useState<FormattedContactData[]>([]);
   const [certificateTypes, setCertificateTypes] = useState<Certypes[]>([]);
+  const [contacts, setContacts] = useState<FormattedContactData[]>([]);
   const [ratings, setRatings] = useState<RatingData>({
-    easeOfSupply: 0,
-    dialogSpeed: 0,
     dialogQuality: 0,
-    supplyCapability: 0,
-    euDemandOfParts: 0
+    volumeOfOrder: 0,
+    continuityOfOrder: 0,
+    easeOfPayment: 0,
+    easeOfDelivery: 0
   });
+
   const [segments, setSegments] = useState<TreeNode[]>([]);
   // Attachment metadata'larını tutuyoruz.
   const [initialAttachments, setInitialAttachments] = useState<
@@ -106,8 +115,8 @@ const SupplierEditContainer = () => {
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultModalTitle, setResultModalTitle] = useState('');
   const [resultModalMessage, setResultModalMessage] = useState('');
-  // Supplier verisi yüklenirken kullanılan loading state.
-  const [loadingSupplier, setLoadingSupplier] = useState<boolean>(true);
+  // Client verisi yüklenirken kullanılan loading state.
+  const [loadingClient, setLoadingClient] = useState<boolean>(true);
   // PUT isteği sırasında loading state.
   const [loadingSave, setLoadingSave] = useState<boolean>(false);
 
@@ -135,6 +144,30 @@ const SupplierEditContainer = () => {
   };
 
   useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const response = await getbyCurrencyController();
+        // Adjust the next lines according to your API response structure.
+        if (
+          response &&
+          response.statusCode === 200 &&
+          Array.isArray(response.data)
+        ) {
+          setCurrencies(response.data);
+          // Optionally set the default selected currency:
+          if (response.data.length > 0) {
+            setSelectedCurrency(response.data[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching currencies:', error);
+      }
+    };
+
+    fetchCurrencies();
+  }, []);
+
+  useEffect(() => {
     const fetchSegments = async () => {
       try {
         const response = await getbySegmentList();
@@ -150,55 +183,43 @@ const SupplierEditContainer = () => {
   }, []);
 
   useEffect(() => {
-    const fetchCountries = async () => {
+    const fetchClientData = async () => {
       try {
-        const response = await getbyCountryList();
-        if (response?.data) {
-          setCountryList(response);
-        }
-      } catch (error) {
-        console.error('Error fetching country list:', error);
-      }
-    };
-    fetchCountries();
-  }, []);
-
-  useEffect(() => {
-    const fetchSupplierData = async () => {
-      try {
-        setLoadingSupplier(true);
-        const response = await getBySupplierId(supplierId!);
+        setLoadingClient(true);
+        const response = await getByClientId(clientId!);
         if (response && response.data) {
-          const supplier = response.data;
-          // console.log('Supplier data:', supplier);
-          setCompanyName(supplier.supplierCompanyName);
-          setBrandInput(supplier.brand);
+          const client = response.data;
+          // console.log('Client data:', client);
+          setCompanyName(client.companyName);
+          setSubCompany(client.subCompanyName);
+          setLegalAddress(client.legalAddress);
+          setClientMail(client.mail);
+          setClientWebsite(client.website);
+          setClientDetail(client.details);
+          setPhone(client.phone);
+          setUserComments(client.userComments);
+          setMarginTable(client.marginTable);
           // Özyinelemeli olarak tüm true olan segmentlerin id'sini alıyoruz.
           const selectedSupplierSegmentIds = getInitialSelectedIds(
-            supplier.segments
+            client.segments
           );
           setSegmentIds(selectedSupplierSegmentIds);
           // Eğer segment ağacını da güncellemek istiyorsanız:
-          setSegments(supplier.segments);
-
-          setSelectedCountryId(supplier.country.id);
-          setPickUpAddress(supplier.pickUpAddress);
-          setSelectedStatus(supplier.supplierStatus);
-          setWorkingDetails(supplier.workingDetails);
-          setUsername(supplier.username);
-          setPassword(supplier.password);
-          setContacts(supplier.contacts);
-          setCertificateTypes(supplier.certificateTypes);
-          setRatings({
-            dialogSpeed: supplier.dialogSpeed,
-            dialogQuality: supplier.dialogQuality,
-            easeOfSupply: supplier.easeOfSupply,
-            supplyCapability: supplier.supplyCapability,
-            euDemandOfParts: supplier.euDemandParts
-          });
-          if (supplier.attachments && supplier.attachments.length > 0) {
+          setSegments(client.segments);
+          setPickUpAddress(client.details);
+          setSelectedStatus(client.clientStatus);
+          setSelectedCurrency(client.currencyPreference);
+          setWorkingDetails(client.workingDetails);
+          setContacts(client.contacts);
+          if (client.clientRatings) {
+            setRatings(client.clientRatings);
+          }
+          if (
+            client.attachmentResponses &&
+            client.attachmentResponses.length > 0
+          ) {
             setInitialAttachments(
-              supplier.attachments.map((att: any) => ({
+              client.attachmentResponses.map((att: any) => ({
                 id: att.attachmentId,
                 name: att.fileName,
                 contentType: att.contentType || 'application/octet-stream',
@@ -208,19 +229,19 @@ const SupplierEditContainer = () => {
           }
         }
       } catch (error) {
-        console.error('Error fetching supplier data:', error);
-        setAlertMessage('Supplier data could not be loaded.');
+        // console.error('Error fetching client data:', error);
+        // setAlertMessage('Client data could not be loaded.');
         setIsSuccess(false);
-        setShowAlert(true);
+        // setShowAlert(true);
       } finally {
-        setLoadingSupplier(false);
+        setLoadingClient(false);
       }
     };
 
-    if (supplierId) {
-      fetchSupplierData();
+    if (clientId) {
+      fetchClientData();
     }
-  }, [supplierId]);
+  }, [clientId]);
 
   const confirmCancel = () => setShowCancelModal(true);
   const handleCancel = () => {
@@ -228,7 +249,7 @@ const SupplierEditContainer = () => {
     setAlertMessage('Changes have been discarded.');
     setIsSuccess(false);
     setShowAlert(true);
-    setTimeout(() => navigate('/supplier/list'), 1000);
+    setTimeout(() => navigate('/Client/list'), 1000);
   };
 
   const confirmSave = () => setShowSaveModal(true);
@@ -236,24 +257,24 @@ const SupplierEditContainer = () => {
   const handleSave = async () => {
     setShowSaveModal(false);
 
-    if (!companyName.trim()) {
-      setAlertMessage('Company Name cannot be empty.');
-      setIsSuccess(false);
-      setShowAlert(true);
-      return;
-    }
+    // if (!companyName.trim()) {
+    //   setAlertMessage('Company Name cannot be empty.');
+    //   setIsSuccess(false);
+    //   setShowAlert(true);
+    //   return;
+    // }
     // if (!segmentIds || segmentIds.length === 0) {
     //   setAlertMessage('Please select at least one Segment.');
     //   setIsSuccess(false);
     //   setShowAlert(true);
     //   return;
     // }
-    if (!selectedCountryId) {
-      setAlertMessage('Please select a Country.');
-      setIsSuccess(false);
-      setShowAlert(true);
-      return;
-    }
+    // if (!selectedCountryId) {
+    //   setAlertMessage('Please select a Country.');
+    //   setIsSuccess(false);
+    //   setShowAlert(true);
+    //   return;
+    // }
     if (!selectedStatus) {
       setAlertMessage('Please select a Status.');
       setIsSuccess(false);
@@ -274,60 +295,69 @@ const SupplierEditContainer = () => {
       }))
     ];
 
-    const payload = {
-      supplierId,
-      supplierCompanyName: companyName,
-      segmentIds: segmentIds,
-      brand: brandInput,
-      countryId: selectedCountryId,
-      pickUpAddress: pickUpAddress,
-      status: selectedStatus,
-      attachments: attachmentsPayload,
-      workingDetails: workingDetails,
-      username: username,
-      password: password,
-      contacts: contacts.map(contact => ({
-        id: contact.id,
-        fullName: contact.fullName,
-        email: contact.email,
-        title: contact.title,
-        phone: contact.phone,
-        cellPhone: contact.cellPhone
+    const numericMarginTable = Object.fromEntries(
+      Object.entries(priceMargins).map(([key, value]) => {
+        // Virgülü nokta ile değiştirip Number'a dönüştürüyoruz.
+        const numericValue = Number(value.toString().replace(',', '.'));
+        return [key, isNaN(numericValue) ? 0 : numericValue];
+      })
+    );
+
+    const editPayload = {
+      clientId: clientId,
+      companyName: clientCompanyName,
+      legalAddress: legalAddress,
+      subCompanyName: subCompany,
+      currencyPreference: selectedCurrency,
+      segmentIdList: segmentIds,
+      details: clientDetail,
+      clientStatus: selectedStatus as unknown as Status,
+      phone: phone,
+      website: clientWebsite,
+      mail: clientMail,
+      contactRequests: contacts,
+      attachmentRequests: base64Files.map(file => ({
+        fileName: file.name,
+        data: file.base64
       })),
-      certificateTypes: certificateTypes,
-      dialogSpeed: ratings.dialogSpeed,
-      dialogQuality: ratings.dialogQuality,
-      easeOfSupply: ratings.easeOfSupply,
-      supplyCapability: ratings.supplyCapability,
-      euDemandParts: ratings.euDemandOfParts
+      userComments: userComments.map(item => ({
+        comment: item.comment,
+        severity: item.severity
+      })),
+      clientPriceMarginTableRequest: numericMarginTable,
+      clientRatings: {
+        dialogQuality: ratings.dialogQuality,
+        volumeOfOrder: ratings.volumeOfOrder,
+        continuityOfOrder: ratings.continuityOfOrder,
+        easeOfPayment: ratings.easeOfPayment,
+        easeOfDelivery: ratings.easeOfDelivery
+      }
     };
 
-    // console.log('Payload to be sent:', payload);
+    // console.log('Payload to be sent:', editPayload);
 
     setLoadingSave(true);
     try {
-      const response = await putBySupplierUpdate(payload);
-      // console.log('Response from putBySupplierUpdate:', response);
+      const response = await putByClientUpdate(editPayload);
+      // console.log('Response from putByClientUpdate:', response);
       if (response && response.statusCode === 200) {
-        setResultModalTitle('Supplier update successful');
+        setResultModalTitle('Client update successful');
         setResultModalMessage(
-          'Supplier information has been successfully updated!'
+          'Client information has been successfully updated!'
         );
         setShowResultModal(true);
         setTimeout(() => {
-          navigate('/supplier/list');
+          navigate('/client/list');
         }, 2000);
       } else {
         setResultModalTitle('Error');
-        setResultModalMessage(
-          'An error occurred while updating supplier info.'
-        );
+        setResultModalMessage('An error occurred while updating Client info.');
         setShowResultModal(true);
       }
     } catch (error) {
-      console.error('Error updating supplier data:', error);
+      console.error('Error updating Client data:', error);
       setResultModalTitle('Error');
-      setResultModalMessage('An error occurred while updating supplier info.');
+      setResultModalMessage('An error occurred while updating Client info.');
       setShowResultModal(true);
     } finally {
       // İstek tamamlandığında loading state'i false yapıyoruz.
@@ -337,17 +367,6 @@ const SupplierEditContainer = () => {
 
   const handleStatusChange = (value: string) => {
     setSelectedStatus(value as unknown as string);
-  };
-
-  const handleCertificateTypesChange = (values: string[]) => {
-    setCertificateTypes(
-      values as (
-        | 'CERTIFICATE_1'
-        | 'CERTIFICATE_2'
-        | 'CERTIFICATE_3'
-        | 'CERTIFICATE_4'
-      )[]
-    );
   };
 
   const handleFilesUpload = (
@@ -393,12 +412,11 @@ const SupplierEditContainer = () => {
     setAttachmentToDelete(null);
   };
 
-  // Eğer supplier verisi yükleniyorsa, loading göstergesi render edelim.
-  if (loadingSupplier) {
+  if (loadingClient) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
         <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading supplier data...</span>
+          <span className="visually-hidden">Loading Client data...</span>
         </Spinner>
       </div>
     );
@@ -446,7 +464,7 @@ const SupplierEditContainer = () => {
           <Modal.Title>Confirm Save</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to update the supplier information?
+          Are you sure you want to update the Client information?
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowSaveModal(false)}>
@@ -493,11 +511,16 @@ const SupplierEditContainer = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <SupplierInfo
+      <ClientInfo
         setCompanyName={setCompanyName}
-        companyName={companyName}
-        setBrandInput={setBrandInput}
-        brandInput={brandInput}
+        companyName={clientCompanyName}
+        setSubCompany={setSubCompany}
+        subCompany={subCompany}
+        setLegalAddress={setLegalAddress}
+        legalAddress={legalAddress}
+        currencies={currencies}
+        currency={selectedCurrency}
+        setCurrency={setSelectedCurrency}
       />
       <SegmentSelection
         data={segments}
@@ -507,15 +530,16 @@ const SupplierEditContainer = () => {
       <Row className="mt-3">
         <Col md={7}>
           <AddressDetails
-            onCountryChange={setSelectedCountryId}
             onStatusChange={handleStatusChange}
-            getbyCountryList={countryList}
-            pickUpAddress={pickUpAddress}
-            setPickUpAddress={setPickUpAddress}
-            onCertificateTypes={handleCertificateTypesChange}
-            defaultCountry={selectedCountryId}
             defaultStatus={selectedStatus}
-            defaultCertificateTypes={certificateTypes}
+            clientDetail={clientDetail}
+            setClientDetail={setClientDetail}
+            setClientMail={setClientMail}
+            clientMail={clientMail}
+            setClientWebsite={setClientWebsite}
+            clientWebsite={clientWebsite}
+            phone={phone}
+            setPhone={setPhone}
           />
         </Col>
         <Col
@@ -528,10 +552,7 @@ const SupplierEditContainer = () => {
           />
         </Col>
       </Row>
-      <WorkingDetails
-        workingDetails={workingDetails}
-        setWorkingDetails={setWorkingDetails}
-      />
+
       <div className="mt-5">
         <h5 className="mb-3"> Existing Attachments</h5>
         {initialAttachments.map(att => (
@@ -548,11 +569,11 @@ const SupplierEditContainer = () => {
         ))}
         <FileUpload onFilesUpload={handleFilesUpload} />
       </div>
-      <AccountInfo
-        username={username}
-        setUsername={setUsername}
-        password={password}
-        setPassword={setPassword}
+      <ClientBottomSection
+        priceMargins={priceMargins}
+        setMarginTable={setMarginTable}
+        userComments={userComments}
+        setUserComments={setUserComments}
       />
       <ContactListSection
         onContactsChange={setContacts}
@@ -611,4 +632,4 @@ const SupplierEditContainer = () => {
   );
 };
 
-export default SupplierEditContainer;
+export default ClientEditContainer;

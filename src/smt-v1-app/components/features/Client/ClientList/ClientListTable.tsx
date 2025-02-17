@@ -1,84 +1,73 @@
 import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import AdvanceTable from '../AdvanceTable';
-import AdvanceTableFooter from '../AdvanceTableFooter';
+import AdvanceTable from './AdvanceTable';
+import AdvanceTableFooter from './AdvanceTableFooter';
 import Badge from 'components/base/Badge';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
-import { Col, Row, Dropdown } from 'react-bootstrap';
+import { Col, Row, Dropdown, Button } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import {
-  SupplierData,
-  searchBySupplierList
-} from 'smt-v1-app/services/SupplierServices';
+  ClientData,
+  searchByClientList
+} from 'smt-v1-app/services/ClientServices';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 
-/* ***********************
-   TABLO KOLON TANIMLAMALARI
-   *********************** */
-export const projectListTableColumns: ColumnDef<SupplierData>[] = [
+export const ClientTableColumns: ColumnDef<ClientData>[] = [
   {
-    id: 'supplierCompany',
-    accessorKey: 'supplierCompany',
-    header: 'Supplier Company',
+    id: 'companyName',
+    accessorKey: 'companyName',
+    header: 'Company',
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' } }
+      headerProps: { style: { width: '20%' } }
     }
   },
   {
-    header: 'Segments',
-    accessorKey: 'segments',
+    header: 'Details',
+    accessorKey: 'details ',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '25%' }, className: 'ps-3' }
+      headerProps: { style: { width: '35%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'brand',
-    header: 'Brand',
+    accessorKey: 'currencyPreference',
+    header: 'Currency',
+    meta: {
+      cellProps: { className: 'fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '5%' } }
+    }
+  },
+  {
+    header: 'Website',
+    accessorKey: 'website',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: { style: { width: '20%' }, className: 'ps-3' }
     }
   },
   {
-    header: 'Country Info',
-    accessorKey: 'countryInfo',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'pickupaddress',
-    header: 'Pick Up Address',
+    accessorKey: 'legalAddress',
+    header: 'Legal Address',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'email',
-    header: 'E-Mails',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '15%' }, className: 'ps-3' }
+      headerProps: { style: { width: '20%' }, className: 'ps-3' }
     }
   },
   {
     id: 'status',
     header: 'Status',
-    accessorFn: ({ status }) => status?.label || '',
+    accessorFn: ({ clientStatus }) => clientStatus?.label || '',
     cell: ({ row: { original } }) => {
-      const { status } = original;
-      if (!status) return null;
+      const { clientStatus } = original;
+      if (!clientStatus) return null;
       return (
-        <Badge variant="phoenix" bg={status.type || 'warning'}>
-          {status.label || ''}
+        <Badge variant="phoenix" bg={clientStatus.type || 'warning'}>
+          {clientStatus.label || ''}
         </Badge>
       );
     },
@@ -93,8 +82,8 @@ export const projectListTableColumns: ColumnDef<SupplierData>[] = [
       <RevealDropdownTrigger>
         <RevealDropdown>
           <ActionDropdownItems
-            supplierId={original.id ? original.id.toString() : ''}
-            supplierData={original}
+            clientId={original.clientId ? original.clientId.toString() : ''}
+            clientDataDetail={original} // Prop adını güncelledik
           />
         </RevealDropdown>
       </RevealDropdownTrigger>
@@ -115,28 +104,27 @@ const handleNullValue = (value: string) => {
 
 type SearchColumn = {
   label: string;
-  value: keyof SupplierData | 'all';
+  value: keyof ClientData | 'all';
 };
 
 const searchColumns: SearchColumn[] = [
   { label: 'No Filter', value: 'all' },
   { label: 'Company Name', value: 'companyName' },
-  { label: 'Brand', value: 'brand' },
-  { label: 'Country', value: 'country' },
-  { label: 'Email', value: 'email' },
-  { label: 'Address', value: 'address' }
+  { label: 'Currency', value: 'currencyPreference' },
+  { label: 'Website', value: 'website' },
+  { label: 'Legal Address', value: 'legalAddress' }
 ];
 
 /* ***********************
-   ANA BİLEŞEN: SupplierList
+   ANA BİLEŞEN: ClientList
    (Hem arama/filtreleme hem de tablo görüntüleme)
    *********************** */
-interface SupplierListProps {
+interface ClientListProps {
   activeView: string;
 }
 
-const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
-  const [data, setData] = useState<SupplierData[]>([]);
+const ClientList: FC<ClientListProps> = ({ activeView }) => {
+  const [data, setData] = useState<ClientData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -144,11 +132,11 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-
   const [pageSize, setPageSize] = useState<number>(5); // Page size state,
+  // console.log('Page Size', pageSize);
 
   const { setGlobalFilter, setColumnFilters } =
-    useAdvanceTableContext<SupplierData>();
+    useAdvanceTableContext<ClientData>();
 
   const fetchData = async (
     term: string,
@@ -162,67 +150,81 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
         query =
           column.value !== 'all' ? `${column.value}=${term}` : `search=${term}`;
       }
-      const response = await searchBySupplierList(
+      const response = await searchByClientList(
         query,
         currentPage + 1,
         pageSize
       );
-      const suppliers = response?.data?.suppliers || [];
-      if (Array.isArray(suppliers)) {
-        const mappedData: SupplierData[] = suppliers.map((item: any) => ({
+      const clients = response?.data?.clients || [];
+      if (Array.isArray(clients)) {
+        const mappedData: ClientData[] = clients.map((item: any) => ({
           id: item.id,
-          companyName: item.supplierCompany,
+          clientId: item.clientId,
+          companyName: item.companyName,
           segments: Array.isArray(item.segments)
             ? item.segments.map((seg: any) => ({
                 segmentName: seg.segmentName || ''
               }))
             : [],
-          brand: item.brand || '',
-          country: item.countryInfo || '',
-          address: item.pickupaddress || '',
+          currencyPreference: item.currencyPreference || '',
+          website: item.website || '',
+          legalAddress: item.legalAddress || '',
           email: item.email || '',
           contacts: Array.isArray(item.contacts)
             ? item.contacts
             : [{ email: item.email || '' }],
-          status: {
-            label: item.status || 'NOT_CONTACTED',
+          clientStatus: {
+            label: item.clientStatus || 'NOT_CONTACTED',
             type: 'warning'
           },
           quoteID: null,
-          attachments: Array.isArray(item.attachments)
-            ? item.attachments.map((att: any) => ({
+          attachmentResponses: Array.isArray(item.attachmentResponses)
+            ? item.attachmentResponses.map((att: any) => ({
                 attachmentId: att.attachmentId || '',
-                attachmentName: att.attachmentName || ''
+                fileName: att.fileName || ''
               }))
             : [],
-          workingDetails: item.workingDetails || '',
-          userName: item.userName || '',
-          certificates: item.certificateType || [],
-          dialogSpeed:
-            item.dialogSpeed !== undefined ? item.dialogSpeed.toString() : '',
-          dialogQuality:
-            item.dialogQuality !== undefined
-              ? item.dialogQuality.toString()
-              : '',
-          easeOfSupply:
-            item.easeOfSupply !== undefined ? item.easeOfSupply.toString() : '',
-          supplyCapability:
-            item.supplyCapability !== undefined
-              ? item.supplyCapability.toString()
-              : '',
-          euDemandOfParts:
-            item.euDemandOfParts !== undefined
-              ? item.euDemandOfParts.toString()
-              : '',
+          details: item.details || '',
+          subCompanyName: item.subCompanyName || '',
+          phone: item.phone || '',
+          clientRatings: item.clientRatings || {
+            dialogQuality: 0,
+            volumeOfOrder: 0,
+            continuityOfOrder: 0,
+            easeOfPayment: 0,
+            easeOfDelivery: 0
+          },
+          // marginTable alanını ekliyoruz:
+          marginTable: item.marginTable || {
+            below200: 0,
+            btw200and500: 0,
+            btw500and1_000: 0,
+            btw1_000and5_000: 0,
+            btw5_000and10_000: 0,
+            btw10_000and50_000: 0,
+            btw50_000and100_000: 0,
+            btw100_000and150_000: 0,
+            btw150_000and200_000: 0,
+            btw200_000and400_000: 0,
+            btw400_000and800_000: 0,
+            btw800_000and1_000_000: 0,
+            btw1_000_000and2_000_000: 0,
+            btw2_000_000and4_000_000: 0,
+            above4_000_000: 0,
+            lastModifiedBy: ''
+          },
+          // Düzeltme: "commet" yerine "comment" kullanıyoruz:
+          comment: item.comment || '',
           createdBy: handleNullValue(item.createdBy || ''),
           createdOn: item.createdOn || '',
           lastModifiedBy: handleNullValue(item.lastModifiedBy || ''),
           lastModifiedOn: item.lastModifiedOn || ''
         }));
+
         setData(mappedData);
         setTotalItems(response.data.totalItems);
       } else {
-        console.error('Suppliers array not found in API response');
+        console.error('Clients array not found in API response');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -270,7 +272,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
   return (
     <div>
       {/* Üst kısım: Arama ve filtreleme */}
-      <div className="mb-4">
+      <div className="mb-4 ">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>
             <div className="d-flex gap-2">
@@ -302,6 +304,8 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
               </Dropdown>
             </div>
           </Col>
+
+          {/* Items per page selector */}
           <Col xs="auto" className="d-flex gap-2 ms-auto">
             <Dropdown>
               <Dropdown.Toggle
@@ -338,7 +342,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
           tableProps={{
             className: 'phoenix-table border-top border-translucent fs-9',
             data: data,
-            columns: projectListTableColumns
+            columns: ClientTableColumns
           }}
         />
         <AdvanceTableFooter
@@ -355,4 +359,4 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
   );
 };
 
-export default SupplierList;
+export default ClientList;

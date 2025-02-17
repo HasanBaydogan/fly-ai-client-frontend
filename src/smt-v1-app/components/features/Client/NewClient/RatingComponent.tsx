@@ -10,11 +10,11 @@ import {
 } from 'react-simple-star-rating';
 
 export interface RatingData {
-  easeOfSupply: number;
-  dialogSpeed: number;
   dialogQuality: number;
-  supplyCapability: number;
-  euDemandOfParts: number;
+  volumeOfOrder: number;
+  continuityOfOrder: number;
+  easeOfPayment: number;
+  easeOfDelivery: number;
 }
 
 export interface RatingProps extends ReactRatingProps {
@@ -65,8 +65,8 @@ const RatingComponent = ({
             Dialog Quality:
           </span>
           <Rating
-            onClick={rate => handleRating('easeOfSupply', rate)}
-            initialValue={ratings.easeOfSupply}
+            onClick={rate => handleRating('dialogQuality', rate)}
+            initialValue={ratings.dialogQuality}
             allowHalfStars={false}
             iconsCount={10}
           />
@@ -78,8 +78,8 @@ const RatingComponent = ({
             Volume Of Order:
           </span>
           <Rating
-            onClick={rate => handleRating('dialogSpeed', rate)}
-            initialValue={ratings.dialogSpeed}
+            onClick={rate => handleRating('volumeOfOrder', rate)}
+            initialValue={ratings.volumeOfOrder}
             allowHalfStars={false}
             iconsCount={10}
           />
@@ -91,8 +91,8 @@ const RatingComponent = ({
             Continutiy Of Order:
           </span>
           <Rating
-            onClick={rate => handleRating('dialogQuality', rate)}
-            initialValue={ratings.dialogQuality}
+            onClick={rate => handleRating('continuityOfOrder', rate)}
+            initialValue={ratings.continuityOfOrder}
             allowHalfStars={false}
             iconsCount={10}
           />
@@ -104,8 +104,8 @@ const RatingComponent = ({
             Ease Of Payment:
           </span>
           <Rating
-            onClick={rate => handleRating('supplyCapability', rate)}
-            initialValue={ratings.supplyCapability}
+            onClick={rate => handleRating('easeOfPayment', rate)}
+            initialValue={ratings.easeOfPayment}
             allowHalfStars={false}
             iconsCount={10}
           />
@@ -117,8 +117,8 @@ const RatingComponent = ({
             Ease Of Delivery:
           </span>
           <Rating
-            onClick={rate => handleRating('euDemandOfParts', rate)}
-            initialValue={ratings.euDemandOfParts}
+            onClick={rate => handleRating('easeOfDelivery', rate)}
+            initialValue={ratings.easeOfDelivery}
             allowHalfStars={false}
             iconsCount={10}
           />

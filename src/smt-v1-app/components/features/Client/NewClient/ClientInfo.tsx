@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Col, FloatingLabel, Form } from 'react-bootstrap';
 
-interface SupplierInfoProps {
+interface ClientInfoProps {
   setCompanyName: (value: string) => void;
   companyName: string;
   setSubCompany: (value: string) => void;
@@ -23,7 +23,7 @@ const ClientInfo = ({
   currency,
   setCurrency,
   currencies
-}: SupplierInfoProps) => {
+}: ClientInfoProps) => {
   // Şirket adı ve legal address için ayrı hata durumları oluşturduk.
   const [companyError, setCompanyError] = useState<string | null>(null);
   const [legalAddressError, setLegalAddressError] = useState<string | null>(

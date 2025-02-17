@@ -33,9 +33,11 @@ import SupplierEditContainer from 'smt-v1-app/containers/SupplierEditContainer/S
 
 import QuoteContainer from 'smt-v1-app/containers/QuoteContainer/QuoteContainer';
 
-import ClientListContainer from 'smt-v1-app/containers/ClientListContainer/ClientListContainer';
-import NewClientContainer from 'smt-v1-app/containers/NewClientContainer/NewClientContainer';
 import AlreadyOpenedRfqBySomeoneError from 'smt-v1-app/components/error/AlreadyOpenedRfqBySomeoneError/AlreadyOpenedRfqBySomeoneError';
+
+import ClientListContainer from 'smt-v1-app/containers/Client/ClientListContainer/ClientListContainer';
+import NewClientContainer from 'smt-v1-app/containers/Client/NewClientContainer/NewClientContainer';
+import ClientEditContainer from 'smt-v1-app/containers/Client/ClientEditContainer/ClientEditContainer';
 
 const routes: RouteObject[] = [
   {
@@ -118,6 +120,10 @@ const routes: RouteObject[] = [
               {
                 path: 'new-client',
                 element: <NewClientContainer />
+              },
+              {
+                path: 'edit',
+                element: <ClientEditContainer />
               }
             ]
           }

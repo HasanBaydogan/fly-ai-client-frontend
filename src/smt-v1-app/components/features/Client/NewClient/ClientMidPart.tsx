@@ -115,6 +115,7 @@ const ClientMidPart = ({
       </Row>
       <Row className="mb-2">
         <Col md={6}>
+          <Form.Label>Mail</Form.Label>
           <Form.Control
             placeholder="Mail*"
             value={clientMail}
@@ -128,9 +129,10 @@ const ClientMidPart = ({
           </Form.Control.Feedback>
         </Col>
         <Col md={6}>
+          <Form.Label>Website</Form.Label>
           <Form.Control
             type="text"
-            placeholder="Brand"
+            placeholder="Client Website"
             value={clientWebsite}
             onChange={handleClientWebsiteChange}
           />

@@ -1,4 +1,3 @@
-// ClientBottomSection.tsx
 import React from 'react';
 import { Table, Row, Col, Button } from 'react-bootstrap';
 
@@ -38,12 +37,17 @@ const ClientBottomSection = ({
     btw800_000and1_000_000: 'Btw 800,000-1,000,000',
     btw1_000_000and2_000_000: 'Btw 1,000,000-2,000,000',
     btw2_000_000and4_000_000: 'Btw 2,000,000-4,000,000',
-    above4_000_000: 'Above 4,000,000'
+    above4_000_000: 'Above 4,000,000',
+    lastModifiedBy: 'Last Modified By'
+  };
+
+  const truncateToFourDecimals = (num: number): string => {
+    const truncated = Math.floor(num * 10000) / 10000;
+    return truncated.toFixed(4).replace('.', ',');
   };
 
   const handlePriceChange = (key: string, inputValue: string) => {
     let value = inputValue.trim();
-    // Nokta yerine virgül kullanılıyor.
     value = value.replace('.', ',');
     const endsWithComma = value.endsWith(',');
     const parts = value.split(',');
@@ -75,40 +79,6 @@ const ClientBottomSection = ({
     setMarginTable(prev => ({ ...prev, [key]: formattedValue }));
   };
 
-  const handleCommentChange = (
-    index: number,
-    field: 'comment' | 'severity',
-    value: string
-  ) => {
-    const updatedComments = [...userComments];
-    updatedComments[index][field] = value;
-    setUserComments(updatedComments);
-  };
-
-  const addCommentRow = () => {
-    setUserComments(prev => [
-      ...prev,
-      { comment: '', severity: '', isEditing: true }
-    ]);
-  };
-
-  const saveCommentRow = (index: number) => {
-    const updatedComments = [...userComments];
-    updatedComments[index].isEditing = false;
-    setUserComments(updatedComments);
-  };
-
-  const editCommentRow = (index: number) => {
-    const updatedComments = [...userComments];
-    updatedComments[index].isEditing = true;
-    setUserComments(updatedComments);
-  };
-
-  const deleteCommentRow = (index: number) => {
-    const updatedComments = userComments.filter((_, i) => i !== index);
-    setUserComments(updatedComments);
-  };
-
   return (
     <>
       <Row className="mt-5 gap-4">
@@ -129,26 +99,29 @@ const ClientBottomSection = ({
               </tr>
             </thead>
             <tbody>
-              {Object.entries(priceMargins)
-                // Filtreleyerek boş (''), null veya undefined olan değerleri göstermiyoruz.
-                .filter(([_, value]) => value !== '' && value != null)
-                .map(([key, value]) => (
-                  <tr key={key}>
-                    <td className="align-middle">
-                      {keyDisplayMap[key] || key}
-                    </td>
-                    <td className="align-middle">
+              {Object.entries(priceMargins).map(([key, value]) => (
+                <tr key={key}>
+                  <td className="align-middle">{keyDisplayMap[key] || key}</td>
+                  <td className="align-middle d-flex justify-content-center">
+                    {key === 'lastModifiedBy' ? (
+                      <span className="text-muted">{value}</span>
+                    ) : (
                       <input
                         type="text"
                         className="form-control text-center p-0"
-                        value={value}
+                        value={
+                          typeof value === 'number'
+                            ? truncateToFourDecimals(value)
+                            : value
+                        }
                         onChange={e => handlePriceChange(key, e.target.value)}
                         style={{ width: '80px', height: '25px' }}
                         placeholder="Ör: 1,234"
                       />
-                    </td>
-                  </tr>
-                ))}
+                    )}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </Table>
         </Col>
@@ -178,7 +151,11 @@ const ClientBottomSection = ({
                         className="form-control"
                         value={item.comment}
                         onChange={e =>
-                          handleCommentChange(index, 'comment', e.target.value)
+                          setUserComments(prev => {
+                            const updated = [...prev];
+                            updated[index].comment = e.target.value;
+                            return updated;
+                          })
                         }
                         placeholder="Enter comment"
                         style={{ width: '95%', resize: 'vertical' }}
@@ -195,7 +172,11 @@ const ClientBottomSection = ({
                         className="form-control"
                         value={item.severity}
                         onChange={e =>
-                          handleCommentChange(index, 'severity', e.target.value)
+                          setUserComments(prev => {
+                            const updated = [...prev];
+                            updated[index].severity = e.target.value;
+                            return updated;
+                          })
                         }
                         placeholder="Enter severity"
                         style={{ width: '95%' }}
@@ -205,72 +186,44 @@ const ClientBottomSection = ({
                     )}
                   </td>
                   <td className="align-middle">
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: '5px',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}
+                    <Button
+                      variant={item.isEditing ? 'success' : 'secondary'}
+                      size="sm"
+                      onClick={() =>
+                        setUserComments(prev => {
+                          const updated = [...prev];
+                          updated[index].isEditing = !updated[index].isEditing;
+                          return updated;
+                        })
+                      }
                     >
-                      {item.isEditing ? (
-                        <>
-                          <Button
-                            variant="success"
-                            size="sm"
-                            style={{
-                              fontSize: '1rem',
-                              padding: '0.25rem 0.5rem'
-                            }}
-                            onClick={() => saveCommentRow(index)}
-                          >
-                            ✓
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            style={{
-                              fontSize: '1rem',
-                              padding: '0.25rem 0.5rem'
-                            }}
-                            onClick={() => deleteCommentRow(index)}
-                          >
-                            X
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            style={{
-                              fontSize: '0.95rem',
-                              padding: '0.25rem 0.5rem'
-                            }}
-                            onClick={() => editCommentRow(index)}
-                          >
-                            ✏️
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            style={{
-                              fontSize: '1rem',
-                              padding: '0.25rem 0.5rem'
-                            }}
-                            onClick={() => deleteCommentRow(index)}
-                          >
-                            X
-                          </Button>
-                        </>
-                      )}
-                    </div>
+                      {item.isEditing ? '✓' : '✏️'}
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() =>
+                        setUserComments(prev =>
+                          prev.filter((_, i) => i !== index)
+                        )
+                      }
+                    >
+                      X
+                    </Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </Table>
-          <Button variant="secondary" onClick={addCommentRow}>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              setUserComments(prev => [
+                ...prev,
+                { comment: '', severity: '', isEditing: true }
+              ])
+            }
+          >
             Add Comment
           </Button>
         </Col>

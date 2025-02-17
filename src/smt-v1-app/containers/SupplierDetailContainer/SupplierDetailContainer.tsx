@@ -2,13 +2,13 @@ import { Row, Col, Alert, Modal, Button, Spinner } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SupplierInfo from '../../components/features/SupplierDetail/SupplierDetailComponents/SupplierInfo';
-import SegmentSelection from '../../components/features/SupplierDetail/SupplierDetailComponents/SegmentSelection';
+import SegmentSelection from '../../components/features/GlobalComponents/SegmentSelection';
 import AddressDetails from '../../components/features/SupplierDetail/SupplierDetailComponents/AddressDetails';
 import RatingSection, {
   RatingData
 } from '../../components/features/SupplierDetail/SupplierDetailComponents/RatingComponent';
 import WorkingDetails from '../../components/features/SupplierDetail/SupplierDetailComponents/WorkingDetails';
-import FileUpload from '../../components/features/SupplierDetail/SupplierDetailComponents/FileUpload';
+import FileUpload from '../../components/features/GlobalComponents/FileUpload';
 import AccountInfo from '../../components/features/SupplierDetail/SupplierDetailComponents/AccountInfo';
 import ContactListSection, {
   FormattedContactData
@@ -139,12 +139,12 @@ const SupplierDetailContainer = () => {
       return;
     }
 
-    if (!segmentIds || segmentIds.length === 0) {
-      setAlertMessage('Please select at least one Segment.');
-      setIsSuccess(false);
-      setShowAlert(true);
-      return;
-    }
+    // if (!segmentIds || segmentIds.length === 0) {
+    //   setAlertMessage('Please select at least one Segment.');
+    //   setIsSuccess(false);
+    //   setShowAlert(true);
+    //   return;
+    // }
 
     if (!selectedCountryId) {
       setAlertMessage('Please select a Country.');
@@ -182,7 +182,7 @@ const SupplierDetailContainer = () => {
       supplyCapability: ratings.supplyCapability,
       euDemandParts: ratings.euDemandOfParts
     };
-
+    // console.log(payload);
     setLoadingSave(true);
     try {
       const response = await postSupplierCreate(payload);
