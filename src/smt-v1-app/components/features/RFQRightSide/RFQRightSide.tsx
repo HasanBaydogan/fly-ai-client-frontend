@@ -33,6 +33,13 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     rfq.alternativeRFQPartResponses
   );
 
+  const [partName, setPartName] = useState<string>('');
+  const [partNumber, setPartNumber] = useState<string>('');
+
+  const [alternativePartName, setAlternativePartName] = useState<string>('');
+  const [alternativePartNumber, setAlternativePartNumber] =
+    useState<string>('');
+
   const [isLoadingSave, setIsLoadingSave] = useState(false);
   const [isLoadingCancel, setIsLoadingCancel] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,6 +113,20 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     setIsLoading(true);
     if (!foundClient) {
       toastError('Client Error', 'Client cannot be empty');
+      setIsLoadingSave(false);
+      setIsLoading(false);
+    } else if (partName || partNumber) {
+      toastError(
+        'Not Added Part Row',
+        "Please be careful that you didn't click '+' button in Part"
+      );
+      setIsLoadingSave(false);
+      setIsLoading(false);
+    } else if (alternativePartName || alternativePartNumber) {
+      toastError(
+        'Not Added Alternative Part Row',
+        "Please be careful that you didn't click '+' button in Alernative Part"
+      );
       setIsLoadingSave(false);
       setIsLoading(false);
     } else {
@@ -254,6 +275,8 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
           setRFQDeadline={setRFQDeadline}
           clientRFQId={clientRFQId}
           setClientRFQId={setClientRFQId}
+          toastSuccess={toastSuccess}
+          toastError={toastError}
         />
         {
           <PartList
@@ -265,6 +288,10 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
               handleDeleteAlternativePartAccordingToParentRFQNumber
             }
             setAlternativeParts={setAlternativeParts}
+            partName={partName}
+            setPartName={setPartName}
+            partNumber={partNumber}
+            setPartNumber={setPartNumber}
           />
         }
         <AlternativePartList
@@ -272,6 +299,10 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
           parts={parts}
           handleDeleteAlternativePart={handleDeleteAlternativePart}
           handleAddAlternativePart={handleAddAlternativePart}
+          partName={alternativePartName}
+          setPartName={setAlternativePartName}
+          partNumber={alternativePartNumber}
+          setPartNumber={setAlternativePartNumber}
         />
         <RFQRightSideFooter
           handleCancel={handleCancel}

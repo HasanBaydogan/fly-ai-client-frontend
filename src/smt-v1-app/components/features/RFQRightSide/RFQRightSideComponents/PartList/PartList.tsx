@@ -39,7 +39,11 @@ const PartList = ({
   handleAddPart,
   alternativeParts,
   handleDeleteAlternativePartAccordingToParentRFQNumber,
-  setAlternativeParts
+  setAlternativeParts,
+  partName,
+  setPartName,
+  partNumber,
+  setPartNumber
 }: {
   parts: RFQPart[];
   handleDeletePart: (partNumber: string) => void;
@@ -51,6 +55,10 @@ const PartList = ({
   setAlternativeParts: React.Dispatch<
     React.SetStateAction<AlternativeRFQPart[]>
   >;
+  partName: string;
+  setPartName: React.Dispatch<React.SetStateAction<string>>;
+  partNumber: string;
+  setPartNumber: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const [isPartNumberEmpty, setIsPartNumberEmpty] = useState(false);
   const [isPartNameEmpty, setIsPartNameEmpty] = useState(false);
@@ -64,9 +72,8 @@ const PartList = ({
     useState('');
 
   // RFQPart Properties
-  const [partName, setPartName] = useState<string>('');
-  const [partNumber, setPartNumber] = useState<string>('');
-  const [reqQTY, setReqQTY] = useState<number>(0);
+
+  const [reqQTY, setReqQTY] = useState<number>(1);
   const [fndQTY, setFndQTY] = useState<number>(0);
   const [reqCND, setReqCND] = useState<string>('NE');
   const [fndCND, setFndCND] = useState<string>('');

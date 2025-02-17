@@ -1,10 +1,11 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRotateRight, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DatePicker from 'components/base/DatePicker';
 import SearchBox from 'components/common/SearchBox';
 import React, { useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getAllClientsFromDB } from 'smt-v1-app/services/RFQService';
 
 type Client = {
@@ -18,7 +19,9 @@ const Client = ({
   setFoundClient,
   setRFQDeadline,
   clientRFQId,
-  setClientRFQId
+  setClientRFQId,
+  toastSuccess,
+  toastError
 }: {
   foundClient: Client;
   rfqDeadline: Date;
@@ -26,18 +29,36 @@ const Client = ({
   setRFQDeadline: React.Dispatch<React.SetStateAction<Date>>;
   clientRFQId: string;
   setClientRFQId: React.Dispatch<React.SetStateAction<string>>;
+  toastSuccess: (messageHeader: string, message: string) => void;
+  toastError: (messageHeader: string, message: string) => void;
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredCompanies, setFilteredCompanies] = useState<Client[]>([]);
 
   const [clientList, setClientList] = useState<Client[]>();
 
-  useEffect(() => {
-    const getAllClients = async () => {
-      const resp = await getAllClientsFromDB();
-      setClientList(resp.data);
-    };
+  const [isLoading, setIsLoading] = useState(true);
 
+  const getAllClients = async () => {
+    setIsLoading(true);
+    const resp = await getAllClientsFromDB();
+    setClientList(resp.data);
+    setIsLoading(false);
+  };
+
+  const handleRefreshClientList = () => {
+    try {
+      getAllClients();
+      toastSuccess(
+        'Successfull Refreshing Client List',
+        'Client list is refreshed successfully!'
+      );
+    } catch (ex) {
+      toastError('Refreshing Client List Error', 'Unknown error occurs');
+    }
+  };
+
+  useEffect(() => {
     getAllClients();
   }, []);
 
@@ -60,74 +81,102 @@ const Client = ({
   };
 
   const handleAddCompany = () => {
-    window.open('about:blank', '_blank');
+    window.open('/client/new-client', '_blank');
   };
 
   return (
-    <div>
-      <h3 className="mt-5">Client</h3>
-      <hr className="custom-line m-0" />
-      <div className="d-flex align-items-center justify-content-between mt-3">
-        <div className="d-flex align-items-center">
-          <h4 className="me-3">Client:</h4>
-          <Form.Group className="d-flex align-items-center">
-            <Typeahead
-              id="client-search"
-              labelKey="clientName"
-              options={clientList || []} // Use the client list
-              placeholder="Search by Client Name"
-              onInputChange={handleSearch} // Handle input change for filtering
-              onChange={handleSelectClient} // Handle selection
-              selected={foundClient ? [foundClient] : []} // Preselect found client
-              multiple={false} // Single selection only
-              positionFixed // Keeps dropdown attached to the input
-              style={{ zIndex: 10 }} // Ensure visibility of dropdown
-            />
-          </Form.Group>
+    <>
+      {' '}
+      {isLoading ? (
+        <div className="d-flex justify-content-center align-items-center">
+          <LoadingAnimation />
         </div>
+      ) : (
         <div>
-          <Button variant="primary" onClick={handleAddCompany}>
-            <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px' }} />
-            Add Client
-          </Button>
-        </div>
-      </div>
+          <h3 className="mt-5">Client</h3>
+          <hr className="custom-line m-0" />
+          <div className="d-flex align-items-center justify-content-between mt-3">
+            <div className="d-flex align-items-center">
+              <h4 className="me-3">Client:</h4>
+              <Form.Group className="d-flex align-items-center">
+                <Typeahead
+                  id="client-search"
+                  labelKey="clientName"
+                  options={clientList || []} // Use the client list
+                  placeholder="Search by Client Name"
+                  onInputChange={handleSearch} // Handle input change for filtering
+                  onChange={handleSelectClient} // Handle selection
+                  selected={foundClient ? [foundClient] : []} // Preselect found client
+                  multiple={false} // Single selection only
+                  positionFixed // Keeps dropdown attached to the input
+                  style={{ zIndex: 10 }} // Ensure visibility of dropdown
+                />
+              </Form.Group>
+            </div>
+            <div className="d-flex">
+              <Button
+                variant="primary"
+                onClick={handleAddCompany}
+                className="px-2 mx-1"
+              >
+                <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px' }} />
+                Add Client
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={getAllClients}
+                className="px-2 mx-1"
+              >
+                <FontAwesomeIcon
+                  icon={faArrowRotateRight}
+                  className="me-3"
+                  size="lg"
+                />
+                {'Refresh Client List'}
+              </Button>
+            </div>
+          </div>
 
-      <div className="found-client-container d-flex align-items-center mt-3">
-        <h4 className="me-3 mb-0">Found Client:</h4>
-        <span className={`me-3 fw-bold ${!foundClient ? 'text-muted' : ''}`}>
-          {foundClient?.clientName || 'None'}
-        </span>
-        <input
-          type="checkbox"
-          className="form-check-input me-2"
-          checked={!!foundClient}
-          onChange={() => setFoundClient(null)} // Clear selection on uncheck
-          disabled={!foundClient} // Disable if no client is selected
-        />
-      </div>
-
-      <div className="d-flex align-items-center justify-content-between mt-3">
-        <div className="d-flex align-items-center">
-          <h4 className="me-2">RFQ Deadline:</h4>
-          <DatePicker
-            placeholder="Select Date"
-            value={rfqDeadline}
-            onChange={date => setRFQDeadline(date[0])} // Flatpickr returns an array of dates.
-          />
-        </div>
-        <div className="d-flex align-items-center">
-          <h4 className="me-2">{'Client RFQ Id : '}</h4>
-          <Form.Group>
-            <Form.Control
-              placeholder="ClientRFQ Id"
-              value={clientRFQId}
-              onChange={e => setClientRFQId(e.target.value)}
+          <div className="found-client-container d-flex align-items-center mt-3">
+            <h4 className="me-3 mb-0">Found Client:</h4>
+            <span
+              className={`me-3 fw-bold ${!foundClient ? 'text-muted' : ''}`}
+            >
+              {foundClient?.clientName || 'None'}
+            </span>
+            <input
+              type="checkbox"
+              className="form-check-input me-2"
+              checked={!!foundClient}
+              onChange={() => setFoundClient(null)} // Clear selection on uncheck
+              disabled={!foundClient} // Disable if no client is selected
             />
-          </Form.Group>
+          </div>
+
+          <div className="d-flex align-items-center justify-content-between mt-3">
+            <div className="d-flex align-items-center">
+              <h4 className="me-2">RFQ Deadline:</h4>
+              <DatePicker
+                placeholder="Select Date"
+                value={rfqDeadline}
+                onChange={date => setRFQDeadline(date[0])} // Flatpickr returns an array of dates.
+              />
+            </div>
+            <div className="d-flex align-items-center">
+              <h4 className="me-2">{'Client RFQ Id : '}</h4>
+
+              <Form.Group>
+                <Form.Control
+                  placeholder="ClientRFQ Id"
+                  value={clientRFQId}
+                  onChange={e => setClientRFQId(e.target.value)}
+                />
+              </Form.Group>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}{' '}
+    </>
   );
 };
 

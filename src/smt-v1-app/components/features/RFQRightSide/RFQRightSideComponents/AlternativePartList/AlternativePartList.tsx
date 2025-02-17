@@ -36,12 +36,20 @@ const AlternativePartList = ({
   alternativeParts,
   handleDeleteAlternativePart,
   handleAddAlternativePart,
-  parts
+  parts,
+  partName,
+  setPartName,
+  partNumber,
+  setPartNumber
 }: {
   alternativeParts: AlternativeRFQPart[];
   handleDeleteAlternativePart: (alternPartNumber: string) => void;
   handleAddAlternativePart: (alternativePart: AlternativeRFQPart) => void;
   parts: RFQPart[];
+  partName: string;
+  setPartName: React.Dispatch<React.SetStateAction<string>>;
+  partNumber: string;
+  setPartNumber: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const [isPartNumberEmpty, setIsPartNumberEmpty] = useState(false);
   const [isPartNameEmpty, setIsPartNameEmpty] = useState(false);
@@ -55,9 +63,8 @@ const AlternativePartList = ({
     useState('');
 
   // RFQPart Properties
-  const [partName, setPartName] = useState<string>('');
-  const [partNumber, setPartNumber] = useState<string>('');
-  const [reqQTY, setReqQTY] = useState<number>(0);
+
+  const [reqQTY, setReqQTY] = useState<number>(1);
   const [fndQTY, setFndQTY] = useState<number>(0);
   const [reqCND, setReqCND] = useState<string>('');
   const [fndCND, setFndCND] = useState<string>('');
@@ -116,6 +123,10 @@ const AlternativePartList = ({
     };
     getAllSupplierAndCurrencies();
   }, []);
+
+  const handleNewSupplier = () => {
+    window.open('/supplier/new-supplier', '_blank');
+  };
 
   const handleAllSuppliersRefresh = async () => {
     setIsNewSupplierLoading(true);
@@ -418,7 +429,7 @@ const AlternativePartList = ({
   return (
     <>
       <div>
-        <h3 className="mt-3">AlternativePart</h3>
+        <h3 className="mt-3">Alternative Part</h3>
         <hr className="custom-line m-0" />
 
         <div
@@ -722,7 +733,11 @@ const AlternativePartList = ({
                     <LoadingAnimation />
                   ) : (
                     <div className="d-flex">
-                      <Button variant="primary" className="px-3 py-1 me-3">
+                      <Button
+                        variant="primary"
+                        className="px-3 py-1 me-3"
+                        onClick={handleNewSupplier}
+                      >
                         <span style={{ fontSize: '16px' }}>+</span>
                       </Button>
                       <div className="d-flex justify-content-center align-items-center">

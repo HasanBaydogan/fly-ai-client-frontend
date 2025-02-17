@@ -32,17 +32,17 @@ const ProfileDropdownMenu = ({
     },
     */
     {
-      label: 'Settings & Privacy ',
+      label: 'User Settings',
       icon: 'settings',
       url: '/user-settings?userId=' + userId
     },
     {
-      label: 'Help Center',
+      label: 'Privacy Policy',
       icon: 'help-circle',
       url: '/help-center'
     },
     {
-      label: 'Language',
+      label: 'Help Center',
       icon: 'globe',
       url: ''
     }
