@@ -139,12 +139,12 @@ const SupplierDetailContainer = () => {
       return;
     }
 
-    if (!segmentIds || segmentIds.length === 0) {
-      setAlertMessage('Please select at least one Segment.');
-      setIsSuccess(false);
-      setShowAlert(true);
-      return;
-    }
+    // if (!segmentIds || segmentIds.length === 0) {
+    //   setAlertMessage('Please select at least one Segment.');
+    //   setIsSuccess(false);
+    //   setShowAlert(true);
+    //   return;
+    // }
 
     if (!selectedCountryId) {
       setAlertMessage('Please select a Country.');
@@ -182,7 +182,7 @@ const SupplierDetailContainer = () => {
       supplyCapability: ratings.supplyCapability,
       euDemandParts: ratings.euDemandOfParts
     };
-
+    // console.log(payload);
     setLoadingSave(true);
     try {
       const response = await postSupplierCreate(payload);

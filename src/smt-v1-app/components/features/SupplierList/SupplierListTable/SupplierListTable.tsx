@@ -144,7 +144,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const pageSize = 6;
+  const [pageSize, setPageSize] = useState<number>(5); // Page size state,
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<SupplierData>();
@@ -264,7 +264,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
 
   useEffect(() => {
     fetchData(searchTerm, pageIndex, selectedColumn);
-  }, [pageIndex]);
+  }, [pageIndex, pageSize]);
 
   return (
     <div>
@@ -301,6 +301,32 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
               </Dropdown>
             </div>
           </Col>
+          <Col xs="auto" className="d-flex gap-2 ms-auto">
+            <Dropdown>
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                size="sm"
+                id="dropdown-items-per-page"
+                style={{ minWidth: '100px' }}
+              >
+                {pageSize} Clients
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {[5, 10, 25, 50, 100].map(size => (
+                  <Dropdown.Item
+                    key={size}
+                    active={pageSize === size}
+                    onClick={() => {
+                      setPageSize(size);
+                      setPageIndex(0); // Reset to first page
+                    }}
+                  >
+                    {size} Items
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </Col>
         </Row>
       </div>
 
@@ -320,6 +346,8 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
           totalItems={totalItems}
           pageIndex={pageIndex}
           setPageIndex={setPageIndex}
+          pageSize={pageSize} // Pass pageSize here
+          setPageSize={setPageSize} // Allow page size change
         />
       </div>
     </div>

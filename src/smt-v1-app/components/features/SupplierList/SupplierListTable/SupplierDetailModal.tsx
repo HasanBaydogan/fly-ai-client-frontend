@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import { Modal, Row, Col, Table, Badge, ModalBody } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { getAttachedFile } from 'smt-v1-app/services/SupplierServices';
+import { getAttachedFile } from 'smt-v1-app/services/GlobalServices';
 
 interface SupplierDetailModalProps {
   show: boolean;

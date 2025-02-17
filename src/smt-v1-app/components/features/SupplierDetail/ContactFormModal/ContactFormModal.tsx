@@ -51,7 +51,7 @@ const ContactFormModal = ({
       newErrors.email = 'Please enter a valid email address';
     }
     if (!title.trim()) newErrors.title = 'Title is required';
-    if (!phone.trim()) newErrors.phone = 'Phone is required';
+    // if (!phone.trim()) newErrors.phone = 'Phone is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -130,21 +130,21 @@ const ContactFormModal = ({
             </Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>Phone*</Form.Label>
+            <Form.Label>Phone</Form.Label>
             <PhoneInput
               country={'tr'}
               value={phone}
               onChange={phone => setPhone(phone)}
               inputStyle={{
-                width: '100%',
-                borderColor: errors.phone ? '#dc3545' : ''
+                width: '100%'
+                // borderColor: errors.phone ? '#dc3545' : ''
               }}
             />
-            {errors.phone && (
+            {/* {errors.phone && (
               <div className="text-danger" style={{ fontSize: '0.875em' }}>
                 {errors.phone}
               </div>
-            )}
+            )} */}
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Cell Phone (Optional)</Form.Label>
