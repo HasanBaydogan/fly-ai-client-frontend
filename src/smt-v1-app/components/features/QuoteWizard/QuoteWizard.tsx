@@ -36,6 +36,7 @@ export interface QuoteWizardData {
   currency: string;
   quoteId: string;
   quoteNumberId: string;
+  rfqNumberId: string;
   quoteWizardPartResponses: QuotePartRow[];
   quoteWizardSetting: QuoteWizardSetting;
   revisionNumber: number;

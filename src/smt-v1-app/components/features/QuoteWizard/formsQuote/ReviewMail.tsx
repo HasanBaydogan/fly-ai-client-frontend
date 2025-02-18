@@ -4,6 +4,9 @@ import { EmailProps } from './WizardSendMailForm';
 
 interface ReviewMailProps {
   emailProps: EmailProps;
+  quoteNumberId: string;
+  rfqNumberId: string;
+  from: string;
 }
 
 // Helper function to determine MIME type based on file extension
@@ -28,7 +31,12 @@ const getMimeType = (filename: string): string => {
   }
 };
 
-const ReviewMail: React.FC<ReviewMailProps> = ({ emailProps }) => {
+const ReviewMail: React.FC<ReviewMailProps> = ({
+  emailProps,
+  quoteNumberId,
+  rfqNumberId,
+  from
+}) => {
   const { toEmails, subject, ccEmails, bccEmails, content, base64Files } =
     emailProps;
 
@@ -39,7 +47,7 @@ const ReviewMail: React.FC<ReviewMailProps> = ({ emailProps }) => {
         <h5>Email is sent successfully!</h5>
       </div>
       <p>
-        <strong>From:</strong> username@company.com
+        <strong>From:</strong> {from}
       </p>
       <p>
         <strong>To:</strong>{' '}
@@ -54,10 +62,10 @@ const ReviewMail: React.FC<ReviewMailProps> = ({ emailProps }) => {
         {bccEmails.length > 0 ? bccEmails.join(', ') : 'Not Provided'}
       </p>
       <p>
-        <strong>Quote ID:</strong> {'2551'}
+        <strong>Quote ID:</strong> {quoteNumberId}
       </p>
       <p>
-        <strong>RFQ ID:</strong> {'2342'}
+        <strong>RFQ ID:</strong> {rfqNumberId}
       </p>
       <p>
         <strong>Content:</strong>

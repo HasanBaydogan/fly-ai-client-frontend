@@ -6,19 +6,25 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
 import Button from 'components/base/Button';
 import { useWizardFormContext } from 'providers/WizardFormProvider';
+import { useState } from 'react';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const WizardFormFooter = ({
   className,
   nextBtnLabel = 'Next',
   hidePrevBtn,
   handleSubmit,
-  handleSendQuoteEmail
+  handleSendQuoteEmail,
+  isEmailSendLoading,
+  setEmailSendLoading
 }: {
   className?: string;
   nextBtnLabel?: string;
   hidePrevBtn?: boolean;
   handleSubmit?: () => void;
   handleSendQuoteEmail: () => void;
+  isEmailSendLoading: boolean;
+  setEmailSendLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { selectedStep, goToStep, getCanNextPage, getCanPreviousPage } =
     useWizardFormContext();
@@ -34,6 +40,7 @@ const WizardFormFooter = ({
         })}
         startIcon={<FontAwesomeIcon icon={faChevronLeft} className="fs-10" />}
         onClick={() => goToStep(selectedStep - 1)}
+        disabled={isEmailSendLoading}
       >
         Previous
       </Button>
@@ -43,11 +50,13 @@ const WizardFormFooter = ({
           'ms-auto': !hidePrevBtn
         })}
         endIcon={<FontAwesomeIcon icon={faChevronRight} className="fs-10" />}
-        onClick={() => {
+        onClick={async () => {
           if (getCanNextPage) {
-            goToStep(selectedStep + 1);
             if (selectedStep === 3) {
-              handleSendQuoteEmail();
+              await handleSendQuoteEmail();
+              goToStep(selectedStep + 1);
+            } else {
+              goToStep(selectedStep + 1);
             }
           } else {
             if (handleSubmit) {
@@ -55,8 +64,9 @@ const WizardFormFooter = ({
             }
           }
         }}
+        disabled={isEmailSendLoading}
       >
-        {nextBtnLabel}
+        {isEmailSendLoading ? <LoadingAnimation /> : nextBtnLabel}
       </Button>
     </div>
   );

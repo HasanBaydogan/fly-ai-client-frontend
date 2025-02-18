@@ -3,9 +3,7 @@ import WizardSendMailForm from '../formsQuote/WizardSendMailForm';
 import WizardFormFooter from '../wizardQuote/WizardFormFooter';
 import WizardForm from '../wizardQuote/WizardForm';
 import useWizardForm from 'hooks/useWizardForm';
-import WizardFormProvider, {
-  useWizardFormContext
-} from 'providers/WizardFormProvider';
+import WizardFormProvider from 'providers/WizardFormProvider';
 import { Card, Tab } from 'react-bootstrap';
 import classNames from 'classnames';
 import { useState } from 'react';
@@ -16,28 +14,6 @@ import { QuotePartRow, QuoteWizardData } from '../QuoteWizard';
 import WizardPreviewForm from '../formsQuote/WizardPreviewForm';
 import QuoteWizardNav from '../wizardQuote/QuoteWizardNav';
 import { sendQuoteEmail } from 'smt-v1-app/services/QuoteService';
-
-interface WizardSetupFormProps {
-  id: string;
-  settings: {
-    adress: { row1: string; row2: string; row3: string };
-    quotaNumber: string;
-    ClientLocation: string;
-    ShipTo: string;
-    Requisitioner: string;
-    ShipVia: string;
-    CPT: string;
-    ShippingTerms: string;
-    CoSI: string;
-    ST1: string;
-    ST2: string;
-    ST3: string;
-    ST4: string;
-    CoSI2: string;
-    CoSI3: { CoSIRow1: string; CoSIRow2: string };
-    currency: string;
-  };
-}
 
 const WizardTabs = ({
   quoteWizardData,
@@ -69,6 +45,7 @@ const WizardTabs = ({
   const [inputValue, setInputValue] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isPdfConvertedToBase64, setIsPdfConvertedToBase64] = useState(true);
+  const [from, setFrom] = useState('');
 
   const emailProps = {
     toEmails,
@@ -98,7 +75,10 @@ const WizardTabs = ({
 
   const [quotePartRows, setQuotePartRows] = useState<QuotePartRow[]>([]);
 
+  const [isEmailSendLoading, setEmailSendLoading] = useState(false);
+
   const handleSendQuoteEmail = async () => {
+    setEmailSendLoading(true);
     const attachments: {
       filename: string;
       data: string;
@@ -112,10 +92,15 @@ const WizardTabs = ({
       attachments: attachments,
       body: content
     };
-    console.log(payload);
+    //console.log(payload);
 
     const response = await sendQuoteEmail(payload);
-    console.log(response);
+    //console.log(response);
+    if (response.statusCode === 200) {
+      setFrom(response.data.from);
+    } else {
+    }
+    setEmailSendLoading(false);
   };
 
   const [clientLocation, setClientLocation] = useState<string>('');
@@ -204,7 +189,14 @@ const WizardTabs = ({
               </Tab.Pane>
               <Tab.Pane eventKey={4}>
                 <WizardForm step={4}>
-                  {<ReviewMail emailProps={emailProps} />}
+                  {
+                    <ReviewMail
+                      emailProps={emailProps}
+                      quoteNumberId={quoteWizardData.quoteNumberId}
+                      rfqNumberId={quoteWizardData.rfqNumberId}
+                      from={from}
+                    />
+                  }
                 </WizardForm>
               </Tab.Pane>
             </Tab.Content>
@@ -213,6 +205,8 @@ const WizardTabs = ({
             <WizardFormFooter
               className={classNames({ 'd-none': !form.getCanNextPage })}
               handleSendQuoteEmail={handleSendQuoteEmail}
+              isEmailSendLoading={isEmailSendLoading}
+              setEmailSendLoading={setEmailSendLoading}
             />
           </Card.Footer>
         </Card>

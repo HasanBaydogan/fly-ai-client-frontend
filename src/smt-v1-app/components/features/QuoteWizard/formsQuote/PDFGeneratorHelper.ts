@@ -22,11 +22,12 @@ export const generatePDF = (
     const pageWidth = pdf.internal.pageSize.width;
 
     // Logo
-    pdf.addImage(settings.logo, 'JPEG', 10, 10, 60, 20);
+    pdf.addImage(settings.logo, 'JPEG', 10, 10, 60, 30);
+
     pdf.setFontSize(10);
 
     // Address (split into rows)
-    const maxWidth = 80;
+    const maxWidth = 60;
     const row1Lines = pdf.splitTextToSize(settings.addressRow1, maxWidth);
     const row2Lines = pdf.splitTextToSize(settings.addressRow2, maxWidth);
     const row3Lines = pdf.splitTextToSize(settings.mobilePhone, maxWidth);
