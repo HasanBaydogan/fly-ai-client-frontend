@@ -6,7 +6,8 @@ import MailTrackingHeader from 'smt-v1-app/components/features/MailTrackingHeade
 import { deleteRfqMails, putRfqMails } from 'smt-v1-app/redux/rfqMailSlice';
 import {
   getAllRFQMails,
-  searchByRfqNumberId
+  searchByRfqNumberId,
+  searchRFQMailBySubject
 } from 'smt-v1-app/services/MailTrackingService';
 import './MailTrackingContainer.css';
 import { getActiveStatusFromStringStatus } from './MailTrackingHelper';
@@ -60,17 +61,23 @@ const MailTrackingContainer = () => {
     date.setDate(date.getDate() - 3); // Subtract 2 days
     return date;
   });
-  const [isActiveRefreshSpin, setIsActiveRefreshSpin] = useState(false);
   const [pageNo, setPageNo] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
   const [pageSize, setPageSize] = useState(10); // Default page size
   const [totalRFQMail, setTotalRFQMail] = useState(0);
   const [filterType, setFilterType] = useState<filterType>('ALL');
   const [stringActiveStatus, setStringActiveStatus] = useState('All');
+  // RFQ Number Search
   const [rfqNumberSearchrfqMails, setRfqNumberSearchrfqMails] = useState<
     RFQMail[]
   >([]);
   const [isShowRFQNumberSearch, setIsShowRFQNumberSearch] = useState(false);
+
+  // Subject Search
+  const [isShowSubjectSearch, setIsShowSubjectSearch] = useState(false);
+  const [subjectSearchRFQMails, setSubjectSearchRFQMails] = useState<RFQMail[]>(
+    []
+  );
   const [isShow, setIsShow] = useState(false);
   const [variant, setVariant] = useState('danger');
   const [messageHeader, setMessageHeader] = useState('');
@@ -141,6 +148,25 @@ const MailTrackingContainer = () => {
     setPageNo(1); // Reset to first page when page size changes
   };
 
+  const handleSubjectSearch = async (subject: string) => {
+    setLoading(true);
+    if (subject) {
+      try {
+        const response = await searchRFQMailBySubject(subject, 1, 10);
+        if (response && response.data) {
+          setSubjectSearchRFQMails(response.data);
+          setIsShowSubjectSearch(true);
+        }
+      } catch (error) {
+        console.error('Error searching RFQ by number ID:', error);
+      }
+    } else {
+      setIsShowSubjectSearch(false);
+      setSubjectSearchRFQMails([]);
+    }
+    setLoading(false);
+  };
+
   return (
     <>
       <MailTrackingHeader
@@ -151,8 +177,17 @@ const MailTrackingContainer = () => {
         setPageNo={setPageNo}
         pageSize={pageSize}
         handlePageSizeChange={handlePageSizeChange}
+        handleSubjectSearch={handleSubjectSearch}
       />
-      {isShowRFQNumberSearch ? (
+      {isShowSubjectSearch ? (
+        <RFQMailRfqNumberIdSearch
+          rfqNumberSearchrfqMails={subjectSearchRFQMails}
+          setIsShow={setIsShow}
+          setMessageHeader={setMessageHeader}
+          setMessageBodyText={setMessageBodyText}
+          setVariant={setVariant}
+        />
+      ) : isShowRFQNumberSearch ? (
         <RFQMailRfqNumberIdSearch
           rfqNumberSearchrfqMails={rfqNumberSearchrfqMails}
           setIsShow={setIsShow}

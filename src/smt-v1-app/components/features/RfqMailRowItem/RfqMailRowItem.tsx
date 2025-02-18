@@ -176,7 +176,10 @@ const RfqMailRowItem = ({
             <span className="fw-bold">{rfqMail.emailSender}</span>
           </div>
           <div className="mt-1">
-            <span>{rfqMail.shortEmailContent}</span>
+            <span>
+              <span className="fw-bold">Subject : </span>
+              {rfqMail.subject}
+            </span>
           </div>
         </td>
         <td>

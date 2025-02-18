@@ -16,6 +16,7 @@ interface RFQMail {
   assignTo: string | null; // Mail content
   comment: string | null;
   emailSender: string;
+  subject: string;
   isNoQuote: boolean;
   isNotRFQ: boolean;
   isSpam: boolean;

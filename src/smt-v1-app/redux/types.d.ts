@@ -17,6 +17,7 @@ interface RFQMail {
     | 'SPAM'; // Mail subject
   assignTo: string | null; // Mail content
   comment: string | null;
+  subject: string;
   emailSender: string;
   isNoQuote: boolean;
   isNotRFQ: boolean;

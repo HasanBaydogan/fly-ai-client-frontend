@@ -12,7 +12,8 @@ const MailTrackingHeader = ({
   handleRFQNumberIdSearch,
   setPageNo,
   pageSize,
-  handlePageSizeChange
+  handlePageSizeChange,
+  handleSubjectSearch
 }: {
   loading: boolean;
   sinceFromDate: Date;
@@ -21,6 +22,7 @@ const MailTrackingHeader = ({
   setPageNo: React.Dispatch<React.SetStateAction<number>>;
   pageSize: number;
   handlePageSizeChange: (size: number) => void;
+  handleSubjectSearch: (subject: string) => void;
 }) => {
   return (
     <Row className="mb-3">
@@ -47,6 +49,14 @@ const MailTrackingHeader = ({
             className="pt-3"
             inputClassName="rounded-pill my-4"
             onChange={e => handleRFQNumberIdSearch(e.target.value)}
+            style={{ width: '160px', marginRight: '12px' }}
+          />
+          <SearchBox
+            placeholder="Search by Subject"
+            className="pt-3"
+            inputClassName="rounded-pill my-4"
+            onChange={e => handleSubjectSearch(e.target.value)}
+            style={{ width: '200px' }}
           />
           <Form.Select
             size="sm"
