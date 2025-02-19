@@ -80,6 +80,7 @@ const WizardTabs = ({
   const [quotePartRows, setQuotePartRows] = useState<QuotePartRow[]>([]);
 
   const [isEmailSendLoading, setEmailSendLoading] = useState(false);
+  const [isSendEmailSuccess, setIsSendEmailSuccess] = useState(false);
 
   const handleSendQuoteEmail = async () => {
     setEmailSendLoading(true);
@@ -103,9 +104,11 @@ const WizardTabs = ({
 
     const response = await sendQuoteEmail(payload);
     //console.log(response);
-    if (response.statusCode === 200) {
+    if (response && response.statusCode === 200) {
       setFrom(response.data.from);
+      setIsSendEmailSuccess(true);
     } else {
+      //console.log(response);
     }
     setEmailSendLoading(false);
   };
@@ -201,7 +204,10 @@ const WizardTabs = ({
                       emailProps={emailProps}
                       quoteNumberId={quoteWizardData.quoteNumberId}
                       rfqNumberId={quoteWizardData.rfqNumberId}
+                      isSendEmailSuccess={isSendEmailSuccess}
                       from={from}
+                      handleSendQuoteEmail={handleSendQuoteEmail}
+                      isEmailSendLoading={isEmailSendLoading}
                     />
                   }
                 </WizardForm>

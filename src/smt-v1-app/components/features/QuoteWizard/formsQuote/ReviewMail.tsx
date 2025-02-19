@@ -1,12 +1,18 @@
 import React, { useEffect } from 'react';
 import FeatherIcon from 'feather-icons-react';
 import { EmailProps } from './WizardSendMailForm';
+import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 interface ReviewMailProps {
   emailProps: EmailProps;
   quoteNumberId: string;
   rfqNumberId: string;
   from: string;
+  isSendEmailSuccess: boolean;
+  handleSendQuoteEmail: () => void;
+  isEmailSendLoading: boolean;
 }
 
 // Helper function to determine MIME type based on file extension
@@ -35,81 +41,123 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
   emailProps,
   quoteNumberId,
   rfqNumberId,
-  from
+  from,
+  isSendEmailSuccess,
+  handleSendQuoteEmail,
+  isEmailSendLoading
 }) => {
   const { toEmails, subject, ccEmails, bccEmails, content, base64Files } =
     emailProps;
 
   return (
     <div className="p-4">
-      <div className="text-center mb-5">
-        <FeatherIcon icon="check-circle" size={60} className="text-success" />
-        <h5>Email is sent successfully!</h5>
-      </div>
-      <p>
-        <strong>From:</strong> {from}
-      </p>
-      <p>
-        <strong>To:</strong>{' '}
-        {toEmails.length > 0 ? toEmails.join(', ') : 'Not Provided'}
-      </p>
-      <p>
-        <strong>CC:</strong>{' '}
-        {ccEmails.length > 0 ? ccEmails.join(', ') : 'Not Provided'}
-      </p>
-      <p>
-        <strong>BCC:</strong>{' '}
-        {bccEmails.length > 0 ? bccEmails.join(', ') : 'Not Provided'}
-      </p>
-      <p>
-        <strong>Quote ID:</strong> {quoteNumberId}
-      </p>
-      <p>
-        <strong>RFQ ID:</strong> {rfqNumberId}
-      </p>
-      <p>
-        <strong>Content:</strong>
-      </p>
-      <div
-        dangerouslySetInnerHTML={{ __html: content || '<p>Not Provided</p>' }}
-      />
+      {isSendEmailSuccess ? (
+        <>
+          <div className="text-center mb-5">
+            <FeatherIcon
+              icon="check-circle"
+              size={60}
+              className="text-success"
+            />
+            <h5>Email is sent successfully!</h5>
+          </div>
+          <p>
+            <strong>From:</strong> {from}
+          </p>
+          <p>
+            <strong>To:</strong>{' '}
+            {toEmails.length > 0 ? toEmails.join(', ') : 'Not Provided'}
+          </p>
+          <p>
+            <strong>CC:</strong>{' '}
+            {ccEmails.length > 0 ? ccEmails.join(', ') : 'Not Provided'}
+          </p>
+          <p>
+            <strong>BCC:</strong>{' '}
+            {bccEmails.length > 0 ? bccEmails.join(', ') : 'Not Provided'}
+          </p>
+          <p>
+            <strong>Quote ID:</strong> {quoteNumberId}
+          </p>
+          <p>
+            <strong>RFQ ID:</strong> {rfqNumberId}
+          </p>
+          <p>
+            <strong>Content:</strong>
+          </p>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: content || '<p>Not Provided</p>'
+            }}
+          />
+          <div>
+            <strong>Attachments:</strong>
+            <ul>
+              {base64Files.length > 0
+                ? base64Files.map((file, index) => {
+                    // Get MIME type based on file name extension.
+                    const mimeType = getMimeType(file.name);
 
-      <div>
-        <strong>Attachments:</strong>
-        <ul>
-          {base64Files.length > 0
-            ? base64Files.map((file, index) => {
-                // Get MIME type based on file name extension.
-                const mimeType = getMimeType(file.name);
+                    // Construct the data URL using the determined MIME type.
+                    const dataUrl = file.base64;
 
-                // Construct the data URL using the determined MIME type.
-                const dataUrl = file.base64;
+                    return (
+                      <li key={index}>
+                        {/* Show a preview if the file is an image */}
+                        {mimeType.startsWith('image/') && (
+                          <div
+                            style={{ marginBottom: '5px', marginTop: '30px' }}
+                          >
+                            <img
+                              src={dataUrl}
+                              alt={file.name}
+                              style={{ maxWidth: '200px', display: 'block' }}
+                            />
+                          </div>
+                        )}
+                        <a
+                          href={dataUrl}
+                          download={file.name}
+                          className="text-primary hover:underline"
+                        >
+                          {file.name}
+                        </a>
+                      </li>
+                    );
+                  })
+                : 'No Attachments'}
+            </ul>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="text-center mb-5">
+            <FeatherIcon
+              icon="x-circle"
+              size={60}
+              className="text-danger mb-2"
+            />
+            <h5>Email is not sent!</h5>
+            <p className="mt-3">An Error Occurs when sending an email</p>
 
-                return (
-                  <li key={index}>
-                    {/* Show a preview if the file is an image */}
-                    {mimeType.startsWith('image/') && (
-                      <div style={{ marginBottom: '5px', marginTop: '30px' }}>
-                        <img
-                          src={dataUrl}
-                          alt={file.name}
-                          style={{ maxWidth: '200px', display: 'block' }}
-                        />
-                      </div>
-                    )}
-                    <a
-                      href={dataUrl}
-                      download={file.name}
-                      className="text-primary hover:underline"
-                    >
-                      {file.name}
-                    </a>
-                  </li>
-                );
-              })
-            : 'No Attachments'}
-        </ul>
-      </div>
+            <Button
+              variant="phoenix-primary"
+              id="pdf-button"
+              onClick={handleSendQuoteEmail}
+              disabled={isEmailSendLoading}
+            >
+              {isEmailSendLoading ? (
+                <LoadingAnimation />
+              ) : (
+                <>
+                  <FeatherIcon icon="refresh-ccw" />
+                  <span className="ms-2">Resend Email</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
