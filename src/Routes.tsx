@@ -38,6 +38,7 @@ import AlreadyOpenedRfqBySomeoneError from 'smt-v1-app/components/error/AlreadyO
 import ClientListContainer from 'smt-v1-app/containers/Client/ClientListContainer/ClientListContainer';
 import NewClientContainer from 'smt-v1-app/containers/Client/NewClientContainer/NewClientContainer';
 import ClientEditContainer from 'smt-v1-app/containers/Client/ClientEditContainer/ClientEditContainer';
+import PartContainer from 'smt-v1-app/containers/PartContainer/PartContainer';
 
 const routes: RouteObject[] = [
   {
@@ -124,6 +125,15 @@ const routes: RouteObject[] = [
               {
                 path: 'edit',
                 element: <ClientEditContainer />
+              }
+            ]
+          },
+          {
+            path: 'part',
+            children: [
+              {
+                path: 'new-part',
+                element: <PartContainer />
               }
             ]
           }

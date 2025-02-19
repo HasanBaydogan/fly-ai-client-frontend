@@ -282,7 +282,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Add New Part',
-                path: '/',
+                path: '/part/new-part',
                 pathName: 'new-part',
                 icon: '',
                 active: true,
