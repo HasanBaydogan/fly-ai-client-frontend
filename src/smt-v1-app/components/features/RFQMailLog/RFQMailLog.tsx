@@ -90,9 +90,14 @@ const RFQMailLog: React.FC<RFQMailLog> = (props: RFQMailLog) => {
             {' '}
             {props.userFullName}{' '}
             <span className="fw-bold text-decoration-underline">created</span>{' '}
-            <span className="text-primary log-quote-hover">
-              {props.quoteValues.quote}{' '}
-            </span>{' '}
+            <a
+              href={'/quotes/quote?quoteId=' + props.quoteValues.quoteId}
+              target="_blank"
+              className="text-primary log-quote-hover"
+            >
+              {'Quote-'}
+              {props.quoteValues.quoteNumberId}{' '}
+            </a>{' '}
             , <span className="fw-bold text-decoration-underline">changed</span>{' '}
             RFQ Status From{' '}
             <span style={{ color: fromStatusColorsInCreation.bgColor }}>

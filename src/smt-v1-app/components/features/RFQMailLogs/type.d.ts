@@ -20,7 +20,8 @@ interface RFQMailLog {
   enterItemsNumber: number;
   // Quote is changed
   quoteValues: {
-    quote: string;
+    quoteId: string;
+    quoteNumberId: string;
     statusFrom: RFQMailStatus;
     statusTo: RFQMailStatus;
   };
