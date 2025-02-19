@@ -2,15 +2,16 @@ import { UilCheckCircle } from '@iconscout/react-unicons';
 import Unicon from 'components/base/Unicon';
 import { Card, Col, Container, Row } from 'react-bootstrap';
 import bg37 from 'assets/img/bg/37.png';
-import bg38 from 'assets/img/bg/38.png';
+import flyAiBlue from 'assets/img/bg/flyAiBlue.png';
+import bg99 from 'assets/img/bg/bg99Alternative.jpg';
 import loginBg from '../assets/img/bg/login-bg.svg';
 import authIllustrations from 'assets/img/spot-illustrations/auth.png';
-import loginIlustr from '../assets/img/spot-illustrations/login-ilustr.svg';
 import authIllustrationsDark from 'assets/img/spot-illustrations/auth-dark.png';
 import { PropsWithChildren } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from 'components/common/Logo';
 import classNames from 'classnames';
+import './AuthCardLayout.css';
 
 interface AuthCardLayoutProps {
   logo?: boolean;
@@ -33,28 +34,48 @@ const AuthCardLayout = ({
         <Col xs={11} sm={10} xl={8}>
           <Card className="border border-translucent auth-card">
             <Card.Body className="pe-md-0">
-              <Row className="align-items-center gx-0 gy-7">
+              <Row className=" gx-0 ">
                 <Col
                   xs="auto"
-                  className="bg-body-highlight dark__bg-gray-1100 rounded-3 position-relative overflow-hidden auth-title-box"
+                  className="rounded-3 position-relative  auth-title-box "
                 >
-                  <div
-                    className="bg-holder"
-                    style={{ backgroundImage: `url(${bg38})` }}
+                  <img
+                    className="bg-image"
+                    src={bg99}
+                    id="loginPageLeftBG"
+                    alt=""
+                    style={{
+                      position: 'absolute',
+                      top: 5,
+                      left: 0,
+                      width: '100%',
+                      objectFit: 'cover',
+                      zIndex: 1
+                    }}
                   />
+
                   <div
                     className={classNames(
                       className,
-                      'position-relative px-4 px-lg-7 py-7 pb-sm-5 text-center text-md-start pb-lg-7'
+                      'position-relative px-4 px-lg-7 py-7 pb-sm-5 text-center text-md-start pb-lg-7 text-overlay'
                     )}
+                    style={{ position: 'relative', zIndex: 2 }}
                   >
-                    <h3 className="mb-3 text-body-emphasis fs-7">
-                      Sales Management Tool
+                    <h3
+                      className="mb-3 text-body-emphasis fs-7"
+                      id="loginPgaeLeftHeader"
+                    >
+                      Aviation Powered by AI
                     </h3>
-                    <p className="text-body-tertiary">
-                      Power-up your bussiness with Sale Management Tool
+                    <p className="text-body-tertiary" id="loginPgaeLeftSubText">
+                      Data management of supply-chain operations is ready to
+                      take off
                     </p>
-                    <ul className="list-unstyled mb-0 w-max-content w-md-auto mx-auto">
+                    <p className="text-body-tertiary" id="loginPgaeLeftSubText">
+                      Self learning software tools based on relative
+                      integrations leads to uncompetitive capabilities with AI
+                    </p>
+                    {/* <ul className="list-unstyled mb-0 w-max-content w-md-auto mx-auto">
                       <li className="d-flex align-items-center gap-2">
                         <Unicon
                           icon={UilCheckCircle}
@@ -85,15 +106,7 @@ const AuthCardLayout = ({
                           Data Beyond Limits
                         </span>
                       </li>
-                    </ul>
-                  </div>
-                  <div className="position-relative mb-6 d-none d-md-block text-center mt-md-15 z-n1">
-                    <img
-                      className="auth-title-box-img d-dark-none"
-                      src={loginIlustr}
-                      alt=""
-                      style={{ zIndex: 1000000 }}
-                    />
+                    </ul> */}
                   </div>
                 </Col>
                 <Col className="mx-auto">
