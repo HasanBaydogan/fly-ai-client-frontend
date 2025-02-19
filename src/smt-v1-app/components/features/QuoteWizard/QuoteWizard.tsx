@@ -92,6 +92,8 @@ const QuoteWizard = ({
           <WizardTabs
             quoteWizardData={quoteWizardData}
             currencies={currencies}
+            selectedParts={selectedParts}
+            selectedAlternativeParts={selectedAlternativeParts}
           />
         )}
       </Modal.Body>

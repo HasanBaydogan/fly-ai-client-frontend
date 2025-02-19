@@ -17,10 +17,14 @@ import { sendQuoteEmail } from 'smt-v1-app/services/QuoteService';
 
 const WizardTabs = ({
   quoteWizardData,
-  currencies
+  currencies,
+  selectedParts,
+  selectedAlternativeParts
 }: {
   quoteWizardData: QuoteWizardData;
   currencies: string[];
+  selectedParts: string[];
+  selectedAlternativeParts: string[];
 }) => {
   const form = useWizardForm({
     totalStep: 4
@@ -90,7 +94,10 @@ const WizardTabs = ({
       cc: ccEmails,
       subject: subject,
       attachments: attachments,
-      body: content
+      body: content,
+      quoteId: quoteWizardData.quoteId,
+      selectedQuotePartIds: selectedParts,
+      selectedAlternativeQuotePartIds: selectedAlternativeParts
     };
     //console.log(payload);
 
