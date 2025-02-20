@@ -134,44 +134,26 @@ const PartHistoryListSection = ({
     { accessorKey: 'orderStatus', header: 'Ord Status' },
     { accessorKey: 'historypn', header: 'PN' },
     { accessorKey: 'pnDescription', header: 'PN Description' },
-
     {
-      accessorKey: 'email',
-      header: 'Email',
+      id: 'actions',
+      header: '',
       cell: ({ row: { original } }) => (
-        <Link to={`mailto:${original.email}`}>{original.email}</Link>
-      )
-    },
-    {
-      accessorKey: 'phone',
-      header: 'Phone',
-      cell: ({ row }) => formatPhoneNumber(row.original.phone)
-    },
-    {
-      accessorKey: 'cellphone',
-      header: 'Cell Phone',
-      cell: ({ row }) => formatPhoneNumber(row.original.cellphone)
+        <RevealDropdownTrigger>
+          <RevealDropdown>
+            <Dropdown.Item onClick={() => handleEdit(original)}>
+              Edit
+            </Dropdown.Item>
+            <Dropdown.Item onClick={() => handleDeleteClick(original)}>
+              Delete
+            </Dropdown.Item>
+          </RevealDropdown>
+        </RevealDropdownTrigger>
+      ),
+      meta: {
+        headerProps: { style: { width: '2%' } },
+        cellProps: { className: 'text-end' }
+      }
     }
-    // {
-    //   id: 'actions',
-    //   header: 'Actions',
-    //   cell: ({ row: { original } }) => (
-    //     <RevealDropdownTrigger>
-    //       <RevealDropdown>
-    //         <Dropdown.Item onClick={() => handleEdit(original)}>
-    //           Edit
-    //         </Dropdown.Item>
-    //         <Dropdown.Item onClick={() => handleDeleteClick(original)}>
-    //           Delete
-    //         </Dropdown.Item>
-    //       </RevealDropdown>
-    //     </RevealDropdownTrigger>
-    //   ),
-    //   meta: {
-    //     headerProps: { style: { width: '7%' } },
-    //     cellProps: { className: 'text-end' }
-    //   }
-    // }
   ];
 
   const table = useAdvanceTable({
