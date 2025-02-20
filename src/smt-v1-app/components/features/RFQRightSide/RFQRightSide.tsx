@@ -53,7 +53,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     rfq.clientResponse
   );
   const [rfqDeadline, setRFQDeadline] = useState<Date | undefined>(
-    rfq.rfqDeadline ? parseDeadline(rfq.rfqDeadline) : undefined
+    rfq.rfqDeadline ? parseDeadline(rfq.rfqDeadline) : null
   );
   const [clientRFQId, setClientRFQId] = useState(rfq.clientRFQNumberId);
 
@@ -223,7 +223,8 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
         rfqDeadline: formatDateToString(rfqDeadline),
         clientRFQId: clientRFQId !== '' ? clientRFQId : null
       };
-
+      console.log(savedRFQ);
+      console.log(rfq);
       const resp = await saveRFQToDB(savedRFQ);
 
       if (resp && resp.statusCode === 200) {

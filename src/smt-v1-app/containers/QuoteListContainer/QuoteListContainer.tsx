@@ -1,11 +1,7 @@
-import React from 'react'
+import React from 'react';
 
 const QuoteListContainer = () => {
-  return (
-    <div>
-      QupoteList Container
-    </div>
-  )
-}
+  return <div></div>;
+};
 
-export default QuoteListContainer
+export default QuoteListContainer;

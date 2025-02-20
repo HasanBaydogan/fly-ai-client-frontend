@@ -158,29 +158,6 @@ const RFQMailDetailModal = ({
                       </a>
                     </div>
                   </div>
-
-                  <Form.Group className="mt-2">
-                    <Form.Label>Assing To</Form.Label>
-                    <Form.Select aria-label="User Selection">
-                      <option disabled>Select Assigned User</option>
-                      {rfqMailDetail.allUsers.map(user => (
-                        <option key={user.userId} value={user.userId}>
-                          {user.userFullName}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-                  <Form.Group className="mt-2">
-                    <Form.Label>Block To</Form.Label>
-                    <Form.Select aria-label="Default select example">
-                      <option disabled>Select Assigned User</option>
-                      {rfqMailDetail.allUsers.map(user => (
-                        <option key={user.userId} value={user.userId}>
-                          {user.userFullName}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
                 </div>
               </div>
               <div className="d-flex justify-content-end">
