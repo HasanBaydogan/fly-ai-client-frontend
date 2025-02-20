@@ -461,7 +461,7 @@ export const putBySupplierUpdate = async (payload: UpdateSupplierPayload) => {
     } else {
       window.location.assign('/');
     }
-
+    console.log(payload);
     const response = await api().put(`/supplier/update`, payload, {
       headers
     });

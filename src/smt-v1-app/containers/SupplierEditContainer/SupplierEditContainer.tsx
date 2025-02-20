@@ -268,7 +268,7 @@ const SupplierEditContainer = () => {
         data: (att as any).url // Eğer url varsa
       })),
       ...base64Files.map(file => ({
-        id: file.id,
+        id: null,
         fileName: file.name,
         data: file.base64
       }))
