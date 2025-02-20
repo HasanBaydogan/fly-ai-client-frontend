@@ -420,8 +420,8 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
         onContactsChange={setContacts}
         initialContacts={contacts}
       />
-      {/*
-      <PartTimelineGraph /> */}
+
+      <PartTimelineGraph />
     </>
   );
 };

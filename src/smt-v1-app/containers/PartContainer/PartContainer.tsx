@@ -14,6 +14,7 @@ import PartWizardItemFiledsForm from 'smt-v1-app/components/features/Parts/Parts
 import PartWizardUserDefFieldsForm from 'smt-v1-app/components/features/Parts/UserDefFields/PartWizardUserDefFieldsForm';
 import PartWizardNotesForm from 'smt-v1-app/components/features/Parts/PartsNotes/PartWizardNotesForm';
 import PartWizardFilesForm from 'smt-v1-app/components/features/Parts/PartsFiles/PartWizardFilesForm';
+import PartWizardAlternativesForm from 'smt-v1-app/components/features/Parts/PartAlternatives/PartWizardAlternativesForm';
 
 interface PartFormData {
   name: string;
@@ -77,7 +78,7 @@ const PartContainer = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey={5}>
                   <WizardForm step={5}>
-                    <WizardSuccessStep />
+                    <PartWizardAlternativesForm />
                   </WizardForm>
                 </Tab.Pane>
               </Tab.Content>
