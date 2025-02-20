@@ -210,172 +210,177 @@ const PartWizardUserDefFieldsForm = () => {
               </Dropdown>
             </Col>
 
-            {selectedFieldType === 'Multiple Text Choice Value' ||
-            selectedFieldType === 'Multiple Number Choice Value' ? (
-              <Row className="mt-3">
-                <Col md={4}>
-                  <Form.Group controlId="fieldName">
-                    <Form.Label>Field Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter Field Name"
-                      value={fieldName}
-                      onChange={e => setFieldName(e.target.value)}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group controlId="defaultChoice">
-                    <Form.Label>Default Choice</Form.Label>
-                    <Form.Select
-                      value={
-                        selectedFieldType === 'Multiple Text Choice Value'
-                          ? selectedMultipleTextChoice
-                          : selectedMultipleNumberChoice
-                      }
-                      onChange={e => {
-                        if (
-                          selectedFieldType === 'Multiple Text Choice Value'
-                        ) {
-                          setSelectedMultipleTextChoice(e.target.value);
-                        } else {
-                          setSelectedMultipleNumberChoice(e.target.value);
-                        }
-                      }}
-                    >
-                      <option value="">Select Default Choice</option>
-                      {(selectedFieldType === 'Multiple Text Choice Value'
-                        ? textChoices
-                        : numberChoices
-                      ).map((choice, index) => (
-                        <option key={index} value={choice}>
-                          {choice}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group controlId="newChoice">
-                    <Form.Label>New Option</Form.Label>
-                    <div className="d-flex">
+            {/* Sadece bir field type seçildiyse input alanlarını göster */}
+            {selectedFieldType &&
+              (selectedFieldType === 'Multiple Text Choice Value' ||
+              selectedFieldType === 'Multiple Number Choice Value' ? (
+                <Row className="mt-3">
+                  <Col md={4}>
+                    <Form.Group controlId="fieldName">
+                      <Form.Label>Field Name</Form.Label>
                       <Form.Control
-                        type={
-                          selectedFieldType === 'Multiple Number Choice Value'
-                            ? 'number'
-                            : 'text'
-                        }
-                        placeholder="Enter new option"
+                        type="text"
+                        placeholder="Enter Field Name"
+                        value={fieldName}
+                        onChange={e => setFieldName(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group controlId="defaultChoice">
+                      <Form.Label>Default Choice</Form.Label>
+                      <Form.Select
                         value={
                           selectedFieldType === 'Multiple Text Choice Value'
-                            ? textChoiceInput
-                            : numberChoiceInput
+                            ? selectedMultipleTextChoice
+                            : selectedMultipleNumberChoice
                         }
                         onChange={e => {
                           if (
                             selectedFieldType === 'Multiple Text Choice Value'
                           ) {
-                            setTextChoiceInput(e.target.value);
+                            setSelectedMultipleTextChoice(e.target.value);
                           } else {
-                            setNumberChoiceInput(e.target.value);
+                            setSelectedMultipleNumberChoice(e.target.value);
                           }
                         }}
-                      />
-                      <Button
-                        className="btn btn-primary ms-2"
-                        type="button"
-                        onClick={
-                          selectedFieldType === 'Multiple Text Choice Value'
-                            ? addTextChoice
-                            : addNumberChoice
-                        }
                       >
-                        Add
-                      </Button>
-                    </div>
-                    {/* Sade listeleme */}
-                    {selectedFieldType === 'Multiple Text Choice Value' && (
-                      <ul className="mt-2 list-unstyled">
-                        {textChoices.map((choice, index) => (
-                          <li key={index} className="d-flex align-items-center">
-                            <span>{choice}</span>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => removeTextChoice(index)}
-                              className="ms-2 p-0"
-                            >
-                              x
-                            </Button>
-                          </li>
+                        <option value="">Select Default Choice</option>
+                        {(selectedFieldType === 'Multiple Text Choice Value'
+                          ? textChoices
+                          : numberChoices
+                        ).map((choice, index) => (
+                          <option key={index} value={choice}>
+                            {choice}
+                          </option>
                         ))}
-                      </ul>
-                    )}
-                    {selectedFieldType === 'Multiple Number Choice Value' && (
-                      <ul className="mt-2 list-unstyled">
-                        {numberChoices.map((choice, index) => (
-                          <li
-                            key={index}
-                            className="d-flex align-items-center px-3"
-                          >
-                            <span>{choice}</span>
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={() => removeNumberChoice(index)}
-                              className="ms-2 p-0"
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group controlId="newChoice">
+                      <Form.Label>New Option</Form.Label>
+                      <div className="d-flex">
+                        <Form.Control
+                          type={
+                            selectedFieldType === 'Multiple Number Choice Value'
+                              ? 'number'
+                              : 'text'
+                          }
+                          placeholder="Enter new option"
+                          value={
+                            selectedFieldType === 'Multiple Text Choice Value'
+                              ? textChoiceInput
+                              : numberChoiceInput
+                          }
+                          onChange={e => {
+                            if (
+                              selectedFieldType === 'Multiple Text Choice Value'
+                            ) {
+                              setTextChoiceInput(e.target.value);
+                            } else {
+                              setNumberChoiceInput(e.target.value);
+                            }
+                          }}
+                        />
+                        <Button
+                          className="btn btn-primary ms-2"
+                          type="button"
+                          onClick={
+                            selectedFieldType === 'Multiple Text Choice Value'
+                              ? addTextChoice
+                              : addNumberChoice
+                          }
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      {/* Sade listeleme */}
+                      {selectedFieldType === 'Multiple Text Choice Value' && (
+                        <ul className="mt-2 list-unstyled">
+                          {textChoices.map((choice, index) => (
+                            <li
+                              key={index}
+                              className="d-flex align-items-center"
                             >
-                              x
-                            </Button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </Form.Group>
-                </Col>
-              </Row>
-            ) : (
-              // Text Value ve Number Value için iki sütunlu düzen
-              <Row className="mt-3">
-                <Col md={6}>
-                  <Form.Group controlId="fieldName">
-                    <Form.Label>Field Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter Field Name"
-                      value={fieldName}
-                      onChange={e => setFieldName(e.target.value)}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  {selectedFieldType === 'Text Value' && (
-                    <Form.Group controlId="textValueFieldDefaultValue">
-                      <Form.Label>Default Value (Text)</Form.Label>
+                              <span>{choice}</span>
+                              <Button
+                                variant="link"
+                                size="sm"
+                                onClick={() => removeTextChoice(index)}
+                                className="ms-2 p-0"
+                              >
+                                x
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {selectedFieldType === 'Multiple Number Choice Value' && (
+                        <ul className="mt-2 list-unstyled">
+                          {numberChoices.map((choice, index) => (
+                            <li
+                              key={index}
+                              className="d-flex align-items-center px-3"
+                            >
+                              <span>{choice}</span>
+                              <Button
+                                variant="link"
+                                size="sm"
+                                onClick={() => removeNumberChoice(index)}
+                                className="ms-2 p-0"
+                              >
+                                x
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+              ) : (
+                // Text Value ve Number Value için iki sütunlu düzen
+                <Row className="mt-3">
+                  <Col md={6}>
+                    <Form.Group controlId="fieldName">
+                      <Form.Label>Field Name</Form.Label>
                       <Form.Control
                         type="text"
-                        placeholder="Enter Default Value"
-                        value={textFieldDefault}
-                        onChange={e => setTextFieldDefault(e.target.value)}
+                        placeholder="Enter Field Name"
+                        value={fieldName}
+                        onChange={e => setFieldName(e.target.value)}
                       />
                     </Form.Group>
-                  )}
-                  {selectedFieldType === 'Number Value' && (
-                    <Form.Group controlId="numberValueFieldDefaultValue">
-                      <Form.Label>Default Value (Number)</Form.Label>
-                      <Form.Control
-                        onWheel={e => (e.target as HTMLInputElement).blur()}
-                        type="number"
-                        placeholder="Enter Default Value"
-                        min={0}
-                        value={numberFieldDefault}
-                        onChange={e => setNumberFieldDefault(e.target.value)}
-                      />
-                    </Form.Group>
-                  )}
-                </Col>
-              </Row>
-            )}
+                  </Col>
+                  <Col md={6}>
+                    {selectedFieldType === 'Text Value' && (
+                      <Form.Group controlId="textValueFieldDefaultValue">
+                        <Form.Label>Default Value (Text)</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Enter Default Value"
+                          value={textFieldDefault}
+                          onChange={e => setTextFieldDefault(e.target.value)}
+                        />
+                      </Form.Group>
+                    )}
+                    {selectedFieldType === 'Number Value' && (
+                      <Form.Group controlId="numberValueFieldDefaultValue">
+                        <Form.Label>Default Value (Number)</Form.Label>
+                        <Form.Control
+                          onWheel={e => (e.target as HTMLInputElement).blur()}
+                          type="number"
+                          placeholder="Enter Default Value"
+                          min={0}
+                          value={numberFieldDefault}
+                          onChange={e => setNumberFieldDefault(e.target.value)}
+                        />
+                      </Form.Group>
+                    )}
+                  </Col>
+                </Row>
+              ))}
           </>
         )}
 

@@ -1,8 +1,5 @@
 import { useState } from 'react';
-import { Card, Button, Form, Dropdown } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThumbtack } from '@fortawesome/free-solid-svg-icons'; // This is no longer needed
-import '@fortawesome/fontawesome-svg-core';
+import { Card, Button, Form, Dropdown, Pagination } from 'react-bootstrap';
 import redPin from 'assets/icons/redPin.svg'; // Import your custom redPin SVG
 import bluePin from 'assets/icons/bluePin.svg';
 import burlywoodPin from 'assets/icons/burlywoodPin.svg';
@@ -10,9 +7,16 @@ import greenPin from 'assets/icons/greenPin.svg';
 import skybluePin from 'assets/icons/skybluePin.svg';
 import brownPin from 'assets/icons/brownPin.svg';
 import violetPin from 'assets/icons/violetPin.svg';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faAngleLeft,
+  faAngleRight,
+  faAnglesLeft,
+  faAnglesRight
+} from '@fortawesome/free-solid-svg-icons';
 
 const noteTypes = [
-  { label: 'Import/Export Compliance Notes', icon: brownPin }, // Use the redPin icon here
+  { label: 'Import/Export Compliance Notes', icon: brownPin },
   { label: 'Important Notes', icon: redPin },
   { label: 'Logistic Notes', icon: violetPin },
   { label: 'Purchasing Notes', icon: burlywoodPin },
@@ -44,8 +48,8 @@ const PartWizardNotesForm = () => {
     text: '',
     category: 'Sales Notes'
   });
-
   const [showForm, setShowForm] = useState(false);
+  const [filterCategory, setFilterCategory] = useState('all'); // Yeni filtre state
 
   // Save or update note
   const handleSaveNote = () => {
@@ -76,28 +80,66 @@ const PartWizardNotesForm = () => {
   };
 
   // Edit note
-  const handleEdit = note => {
+  const handleEdit = (note: any) => {
     setNoteForm(note);
     setShowForm(true);
   };
 
   // Delete note
-  const handleDelete = id => {
+  const handleDelete = (id: number) => {
     setNotes(notes.filter(note => note.id !== id));
   };
 
+  // Filtrelenmiş notlar
+  const filteredNotes =
+    filterCategory === 'all'
+      ? notes
+      : notes.filter(note => note.category === filterCategory);
+
   return (
     <div className="container mt-4">
-      {/* Add New Note Button */}
-      {!showForm && (
-        <Button
-          variant="primary"
-          className="mb-3"
-          onClick={() => setShowForm(true)}
-        >
-          Add New Note
-        </Button>
-      )}
+      {/* Üst kısım: Filtreleme ve Add New Note aynı satırda */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        {/* Filtreleme Dropdown'ı (sol taraf) */}
+        <Dropdown>
+          <Dropdown.Toggle variant="secondary">
+            {filterCategory === 'all' ? 'All Notes' : filterCategory}
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            <Dropdown.Item
+              onClick={() => setFilterCategory('all')}
+              eventKey="all"
+            >
+              All Notes
+            </Dropdown.Item>
+            {noteTypes.map((type, index) => (
+              <Dropdown.Item
+                key={index}
+                onClick={() => setFilterCategory(type.label)}
+                eventKey={type.label}
+              >
+                <img
+                  src={type.icon}
+                  alt="note icon"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    marginRight: '8px'
+                  }}
+                />
+                {type.label}
+              </Dropdown.Item>
+            ))}
+          </Dropdown.Menu>
+        </Dropdown>
+
+        {/* Add New Note Butonu (sağ taraf) */}
+        {!showForm && (
+          <Button variant="primary" onClick={() => setShowForm(true)}>
+            Add New Note
+          </Button>
+        )}
+      </div>
 
       {/* New Note / Edit Form */}
       {showForm && (
@@ -163,7 +205,7 @@ const PartWizardNotesForm = () => {
       )}
 
       {/* Notes List */}
-      {notes.map(note => (
+      {filteredNotes.map(note => (
         <Card key={note.id} className="mb-3">
           <Card.Body>
             <Card.Title>
@@ -178,7 +220,7 @@ const PartWizardNotesForm = () => {
                     }
                     alt="note icon"
                     className="ms-2"
-                    style={{ width: '26px', height: '26px' }} // Optional: Adjust icon size
+                    style={{ width: '26px', height: '26px' }}
                   />
                 </div>
               </div>
@@ -199,6 +241,14 @@ const PartWizardNotesForm = () => {
           </Card.Body>
         </Card>
       ))}
+      <div className="d-flex align-items-center justify-content-end">
+        <Pagination className="mb-0">
+          <Pagination.Prev />
+          <Pagination.Item active>{1}</Pagination.Item>
+          <Pagination.Item>{2}</Pagination.Item>
+          <Pagination.Next />
+        </Pagination>
+      </div>
     </div>
   );
 };

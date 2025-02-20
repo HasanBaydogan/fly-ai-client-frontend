@@ -1,4 +1,4 @@
-import WizardAccountForm from 'smt-v1-app/components/features/Parts/PartWizardItemFiledsForm';
+import WizardAccountForm from 'smt-v1-app/components/features/Parts/PartsItemFields/PartWizardItemFiledsForm';
 import WizardBillingForm from 'components/forms/WizardBillingForm';
 import WizardPersonalForm from 'components/forms/WizardPersonalForm';
 import WizardFormFooter from 'components/wizard/WizardFormFooter';
@@ -10,9 +10,10 @@ import WizardFormProvider from 'providers/WizardFormProvider';
 import { Button, Card, Modal, ModalProps, Tab } from 'react-bootstrap';
 import { useState } from 'react';
 import classNames from 'classnames';
-import PartWizardItemFiledsForm from 'smt-v1-app/components/features/Parts/PartWizardItemFiledsForm';
+import PartWizardItemFiledsForm from 'smt-v1-app/components/features/Parts/PartsItemFields/PartWizardItemFiledsForm';
 import PartWizardUserDefFieldsForm from 'smt-v1-app/components/features/Parts/UserDefFields/PartWizardUserDefFieldsForm';
-import PartWizardNotesForm from 'smt-v1-app/components/features/Parts/PartWizardNotesForm';
+import PartWizardNotesForm from 'smt-v1-app/components/features/Parts/PartsNotes/PartWizardNotesForm';
+import PartWizardFilesForm from 'smt-v1-app/components/features/Parts/PartsFiles/PartWizardFilesForm';
 
 interface PartFormData {
   name: string;
@@ -33,7 +34,7 @@ interface PartFormData {
 
 const PartContainer = () => {
   const form = useWizardForm<PartFormData>({
-    totalStep: 4
+    totalStep: 5
   });
   const values: ModalProps['fullscreen'][] = [true, 'xl-down'];
   const [lgShow, setLgShow] = useState(false);
@@ -71,7 +72,7 @@ const PartContainer = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey={4}>
                   <WizardForm step={4}>
-                    <WizardSuccessStep />
+                    <PartWizardFilesForm />
                   </WizardForm>
                 </Tab.Pane>
                 <Tab.Pane eventKey={5}>

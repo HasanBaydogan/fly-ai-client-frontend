@@ -7,15 +7,15 @@ import { Alert, Button, Col, Form, Modal, Row, Spinner } from 'react-bootstrap';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import PartHistoryListSection, {
   FormattedContactData
-} from './HistoryList/PartHistoryListSection';
+} from '../HistoryList/PartHistoryListSection';
 import { CanvasRenderer } from 'echarts/renderers';
 import { LineChart } from 'echarts/charts';
-import PartTimelineGraph from './TimelineGraph/PartTimelineGraph';
+import PartTimelineGraph from '../TimelineGraph/PartTimelineGraph';
 import { postPartCreate } from 'smt-v1-app/services/PartServices';
-import CustomButton from '../../../../components/base/Button';
+import CustomButton from '../../../../../components/base/Button';
 import { TooltipComponent } from 'echarts/components';
-import { TreeNode } from '../SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
-import SegmentSelection from '../GlobalComponents/SegmentSelection';
+import { TreeNode } from '../../SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
+import SegmentSelection from '../../GlobalComponents/SegmentSelection';
 import { Certypes, getbySegmentList } from 'smt-v1-app/services/GlobalServices';
 
 interface SegmentSelectionProps {
