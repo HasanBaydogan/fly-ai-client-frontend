@@ -13,9 +13,6 @@ import avatarPlaceholder from 'assets/img/team/avatar.webp';
 import AvatarDropzone from 'components/common/AvatarDropzone';
 import DatePicker from 'components/base/DatePicker';
 import { WizardFormData } from 'pages/modules/forms/WizardExample';
-import SupplierList, {
-  projectListTableColumns
-} from '../UserDefFields/SupplierListTable';
 import {
   searchBySupplierList,
   SupplierData
@@ -41,6 +38,34 @@ const files = [
     partNumber: 'DK-120902_152',
     partName: 'BRAKE',
     description: 'Certificate'
+  }
+];
+
+// Sütun tanımlamalarını ekleyin
+const projectListTableColumns: ColumnDef<SupplierData>[] = [
+  {
+    id: 'partNumber',
+    accessorKey: 'partNumber',
+    header: 'Part Number',
+    meta: {
+      cellProps: { className: 'white-space-nowrap py-2' }
+    }
+  },
+  {
+    id: 'partName',
+    accessorKey: 'partName',
+    header: 'Part Name',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' }
+    }
+  },
+  {
+    id: 'description',
+    accessorKey: 'description',
+    header: 'Description',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' }
+    }
   }
 ];
 

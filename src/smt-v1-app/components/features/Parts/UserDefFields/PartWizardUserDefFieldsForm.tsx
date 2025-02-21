@@ -1,51 +1,43 @@
-import Avatar from 'components/base/Avatar';
 import { useEffect, useState } from 'react';
-import { Col, Dropdown, Form, Row, Button } from 'react-bootstrap';
-import avatarPlaceholder from 'assets/img/team/avatar.webp';
-import AvatarDropzone from 'components/common/AvatarDropzone';
-import DatePicker from 'components/base/DatePicker';
-import { WizardFormData } from 'pages/modules/forms/WizardExample';
-import SupplierList, { projectListTableColumns } from './SupplierListTable';
-import {
-  searchBySupplierList,
-  SupplierData
-} from 'smt-v1-app/services/SupplierServices';
+import { Col, Dropdown, Form, Row, Button, Modal } from 'react-bootstrap';
+import PartUDFList, { udfTableColumns } from './PartUDFList';
+import { UDFData } from 'smt-v1-app/services/PartServices';
+// İhtiyaç varsa diğer servis ve hook importları (ör. searchBySupplierList) eklenebilir.
 import useAdvanceTable from 'hooks/useAdvanceTable';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import ProjectsTopSection from 'components/modules/project-management/ProjectsTopSection';
 
 const PartWizardUserDefFieldsForm = () => {
-  const [data] = useState<SupplierData[]>([]);
+  // UDF verilerini tutmak için UDFData tipi kullanılıyor.
+  const [data] = useState<UDFData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [pageIndex] = useState<number>(1);
 
-  // UDF formunun görünürlüğünü kontrol eden state
+  // Form görünürlüğü ve modalleri
   const [showUDFForm, setShowUDFForm] = useState<boolean>(false);
-  // Ortak alanlar
+  const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
+  const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
+
+  // Form alanları
   const [selectedFieldType, setSelectedFieldType] = useState<string>('');
   const [fieldName, setFieldName] = useState<string>('');
-  // Text Value
   const [textFieldDefault, setTextFieldDefault] = useState<string>('');
-  // Number Value
   const [numberFieldDefault, setNumberFieldDefault] = useState<string>('');
-  // Multiple Text Choice
   const [textChoices, setTextChoices] = useState<string[]>([]);
   const [textChoiceInput, setTextChoiceInput] = useState<string>('');
   const [selectedMultipleTextChoice, setSelectedMultipleTextChoice] =
     useState<string>('');
-  // Multiple Number Choice
   const [numberChoices, setNumberChoices] = useState<string[]>([]);
   const [numberChoiceInput, setNumberChoiceInput] = useState<string>('');
   const [selectedMultipleNumberChoice, setSelectedMultipleNumberChoice] =
     useState<string>('');
 
+  // Choice ekleme ve silme fonksiyonları
   const addTextChoice = () => {
     const choice = textChoiceInput.trim();
-    // Sadece boş değilse ve listede yoksa ekle
-    if (choice !== '' && !textChoices.includes(choice)) {
+    if (choice && !textChoices.includes(choice)) {
       setTextChoices([...textChoices, choice]);
       setTextChoiceInput('');
     }
@@ -53,39 +45,32 @@ const PartWizardUserDefFieldsForm = () => {
 
   const addNumberChoice = () => {
     const choice = numberChoiceInput.trim();
-    // Sadece boş değilse ve listede yoksa ekle
-    if (choice !== '' && !numberChoices.includes(choice)) {
+    if (choice && !numberChoices.includes(choice)) {
       setNumberChoices([...numberChoices, choice]);
       setNumberChoiceInput('');
     }
   };
 
   const removeTextChoice = (index: number) => {
-    const updatedChoices = textChoices.filter((_, i) => i !== index);
-    setTextChoices(updatedChoices);
-    if (selectedMultipleTextChoice === textChoices[index]) {
+    setTextChoices(prev => prev.filter((_, i) => i !== index));
+    if (selectedMultipleTextChoice === textChoices[index])
       setSelectedMultipleTextChoice('');
-    }
   };
 
   const removeNumberChoice = (index: number) => {
-    const updatedChoices = numberChoices.filter((_, i) => i !== index);
-    setNumberChoices(updatedChoices);
-    if (selectedMultipleNumberChoice === numberChoices[index]) {
+    setNumberChoices(prev => prev.filter((_, i) => i !== index));
+    if (selectedMultipleNumberChoice === numberChoices[index])
       setSelectedMultipleNumberChoice('');
-    }
   };
 
+  // Örnek veri çekimi (supplier verisi yerine burada sadece loading durumu)
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await searchBySupplierList('', pageIndex);
-        if (response && response.data && response.data.suppliers) {
-          // Supplier datasını işleyebilirsiniz
-        }
+        // Eğer başka bir veri çekimi gerekiyorsa ekleyin.
       } catch (error) {
-        console.error('Error fetching supplier data:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
@@ -94,28 +79,22 @@ const PartWizardUserDefFieldsForm = () => {
   }, [pageIndex]);
 
   const table = useAdvanceTable({
-    data: data,
-    columns: projectListTableColumns as ColumnDef<SupplierData>[],
+    data,
+    columns: udfTableColumns as ColumnDef<UDFData>[],
     pageSize: 6,
     pagination: true,
     sortable: true
   });
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
 
   const postFieldData = async (payload: any) => {
     console.log('Posting field data:', payload);
-    // Gerçek API entegrasyonunu burada yapabilirsiniz.
+    // API entegrasyonunuzu buraya ekleyin.
   };
 
   const handleSave = async () => {
-    let payload: any = {
-      fieldType: selectedFieldType,
-      fieldName: fieldName
-    };
-
+    const payload: any = { fieldType: selectedFieldType, fieldName };
     if (selectedFieldType === 'Text Value') {
       payload.defaultValue = textFieldDefault;
     } else if (selectedFieldType === 'Number Value') {
@@ -130,17 +109,14 @@ const PartWizardUserDefFieldsForm = () => {
     try {
       await postFieldData(payload);
       alert('Field saved successfully!');
-      // Kaydetme sonrası formu kapatıyoruz.
-      setShowUDFForm(false);
-      handleCancel();
+      resetForm();
     } catch (error) {
       console.error('Error saving field data:', error);
       alert('Error saving field data.');
     }
   };
 
-  const handleCancel = () => {
-    // Tüm alanları resetliyoruz
+  const resetForm = () => {
     setSelectedFieldType('');
     setFieldName('');
     setTextFieldDefault('');
@@ -151,14 +127,13 @@ const PartWizardUserDefFieldsForm = () => {
     setNumberChoices([]);
     setNumberChoiceInput('');
     setSelectedMultipleNumberChoice('');
-    // UDF formunu kapatıyoruz.
     setShowUDFForm(false);
   };
 
   return (
     <div>
       <AdvanceTableProvider {...table}>
-        <div className="d-flex flex-wrap mb-2 gap-3 gap-sm-6 align-items-center">
+        <div className="d-flex flex-wrap mb-2 gap-3 align-items-center">
           <Button
             className="btn btn-primary px-5"
             onClick={() => setShowUDFForm(true)}
@@ -168,9 +143,8 @@ const PartWizardUserDefFieldsForm = () => {
             Add New UDF
           </Button>
         </div>
-        <SupplierList activeView={''} />
+        <PartUDFList activeView={''} />
 
-        {/* UDF formunu sadece showUDFForm true ise göster */}
         {showUDFForm && (
           <>
             <Col sm={12} className="mt-5">
@@ -210,7 +184,6 @@ const PartWizardUserDefFieldsForm = () => {
               </Dropdown>
             </Col>
 
-            {/* Sadece bir field type seçildiyse input alanlarını göster */}
             {selectedFieldType &&
               (selectedFieldType === 'Multiple Text Choice Value' ||
               selectedFieldType === 'Multiple Number Choice Value' ? (
@@ -235,15 +208,11 @@ const PartWizardUserDefFieldsForm = () => {
                             ? selectedMultipleTextChoice
                             : selectedMultipleNumberChoice
                         }
-                        onChange={e => {
-                          if (
-                            selectedFieldType === 'Multiple Text Choice Value'
-                          ) {
-                            setSelectedMultipleTextChoice(e.target.value);
-                          } else {
-                            setSelectedMultipleNumberChoice(e.target.value);
-                          }
-                        }}
+                        onChange={e =>
+                          selectedFieldType === 'Multiple Text Choice Value'
+                            ? setSelectedMultipleTextChoice(e.target.value)
+                            : setSelectedMultipleNumberChoice(e.target.value)
+                        }
                       >
                         <option value="">Select Default Choice</option>
                         {(selectedFieldType === 'Multiple Text Choice Value'
@@ -273,15 +242,11 @@ const PartWizardUserDefFieldsForm = () => {
                               ? textChoiceInput
                               : numberChoiceInput
                           }
-                          onChange={e => {
-                            if (
-                              selectedFieldType === 'Multiple Text Choice Value'
-                            ) {
-                              setTextChoiceInput(e.target.value);
-                            } else {
-                              setNumberChoiceInput(e.target.value);
-                            }
-                          }}
+                          onChange={e =>
+                            selectedFieldType === 'Multiple Text Choice Value'
+                              ? setTextChoiceInput(e.target.value)
+                              : setNumberChoiceInput(e.target.value)
+                          }
                         />
                         <Button
                           className="btn btn-primary ms-2"
@@ -295,8 +260,7 @@ const PartWizardUserDefFieldsForm = () => {
                           Add
                         </Button>
                       </div>
-                      {/* Sade listeleme */}
-                      {selectedFieldType === 'Multiple Text Choice Value' && (
+                      {selectedFieldType === 'Multiple Text Choice Value' ? (
                         <ul className="mt-2 list-unstyled">
                           {textChoices.map((choice, index) => (
                             <li
@@ -315,13 +279,12 @@ const PartWizardUserDefFieldsForm = () => {
                             </li>
                           ))}
                         </ul>
-                      )}
-                      {selectedFieldType === 'Multiple Number Choice Value' && (
+                      ) : (
                         <ul className="mt-2 list-unstyled">
                           {numberChoices.map((choice, index) => (
                             <li
                               key={index}
-                              className="d-flex align-items-center px-3"
+                              className="d-flex align-items-center"
                             >
                               <span>{choice}</span>
                               <Button
@@ -340,7 +303,6 @@ const PartWizardUserDefFieldsForm = () => {
                   </Col>
                 </Row>
               ) : (
-                // Text Value ve Number Value için iki sütunlu düzen
                 <Row className="mt-3">
                   <Col md={6}>
                     <Form.Group controlId="fieldName">
@@ -384,19 +346,74 @@ const PartWizardUserDefFieldsForm = () => {
           </>
         )}
 
-        {/* Sayfanın altında Cancel ve Save butonları */}
         {showUDFForm && (
           <Row className="mt-4">
             <Col className="d-flex justify-content-end gap-2">
-              <Button variant="secondary" onClick={handleCancel}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowCancelModal(true)}
+              >
                 Cancel
               </Button>
-              <Button variant="success" onClick={handleSave}>
+              <Button variant="success" onClick={() => setShowSaveModal(true)}>
                 Save
               </Button>
             </Col>
           </Row>
         )}
+
+        <Modal
+          show={showCancelModal}
+          onHide={() => setShowCancelModal(false)}
+          centered
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Cancellation</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Are you sure you want to discard all changes?</Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => setShowCancelModal(false)}
+            >
+              No, Keep Changes
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                setShowCancelModal(false);
+                resetForm();
+              }}
+            >
+              Yes, Discard
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={showSaveModal}
+          onHide={() => setShowSaveModal(false)}
+          centered
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Save</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Are you sure you want to save the field data?</Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowSaveModal(false)}>
+              No, Cancel
+            </Button>
+            <Button
+              variant="success"
+              onClick={() => {
+                setShowSaveModal(false);
+                handleSave();
+              }}
+            >
+              Yes, Save
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </AdvanceTableProvider>
     </div>
   );
