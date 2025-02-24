@@ -257,24 +257,27 @@ const ClientEditContainer = () => {
   const handleSave = async () => {
     setShowSaveModal(false);
 
-    // if (!companyName.trim()) {
-    //   setAlertMessage('Company Name cannot be empty.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
-    // if (!segmentIds || segmentIds.length === 0) {
-    //   setAlertMessage('Please select at least one Segment.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
-    // if (!selectedCountryId) {
-    //   setAlertMessage('Please select a Country.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
+    if (!clientCompanyName.trim()) {
+      setAlertMessage('Company Name cannot be empty.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
+
+    if (!clientMail) {
+      setAlertMessage('Please select a Mail.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
+
+    if (!legalAddress) {
+      setAlertMessage('Legal Address cannot be empty..');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
+
     if (!selectedStatus) {
       setAlertMessage('Please select a Status.');
       setIsSuccess(false);

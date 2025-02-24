@@ -39,6 +39,7 @@ import ClientListContainer from 'smt-v1-app/containers/Client/ClientListContaine
 import NewClientContainer from 'smt-v1-app/containers/Client/NewClientContainer/NewClientContainer';
 import ClientEditContainer from 'smt-v1-app/containers/Client/ClientEditContainer/ClientEditContainer';
 import PartContainer from 'smt-v1-app/containers/PartContainer/PartContainer';
+import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
 const routes: RouteObject[] = [
   {
@@ -134,6 +135,10 @@ const routes: RouteObject[] = [
               {
                 path: 'new-part',
                 element: <PartContainer />
+              },
+              {
+                path: 'list',
+                element: <PartListContainer />
               }
             ]
           }

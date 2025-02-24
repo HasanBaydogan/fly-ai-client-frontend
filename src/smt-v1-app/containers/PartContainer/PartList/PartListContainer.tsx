@@ -5,7 +5,7 @@ import PartTopSection from 'smt-v1-app/components/features/Parts/PartList/PartTo
 import ClientList, {
   ClientTableColumns
 } from 'smt-v1-app/components/features/Parts/PartList/PartListTable';
-import useAdvanceTable from '../../components/features/Client/ClientList/useAdvanceTable';
+import useAdvanceTable from '../../../components/features/Client/ClientList/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import {
@@ -53,7 +53,7 @@ const PartListContainer = () => {
       <AdvanceTableProvider {...table}>
         <div className="d-flex flex-wrap mb-2 gap-3 gap-sm-6 align-items-center">
           <h2 className="mb-0">
-            <span className="me-3">Quote List</span>{' '}
+            <span className="me-3">Part List</span>{' '}
             <span className="fw-normal text-body-tertiary"></span>
           </h2>
           <Link className="btn btn-primary px-5" to="/client/new-client">

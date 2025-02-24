@@ -274,7 +274,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Part List',
-                path: '/',
+                path: '/part/list',
                 pathName: 'part-list',
                 icon: '',
                 active: true,
