@@ -14,12 +14,13 @@ import {
   ClientData,
   searchByClientList
 } from 'smt-v1-app/services/ClientServices';
+import { searchByPartList } from 'smt-v1-app/services/PartServices';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 
 export const ClientTableColumns: ColumnDef<ClientData>[] = [
   {
-    id: 'companyName',
-    accessorKey: 'companyName',
+    id: 'quoteId',
+    accessorKey: 'quoteId',
     header: 'Quote ID',
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
@@ -28,14 +29,14 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
   },
   {
     header: 'Revision',
-    accessorKey: 'details ',
+    accessorKey: 'revision',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '15%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'currencyPreference',
+    accessorKey: 'client',
     header: 'Client',
     meta: {
       cellProps: { className: 'fs-9 text-body white-space-nowrap py-2' },
@@ -44,14 +45,14 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
   },
   {
     header: 'Client RFQ ID',
-    accessorKey: 'website',
+    accessorKey: 'clientRfqId',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'legalAddress',
+    accessorKey: 'numberOfProduct',
     header: 'Number Of Product',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
@@ -59,7 +60,7 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
     }
   },
   {
-    accessorKey: 'legalAddress',
+    accessorKey: 'formStatus',
     header: 'Form Status',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
@@ -67,7 +68,7 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
     }
   },
   {
-    accessorKey: 'legalAddress',
+    accessorKey: 'finalCost',
     header: 'Final Cost',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
@@ -75,7 +76,7 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
     }
   },
   {
-    accessorKey: 'legalAddress',
+    accessorKey: 'validityDuration',
     header: 'Validity Duration',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
@@ -133,10 +134,14 @@ type SearchColumn = {
 
 const searchColumns: SearchColumn[] = [
   { label: 'No Filter', value: 'all' },
-  { label: 'Company Name', value: 'companyName' },
-  { label: 'Currency', value: 'currencyPreference' },
-  { label: 'Website', value: 'website' },
-  { label: 'Legal Address', value: 'legalAddress' }
+  { label: 'Quota ID', value: 'companyName' },
+  { label: 'Revision', value: 'currencyPreference' },
+  { label: 'Client', value: 'website' },
+  { label: 'Client RFQ ID', value: 'legalAddress' },
+  { label: 'Number Of Product', value: 'legalAddress' },
+  { label: 'Form Status', value: 'legalAddress' },
+  { label: 'Final Cost', value: 'legalAddress' },
+  { label: 'Validity Duration', value: 'legalAddress' }
 ];
 
 /* ***********************
@@ -174,11 +179,7 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
         query =
           column.value !== 'all' ? `${column.value}=${term}` : `search=${term}`;
       }
-      const response = await searchByClientList(
-        query,
-        currentPage + 1,
-        pageSize
-      );
+      const response = await searchByPartList(query, currentPage + 1, pageSize);
       const clients = response?.data?.clients || [];
       if (Array.isArray(clients)) {
         const mappedData: ClientData[] = clients.map((item: any) => ({
@@ -341,7 +342,7 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
                 {pageSize} Clients
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                {[5, 10, 25, 50, 100].map(size => (
+                {[10, 25, 50, 100].map(size => (
                   <Dropdown.Item
                     key={size}
                     active={pageSize === size}
