@@ -161,7 +161,7 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const [pageSize, setPageSize] = useState<number>(5); // Page size state,
+  const [pageSize, setPageSize] = useState<number>(10);
   // console.log('Page Size', pageSize);
 
   const { setGlobalFilter, setColumnFilters } =
@@ -219,7 +219,6 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
             easeOfPayment: 0,
             easeOfDelivery: 0
           },
-          // marginTable alanını ekliyoruz:
           marginTable: item.marginTable || {
             below200: 0,
             btw200and500: 0,
@@ -238,7 +237,6 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
             above4_000_000: 0,
             lastModifiedBy: ''
           },
-          // Düzeltme: "commet" yerine "comment" kullanıyoruz:
           comment: item.comment || '',
           createdBy: handleNullValue(item.createdBy || ''),
           createdOn: item.createdOn || '',
@@ -339,10 +337,10 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
                 id="dropdown-items-per-page"
                 style={{ minWidth: '100px' }}
               >
-                {pageSize} Clients
+                {pageSize} Parts
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                {[10, 25, 50, 100].map(size => (
+                {[5, 10, 25, 50, 100].map(size => (
                   <Dropdown.Item
                     key={size}
                     active={pageSize === size}

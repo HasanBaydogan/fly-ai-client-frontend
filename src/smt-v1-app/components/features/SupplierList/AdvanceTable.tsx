@@ -25,7 +25,7 @@ const AdvanceTable = ({
   hasFooter
 }: AdvanceTableProps) => {
   const table = useAdvanceTableContext();
-  const { getRowModel, getFlatHeaders, getFooterGroups } = table;
+  const { getFlatHeaders, getFooterGroups } = table;
   // Parent'ten gelen data burada kullanılacak.
   const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
 
@@ -61,12 +61,7 @@ const AdvanceTable = ({
                 key={header.id}
                 {...header.column.columnDef.meta?.headerProps}
                 className={classNames(
-                  header.column.columnDef.meta?.headerProps?.className,
-                  {
-                    sort: header.column.getCanSort(),
-                    desc: header.column.getIsSorted() === 'desc',
-                    asc: header.column.getIsSorted() === 'asc'
-                  }
+                  header.column.columnDef.meta?.headerProps?.className
                 )}
                 onClick={header.column.getToggleSortingHandler()}
               >

@@ -58,7 +58,7 @@ const PartListContainer = () => {
           </h2>
           <Link className="btn btn-primary px-5" to="/client/new-client">
             <FontAwesomeIcon icon={faPlus} className="me-2" />
-            Add New Client
+            Add New Part
           </Link>
         </div>
         <PartTopSection activeView="list" />

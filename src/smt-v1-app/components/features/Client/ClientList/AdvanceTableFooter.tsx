@@ -32,8 +32,7 @@ const AdvanceTableFooter = ({
   totalItems,
   pageIndex,
   setPageIndex,
-  pageSize, // Using the prop passed from ClientList
-  setPageSize // The function to update pageSize in ClientList
+  pageSize // Using the prop passed from ClientList
 }: AdvanceTableFooterProps) => {
   // Toplam sayfa sayısını hesaplıyoruz.
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -62,52 +61,6 @@ const AdvanceTableFooter = ({
           <span className="text-body-tertiary"> items of </span>
           {totalItems}
         </p>
-        {/* <Col xs="auto" className="d-flex gap-2 ">
-        <Button
-          variant="outline-primary"
-          size="sm"
-          active={pageSize === 5}
-          onClick={() => {
-            setPageSize(5);
-            setPageIndex(0); // Reset to first page
-          }}
-        >
-          5
-        </Button>
-        <Button
-          variant="outline-primary"
-          size="sm"
-          active={pageSize === 10}
-          onClick={() => {
-            setPageSize(10);
-            setPageIndex(0); // Reset to first page
-          }}
-        >
-          10
-        </Button>
-        <Button
-          variant="outline-primary"
-          size="sm"
-          active={pageSize === 25}
-          onClick={() => {
-            setPageSize(25);
-            setPageIndex(0); // Reset to first page
-          }}
-        >
-          25
-        </Button>
-        <Button
-          variant="outline-primary"
-          size="sm"
-          active={pageSize === 100}
-          onClick={() => {
-            setPageSize(100);
-            setPageIndex(0); // Reset to first page
-          }}
-        >
-          100
-        </Button>
-      </Col> */}
       </Col>
 
       {navBtn && (

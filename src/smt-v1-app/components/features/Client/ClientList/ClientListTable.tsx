@@ -28,7 +28,7 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
   },
   {
     header: 'Details',
-    accessorKey: 'details ',
+    accessorKey: 'details',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '35%' }, className: 'ps-3' }
@@ -132,7 +132,7 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const [pageSize, setPageSize] = useState<number>(5); // Page size state,
+  const [pageSize, setPageSize] = useState<number>(10); // Page size state,
   // console.log('Page Size', pageSize);
 
   const { setGlobalFilter, setColumnFilters } =
@@ -347,12 +347,12 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
         />
         <AdvanceTableFooter
           pagination
-          className="py-1"
+          className="py-1 advance-table-footer-client-list"
           totalItems={totalItems}
           pageIndex={pageIndex}
           setPageIndex={setPageIndex}
-          pageSize={pageSize} // Pass pageSize here
-          setPageSize={setPageSize} // Allow page size change
+          pageSize={pageSize}
+          setPageSize={setPageSize}
         />
       </div>
     </div>
