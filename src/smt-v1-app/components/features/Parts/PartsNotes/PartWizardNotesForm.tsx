@@ -79,6 +79,10 @@ const getNoteTypeCode = (category: string): string => {
 };
 
 const PartWizardNotesForm = () => {
+  // Sabit/mock partId ve pageSize tanımları
+  const mockPartId = '67beca31fe6dd91452462c77';
+  const pageSize = 5;
+
   const [notes, setNotes] = useState<Note[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -121,26 +125,30 @@ const PartWizardNotesForm = () => {
     }
   };
 
-  const fetchNotes = useCallback(async (page: number) => {
-    try {
-      const response = await searchByNoteList(page);
-      console.log('API Response:', response);
-      if (response && response.data) {
-        const data = response.data;
-        const mappedNotes: Note[] = data.allNotes.map((note: any) => ({
-          id: note.id,
-          author: note.author,
-          text: note.noteContent,
-          category: mapNoteType(note.noteType)
-        }));
-        setNotes(mappedNotes);
-        setTotalPages(data.totalPages);
-        setTotalItems(data.totalItems);
+  // API'den notları, güncel sayfa ve sabit partId kullanarak çekiyoruz.
+  const fetchNotes = useCallback(
+    async (page: number) => {
+      try {
+        const response = await searchByNoteList(pageSize, page, mockPartId);
+        console.log('API Response:', response);
+        if (response && response.data) {
+          const data = response.data;
+          const mappedNotes: Note[] = data.allNotes.map((note: any) => ({
+            id: note.id,
+            author: note.author,
+            text: note.noteContent,
+            category: mapNoteType(note.noteType)
+          }));
+          setNotes(mappedNotes);
+          setTotalPages(data.totalPages);
+          setTotalItems(data.totalItems);
+        }
+      } catch (error) {
+        console.error('Error fetching notes:', error);
       }
-    } catch (error) {
-      console.error('Error fetching notes:', error);
-    }
-  }, []);
+    },
+    [mockPartId, pageSize]
+  );
 
   useEffect(() => {
     fetchNotes(currentPage);
@@ -155,7 +163,6 @@ const PartWizardNotesForm = () => {
     if (noteForm.text.trim() === '') return;
 
     if (noteForm.id) {
-      // Düzenleme işlemi için mevcut notun id'sini kullanıyoruz
       const updatePayload: updatePayload = {
         noteId: noteForm.id,
         noteContent: noteForm.text,
@@ -174,7 +181,7 @@ const PartWizardNotesForm = () => {
     } else {
       // Yeni not ekleme işlemi
       const newPayload: newNotePayload = {
-        partId: '67beca31fe6dd91452462c77',
+        partId: mockPartId,
         noteContent: noteForm.text,
         partNoteType: getNoteTypeCode(noteForm.category)
       };
@@ -203,7 +210,6 @@ const PartWizardNotesForm = () => {
     });
   };
 
-  // Edit işlemi için notun mevcut id'sini form state'ine atıyoruz
   const handleEdit = (note: Note) => {
     setNoteForm({
       id: note.id,
@@ -358,6 +364,7 @@ const PartWizardNotesForm = () => {
         <p>No notes found.</p>
       )}
 
+      {/* Pagination Bölümü */}
       <div className="mb-0">
         <Row className="align-items-center">
           <Col className="text-start">

@@ -142,7 +142,11 @@ export const searchByPartList = async (
 //           Notes API's
 // *****************************
 
-export const searchByNoteList = async (pageSize: number = 10) => {
+export const searchByNoteList = async (
+  pageSize: number,
+  pageNo: number,
+  partId: string
+) => {
   // console.log('Response from searchByClientList:', term);
   try {
     const accessToken = Cookies.get('access_token');
@@ -155,9 +159,9 @@ export const searchByNoteList = async (pageSize: number = 10) => {
     }
 
     // Term varsa query string olarak ekliyoruz
-    const url = '67beca31fe6dd91452462c77'
-      ? `/part/note/part-id/67beca31fe6dd91452462c77/1/9`
-      : `/part/note/part-id/67beca31fe6dd91452462c77/1/${pageSize}`;
+    const url = 'partId'
+      ? `/part/note/part-id/${partId}/${pageNo}/${pageSize}`
+      : `/part/note/part-id/${partId}/${pageNo}/${pageSize}`;
     // console.log('url', url);
     const noteList = await api().get(url, { headers });
     // console.log('Response from searchByNoteList:', noteList);
