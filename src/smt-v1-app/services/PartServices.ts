@@ -139,6 +139,251 @@ export const searchByPartList = async (
 };
 
 // *****************************
+//         Item Fields
+// *****************************
+
+export const getByItemFields = async (partId: string) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().get(`/part/id/${partId}`, {
+      headers
+    });
+    console.log('Response from getByItemFields:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/part/id/${partId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[getByItemFields] Permission Error:', err);
+  }
+};
+
+export interface createPart {
+  partNumber: string;
+  partName: string;
+  segmentIds: string[];
+  aircraftModel: string;
+  aircraft: string;
+  comment: string;
+  oem: string;
+  hsCode: string;
+}
+
+export const postPartCreate = async (newPart: createPart) => {
+  try {
+    const access_token = Cookies.get('access_token');
+    const headers: Record<string, string> = {};
+
+    if (access_token) {
+      headers['Authorization'] = `Bearer ${access_token}`;
+    } else {
+      window.location.assign('/');
+      return;
+    }
+
+    const response = await api().post(`/part/create`, newPart, {
+      headers
+    });
+    // console.log('Client Payload RESPONSE', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      try {
+        const refresh_token = Cookies.get('refresh_token');
+
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token
+        });
+
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+
+          let rfqMailResponseAfterRefresh = await api().post(
+            `/part/create`,
+            newPart,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.data.access_token}`
+              }
+            }
+          );
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+        }
+      } catch (err) {
+        console.error('Token yenileme sırasında hata oluştu:', err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    } else {
+      console.log(
+        'İşlenmeyen yanıt durumu, statusCode:',
+        response.data.statusCode
+      );
+    }
+  } catch (err) {
+    console.error('postPartCreate fonksiyonunda hata:', err);
+  }
+};
+
+export interface updatePartPayload {
+  partId: any;
+  partName: string;
+  aircraft: string;
+  segmentIds: string[];
+  aircraftModel: string;
+  comment: string;
+  oem: string;
+  hsCode: string;
+}
+
+export const putPartUpdate = async (payload: updatePartPayload) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+    // console.log('Client editPayload1', payload);
+
+    const response = await api().put(`/part/update`, payload, {
+      headers
+    });
+    // console.log('Client editPayload2', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().put(
+            `/part/update`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('putUpdateNotes Permission Error');
+  }
+};
+
+// *****************************
 //           Notes API's
 // *****************************
 
@@ -159,9 +404,7 @@ export const searchByNoteList = async (
     }
 
     // Term varsa query string olarak ekliyoruz
-    const url = 'partId'
-      ? `/part/note/part-id/${partId}/${pageNo}/${pageSize}`
-      : `/part/note/part-id/${partId}/${pageNo}/${pageSize}`;
+    const url = `/part/note/part-id/${partId}/${pageNo}/${pageSize}`;
     // console.log('url', url);
     const noteList = await api().get(url, { headers });
     // console.log('Response from searchByNoteList:', noteList);
@@ -311,12 +554,12 @@ export const postNewNotes = async (newPart: newNotePayload) => {
       window.location.assign('/');
       return { success: false, message: 'No access token' };
     }
-    console.log('payload', newPart);
+    // console.log('payload', newPart);
 
     const response = await api().post(`/part/note/create`, newPart, {
       headers
     });
-    console.log('New Note Payload RESPONSE', response);
+    // console.log('New Note Payload RESPONSE', response);
 
     if (response.data.statusCode === 200 || response.data.statusCode === 201) {
       return { success: true, data: response.data };
@@ -418,7 +661,7 @@ export const getByUDFPartList = async (
     const response = await api().get(`/part/udf/id/${udfId}`, {
       headers
     });
-    console.log('Response from getByClientDetailList:', response);
+    // console.log('Response from getByClientDetailList:', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -473,177 +716,5 @@ export const getByUDFPartList = async (
     }
   } catch (err) {
     console.log('[getByUDFPartList] Client Detail List Permission Error:', err);
-  }
-};
-
-export interface createPart {
-  partNumber: string;
-  partName: string;
-  segmentIds: string[];
-  aircraftModel: string;
-  aircraft: string;
-  comment: string;
-  oem: string;
-  hsCode: string;
-}
-
-export const postPartCreate = async (newPart: createPart) => {
-  try {
-    const access_token = Cookies.get('access_token');
-    const headers: Record<string, string> = {};
-
-    if (access_token) {
-      headers['Authorization'] = `Bearer ${access_token}`;
-    } else {
-      window.location.assign('/');
-      return;
-    }
-
-    const response = await api().post(`/part/create`, newPart, {
-      headers
-    });
-    // console.log('Client Payload RESPONSE', response);
-
-    if (response.data.statusCode === 200) {
-      return response.data;
-    } else if (response.data.statusCode === 498) {
-      try {
-        const refresh_token = Cookies.get('refresh_token');
-
-        const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refresh_token
-        });
-
-        if (refreshTokenresponse.data.statusCode === 200) {
-          setCookie(
-            'access_token',
-            refreshTokenresponse.data.data.access_token
-          );
-          setCookie(
-            'refresh_token',
-            refreshTokenresponse.data.data.refresh_token
-          );
-
-          let rfqMailResponseAfterRefresh = await api().post(
-            `/part/create`,
-            newPart,
-            {
-              headers: {
-                Authorization: `Bearer ${refreshTokenresponse.data.data.access_token}`
-              }
-            }
-          );
-          return rfqMailResponseAfterRefresh.data;
-        } else if (refreshTokenresponse.data.statusCode === 411) {
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 498) {
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 404) {
-        }
-      } catch (err) {
-        console.error('Token yenileme sırasında hata oluştu:', err);
-      }
-    } else if (response.data.statusCode === 401) {
-      Cookies.remove('access_token');
-      Cookies.remove('refresh_token');
-      window.location.assign('/');
-    } else {
-      console.log(
-        'İşlenmeyen yanıt durumu, statusCode:',
-        response.data.statusCode
-      );
-    }
-  } catch (err) {
-    console.error('postPartCreate fonksiyonunda hata:', err);
-  }
-};
-
-export interface createPart {
-  partNumber: string;
-  partName: string;
-  segmentIds: string[];
-  aircraftModel: string;
-  aircraft: string;
-  comment: string;
-  oem: string;
-  hsCode: string;
-}
-
-export const postNoteCreate = async (newPart: createPart) => {
-  try {
-    const access_token = Cookies.get('access_token');
-    const headers: Record<string, string> = {};
-
-    if (access_token) {
-      headers['Authorization'] = `Bearer ${access_token}`;
-    } else {
-      window.location.assign('/');
-      return;
-    }
-
-    const response = await api().post(`/part/create`, newPart, {
-      headers
-    });
-    // console.log('Client Payload RESPONSE', response);
-
-    if (response.data.statusCode === 200) {
-      return response.data;
-    } else if (response.data.statusCode === 498) {
-      try {
-        const refresh_token = Cookies.get('refresh_token');
-
-        const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refresh_token
-        });
-
-        if (refreshTokenresponse.data.statusCode === 200) {
-          setCookie(
-            'access_token',
-            refreshTokenresponse.data.data.access_token
-          );
-          setCookie(
-            'refresh_token',
-            refreshTokenresponse.data.data.refresh_token
-          );
-
-          let rfqMailResponseAfterRefresh = await api().post(
-            `/part/create`,
-            newPart,
-            {
-              headers: {
-                Authorization: `Bearer ${refreshTokenresponse.data.data.access_token}`
-              }
-            }
-          );
-          return rfqMailResponseAfterRefresh.data;
-        } else if (refreshTokenresponse.data.statusCode === 411) {
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 498) {
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 404) {
-        }
-      } catch (err) {
-        console.error('Token yenileme sırasında hata oluştu:', err);
-      }
-    } else if (response.data.statusCode === 401) {
-      Cookies.remove('access_token');
-      Cookies.remove('refresh_token');
-      window.location.assign('/');
-    } else {
-      console.log(
-        'İşlenmeyen yanıt durumu, statusCode:',
-        response.data.statusCode
-      );
-    }
-  } catch (err) {
-    console.error('postPartCreate fonksiyonunda hata:', err);
   }
 };

@@ -1,58 +1,65 @@
-import PhoenixDocCard from 'components/base/PhoenixDocCard';
-import PaginationExample from 'pages/modules/components/PaginationExample';
-import { WizardFormData } from 'pages/modules/forms/WizardExample';
-import { useWizardFormContext } from 'providers/WizardFormProvider';
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Col, Form, Modal, Row, Spinner } from 'react-bootstrap';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import PartHistoryListSection, {
   FormattedContactData
 } from '../HistoryList/PartHistoryListSection';
-import { CanvasRenderer } from 'echarts/renderers';
-import { LineChart } from 'echarts/charts';
 import PartTimelineGraph from '../TimelineGraph/PartTimelineGraph';
 import { postPartCreate } from 'smt-v1-app/services/PartServices';
 import CustomButton from '../../../../../components/base/Button';
-import { TooltipComponent } from 'echarts/components';
 import { TreeNode } from '../../SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
 import SegmentSelection from '../../GlobalComponents/SegmentSelection';
-import { Certypes, getbySegmentList } from 'smt-v1-app/services/GlobalServices';
+import { getbySegmentList } from 'smt-v1-app/services/GlobalServices';
 
-interface SegmentSelectionProps {
-  data: TreeNode[];
-  setSegmentIds: (selectedIds: string[]) => void;
-  setSegments: (segments: TreeNode[]) => void;
+interface PartWizardItemFiledsFormProps {
+  partData?: any;
+  onPartCreated?: (data: any) => void;
 }
 
-const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
+const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
+  partData,
+  onPartCreated
+}) => {
   const navigate = useNavigate();
-  const [partNumber, setPartNumber] = useState<string>('');
-  const [partName, setPartName] = useState<string>('');
-  const [segmentIds, setSegmentIds] = useState<string[]>([]);
-  const [aircraftModel, setAircraftModel] = useState<string>('');
-  const [comment, setComment] = useState<string>('');
-  const [oem, setOem] = useState<string>('ANY');
-  const [selectedAircraft, setSelectedAircraft] = useState<string>('ANY');
 
-  const [hsCode, setHsCode] = useState<string>('');
+  // Alanların başlangıç değerlerini, varsa partData'dan alıyoruz.
+  const [partNumber, setPartNumber] = useState<string>(
+    partData?.partNumber || ''
+  );
+  const [partName, setPartName] = useState<string>(partData?.partName || '');
+  const [segmentIds, setSegmentIds] = useState<string[]>(
+    partData ? partData.segments?.map((s: any) => s.segmentId) : []
+  );
+  const [aircraftModel, setAircraftModel] = useState<string>(
+    partData?.aircraftModel || ''
+  );
+  const [comment, setComment] = useState<string>(partData?.comment || '');
+  const [oem, setOem] = useState<string>(partData?.oem || 'ANY');
+  const [selectedAircraft, setSelectedAircraft] = useState<string>(
+    partData?.aircraft || 'ANY'
+  );
+  const [hsCode, setHsCode] = useState<string>(partData?.hsCode || '');
+
+  // Segment ve tarih, history ile ilgili state'ler
   const [contacts, setContacts] = useState<FormattedContactData[]>([]);
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
   const [segments, setSegments] = useState<TreeNode[]>([]);
-  // Sonuç modalı için state'ler
+
+  // Sonuç modalı, alert ve save durumları
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultModalTitle, setResultModalTitle] = useState('');
   const [resultModalMessage, setResultModalMessage] = useState('');
   const [loadingSave, setLoadingSave] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Alerts & modals
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
 
+  // Segment verilerini çekiyoruz
   useEffect(() => {
     const fetchSegments = async () => {
       try {
@@ -67,6 +74,20 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
     };
     fetchSegments();
   }, []);
+
+  // partData güncellendiğinde ilgili alanları güncelle
+  useEffect(() => {
+    if (partData) {
+      setPartNumber(partData.partNumber || '');
+      setPartName(partData.partName || '');
+      setAircraftModel(partData.aircraftModel || '');
+      setOem(partData.oem || 'ANY');
+      setHsCode(partData.hsCode || '');
+      setComment(partData.comment || '');
+      setSegmentIds(partData.segments?.map((s: any) => s.segmentId) || []);
+      setSelectedAircraft(partData.aircraft || 'ANY');
+    }
+  }, [partData]);
 
   const confirmCancel = () => {
     setShowCancelModal(true);
@@ -93,85 +114,61 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
   const handlePartNumber = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPartNumber(event.target.value);
   };
+
   const handleAircraftModel = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAircraftModel(event.target.value);
   };
+
   const handleOEM = (event: React.ChangeEvent<HTMLInputElement>) => {
     setOem(event.target.value);
   };
+
   const handleHsCode = (event: React.ChangeEvent<HTMLInputElement>) => {
     setHsCode(event.target.value);
   };
+
   const handleComment = (event: React.ChangeEvent<HTMLInputElement>) => {
     setComment(event.target.value);
   };
 
   const handleSave = async () => {
     setShowSaveModal(false);
-
-    // if (!clientCompanyName.trim()) {
-    //   setAlertMessage('Company Name cannot be empty.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
-
-    // if (!segmentIds || segmentIds.length === 0) {
-    //   setAlertMessage('Please select at least one Segment.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
-
-    // if (!legalAddress) {
-    //   setAlertMessage('Legal Address cannot be empty..');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
-
-    // if (!selectedStatus) {
-    //   setAlertMessage('Please select a Status.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
-
-    const partPayload = {
-      partNumber: partNumber,
-      partName: partName,
+    const updatePartPayload = {
+      partNumber,
+      partName,
       aircraft: selectedAircraft,
-      segmentIds: segmentIds,
-      aircraftModel: aircraftModel,
-      comment: comment,
-      oem: oem,
-      hsCode: hsCode
+      segmentIds,
+      aircraftModel,
+      comment,
+      oem,
+      hsCode
     };
-    // console.log('Client Payload', partPayload);
 
     setLoadingSave(true);
     try {
-      const response = await postPartCreate(partPayload);
-
+      const response = await postPartCreate(updatePartPayload);
       if (response && response.statusCode === 200) {
-        setResultModalTitle('Client addition successful');
-        setResultModalMessage(
-          'Client information has been successfully saved!'
-        );
+        setResultModalTitle('Part addition successful');
+        setResultModalMessage('Part information has been successfully saved!');
         setShowResultModal(true);
 
         // 2 saniye sonra yönlendirme
         setTimeout(() => {
           navigate('/part/list');
         }, 2000);
+
+        // Eğer onPartCreated callback'ini kullanıyorsanız, yeni part verisini aktarabilirsiniz.
+        if (onPartCreated && response.data) {
+          onPartCreated(response.data);
+        }
       } else {
         setResultModalTitle('Undefined');
-        setResultModalMessage('An error occurred while saving Client info.');
+        setResultModalMessage('An error occurred while saving Part info.');
         setShowResultModal(true);
       }
     } catch (error) {
       setResultModalTitle('Error');
-      setResultModalMessage('An error occurred while saving Client info.');
+      setResultModalMessage('An error occurred while saving Part info.');
       setShowResultModal(true);
     } finally {
       setLoadingSave(false);
@@ -234,7 +231,7 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* Sonuç Modalı */}
+      {/* Result Modal */}
       <Modal
         show={showResultModal}
         onHide={() => setShowResultModal(false)}
@@ -260,7 +257,9 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
               placeholder="Part Number"
               value={partNumber}
               onChange={handlePartNumber}
+              disabled={partData && partData.partId ? true : false}
             />
+
             <Form.Control.Feedback type="invalid">
               This field is required.
             </Form.Control.Feedback>
@@ -286,7 +285,7 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
           <Form.Select
             aria-label="Select Aircraft"
             value={selectedAircraft}
-            onChange={e => setSelectedAircraft(e.target.value)} // Update the selected aircraft
+            onChange={e => setSelectedAircraft(e.target.value)}
           >
             <option value="ANY">ANY</option>
             <option value="AIRBUS">AIRBUS</option>
@@ -324,7 +323,7 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
           <Form.Select
             aria-label="OEM"
             value={oem}
-            onChange={e => setOem(e.target.value)} // Update the selected aircraft
+            onChange={e => setOem(e.target.value)}
           >
             <option value="ANY">ANY</option>
             <option value="AKZONOBEL">AKZONOBEL</option>
@@ -405,7 +404,6 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
           setSegments={setSegments}
         />
       )}
-      {/* Buttons ve Loading Overlay */}
       <div style={{ position: 'relative', minHeight: '70px' }}>
         {loadingSave && (
           <div
@@ -451,7 +449,6 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
         onContactsChange={setContacts}
         initialContacts={contacts}
       />
-
       {/* <PartTimelineGraph /> */}
     </>
   );

@@ -1,44 +1,44 @@
-import WizardAccountForm from 'smt-v1-app/components/features/Parts/PartsItemFields/PartWizardItemFiledsForm';
-import WizardBillingForm from 'components/forms/WizardBillingForm';
-import WizardPersonalForm from 'components/forms/WizardPersonalForm';
-import WizardFormFooter from 'components/wizard/WizardFormFooter';
-import WizardForm from 'components/wizard/WizardForm';
+import { useEffect, useState } from 'react';
+import { Button, Card, Modal, Tab } from 'react-bootstrap';
 import WizardNav from 'smt-v1-app/components/features/Parts/PartWizardNav';
-import WizardSuccessStep from 'components/wizard/WizardSuccessStep';
-import useWizardForm from 'hooks/useWizardForm';
+import WizardForm from 'components/wizard/WizardForm';
 import WizardFormProvider from 'providers/WizardFormProvider';
-import { Button, Card, Modal, ModalProps, Tab } from 'react-bootstrap';
-import { useState } from 'react';
-import classNames from 'classnames';
 import PartWizardItemFiledsForm from 'smt-v1-app/components/features/Parts/PartsItemFields/PartWizardItemFiledsForm';
 import PartWizardUserDefFieldsForm from 'smt-v1-app/components/features/Parts/UserDefFields/PartWizardUserDefFieldsForm';
 import PartWizardNotesForm from 'smt-v1-app/components/features/Parts/PartsNotes/PartWizardNotesForm';
 import PartWizardFilesForm from 'smt-v1-app/components/features/Parts/PartsFiles/PartWizardFilesForm';
 import PartWizardAlternativesForm from 'smt-v1-app/components/features/Parts/PartAlternatives/PartWizardAlternativesForm';
-
-interface PartFormData {
-  name: string;
-  accept_terms: boolean;
-  email: string;
-  password: string;
-  confirm_password: string;
-  gender: string;
-  phone: string;
-  dob: string;
-  address: string;
-  card: number;
-  country: string;
-  zip: number;
-  date_of_expire: string;
-  cvv: number;
-}
+import useWizardForm from 'hooks/useWizardForm';
+import { getByItemFields } from 'smt-v1-app/services/PartServices';
 
 const PartContainer = () => {
-  const form = useWizardForm<PartFormData>({
-    totalStep: 5
-  });
-  const values: ModalProps['fullscreen'][] = [true, 'xl-down'];
+  const form = useWizardForm({ totalStep: 5 });
   const [lgShow, setLgShow] = useState(false);
+  const [partData, setPartData] = useState<any>(null);
+  const [loadingPartData, setLoadingPartData] = useState(false);
+
+  useEffect(() => {
+    if (lgShow) {
+      setLoadingPartData(true);
+      getByItemFields('67beca31fe6dd91452462c77')
+        .then(response => {
+          if (response.success && response.data && response.data.partId) {
+            setPartData(response.data);
+          } else {
+            setPartData(null);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching part data:', err);
+          setPartData(null);
+        })
+        .finally(() => setLoadingPartData(false));
+    } else {
+      setPartData(null);
+    }
+  }, [lgShow]);
+
+  const isEditMode = partData && partData.partId;
 
   return (
     <div>
@@ -52,13 +52,16 @@ const PartContainer = () => {
         <WizardFormProvider {...form}>
           <Card className="theme-wi">
             <Card.Header className="bg-body-highlight pt-3 pb-2 border-bottom-0">
-              <WizardNav />
+              <WizardNav disableOtherSteps={!isEditMode} />
             </Card.Header>
             <Card.Body>
               <Tab.Content>
                 <Tab.Pane eventKey={1}>
                   <WizardForm step={1}>
-                    <PartWizardItemFiledsForm id="progress" />
+                    <PartWizardItemFiledsForm
+                      partData={partData}
+                      onPartCreated={data => setPartData(data)}
+                    />
                   </WizardForm>
                 </Tab.Pane>
                 <Tab.Pane eventKey={2}>
@@ -83,11 +86,8 @@ const PartContainer = () => {
                 </Tab.Pane>
               </Tab.Content>
             </Card.Body>
-
             <Card.Footer className="border-top-0">
-              {/* <WizardFormFooter
-                className={classNames({ 'd-none': !form.getCanNextPage })}
-              /> */}
+              {/* Footer düzenlemeleri */}
             </Card.Footer>
           </Card>
         </WizardFormProvider>

@@ -10,22 +10,26 @@ interface WizardNavItemProps {
   label: string;
   step: number;
   isHorizontal?: boolean;
+  disabled?: boolean; // Yeni eklenen prop
 }
 
 const WizardNavItem = ({
   icon,
   label,
   step,
-  isHorizontal
+  isHorizontal,
+  disabled = false
 }: WizardNavItemProps) => {
   const { selectedStep, totalStep } = useWizardFormContext();
   return (
     <Nav.Item as="li" className="nav-item">
       <Nav.Link
+        disabled={disabled} // disabled prop'u Nav.Link'e aktarılıyor
         className={classNames('fw-semibold', {
           done: selectedStep > step && step !== totalStep,
           complete: selectedStep > step && step !== totalStep - 1,
-          'py-0 py-xl-3': isHorizontal
+          'py-0 py-xl-3': isHorizontal,
+          'disabled-nav': disabled
         })}
         eventKey={step}
       >
@@ -38,7 +42,7 @@ const WizardNavItem = ({
             <span className="nav-item-circle">
               <FontAwesomeIcon
                 icon={icon}
-                className={` ${isHorizontal ? 'nav-item-icon' : null}`}
+                className={isHorizontal ? 'nav-item-icon' : undefined}
               />
               {isHorizontal && (
                 <FontAwesomeIcon className="check-icon" icon={faCheck} />

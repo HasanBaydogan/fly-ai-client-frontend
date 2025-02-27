@@ -130,7 +130,7 @@ const PartWizardNotesForm = () => {
     async (page: number) => {
       try {
         const response = await searchByNoteList(pageSize, page, mockPartId);
-        console.log('API Response:', response);
+        // console.log('API Response:', response);
         if (response && response.data) {
           const data = response.data;
           const mappedNotes: Note[] = data.allNotes.map((note: any) => ({
