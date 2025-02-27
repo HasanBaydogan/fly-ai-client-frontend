@@ -75,57 +75,57 @@ const PartUDFList: FC<PartUDFListProps> = ({ activeView }) => {
     useAdvanceTableContext<UDFData>();
 
   // API'den gelen UDF verilerini uygun şekilde mapleyip tabloya aktarıyoruz.
-  const fetchData = async (term: string, column: SearchColumn) => {
-    setLoading(true);
-    try {
-      const response = await getByUDFPartList(term, pageIndex + 1, pageSize);
-      if (response?.data?.data) {
-        const udfData = response.data.data.map((item: any) => ({
-          udfId: item.udfId,
-          fieldName: item.fieldName,
-          fieldType: item.fieldType,
-          fieldStringValues: item.fieldStringValues,
-          addrfieldIntValuesess: item.addrfieldIntValuesess,
-          createdAt: item.createdAt,
-          createdBy: item.createdBy,
-          updatedAt: item.updatedAt,
-          updatedBy: item.updatedBy
-        }));
-        setData(Array.isArray(udfData) ? udfData : [udfData]);
-        setTotalItems(Array.isArray(udfData) ? udfData.length : 1);
-      }
-    } catch (error) {
-      console.error('Error fetching UDF data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchData = async (term: string, column: SearchColumn) => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await getByUDFPartList(term, pageIndex + 1, pageSize);
+  //     if (response?.data?.data) {
+  //       const udfData = response.data.data.map((item: any) => ({
+  //         udfId: item.udfId,
+  //         fieldName: item.fieldName,
+  //         fieldType: item.fieldType,
+  //         fieldStringValues: item.fieldStringValues,
+  //         addrfieldIntValuesess: item.addrfieldIntValuesess,
+  //         createdAt: item.createdAt,
+  //         createdBy: item.createdBy,
+  //         updatedAt: item.updatedAt,
+  //         updatedBy: item.updatedBy
+  //       }));
+  //       setData(Array.isArray(udfData) ? udfData : [udfData]);
+  //       setTotalItems(Array.isArray(udfData) ? udfData.length : 1);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching UDF data:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Debounced arama fonksiyonu
-  const debouncedFetchData = useMemo(
-    () =>
-      debounce((term: string, column: SearchColumn) => {
-        if (term) {
-          if (column.value === 'all') {
-            setGlobalFilter(term || undefined);
-            setColumnFilters([]);
-          } else {
-            setGlobalFilter(undefined);
-            setColumnFilters([{ id: column.value, value: term }]);
-          }
-        } else {
-          setGlobalFilter(undefined);
-          setColumnFilters([]);
-        }
-        fetchData(term, column);
-      }, 300),
-    [setGlobalFilter, setColumnFilters]
-  );
+  // const debouncedFetchData = useMemo(
+  //   () =>
+  //     debounce((term: string, column: SearchColumn) => {
+  //       if (term) {
+  //         if (column.value === 'all') {
+  //           setGlobalFilter(term || undefined);
+  //           setColumnFilters([]);
+  //         } else {
+  //           setGlobalFilter(undefined);
+  //           setColumnFilters([{ id: column.value, value: term }]);
+  //         }
+  //       } else {
+  //         setGlobalFilter(undefined);
+  //         setColumnFilters([]);
+  //       }
+  //       fetchData(term, column);
+  //     }, 300),
+  //   [setGlobalFilter, setColumnFilters]
+  // );
 
-  useEffect(() => {
-    // Başlangıçta veya arama terimi değiştiğinde fetchData çağrılıyor.
-    fetchData(searchTerm, { label: 'All', value: 'all' });
-  }, [searchTerm, pageIndex, pageSize]);
+  // useEffect(() => {
+  //   // Başlangıçta veya arama terimi değiştiğinde fetchData çağrılıyor.
+  //   fetchData(searchTerm, { label: 'All', value: 'all' });
+  // }, [searchTerm, pageIndex, pageSize]);
 
   return (
     <div>

@@ -31,12 +31,10 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
   const [aircraftModel, setAircraftModel] = useState<string>('');
   const [comment, setComment] = useState<string>('');
-  const [oem, setOem] = useState<string>('');
-  const [selectedAircraft, setSelectedAircraft] = useState<string>('');
+  const [oem, setOem] = useState<string>('ANY');
+  const [selectedAircraft, setSelectedAircraft] = useState<string>('ANY');
 
   const [hsCode, setHsCode] = useState<string>('');
-  const methods = useWizardFormContext<WizardFormData>();
-  const { formData, onChange, validation } = methods;
   const [contacts, setContacts] = useState<FormattedContactData[]>([]);
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
@@ -143,13 +141,13 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
       partNumber: partNumber,
       partName: partName,
       aircraft: selectedAircraft,
-      segmentIdList: segmentIds,
+      segmentIds: segmentIds,
       aircraftModel: aircraftModel,
       comment: comment,
-      oem: oem
-      // hsCode: hsCode
+      oem: oem,
+      hsCode: hsCode
     };
-    console.log('Client Payload', partPayload);
+    // console.log('Client Payload', partPayload);
 
     setLoadingSave(true);
     try {
@@ -290,10 +288,18 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
             value={selectedAircraft}
             onChange={e => setSelectedAircraft(e.target.value)} // Update the selected aircraft
           >
-            <option value="AIRCRAFT_1">Aircraft 1</option>
-            <option value="AIRCRAFT_2">Aircraft 2</option>
-            <option value="AIRCRAFT_3">Aircraft 3</option>
-            <option value="AIRCRAFT_4">Aircraft 4</option>
+            <option value="ANY">ANY</option>
+            <option value="AIRBUS">AIRBUS</option>
+            <option value="ALBATROSL_39">ALBATROSL_39</option>
+            <option value="AGUSTA_WESTLAND">AGUSTA_WESTLAND</option>
+            <option value="BEECRAFT">BEECRAFT</option>
+            <option value="BOEING">BOEING</option>
+            <option value="BOMBARDIER">BOMBARDIER</option>
+            <option value="CESSNA">CESSNA</option>
+            <option value="DIAMOND">DIAMOND</option>
+            <option value="LEONARDO">LEONARDO</option>
+            <option value="L410">L410</option>
+            <option value="SSJ100">SSJ100</option>
           </Form.Select>
         </Col>
       </Row>
@@ -314,19 +320,44 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
           </Form.Group>
         </Col>
         <Col sm={4}>
-          <Form.Group className="mb-2">
-            <Form.Label>OEM</Form.Label>
-            <Form.Control
-              type="email"
-              name="email"
-              placeholder="OEM"
-              value={oem}
-              onChange={handleOEM}
-            />
+          <Form.Label>OEM</Form.Label>
+          <Form.Select
+            aria-label="OEM"
+            value={oem}
+            onChange={e => setOem(e.target.value)} // Update the selected aircraft
+          >
+            <option value="ANY">ANY</option>
+            <option value="AKZONOBEL">AKZONOBEL</option>
+            <option value="BRIDGESTONE">BRIDGESTONE</option>
+            <option value="CHAMPION">CHAMPION</option>
+            <option value="CHARLATTE">CHARLATTE</option>
+            <option value="COLUMBUSJACK">COLUMBUSJACK</option>
+            <option value="DAVID_CLARK">DAVID_CLARK</option>
+            <option value="DIAMOND_AIRCRAFT">DIAMOND_AIRCRAFT</option>
+            <option value="DUNLOP">DUNLOP</option>
+            <option value="DYNELL">DYNELL</option>
+            <option value="GOODRICH">GOODRICH</option>
+            <option value="GOODYEAR">GOODYEAR</option>
+            <option value="GROVE">GROVE</option>
+            <option value="HEATCON">HEATCON</option>
+            <option value="JBT_AEROTECH">JBT_AEROTECH</option>
+            <option value="MALABAR">MALABAR</option>
+            <option value="MALLAGHAN">MALLAGHAN</option>
+            <option value="MANITOWOC">MANITOWOC</option>
+            <option value="MICHELIN">MICHELIN</option>
+            <option value="MILOCO">MILOCO</option>
+            <option value="MULAG">MULAG</option>
+            <option value="POTAIN">POTAIN</option>
+            <option value="SAFRAN">SAFRAN</option>
+            <option value="SAGEPARTS">SAGEPARTS</option>
+            <option value="SOURIAU">SOURIAU</option>
+            <option value="TESA_PRODUCTS">TESA_PRODUCTS</option>
+            <option value="THALES">THALES</option>
+            <option value="TRONAIR">TRONAIR</option>
             <Form.Control.Feedback type="invalid">
               This field is required.
             </Form.Control.Feedback>
-          </Form.Group>
+          </Form.Select>
         </Col>
         <Col sm={4}>
           <Form.Group className="mb-2">
@@ -421,7 +452,7 @@ const PartWizardItemFiledsForm = ({ id }: { id: string }) => {
         initialContacts={contacts}
       />
 
-      <PartTimelineGraph />
+      {/* <PartTimelineGraph /> */}
     </>
   );
 };

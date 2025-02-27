@@ -59,9 +59,7 @@ interface ClientDetailModalProps {
   };
 }
 
-// Yardımcı fonksiyon: marginTable anahtarlarını okunabilir formata çevirir
 const formatMarginKey = (key: string) => {
-  // Örneğin, "btw200and500" -> "Between 200 and 500"
   return key
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/_/g, ' ')
