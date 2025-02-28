@@ -32,12 +32,7 @@ const AdvanceTable = ({
                   key={header.id}
                   {...header.column.columnDef.meta?.headerProps}
                   className={classNames(
-                    header.column.columnDef.meta?.headerProps?.className,
-                    {
-                      sort: header.column.getCanSort(),
-                      desc: header.column.getIsSorted() === 'desc',
-                      asc: header.column.getIsSorted() === 'asc'
-                    }
+                    header.column.columnDef.meta?.headerProps?.className
                   )}
                   onClick={header.column.getToggleSortingHandler()}
                 >

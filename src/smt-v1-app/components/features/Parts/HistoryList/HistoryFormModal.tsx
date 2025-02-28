@@ -1,170 +1,165 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-import { ContactData } from './PartHistoryListSection';
+import { PartHistoryItem } from './PartHistoryListSection';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
-interface ContactFormModalProps {
+interface HistoryFormModalProps {
   show: boolean;
   onHide: () => void;
-  onSubmit: (contact: ContactData) => void;
-  editContact?: ContactData;
+  editItem?: PartHistoryItem;
 }
 
-const HistoryFormModal = ({
+const HistoryFormModal: React.FC<HistoryFormModalProps> = ({
   show,
-  onHide,
-  onSubmit,
-  editContact
-}: ContactFormModalProps) => {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [title, setTitle] = useState('');
-  const [phone, setPhone] = useState('');
-  const [cellPhone, setCellPhone] = useState('');
+  onHide
+}) => {
+  // Form alanları; PartHistoryItem modeline uygun
+  const [entryDate, setEntryDate] = useState('');
+  const [suppCompany, setSuppCompany] = useState('');
+  const [fndQty, setFndQty] = useState<number>(0);
+  const [fndPartCondition, setFndPartCondition] = useState('');
+  const [unitCost, setUnitCost] = useState<number>(0);
+  const [historyOrderStatus, setHistoryOrderStatus] = useState('');
+  const [partNumber, setPartNumber] = useState('');
+  const [partDesc, setPartDesc] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  useEffect(() => {
-    if (editContact) {
-      setFullName(editContact.name);
-      setEmail(editContact.email);
-      setTitle(editContact.title.toString());
-      setPhone(editContact.phone);
-      setCellPhone(editContact.cellphone);
-    } else {
-      resetForm();
-    }
-    setErrors({});
-  }, [editContact, show]);
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-
-    if (!fullName.trim()) newErrors.fullName = 'Full name is required';
-    if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!isValidEmail(email.trim())) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-    if (!title.trim()) newErrors.title = 'Title is required';
-    if (!phone.trim()) newErrors.phone = 'Phone is required';
+    if (!entryDate.trim()) newErrors.entryDate = 'Entry date is required';
+    if (!suppCompany.trim()) newErrors.suppCompany = 'Company is required';
+    if (fndQty <= 0) newErrors.fndQty = 'Quantity must be greater than 0';
+    if (!fndPartCondition.trim())
+      newErrors.fndPartCondition = 'Condition is required';
+    if (unitCost <= 0) newErrors.unitCost = 'Unit cost must be greater than 0';
+    if (!historyOrderStatus.trim())
+      newErrors.historyOrderStatus = 'Order status is required';
+    if (!partNumber.trim()) newErrors.partNumber = 'Part Number is required';
+    if (!partDesc.trim()) newErrors.partDesc = 'Part Description is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (!validateForm()) return;
-
-    const contact: ContactData = {
-      id: editContact?.id || Date.now().toString(),
-      name: fullName.trim(),
-      email: email.trim(),
-      title: title.trim(),
-      phone: phone.trim(),
-      cellphone: cellPhone.trim()
-    };
-
-    onSubmit(contact);
-    onHide();
-    resetForm();
-  };
-
   const resetForm = () => {
-    setFullName('');
-    setEmail('');
-    setTitle('');
-    setPhone('');
-    setCellPhone('');
+    setEntryDate('');
+    setSuppCompany('');
+    setFndQty(0);
+    setFndPartCondition('');
+    setUnitCost(0);
+    setHistoryOrderStatus('');
+    setPartNumber('');
+    setPartDesc('');
     setErrors({});
   };
 
   return (
     <Modal show={show} onHide={onHide} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          {editContact ? 'Edit Contact' : 'Add New Contact'}
-        </Modal.Title>
-      </Modal.Header>
       <Modal.Body>
         <Form>
           <Form.Group className="mb-3">
-            <Form.Label>Full Name*</Form.Label>
+            <Form.Label>Entry Date*</Form.Label>
             <Form.Control
-              placeholder="Full Name"
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              isInvalid={!!errors.fullName}
+              type="text"
+              placeholder="Entry Date"
+              value={entryDate}
+              onChange={e => setEntryDate(e.target.value)}
+              isInvalid={!!errors.entryDate}
             />
             <Form.Control.Feedback type="invalid">
-              {errors.fullName}
+              {errors.entryDate}
             </Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>Email*</Form.Label>
+            <Form.Label>Company*</Form.Label>
             <Form.Control
-              placeholder="Email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              type="email"
-              isInvalid={!!errors.email}
+              placeholder="Company"
+              value={suppCompany}
+              onChange={e => setSuppCompany(e.target.value)}
+              isInvalid={!!errors.suppCompany}
             />
             <Form.Control.Feedback type="invalid">
-              {errors.email}
+              {errors.suppCompany}
             </Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>Title*</Form.Label>
+            <Form.Label>Quantity*</Form.Label>
             <Form.Control
-              placeholder="Title"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              isInvalid={!!errors.title}
+              type="number"
+              placeholder="Quantity"
+              value={fndQty}
+              onChange={e => setFndQty(Number(e.target.value))}
+              isInvalid={!!errors.fndQty}
             />
             <Form.Control.Feedback type="invalid">
-              {errors.title}
+              {errors.fndQty}
             </Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>Phone*</Form.Label>
-            <PhoneInput
-              country={'tr'}
-              value={phone}
-              onChange={phone => setPhone(phone)}
-              inputStyle={{
-                width: '100%',
-                borderColor: errors.phone ? '#dc3545' : ''
-              }}
+            <Form.Label>Condition*</Form.Label>
+            <Form.Control
+              placeholder="Condition"
+              value={fndPartCondition}
+              onChange={e => setFndPartCondition(e.target.value)}
+              isInvalid={!!errors.fndPartCondition}
             />
-            {errors.phone && (
-              <div className="text-danger" style={{ fontSize: '0.875em' }}>
-                {errors.phone}
-              </div>
-            )}
+            <Form.Control.Feedback type="invalid">
+              {errors.fndPartCondition}
+            </Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label>Cell Phone (Optional)</Form.Label>
-            <PhoneInput
-              country={'tr'}
-              value={cellPhone}
-              onChange={phone => setCellPhone(phone)}
-              inputStyle={{ width: '100%' }}
+            <Form.Label>Unit Cost*</Form.Label>
+            <Form.Control
+              type="number"
+              placeholder="Unit Cost"
+              value={unitCost}
+              onChange={e => setUnitCost(Number(e.target.value))}
+              isInvalid={!!errors.unitCost}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.unitCost}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Order Status*</Form.Label>
+            <Form.Control
+              placeholder="Order Status"
+              value={historyOrderStatus}
+              onChange={e => setHistoryOrderStatus(e.target.value)}
+              isInvalid={!!errors.historyOrderStatus}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.historyOrderStatus}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Part Number*</Form.Label>
+            <Form.Control
+              placeholder="Part Number"
+              value={partNumber}
+              onChange={e => setPartNumber(e.target.value)}
+              isInvalid={!!errors.partNumber}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.partNumber}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Part Description*</Form.Label>
+            <Form.Control
+              as="textarea"
+              placeholder="Part Description"
+              value={partDesc}
+              onChange={e => setPartDesc(e.target.value)}
+              isInvalid={!!errors.partDesc}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.partDesc}
+            </Form.Control.Feedback>
           </Form.Group>
         </Form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="danger" onClick={onHide}>
-          Close
-        </Button>
-        <Button variant="success" onClick={handleSubmit}>
-          {editContact ? 'Update Contact' : 'Add Contact'}
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };

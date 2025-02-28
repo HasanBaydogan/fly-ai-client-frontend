@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Button, Col, Form, Modal, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import PartHistoryListSection, {
-  FormattedContactData
+  FormattedHistoryItem
 } from '../HistoryList/PartHistoryListSection';
+
 import PartTimelineGraph from '../TimelineGraph/PartTimelineGraph';
-import { postPartCreate } from 'smt-v1-app/services/PartServices';
+import {
+  postPartCreate,
+  putPartUpdate
+} from 'smt-v1-app/services/PartServices';
 import CustomButton from '../../../../../components/base/Button';
 import { TreeNode } from '../../SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
 import SegmentSelection from '../../GlobalComponents/SegmentSelection';
@@ -41,7 +45,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   const [hsCode, setHsCode] = useState<string>(partData?.hsCode || '');
 
   // Segment ve tarih, history ile ilgili state'ler
-  const [contacts, setContacts] = useState<FormattedContactData[]>([]);
+  const [contacts, setContacts] = useState<FormattedHistoryItem[]>([]);
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
   const [segments, setSegments] = useState<TreeNode[]>([]);
@@ -74,6 +78,17 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
     };
     fetchSegments();
   }, []);
+
+  useEffect(() => {
+    console.log('partData updated:', partData);
+    if (partData && partData.partHistoryItems) {
+      console.log('Found partHistoryItems:', partData.partHistoryItems);
+      setContacts(partData.partHistoryItems);
+    } else {
+      console.log('No partHistoryItems found in partData');
+      setContacts([]);
+    }
+  }, [partData]);
 
   // partData güncellendiğinde ilgili alanları güncelle
   useEffect(() => {
@@ -146,10 +161,36 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
 
     setLoadingSave(true);
     try {
-      const response = await postPartCreate(updatePartPayload);
+      let response;
+      if (partData && partData.partId) {
+        response = await putPartUpdate({
+          partId: partData.partId,
+          partName,
+          aircraft: selectedAircraft,
+          segmentIds,
+          aircraftModel,
+          comment,
+          oem,
+          hsCode
+        });
+      } else {
+        response = await postPartCreate({
+          partNumber,
+          partName,
+          aircraft: selectedAircraft,
+          segmentIds,
+          aircraftModel,
+          comment,
+          oem,
+          hsCode
+        });
+      }
+
       if (response && response.statusCode === 200) {
-        setResultModalTitle('Part addition successful');
-        setResultModalMessage('Part information has been successfully saved!');
+        setResultModalTitle('Part editing successful');
+        setResultModalMessage(
+          'Part information has been successfully updated!'
+        );
         setShowResultModal(true);
 
         // 2 saniye sonra yönlendirme
