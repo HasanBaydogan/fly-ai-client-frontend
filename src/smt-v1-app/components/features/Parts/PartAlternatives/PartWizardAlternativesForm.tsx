@@ -23,7 +23,7 @@ import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { faEllipsisH, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ProjectsTopSection from 'components/modules/project-management/ProjectsTopSection';
-import PartHistoryListSection from '../HistoryList/PartHistoryListSection';
+import PartHistoryListSection from '../PartsItemFields/HistoryList/PartHistoryListSection';
 import PartTimelineGraph from '../TimelineGraph/PartTimelineGraph';
 
 const files = [

@@ -3,7 +3,7 @@ import { Alert, Button, Col, Form, Modal, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import PartHistoryListSection, {
   FormattedHistoryItem
-} from '../HistoryList/PartHistoryListSection';
+} from './HistoryList/PartHistoryListSection';
 
 import PartTimelineGraph from '../TimelineGraph/PartTimelineGraph';
 import {
