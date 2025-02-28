@@ -1,16 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Col, Form, Button, Modal, Dropdown } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Col, Form } from 'react-bootstrap';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from './HistoryAdvanceTable';
 import useAdvanceTable from 'hooks/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
-import RevealDropdown, {
-  RevealDropdownTrigger
-} from 'components/base/RevealDropdown';
-import HistoryFormModal from './HistoryFormModal';
 
-// PartHistoryItem arayüzü: partHistoryItems verilerini temsil eder
 export interface PartHistoryItem {
   id: string;
   entryDate: string;
@@ -23,7 +17,6 @@ export interface PartHistoryItem {
   partDesc: string;
 }
 
-// Parent’a gönderilecek format (aynı yapı kullanılabilir)
 export interface FormattedHistoryItem {
   id: string;
   entryDate: string;
@@ -36,7 +29,6 @@ export interface FormattedHistoryItem {
   partDesc: string;
 }
 
-// → Props tanımı: initialContacts artık partHistoryItems verisini temsil eder
 interface PartHistoryListSectionProps {
   onContactsChange: (historyItems: FormattedHistoryItem[]) => void;
   initialContacts?: FormattedHistoryItem[];
@@ -46,7 +38,6 @@ const PartHistoryListSection = ({
   onContactsChange,
   initialContacts
 }: PartHistoryListSectionProps) => {
-  // İlk başta initialContacts ile state başlatılıyor.
   const [historyItems, setHistoryItems] = useState<PartHistoryItem[]>(() => {
     if (initialContacts && initialContacts.length > 0) {
       return initialContacts.map(item => ({
@@ -64,11 +55,9 @@ const PartHistoryListSection = ({
     return [];
   });
 
-  // Bir ref kullanarak önceki initialContacts değerini saklıyoruz.
   const prevInitialContactsRef = useRef<FormattedHistoryItem[] | undefined>();
 
   useEffect(() => {
-    // Eğer initialContacts tanımlıysa ve önceki değerden farklıysa state güncellemesi yapıyoruz.
     if (
       initialContacts &&
       JSON.stringify(initialContacts) !==
@@ -79,16 +68,6 @@ const PartHistoryListSection = ({
     }
   }, [initialContacts]);
 
-  const [showModal, setShowModal] = useState(false);
-  const [editingItem, setEditingItem] = useState<PartHistoryItem | undefined>(
-    undefined
-  );
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<PartHistoryItem | null>(
-    null
-  );
-
-  // Parent bileşene güncellenmiş veriyi gönderiyoruz
   useEffect(() => {
     const formatted = historyItems.map(item => ({
       id: item.id,
@@ -104,14 +83,29 @@ const PartHistoryListSection = ({
     onContactsChange(formatted);
   }, [historyItems, onContactsChange]);
 
-  // Tablo kolonları: partHistoryItems verilerinin alanlarına göre
   const columns: ColumnDef<PartHistoryItem>[] = [
     { accessorKey: 'entryDate', header: 'Entry Date' },
     { accessorKey: 'suppCompany', header: 'Company' },
     { accessorKey: 'fndQty', header: 'Qty' },
     { accessorKey: 'fndPartCondition', header: 'Condition' },
     { accessorKey: 'unitCost', header: 'Unit Cost' },
-    { accessorKey: 'historyOrderStatus', header: 'Order Status' },
+    {
+      accessorKey: 'historyOrderStatus',
+      header: 'Order Status',
+      cell: info => {
+        const status = info.getValue() as string;
+        let badgeClass = '';
+        let displayText = status;
+        if (status === 'ORDER') {
+          badgeClass = 'badge bg-success';
+        } else if (status === 'FOLLOW_UP') {
+          badgeClass = 'badge bg-warning';
+          displayText = 'FOLLOW UP';
+        }
+        return <span className={badgeClass}>{displayText}</span>;
+      }
+    },
+
     { accessorKey: 'partNumber', header: 'PN' },
     { accessorKey: 'partDesc', header: 'PN Description' }
   ];
@@ -130,10 +124,6 @@ const PartHistoryListSection = ({
           <Form.Group className="mt-2">
             <Form.Label className="fw-bold fs-7">History</Form.Label>
           </Form.Group>
-          {/* İsteğe bağlı: Yeni history item ekleme butonu */}
-          {/* <Button variant="primary" onClick={() => setShowModal(true)}>
-            New History Item
-          </Button> */}
         </div>
 
         <AdvanceTableProvider {...table}>
@@ -145,14 +135,6 @@ const PartHistoryListSection = ({
             rowClassName="hover-actions-trigger btn-reveal-trigger position-static"
           />
         </AdvanceTableProvider>
-
-        <HistoryFormModal
-          show={showModal}
-          onHide={() => {
-            setShowModal(false);
-            setEditingItem(undefined);
-          }}
-        />
       </Col>
     </Form>
   );
