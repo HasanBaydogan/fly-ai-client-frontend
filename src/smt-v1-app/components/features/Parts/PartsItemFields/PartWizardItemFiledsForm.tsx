@@ -5,7 +5,9 @@ import PartHistoryListSection, {
   FormattedHistoryItem
 } from './HistoryList/PartHistoryListSection';
 
-import PartTimelineGraph from '../TimelineGraph/PartTimelineGraph';
+import PartTimelineGraph, {
+  PartGraphItem
+} from '../TimelineGraph/PartTimelineGraph';
 import {
   postPartCreate,
   putPartUpdate
@@ -80,12 +82,9 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   }, []);
 
   useEffect(() => {
-    console.log('partData updated:', partData);
     if (partData && partData.partHistoryItems) {
-      console.log('Found partHistoryItems:', partData.partHistoryItems);
       setContacts(partData.partHistoryItems);
     } else {
-      console.log('No partHistoryItems found in partData');
       setContacts([]);
     }
   }, [partData]);
@@ -490,7 +489,12 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
         onContactsChange={setContacts}
         initialContacts={contacts}
       />
-      {/* <PartTimelineGraph /> */}
+      {/* Timeline Graph: partGraphItems verisini prop olarak gönderiyoruz */}
+      {partData && partData.partGraphItems && (
+        <PartTimelineGraph
+          graphData={partData.partGraphItems as PartGraphItem[]}
+        />
+      )}{' '}
     </>
   );
 };

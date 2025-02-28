@@ -31,7 +31,7 @@ const MainLayout = () => {
       setIsLoading(true);
       const response = await getUserInfo();
       setUserInfos(response.data);
-      console.log(response);
+      // console.log(response);
       setIsLoading(false);
     };
     getUserInfoFromDB();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Card, Modal, Tab } from 'react-bootstrap';
 import WizardNav from 'smt-v1-app/components/features/Parts/PartWizardNav';
 import WizardForm from 'components/wizard/WizardForm';
