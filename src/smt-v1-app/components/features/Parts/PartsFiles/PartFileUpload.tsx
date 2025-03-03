@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Dropzone from '../../SupplierDetail/SupplierDetailComponents/Dropzone';
 import styles from '../../GlobalComponents/FileUpload.module.css';
 import AttachmentPreview, {
@@ -12,6 +12,8 @@ interface Base64File {
   id: string;
   name: string;
   base64: string;
+  size: number; // dosya boyutu bayt cinsinden
+  description: string; // description alanı eklendi
 }
 
 // Genişletilmiş dosya ön izleme tipi
@@ -22,14 +24,26 @@ interface ExtendedFileAttachment extends FileAttachment {
 
 interface FileUploadProps {
   onFilesUpload: (base64Files: Base64File[]) => void;
+  hidePreviews?: boolean; // Parent tarafından gönderildiğinde dosya önizlemesini gizlemek için
 }
 
-const PartFileUpload: React.FC<FileUploadProps> = ({ onFilesUpload }) => {
+const PartFileUpload: React.FC<FileUploadProps> = ({
+  onFilesUpload,
+  hidePreviews = false
+}) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<ExtendedFileAttachment[]>(
     []
   );
   const [base64Files, setBase64Files] = useState<Base64File[]>([]);
+
+  // Eğer parent'dan hidePreviews true gönderilirse, iç state'leri temizleyelim.
+  useEffect(() => {
+    if (hidePreviews) {
+      setUploadedFiles([]);
+      setBase64Files([]);
+    }
+  }, [hidePreviews]);
 
   const handleDrop = async (acceptedFiles: File[], fileRejections: any[]) => {
     const totalSize = acceptedFiles.reduce((acc, file) => acc + file.size, 0);
@@ -51,7 +65,9 @@ const PartFileUpload: React.FC<FileUploadProps> = ({ onFilesUpload }) => {
             resolve({
               id: `${file.name}-${Date.now()}-${index}`,
               name: file.name,
-              base64: reader.result
+              base64: reader.result,
+              size: file.size,
+              description: '' // Başlangıçta boş description
             });
           } else {
             reject(new Error(`Base64 conversion failed for: ${file.name}`));
@@ -73,8 +89,8 @@ const PartFileUpload: React.FC<FileUploadProps> = ({ onFilesUpload }) => {
         url: URL.createObjectURL(file),
         size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
         format: file.type,
-        customDescription: '', // Başlangıçta açıklama boş
-        isConfirmed: false // Düzenlenmemiş (aktif) durum
+        customDescription: '', // Açıklama başlangıçta boş
+        isConfirmed: false
       }));
 
       setUploadedFiles(prevFiles => [...prevFiles, ...newPreviews]);
@@ -96,17 +112,24 @@ const PartFileUpload: React.FC<FileUploadProps> = ({ onFilesUpload }) => {
     onFilesUpload(updatedBase64Files);
   };
 
-  // Açıklama onaylandığında, input alanını pasif hale getirir
   const handleConfirmDescription = (index: number) => {
+    // Ön izleme dosyası onaylanırken base64 dosyasına description ekleniyor
     const updatedFiles = [...uploadedFiles];
     updatedFiles[index] = {
       ...updatedFiles[index],
       isConfirmed: true
     };
     setUploadedFiles(updatedFiles);
+
+    const updatedBase64Files = [...base64Files];
+    updatedBase64Files[index] = {
+      ...updatedBase64Files[index],
+      description: updatedFiles[index].customDescription || ''
+    };
+    setBase64Files(updatedBase64Files);
+    onFilesUpload(updatedBase64Files);
   };
 
-  // Düzenleme butonuna tıklanırsa input aktif hale gelir
   const handleEditDescription = (index: number) => {
     const updatedFiles = [...uploadedFiles];
     updatedFiles[index] = {
@@ -125,50 +148,54 @@ const PartFileUpload: React.FC<FileUploadProps> = ({ onFilesUpload }) => {
         }
       />
       {errorMessage && <div className="text-danger mt-2">{errorMessage}</div>}
-      <div className="mt-3">
-        {uploadedFiles.map((file, index) => (
-          <div key={index} className="d-flex align-items-center mb-2">
-            <AttachmentPreview
-              attachment={file}
-              handleRemove={() => handleRemoveFile(index)}
-            />
-            {/* Açıklama input alanı */}
-            <input
-              type="text"
-              placeholder="Enter description"
-              value={file.customDescription || ''}
-              onChange={e => {
-                const updatedFiles = [...uploadedFiles];
-                updatedFiles[index] = {
-                  ...updatedFiles[index],
-                  customDescription: e.target.value
-                };
-                setUploadedFiles(updatedFiles);
-              }}
-              className="form-control ms-2"
-              style={{ maxWidth: '200px' }}
-              disabled={file.isConfirmed}
-            />
-            {file.isConfirmed ? (
-              <Button
-                variant="secondary"
-                className="ms-2"
-                onClick={() => handleEditDescription(index)}
-              >
-                Edit
-              </Button>
-            ) : (
-              <Button
-                variant="primary"
-                className="ms-2"
-                onClick={() => handleConfirmDescription(index)}
-              >
-                Confirm
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
+
+      {/* Dosya gönderme ve açıklama alanları sadece hidePreviews false ise gösterilsin */}
+      {!hidePreviews && (
+        <div className="mt-3">
+          {uploadedFiles.map((file, index) => (
+            <div key={index} className="d-flex align-items-center mb-2">
+              <AttachmentPreview
+                attachment={file}
+                handleRemove={() => handleRemoveFile(index)}
+              />
+              {/* Açıklama input alanı */}
+              <input
+                type="text"
+                placeholder="Enter description"
+                value={file.customDescription || ''}
+                onChange={e => {
+                  const updatedFiles = [...uploadedFiles];
+                  updatedFiles[index] = {
+                    ...updatedFiles[index],
+                    customDescription: e.target.value
+                  };
+                  setUploadedFiles(updatedFiles);
+                }}
+                className="form-control ms-2"
+                style={{ maxWidth: '200px' }}
+                disabled={file.isConfirmed}
+              />
+              {file.isConfirmed ? (
+                <Button
+                  variant="secondary"
+                  className="ms-2"
+                  onClick={() => handleEditDescription(index)}
+                >
+                  Edit
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  className="ms-2"
+                  onClick={() => handleConfirmDescription(index)}
+                >
+                  Confirm
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

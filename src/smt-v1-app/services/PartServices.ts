@@ -155,7 +155,7 @@ export const getByItemFields = async (partId: string) => {
     const response = await api().get(`/part/id/${partId}`, {
       headers
     });
-    console.log('Response from getByItemFields:', response);
+    // console.log('Response from getByItemFields:', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -716,5 +716,318 @@ export const postNewNotes = async (newPart: newNotePayload) => {
   } catch (err) {
     console.error('postNewNotes fonksiyonunda hata:', err);
     return { success: false, message: 'Exception occurred' };
+  }
+};
+
+// *****************************
+//           Notes API's
+// *****************************
+//${pageNo}/${pageSize}
+
+export const getByAttachedFiles = async (partId: string, pageNo: number) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().get(
+      `/part-file/all/part-id/${partId}/${pageNo}/5`,
+      {
+        headers
+      }
+    );
+    console.log('Response from getByAttachedFiles:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/part-file/all/part-id/${partId}/${pageNo}/5`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[getByItemFields] Permission Error:', err);
+  }
+};
+
+export interface postFile {
+  partId: string;
+  fileName: string;
+  description: string;
+  data: string;
+  fileSize: number;
+  fileSizeUnit: string;
+}
+
+export const postFileCreate = async (newFile: postFile) => {
+  try {
+    const access_token = Cookies.get('access_token');
+    const headers: Record<string, string> = {};
+
+    if (access_token) {
+      headers['Authorization'] = `Bearer ${access_token}`;
+    } else {
+      window.location.assign('/');
+      return;
+    }
+    console.log('Payload', newFile);
+
+    const response = await api().post(`/part-file/create`, newFile, {
+      headers
+    });
+    console.log('Client Payload RESPONSE', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      try {
+        const refresh_token = Cookies.get('refresh_token');
+
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token
+        });
+
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+
+          let rfqMailResponseAfterRefresh = await api().post(
+            `/part-file/create`,
+            newFile,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.data.access_token}`
+              }
+            }
+          );
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+        }
+      } catch (err) {
+        console.error('Token yenileme sırasında hata oluştu:', err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    } else {
+      console.log(
+        'İşlenmeyen yanıt durumu, statusCode:',
+        response.data.statusCode
+      );
+    }
+  } catch (err) {
+    console.error('postFileCreate fonksiyonunda hata:', err);
+  }
+};
+
+export const deleteByAttachedFiles = async (partId: string) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().delete(`/part-file/id/${partId}`, {
+      headers
+    });
+    // console.log('Response from getByAttachedFiles:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().delete(
+            `/part-file/id/${partId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[deleteByAttachedFiles] Permission Error:', err);
+  }
+};
+
+export interface updateFilesPayload {
+  id: string;
+  description: string;
+}
+
+export const putFileUpdate = async (payload: updateFilesPayload) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+    console.log('Client putFileUpdate  payload', payload);
+
+    const response = await api().put(`/part-file/update`, payload, {
+      headers
+    });
+    console.log('Client putFileUpdate  response ', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().put(
+            `/part-file/update`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('putFileUpdate  Permission Error');
   }
 };

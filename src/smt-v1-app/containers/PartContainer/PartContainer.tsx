@@ -20,7 +20,7 @@ const PartContainer = () => {
   useEffect(() => {
     if (lgShow) {
       setLoadingPartData(true);
-      getByItemFields('67b2ecc42a07a767996195cb')
+      getByItemFields('67c17b336744fc0fd648c756')
         .then(response => {
           if (response.success && response.data && response.data.partId) {
             setPartData(response.data);
@@ -76,7 +76,7 @@ const PartContainer = () => {
                 </Tab.Pane>
                 <Tab.Pane eventKey={4}>
                   <WizardForm step={4}>
-                    <PartWizardFilesForm />
+                    <PartWizardFilesForm partId={partData?.partId} />
                   </WizardForm>
                 </Tab.Pane>
                 <Tab.Pane eventKey={5}>

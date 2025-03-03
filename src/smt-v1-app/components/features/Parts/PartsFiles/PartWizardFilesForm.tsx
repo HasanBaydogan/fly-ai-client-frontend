@@ -1,133 +1,374 @@
-import React, { useState } from 'react';
-import { Col, Row, Table, Pagination, Dropdown } from 'react-bootstrap';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  Table,
+  Pagination,
+  Dropdown,
+  Modal,
+  Button as RBButton
+} from 'react-bootstrap';
 import Button from 'components/base/Button';
-import illus38 from 'assets/img/spot-illustrations/38.webp';
-import illusDark38 from 'assets/img/spot-illustrations/dark_38.webp';
-import { useWizardFormContext } from 'providers/WizardFormProvider';
-import PartFileUpload from './PartFileUpload';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisH } from '@fortawesome/free-solid-svg-icons';
+import PartFileUpload from './PartFileUpload';
+import {
+  getByAttachedFiles,
+  postFileCreate,
+  deleteByAttachedFiles,
+  putFileUpdate // Dosya güncelleme için varsayılan servis fonksiyonu
+} from 'smt-v1-app/services/PartServices';
 
-const files = [
-  {
-    id: 1,
-    name: 'VL_Photos_22a',
-    date: '29/03/2023 10:33:03',
-    description: 'PRODUCT PHOTO',
-    fileType: 'Photo',
-    fileSize: '128KB',
-    createdBy: 'Ahmet Durmaz'
-  },
-  {
-    id: 2,
-    name: 'DK-120902_152',
-    date: '28/02/2023 15:23:33',
-    description: 'Certificate',
-    fileType: 'PDF',
-    fileSize: '1.3MB',
-    createdBy: 'Fatih Kadir'
+interface PartWizardFilesFormProps {
+  partId?: string;
+}
+
+// Yardımcı fonksiyon: Dosya boyutunu uygun birime çevirir
+const convertFileSize = (
+  sizeInBytes: number
+): { size: number; unit: string } => {
+  if (sizeInBytes < 1024) {
+    return { size: sizeInBytes, unit: 'BYTE' };
+  } else if (sizeInBytes < 1048576) {
+    return { size: +(sizeInBytes / 1024).toFixed(2), unit: 'KILOBYTE' };
+  } else {
+    return { size: +(sizeInBytes / 1048576).toFixed(2), unit: 'MEGABYTE' };
   }
-];
+};
 
-const WizardSuccessStep = () => {
-  const { startOver } = useWizardFormContext();
-  // Hook'u burada kullanabilirsiniz.
+// Yardımcı fonksiyon: Dosya boyutu stringini biçimlendirir.
+const formatFileSize = (sizeStr: string): string => {
+  if (!sizeStr) return '';
+  const parts = sizeStr.split(' ');
+  if (parts.length === 2) {
+    const [numberPart, unitPart] = parts;
+    const normalizedUnit = unitPart.trim().toUpperCase();
+    if (normalizedUnit === 'MEGABYTE') return `${numberPart} MB`;
+    if (normalizedUnit === 'KILOBYTE') return `${numberPart} KB`;
+    if (normalizedUnit === 'BYTE') return `${numberPart} Byte`;
+    return sizeStr;
+  }
+  return sizeStr;
+};
+
+const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
+  partId
+}) => {
+  const [files, setFiles] = useState<any[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  // base64Files: PartFileUpload'dan gelen dosyalar (boyut, base64, ad, açıklama vs.)
   const [base64Files, setBase64Files] = useState<
-    { name: string; base64: string }[]
+    {
+      id?: string;
+      name: string;
+      base64: string;
+      size?: number;
+      description: string;
+    }[]
   >([]);
 
+  // Delete modal state'leri
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<any>(null);
+
+  // Submit modal state'i
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+
+  // Edit modal state'leri
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [fileToEdit, setFileToEdit] = useState<any>(null);
+  const [editFileName, setEditFileName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+
   const handleFilesUpload = (
-    uploadedFiles: { name: string; base64: string }[]
+    uploadedFiles: {
+      name: string;
+      base64: string;
+      size?: number;
+      description: string;
+    }[]
   ) => {
     setBase64Files(uploadedFiles);
   };
 
-  // Üç nokta menüsündeki "View" tıklandığında yapılacak işlem
-  const handleView = (file: any) => {
-    window.open('/dosya-goruntuleme-url/' + file.id, '_blank');
-  };
-
-  // "Edit" tıklandığında yapılacak işlem
-  const handleEdit = (file: any) => {
-    alert(`Edit mode for file: ${file.name}`);
-  };
-
-  // "Delete" tıklandığında yapılacak işlem
-  const handleDelete = (file: any) => {
-    const confirmed = window.confirm(
-      `${file.name} isimli dosyayı silmek istediğinize emin misiniz?`
-    );
-    if (confirmed) {
-      alert(`Dosya silindi: ${file.name}`);
-      // Silme işlemini burada uygulayabilirsiniz.
+  // Dosya listesini sunucudan çekmek için fonksiyon, currentPage parametresi ekleniyor.
+  const fetchFiles = useCallback(async () => {
+    if (!partId) return;
+    setLoading(true);
+    try {
+      // currentPage'i API isteğine dahil ediyoruz.
+      const response = await getByAttachedFiles(partId, currentPage);
+      if (response && response.statusCode === 200 && response.data) {
+        setFiles(response.data.partFileResponses);
+        setTotalPages(response.data.totalPages);
+      }
+    } catch (error) {
+      console.error('Error fetching attached files:', error);
     }
+    setLoading(false);
+  }, [partId, currentPage]);
+
+  useEffect(() => {
+    fetchFiles();
+  }, [partId, currentPage, fetchFiles]);
+
+  // Üç nokta menüsündeki işlemler
+
+  const handleView = (file: any) => {
+    window.open('/dosya-goruntuleme-url/' + file.partFileId, '_blank');
+  };
+
+  // Edit butonuna tıklanınca ilgili dosyanın bilgilerini modal'a yüklüyoruz.
+  const handleEdit = (file: any) => {
+    setFileToEdit(file);
+    setEditFileName(file.fileName);
+    setEditDescription(file.description);
+    setShowEditModal(true);
+  };
+
+  // Delete butonuna tıklanırsa modalı açar.
+  const handleDeleteClick = (file: any) => {
+    setFileToDelete(file);
+    setShowDeleteModal(true);
+  };
+
+  // Delete modal onayı verildiğinde API çağrısı yapılır.
+  const confirmDelete = async () => {
+    if (fileToDelete) {
+      try {
+        const deleteResponse = await deleteByAttachedFiles(
+          fileToDelete.partFileId
+        );
+        console.log('Dosya silindi:', deleteResponse);
+        fetchFiles();
+      } catch (error) {
+        console.error('Dosya silme hatası:', error);
+      }
+      setFileToDelete(null);
+      setShowDeleteModal(false);
+    }
+  };
+
+  // Dosya gönderme onayı verildiğinde
+  const confirmSubmit = async () => {
+    setShowSubmitModal(false);
+    await handleSubmitFiles();
+  };
+
+  // Dosya gönderme işlemi
+  const handleSubmitFiles = async () => {
+    if (!partId) return;
+    for (const file of base64Files) {
+      const { size, unit } = convertFileSize(file.size || 0);
+      const newFilePayload = {
+        partId: partId,
+        fileName: file.name,
+        description: file.description,
+        data: file.base64,
+        fileSize: size,
+        fileSizeUnit: unit
+      };
+      try {
+        const result = await postFileCreate(newFilePayload);
+        console.log('Dosya gönderildi:', result);
+      } catch (error) {
+        console.error('Dosya gönderim hatası:', error);
+      }
+    }
+    fetchFiles();
+    setBase64Files([]);
+  };
+
+  // Edit modal'da düzenleme yapıldıktan sonra onay verildiğinde API çağrısı yapılır.
+  const handleConfirmEdit = async () => {
+    if (!fileToEdit) return;
+    try {
+      const payload = {
+        id: fileToEdit.partFileId,
+        description: editDescription
+      };
+      const response = await putFileUpdate(payload);
+      console.log('Dosya güncellendi:', response);
+      fetchFiles();
+    } catch (error) {
+      console.error('Dosya güncelleme hatası:', error);
+    }
+    setShowEditModal(false);
+    setFileToEdit(null);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
     <>
-      {/* Dosya listesi ve tablo */}
       <div>
         {/* Dosya yükleme bileşeni */}
         <PartFileUpload onFilesUpload={handleFilesUpload} />
 
-        {/* Dosya tablosu */}
-        <Table striped hover responsive>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Date</th>
-              <th>Description</th>
-              <th>File Type</th>
-              <th>File Size</th>
-              <th>Created By</th>
-              <th style={{ width: '50px' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {files.map(file => (
-              <tr key={file.id}>
-                <td>{file.name}</td>
-                <td>{file.date}</td>
-                <td>{file.description}</td>
-                <td>{file.fileType}</td>
-                <td>{file.fileSize}</td>
-                <td>{file.createdBy}</td>
-                <td className="text-center">
-                  <Dropdown>
-                    <Dropdown.Toggle variant="link" className="p-0">
-                      <FontAwesomeIcon icon={faEllipsisH} />
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                      <Dropdown.Item onClick={() => handleView(file)}>
-                        View
-                      </Dropdown.Item>
-                      <Dropdown.Item onClick={() => handleEdit(file)}>
-                        Edit
-                      </Dropdown.Item>
-                      <Dropdown.Item onClick={() => handleDelete(file)}>
-                        Delete
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        {/* Dosya gönderme butonu (onay modalı açar) */}
+        {base64Files.length > 0 && (
+          <div className="mb-3">
+            <Button variant="primary" onClick={() => setShowSubmitModal(true)}>
+              Submit Files
+            </Button>
+          </div>
+        )}
 
-        {/* Sayfalandırma alanı (Pagination) */}
+        {/* Yükleniyor gösterimi */}
+        {loading ? (
+          <div>Loading...</div>
+        ) : (
+          <Table striped hover responsive>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>File Type</th>
+                <th>File Size</th>
+                <th>Created By</th>
+                <th style={{ width: '50px' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {files.map(file => (
+                <tr key={file.partFileId}>
+                  <td>{file.fileName}</td>
+                  <td>{file.date}</td>
+                  <td>{file.description}</td>
+                  <td>{file.fileType}</td>
+                  <td>{formatFileSize(file.fileSize)}</td>
+                  <td>{file.createdBy}</td>
+                  <td className="text-center">
+                    <Dropdown>
+                      <Dropdown.Toggle variant="link" className="p-0">
+                        <FontAwesomeIcon icon={faEllipsisH} />
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        <Dropdown.Item onClick={() => handleEdit(file)}>
+                          Edit
+                        </Dropdown.Item>
+                        <Dropdown.Item onClick={() => handleDeleteClick(file)}>
+                          Delete
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+
+        {/* Sayfalama alanı */}
         <div className="d-flex justify-content-between align-items-center">
           <div></div>
           <Pagination className="mb-0">
-            <Pagination.Prev />
-            <Pagination.Item active>{1}</Pagination.Item>
-            <Pagination.Item>{2}</Pagination.Item>
-            <Pagination.Next />
+            <Pagination.Prev
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+            />
+            {[...Array(totalPages)].map((_, index) => (
+              <Pagination.Item
+                key={index + 1}
+                active={currentPage === index + 1}
+                onClick={() => handlePageChange(index + 1)}
+              >
+                {index + 1}
+              </Pagination.Item>
+            ))}
+            <Pagination.Next
+              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+            />
           </Pagination>
         </div>
       </div>
+
+      {/* Silme Onay Modalı */}
+      <Modal
+        show={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete file "{fileToDelete?.fileName}"?
+        </Modal.Body>
+        <Modal.Footer>
+          <RBButton
+            variant="secondary"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            Cancel
+          </RBButton>
+          <RBButton variant="danger" onClick={confirmDelete}>
+            Delete
+          </RBButton>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Dosya Gönderme Onay Modalı */}
+      <Modal
+        show={showSubmitModal}
+        onHide={() => setShowSubmitModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm File Submission</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to submit these files?</Modal.Body>
+        <Modal.Footer>
+          <RBButton
+            variant="secondary"
+            onClick={() => setShowSubmitModal(false)}
+          >
+            Cancel
+          </RBButton>
+          <RBButton variant="primary" onClick={confirmSubmit}>
+            Submit
+          </RBButton>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Modalı */}
+      <Modal
+        show={showEditModal}
+        onHide={() => setShowEditModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Edit File</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-3">
+            <label htmlFor="editDescription" className="form-label">
+              Description
+            </label>
+            <input
+              id="editDescription"
+              type="text"
+              className="form-control"
+              value={editDescription}
+              onChange={e => setEditDescription(e.target.value)}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <RBButton variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </RBButton>
+          <RBButton variant="primary" onClick={handleConfirmEdit}>
+            Save
+          </RBButton>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
 
-export default WizardSuccessStep;
+export default PartWizardFilesForm;
