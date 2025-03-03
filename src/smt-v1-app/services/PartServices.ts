@@ -384,6 +384,97 @@ export const putPartUpdate = async (payload: updatePartPayload) => {
 };
 
 // *****************************
+//           UDF API's
+// *****************************
+
+export interface UDFData {
+  udfId: string;
+  fieldName: string;
+  fieldType: string[];
+  fieldStringValues: [string];
+  addrfieldIntValuesess: [0];
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+export const getByUDFPartList = async (
+  partId: string,
+  p0: number,
+  pageSize: number
+) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().get(`/part/udf/part-id/${partId}`, {
+      headers
+    });
+    console.log('Response from getByClientDetailList:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/part/udf/part-id/${partId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[getByUDFPartList] Client Detail List Permission Error:', err);
+  }
+};
+
+// *****************************
 //           Notes API's
 // *****************************
 
@@ -625,96 +716,5 @@ export const postNewNotes = async (newPart: newNotePayload) => {
   } catch (err) {
     console.error('postNewNotes fonksiyonunda hata:', err);
     return { success: false, message: 'Exception occurred' };
-  }
-};
-
-// *****************************
-//           UDF API's
-// *****************************
-
-export interface UDFData {
-  udfId: string;
-  fieldName: string;
-  fieldType: string[];
-  fieldStringValues: [string];
-  addrfieldIntValuesess: [0];
-  createdAt: string;
-  createdBy: string;
-  updatedAt: string;
-  updatedBy: string;
-}
-
-export const getByUDFPartList = async (
-  udfId: string,
-  p0: number,
-  pageSize: number
-) => {
-  try {
-    const accessToken = Cookies.get('access_token');
-    const headers = {};
-    if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
-    } else {
-      window.location.assign('/');
-    }
-
-    const response = await api().get(`/part/udf/id/${udfId}`, {
-      headers
-    });
-    // console.log('Response from getByClientDetailList:', response);
-
-    if (response.data.statusCode === 200) {
-      return response.data;
-    } else if (response.data.statusCode === 498) {
-      // Expired JWT
-      try {
-        const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refresh_token: Cookies.get('refresh_token')
-        });
-        if (refreshTokenresponse.data.statusCode === 200) {
-          setCookie(
-            'access_token',
-            refreshTokenresponse.data.data.access_token
-          );
-          setCookie(
-            'refresh_token',
-            refreshTokenresponse.data.data.refresh_token
-          );
-          let rfqMailResponseAfterRefresh = await api().get(
-            `/part/udf/id/${udfId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
-              }
-            }
-          );
-
-          return rfqMailResponseAfterRefresh.data;
-        } else if (refreshTokenresponse.data.statusCode === 498) {
-          // Expired Refresh Token
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 411) {
-          // Invalid Refresh Token
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 404) {
-          console.log('User not found');
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    } else if (response.data.statusCode === 401) {
-      Cookies.remove('access_token');
-      Cookies.remove('refresh_token');
-      window.location.assign('/');
-    }
-  } catch (err) {
-    console.log('[getByUDFPartList] Client Detail List Permission Error:', err);
   }
 };

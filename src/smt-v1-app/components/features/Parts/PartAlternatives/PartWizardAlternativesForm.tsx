@@ -24,7 +24,7 @@ import { faEllipsisH, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ProjectsTopSection from 'components/modules/project-management/ProjectsTopSection';
 import PartHistoryListSection from '../PartsItemFields/HistoryList/PartHistoryListSection';
-import PartTimelineGraph from '../TimelineGraph/PartTimelineGraph';
+// import PartTimelineGraph from '../TimelineGraph/PartTimelineGraph';
 
 const files = [
   {
@@ -172,7 +172,7 @@ const PartWizardUserDefFieldsForm = () => {
             onContactsChange={setContacts}
             initialContacts={contacts}
           />
-          <PartTimelineGraph />
+          {/* <PartTimelineGraph /> */}
         </div>
       )}
     </div>

@@ -118,7 +118,7 @@ const PartHistoryListSection = ({
   });
 
   return (
-    <Form className="p-5 mb-5">
+    <div className="p-5 mb-5">
       <Col md={12}>
         <div className="d-flex justify-content-between">
           <Form.Group className="mt-2">
@@ -136,7 +136,7 @@ const PartHistoryListSection = ({
           />
         </AdvanceTableProvider>
       </Col>
-    </Form>
+    </div>
   );
 };
 

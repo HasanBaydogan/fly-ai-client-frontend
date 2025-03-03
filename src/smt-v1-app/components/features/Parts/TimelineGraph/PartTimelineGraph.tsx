@@ -15,6 +15,16 @@ import {
 
 dayjs.extend(customParseFormat);
 
+// Register the required ECharts components and renderer
+echarts.use([
+  LineChart,
+  CanvasRenderer,
+  GridComponent,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent
+]);
+
 export interface PartGraphItem {
   priceDate: string;
   unitPriceCost: number;
@@ -115,6 +125,7 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
     <ReactEChartsCore
       echarts={echarts}
       option={options}
+      opts={{ renderer: 'canvas' }} // Specify the renderer.
       style={{ minHeight: '320px', width: '100%' }}
     />
   );

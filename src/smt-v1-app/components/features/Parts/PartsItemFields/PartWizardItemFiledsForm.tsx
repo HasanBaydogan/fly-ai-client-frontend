@@ -359,44 +359,46 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
           </Form.Group>
         </Col>
         <Col sm={4}>
-          <Form.Label>OEM</Form.Label>
-          <Form.Select
-            aria-label="OEM"
-            value={oem}
-            onChange={e => setOem(e.target.value)}
-          >
-            <option value="ANY">ANY</option>
-            <option value="AKZONOBEL">AKZONOBEL</option>
-            <option value="BRIDGESTONE">BRIDGESTONE</option>
-            <option value="CHAMPION">CHAMPION</option>
-            <option value="CHARLATTE">CHARLATTE</option>
-            <option value="COLUMBUSJACK">COLUMBUSJACK</option>
-            <option value="DAVID_CLARK">DAVID_CLARK</option>
-            <option value="DIAMOND_AIRCRAFT">DIAMOND_AIRCRAFT</option>
-            <option value="DUNLOP">DUNLOP</option>
-            <option value="DYNELL">DYNELL</option>
-            <option value="GOODRICH">GOODRICH</option>
-            <option value="GOODYEAR">GOODYEAR</option>
-            <option value="GROVE">GROVE</option>
-            <option value="HEATCON">HEATCON</option>
-            <option value="JBT_AEROTECH">JBT_AEROTECH</option>
-            <option value="MALABAR">MALABAR</option>
-            <option value="MALLAGHAN">MALLAGHAN</option>
-            <option value="MANITOWOC">MANITOWOC</option>
-            <option value="MICHELIN">MICHELIN</option>
-            <option value="MILOCO">MILOCO</option>
-            <option value="MULAG">MULAG</option>
-            <option value="POTAIN">POTAIN</option>
-            <option value="SAFRAN">SAFRAN</option>
-            <option value="SAGEPARTS">SAGEPARTS</option>
-            <option value="SOURIAU">SOURIAU</option>
-            <option value="TESA_PRODUCTS">TESA_PRODUCTS</option>
-            <option value="THALES">THALES</option>
-            <option value="TRONAIR">TRONAIR</option>
+          <Form.Group className="mb-2">
+            <Form.Label>OEM</Form.Label>
+            <Form.Select
+              aria-label="OEM"
+              value={oem}
+              onChange={e => setOem(e.target.value)}
+            >
+              <option value="ANY">ANY</option>
+              <option value="AKZONOBEL">AKZONOBEL</option>
+              <option value="BRIDGESTONE">BRIDGESTONE</option>
+              <option value="CHAMPION">CHAMPION</option>
+              <option value="CHARLATTE">CHARLATTE</option>
+              <option value="COLUMBUSJACK">COLUMBUSJACK</option>
+              <option value="DAVID_CLARK">DAVID_CLARK</option>
+              <option value="DIAMOND_AIRCRAFT">DIAMOND_AIRCRAFT</option>
+              <option value="DUNLOP">DUNLOP</option>
+              <option value="DYNELL">DYNELL</option>
+              <option value="GOODRICH">GOODRICH</option>
+              <option value="GOODYEAR">GOODYEAR</option>
+              <option value="GROVE">GROVE</option>
+              <option value="HEATCON">HEATCON</option>
+              <option value="JBT_AEROTECH">JBT_AEROTECH</option>
+              <option value="MALABAR">MALABAR</option>
+              <option value="MALLAGHAN">MALLAGHAN</option>
+              <option value="MANITOWOC">MANITOWOC</option>
+              <option value="MICHELIN">MICHELIN</option>
+              <option value="MILOCO">MILOCO</option>
+              <option value="MULAG">MULAG</option>
+              <option value="POTAIN">POTAIN</option>
+              <option value="SAFRAN">SAFRAN</option>
+              <option value="SAGEPARTS">SAGEPARTS</option>
+              <option value="SOURIAU">SOURIAU</option>
+              <option value="TESA_PRODUCTS">TESA_PRODUCTS</option>
+              <option value="THALES">THALES</option>
+              <option value="TRONAIR">TRONAIR</option>
+            </Form.Select>
             <Form.Control.Feedback type="invalid">
               This field is required.
             </Form.Control.Feedback>
-          </Form.Select>
+          </Form.Group>
         </Col>
         <Col sm={4}>
           <Form.Group className="mb-2">
