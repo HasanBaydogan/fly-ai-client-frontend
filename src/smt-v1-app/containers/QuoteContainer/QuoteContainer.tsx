@@ -39,6 +39,8 @@ const QuoteContainer = () => {
   const [quoteData, setQuoteData] = useState<Quote>();
   const [contacts, setContacts] = useState<Contact[]>([]);
 
+  const [quoteComment, setQuoteComment] = useState('');
+
   const [showQuoteWizardTabs, setShowQuoteWizardTabs] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [statusColors, setStatusColors] = useState<{
@@ -151,6 +153,8 @@ const QuoteContainer = () => {
                   clientName={quoteData && quoteData.client}
                   bgColor={statusColors.bgColor}
                   textColor={statusColors.textColor}
+                  quoteComment={quoteComment}
+                  setQuoteComment={setQuoteComment}
                   status={'FQ'} //{quoteData && quoteData.rfqMailStatus}
                 />
               }
@@ -226,6 +230,7 @@ const QuoteContainer = () => {
               handleOpen={handleOpen}
               handleClose={handleClose}
               showTabs={showQuoteWizardTabs}
+              quoteComment={quoteComment}
             ></QuoteWizard>
           ) : null}
         </div>

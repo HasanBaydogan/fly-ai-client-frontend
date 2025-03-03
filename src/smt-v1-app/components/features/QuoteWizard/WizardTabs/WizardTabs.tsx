@@ -15,16 +15,33 @@ import WizardPreviewForm from '../formsQuote/WizardPreviewForm';
 import QuoteWizardNav from '../wizardQuote/QuoteWizardNav';
 import { sendQuoteEmail } from 'smt-v1-app/services/QuoteService';
 
+export interface QuotePartRequest {
+  quotePartId: string;
+  quotePartNumber: string;
+  quotePartName: string;
+  reqCnd: string;
+  fndCnd: string;
+  leadTime: number;
+  qty: number;
+  unitPrice: number;
+}
+interface QuoteOtherValue {
+  key: string;
+  value: number;
+}
+
 const WizardTabs = ({
   quoteWizardData,
   currencies,
   selectedParts,
-  selectedAlternativeParts
+  selectedAlternativeParts,
+  quoteComment
 }: {
   quoteWizardData: QuoteWizardData;
   currencies: string[];
   selectedParts: string[];
   selectedAlternativeParts: string[];
+  quoteComment: string;
 }) => {
   const form = useWizardForm({
     totalStep: 4
@@ -90,6 +107,44 @@ const WizardTabs = ({
     }[] = base64Files.map(attach => {
       return { filename: attach.name, data: attach.base64 };
     });
+    //console.log(quotePartRows);
+    const alreadySavedQuotePart: QuotePartRow[] = quotePartRows.filter(
+      quotePartRow => !quotePartRow.alternativeTo.trim()
+    );
+    const quotePartRequests: QuotePartRequest[] = alreadySavedQuotePart.map(
+      quotePart => {
+        return {
+          quotePartId: quotePart.id,
+          quotePartNumber: quotePart.partNumber,
+          quotePartName: quotePart.description,
+          reqCnd: quotePart.reqCondition,
+          fndCnd: quotePart.fndCondition,
+          leadTime: quotePart.leadTime,
+          qty: quotePart.quantity,
+          unitPrice: quotePart.unitPrice
+        };
+      }
+    );
+
+    const alreadySavedAlternativeQuotePart: QuotePartRow[] =
+      quotePartRows.filter(quotePartRow => quotePartRow.alternativeTo.trim());
+    const quoteAlternativePartRequests: QuotePartRequest[] =
+      alreadySavedAlternativeQuotePart.map(quotePart => {
+        return {
+          quotePartId: quotePart.id,
+          quotePartNumber: quotePart.partNumber,
+          quotePartName: quotePart.description,
+          reqCnd: quotePart.reqCondition,
+          fndCnd: quotePart.fndCondition,
+          leadTime: quotePart.leadTime,
+          qty: quotePart.quantity,
+          unitPrice: quotePart.unitPrice
+        };
+      });
+
+    //console.log(quotePartRequests);
+    //console.log(quoteAlternativePartRequests);
+
     const payload = {
       to: toEmails,
       cc: ccEmails,
@@ -97,10 +152,35 @@ const WizardTabs = ({
       attachments: attachments,
       body: content,
       quoteId: quoteWizardData.quoteId,
-      selectedQuotePartIds: selectedParts,
-      selectedAlternativeQuotePartIds: selectedAlternativeParts
+      selectedQuoteParts: quotePartRequests,
+      selectedAlternativeQuoteParts: quoteAlternativePartRequests,
+      clientLocation: clientLocation,
+      shipTo: shipTo,
+      requisitioner: requisitioner,
+      shipVia: shipVia,
+      CPT: CPT,
+      shippingTerms: shippingTerms,
+      quoteOtherValues: [
+        {
+          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[0],
+          value: checkedStates[0] ? subTotalValues[0] : 0
+        },
+        {
+          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[1],
+          value: checkedStates[1] ? subTotalValues[1] : 0
+        },
+        {
+          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[2],
+          value: checkedStates[2] ? subTotalValues[2] : 0
+        },
+        {
+          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[3],
+          value: checkedStates[3] ? subTotalValues[3] : 0
+        }
+      ],
+      comment: quoteComment
     };
-    //console.log(payload);
+    console.log(payload);
 
     const response = await sendQuoteEmail(payload);
     //console.log(response);
@@ -110,6 +190,7 @@ const WizardTabs = ({
     } else {
       //console.log(response);
     }
+
     setEmailSendLoading(false);
   };
 

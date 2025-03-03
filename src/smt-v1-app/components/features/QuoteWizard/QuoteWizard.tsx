@@ -48,7 +48,8 @@ const QuoteWizard = ({
   showTabs,
   selectedParts,
   selectedAlternativeParts,
-  quoteId
+  quoteId,
+  quoteComment
 }: {
   handleOpen: () => void;
   handleClose: () => void;
@@ -56,6 +57,7 @@ const QuoteWizard = ({
   selectedParts: string[];
   selectedAlternativeParts: string[];
   quoteId: string;
+  quoteComment: string;
 }) => {
   const [quoteWizardData, setQuoteWizardData] = useState<QuoteWizardData>();
   const [isLoading, setIsLoading] = useState(true);
@@ -94,6 +96,7 @@ const QuoteWizard = ({
             currencies={currencies}
             selectedParts={selectedParts}
             selectedAlternativeParts={selectedAlternativeParts}
+            quoteComment={quoteComment}
           />
         )}
       </Modal.Body>

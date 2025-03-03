@@ -68,7 +68,7 @@ const WizardFormFooter = ({
       >
         {isEmailSendLoading ? (
           <LoadingAnimation />
-        ) : selectedStep === 2 ? (
+        ) : selectedStep === 3 ? (
           'Send Email'
         ) : (
           nextBtnLabel

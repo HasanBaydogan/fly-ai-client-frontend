@@ -10,7 +10,9 @@ const Header = ({
   quoteId,
   bgColor,
   clientName,
-  textColor
+  textColor,
+  quoteComment,
+  setQuoteComment
 }: {
   date: string;
   rfqNumberId: string;
@@ -18,6 +20,8 @@ const Header = ({
   clientName: string;
   clientRFQId: string;
   revisionNumber: number;
+  quoteComment: string;
+  setQuoteComment: React.Dispatch<React.SetStateAction<string>>;
   status:
     | 'UNREAD'
     | 'OPEN'
@@ -71,7 +75,14 @@ const Header = ({
                 controlId="exampleForm.ControlTextarea1"
                 style={{ width: '400px' }}
               >
-                <Form.Control as="textarea" rows={4} />
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  value={quoteComment}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setQuoteComment(e.target.value)
+                  }
+                />
               </Form.Group>
             </h4>
           </div>

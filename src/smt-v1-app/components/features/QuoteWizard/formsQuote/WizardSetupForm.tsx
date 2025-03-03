@@ -597,7 +597,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       }
                     />
                   ) : (
-                    row.alternativeTo || '-'
+                    row.alternativeTo || ''
                   )}
                 </td>
                 <td>
