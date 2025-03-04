@@ -1,182 +1,179 @@
-import Avatar from 'components/base/Avatar';
-import { useEffect, useState } from 'react';
-import {
-  Col,
-  Dropdown,
-  Form,
-  Row,
-  Button,
-  Pagination,
-  Table
-} from 'react-bootstrap';
-import avatarPlaceholder from 'assets/img/team/avatar.webp';
-import AvatarDropzone from 'components/common/AvatarDropzone';
-import DatePicker from 'components/base/DatePicker';
-import { WizardFormData } from 'pages/modules/forms/WizardExample';
-import {
-  searchBySupplierList,
-  SupplierData
-} from 'smt-v1-app/services/SupplierServices';
-import useAdvanceTable from 'hooks/useAdvanceTable';
-import { ColumnDef } from '@tanstack/react-table';
-import AdvanceTableProvider from 'providers/AdvanceTableProvider';
-import { faEllipsisH, faPlus } from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Table, Pagination, Dropdown, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import ProjectsTopSection from 'components/modules/project-management/ProjectsTopSection';
-import PartHistoryListSection from '../PartsItemFields/HistoryList/PartHistoryListSection';
-// import PartTimelineGraph from '../TimelineGraph/PartTimelineGraph';
+import { faEllipsisH } from '@fortawesome/free-solid-svg-icons';
+import {
+  getByAlternatives,
+  getByAlternativesDetail
+} from 'smt-v1-app/services/PartServices';
+import PartHistoryListSection, {
+  FormattedHistoryItem
+} from 'smt-v1-app/components/features/Parts/PartsItemFields/HistoryList/PartHistoryListSection';
+import PartTimelineGraph, {
+  PartGraphItem
+} from 'smt-v1-app/components/features/Parts/TimelineGraph/PartTimelineGraph';
 
-const files = [
-  {
-    id: 1,
-    partNumber: 'VL_Photos_22a',
-    partName: 'BRAKE',
-    description: 'PRODUCT PHOTO'
-  },
-  {
-    id: 2,
-    partNumber: 'DK-120902_152',
-    partName: 'BRAKE',
-    description: 'Certificate'
-  }
-];
+interface AlternativePart {
+  id: string;
+  partNumber: string;
+  partName: string;
+  description: string;
+}
 
-// Sütun tanımlamalarını ekleyin
-const projectListTableColumns: ColumnDef<SupplierData>[] = [
-  {
-    id: 'partNumber',
-    accessorKey: 'partNumber',
-    header: 'Part Number',
-    meta: {
-      cellProps: { className: 'white-space-nowrap py-2' }
-    }
-  },
-  {
-    id: 'partName',
-    accessorKey: 'partName',
-    header: 'Part Name',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' }
-    }
-  },
-  {
-    id: 'description',
-    accessorKey: 'description',
-    header: 'Description',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' }
-    }
-  }
-];
+interface PartWizardAlternativesFormProps {
+  partId: string;
+}
 
-const PartWizardUserDefFieldsForm = () => {
-  const [data] = useState<SupplierData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [pageIndex] = useState<number>(1);
-  const [showHistory, setShowHistory] = useState<boolean>(false);
-  const [contacts, setContacts] = useState<any[]>([]);
+const PartWizardAlternativesForm: React.FC<PartWizardAlternativesFormProps> = ({
+  partId
+}) => {
+  const [alternatives, setAlternatives] = useState<AlternativePart[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [alternativeDetail, setAlternativeDetail] = useState<any>(null);
+  const [showHistorySection, setShowHistorySection] = useState<boolean>(false);
+
+  // Alternatif parçaların listesini çekiyoruz.
+  const fetchAlternatives = useCallback(async () => {
+    if (!partId) return;
+    setLoading(true);
+    try {
+      const response = await getByAlternatives(partId, currentPage);
+      if (response && response.statusCode === 200 && response.data) {
+        setAlternatives(response.data.alternativeParts || []);
+        setTotalPages(response.data.totalPages || 1);
+      }
+    } catch (error) {
+      console.error('Error fetching alternatives:', error);
+    }
+    setLoading(false);
+  }, [partId, currentPage]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await searchBySupplierList('', pageIndex);
-        if (response && response.data && response.data.suppliers) {
-          // Supplier datasını işleyebilirsiniz
-        }
-      } catch (error) {
-        console.error('Error fetching supplier data:', error);
-      } finally {
-        setLoading(false);
+    fetchAlternatives();
+  }, [fetchAlternatives]);
+
+  // Part Number tıklandığında detay verilerini çekiyoruz.
+  const handlePartNumberClick = async (alternativeId: string) => {
+    try {
+      const response = await getByAlternativesDetail(alternativeId);
+      if (response && response.statusCode === 200 && response.data) {
+        setAlternativeDetail(response.data);
+        setShowHistorySection(true);
       }
-    };
-    fetchData();
-  }, [pageIndex]);
-
-  const table = useAdvanceTable({
-    data: data,
-    columns: projectListTableColumns as ColumnDef<SupplierData>[],
-    pageSize: 6,
-    pagination: true,
-    sortable: true
-  });
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  // Actions butonları için işlemler
-  const handleHistory = (file: any) => {
-    // İstenirse file'a ait history datası burada güncellenebilir.
-    setShowHistory(true);
+    } catch (error) {
+      console.error('Error fetching alternative detail:', error);
+    }
   };
 
-  const handleDetail = (file: any) => {
-    // Detail butonuna basıldığında, ilgili URL'e yönlendiriyoruz.
-    window.location.href = `/detail/${file.id}`;
+  // Sayfalama kontrolü
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
     <div>
-      {/* Dosya tablosu */}
-      <Table striped hover responsive>
-        <thead>
-          <tr>
-            <th>Part Number</th>
-            <th>Part Name</th>
-            <th>Description</th>
-            <th style={{ width: '50px' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.map(file => (
-            <tr key={file.id}>
-              <td>{file.partNumber}</td>
-              <td>{file.partName}</td>
-              <td>{file.description}</td>
-              <td className="text-center">
-                <Dropdown>
-                  <Dropdown.Toggle variant="link" className="p-0">
-                    <FontAwesomeIcon icon={faEllipsisH} />
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item onClick={() => handleHistory(file)}>
-                      History
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleDetail(file)}>
-                      Detail
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      {loading ? (
+        <div>Loading alternatives...</div>
+      ) : (
+        <>
+          <Table striped hover responsive>
+            <thead>
+              <tr>
+                <th>Part Number</th>
+                <th>Part Name</th>
+                <th>Description</th>
+                <th style={{ width: '50px' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {alternatives.map(alt => (
+                <tr key={alt.id}>
+                  <td>
+                    <a
+                      href="#"
+                      onClick={e => {
+                        e.preventDefault();
+                        handlePartNumberClick(alt.id);
+                      }}
+                    >
+                      {alt.partNumber}
+                    </a>
+                  </td>
+                  <td>{alt.partName}</td>
+                  <td>{alt.description}</td>
+                  <td className="text-center">
+                    <Dropdown>
+                      <Dropdown.Toggle variant="link" className="p-0">
+                        <FontAwesomeIcon icon={faEllipsisH} />
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        <Dropdown.Item
+                          onClick={() => handlePartNumberClick(alt.id)}
+                        >
+                          History
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => {
+                            window.location.href = `/alternative-detail/${alt.id}`;
+                          }}
+                        >
+                          Detail
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
 
-      {/* Sayfalandırma alanı (Pagination) */}
-      <div className="d-flex justify-content-between align-items-center">
-        <div></div>
-        <Pagination className="mb-0">
-          <Pagination.Prev />
-          <Pagination.Item active>{1}</Pagination.Item>
-          <Pagination.Item>{2}</Pagination.Item>
-          <Pagination.Next />
-        </Pagination>
-      </div>
+          {/* Sayfalama Alanı */}
+          <div className="d-flex justify-content-end">
+            <Pagination className="mb-0">
+              <Pagination.Prev
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              />
+              {Array.from({ length: totalPages }, (_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={currentPage === index + 1}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              />
+            </Pagination>
+          </div>
+        </>
+      )}
 
-      {/* History butonuna tıklandığında History ve Timeline bileşenleri görünsün */}
-      {showHistory && (
-        <div className="mt-4">
+      {/* History ve Timeline Bölümü: Başlangıçta gizli, Part Number tıklandığında görünür */}
+      {showHistorySection && alternativeDetail && (
+        <div style={{ marginTop: '20px' }}>
+          <h5>History Details for Part: {alternativeDetail.partNumber}</h5>
           <PartHistoryListSection
-            onContactsChange={setContacts}
-            initialContacts={contacts}
+            onContactsChange={() => {}}
+            initialContacts={alternativeDetail.partHistoryItems || []}
           />
-          {/* <PartTimelineGraph /> */}
+          {alternativeDetail.partGraphItems && (
+            <>
+              <h6>Timeline Graph</h6>
+              <PartTimelineGraph
+                graphData={alternativeDetail.partGraphItems as PartGraphItem[]}
+              />
+            </>
+          )}
         </div>
       )}
     </div>
   );
 };
 
-export default PartWizardUserDefFieldsForm;
+export default PartWizardAlternativesForm;

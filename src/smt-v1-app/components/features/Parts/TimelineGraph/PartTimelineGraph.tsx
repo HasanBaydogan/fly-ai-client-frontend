@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ReactEChartsCore from 'echarts-for-react/lib/core';
 import * as echarts from 'echarts/core';
 import { useAppContext } from 'providers/AppProvider';
@@ -15,7 +15,6 @@ import {
 
 dayjs.extend(customParseFormat);
 
-// Register the required ECharts components and renderer
 echarts.use([
   LineChart,
   CanvasRenderer,
@@ -45,10 +44,30 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
       dayjs(b.priceDate, 'DD.MM.YYYY').valueOf()
   );
 
-  const xAxisData = sortedData.map(item =>
-    dayjs(item.priceDate, 'DD.MM.YYYY').format('D MMM')
+  // Verileri [Date, value] çiftlerine dönüştürüyoruz.
+  const seriesData = sortedData.map(item => [
+    dayjs(item.priceDate, 'DD.MM.YYYY').toDate(),
+    item.unitPriceCost
+  ]);
+
+  // X ekseninde kullanılacak etiket formatını belirlemek için benzersiz yılları tespit ediyoruz.
+  const distinctYears = new Set(
+    sortedData.map(item => dayjs(item.priceDate, 'DD.MM.YYYY').year())
   );
-  const seriesData = sortedData.map(item => item.unitPriceCost);
+  const labelFormatter = (value: number) =>
+    distinctYears.size > 1
+      ? dayjs(value).format('D MMM YYYY')
+      : dayjs(value).format('D MMM');
+
+  // Y ekseni için dinamik min/max hesaplama:
+  const values = sortedData.map(item => item.unitPriceCost);
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const range = maxValue - minValue;
+  // Eğer maxValue > 100 ise sabit padding = 1000, aksi halde range'in %20'si kadar padding kullan.
+  const padding = maxValue > 100 ? 1000 : range * 0.2 || 1;
+  const yAxisMin = minValue - padding;
+  const yAxisMax = maxValue + padding;
 
   const options = {
     color: [getThemeColor('success')],
@@ -56,8 +75,13 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
       trigger: 'axis',
       backgroundColor: getThemeColor('body-bg'),
       borderColor: getThemeColor('secondary-bg'),
-      formatter: params =>
-        params.map((p: any) => `${p.seriesName}: ${p.data}<br/>`).join('')
+      formatter: (params: any) =>
+        params
+          .map(
+            (p: any) =>
+              `${dayjs(p.data[0]).format('D MMM YYYY')}<br/>$${p.data[1]}`
+          )
+          .join('')
     },
     legend: {
       bottom: 10,
@@ -69,32 +93,29 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
         fontFamily: 'Nunito Sans'
       }
     },
-    xAxis: [
-      {
-        type: 'category',
-        boundaryGap: false,
-        data: xAxisData,
-        axisLine: {
-          lineStyle: {
-            color: getThemeColor('tertiary-bg')
-          }
-        },
-        axisLabel: {
-          color: getThemeColor('body-color'),
-          fontSize: 12
-        }
-      }
-    ],
-    yAxis: {
-      type: 'value',
+    xAxis: {
+      type: 'time',
+      boundaryGap: false,
       axisLine: {
-        lineStyle: {
-          color: getThemeColor('tertiary-bg')
-        }
+        lineStyle: { color: getThemeColor('tertiary-bg') }
       },
       axisLabel: {
         color: getThemeColor('body-color'),
-        fontSize: 12
+        fontSize: 12,
+        formatter: labelFormatter
+      }
+    },
+    yAxis: {
+      type: 'value',
+      min: yAxisMin,
+      max: yAxisMax,
+      axisLine: {
+        lineStyle: { color: getThemeColor('tertiary-bg') }
+      },
+      axisLabel: {
+        color: getThemeColor('body-color'),
+        fontSize: 12,
+        formatter: (value: number) => `$${value}`
       },
       splitLine: {
         lineStyle: {
@@ -108,8 +129,7 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
         name: 'Unit Price Cost',
         type: 'line',
         data: seriesData,
-        smooth: true,
-        areaStyle: {}
+        smooth: false // Düz, köşeli çizgiler
       }
     ],
     grid: {
@@ -125,7 +145,7 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
     <ReactEChartsCore
       echarts={echarts}
       option={options}
-      opts={{ renderer: 'canvas' }} // Specify the renderer.
+      opts={{ renderer: 'canvas' }}
       style={{ minHeight: '320px', width: '100%' }}
     />
   );
