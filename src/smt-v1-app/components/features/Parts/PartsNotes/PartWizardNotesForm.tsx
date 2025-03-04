@@ -58,6 +58,10 @@ export interface updatePayload {
   noteType: string;
 }
 
+interface PartWizardNotesFormProps {
+  partId: string;
+}
+
 const getNoteTypeCode = (category: string): string => {
   switch (category) {
     case 'Import/Export Compliance Notes':
@@ -79,17 +83,15 @@ const getNoteTypeCode = (category: string): string => {
   }
 };
 
-const PartWizardNotesForm = () => {
-  // Sabit/mock partId ve pageSize tanımları
-  const mockPartId = '67beca31fe6dd91452462c77';
+const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
+  partId
+}) => {
   const pageSize = 5;
-
   const [notes, setNotes] = useState<Note[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalItems, setTotalItems] = useState<number>(0);
 
-  // noteForm id'sini string | null olarak ayarladık
   const [noteForm, setNoteForm] = useState<{
     id: string | null;
     author: string;
@@ -104,8 +106,6 @@ const PartWizardNotesForm = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [filterCategory, setFilterCategory] = useState('all');
-
-  // Silme modalı ve loading state'leri
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -131,11 +131,11 @@ const PartWizardNotesForm = () => {
     }
   };
 
-  // API'den notları, güncel sayfa ve sabit partId kullanarak çekiyoruz.
+  // Notları API'den partId ve currentPage kullanarak çekiyoruz.
   const fetchNotes = useCallback(
     async (page: number) => {
       try {
-        const response = await searchByNoteList(pageSize, page, mockPartId);
+        const response = await searchByNoteList(pageSize, page, partId);
         if (response && response.data) {
           const data = response.data;
           const mappedNotes: Note[] = data.allNotes.map((note: any) => ({
@@ -152,7 +152,7 @@ const PartWizardNotesForm = () => {
         console.error('Error fetching notes:', error);
       }
     },
-    [mockPartId, pageSize]
+    [partId, pageSize]
   );
 
   useEffect(() => {
@@ -166,7 +166,6 @@ const PartWizardNotesForm = () => {
 
   const handleSaveNote = async () => {
     if (noteForm.text.trim() === '') return;
-
     if (noteForm.id) {
       const updatePayload: updatePayload = {
         noteId: noteForm.id,
@@ -185,7 +184,7 @@ const PartWizardNotesForm = () => {
       }
     } else {
       const newPayload: newNotePayload = {
-        partId: mockPartId,
+        partId: partId,
         noteContent: noteForm.text,
         partNoteType: getNoteTypeCode(noteForm.category)
       };
@@ -204,7 +203,6 @@ const PartWizardNotesForm = () => {
         console.error('Error creating note:', error);
       }
     }
-
     setShowForm(false);
     setNoteForm({
       id: null,
@@ -224,13 +222,11 @@ const PartWizardNotesForm = () => {
     setShowForm(true);
   };
 
-  // Normalde direkt state'ten siliniyordu; bunun yerine silme modalını açıyoruz.
   const handleDeleteClick = (note: Note) => {
     setNoteToDelete(note);
     setShowDeleteModal(true);
   };
 
-  // Modal üzerinden onay verildiğinde API çağrısı yapılıyor.
   const confirmDelete = async () => {
     if (!noteToDelete) return;
     setIsDeleting(true);
@@ -392,7 +388,7 @@ const PartWizardNotesForm = () => {
         <p>No notes found.</p>
       )}
 
-      {/* Pagination Bölümü */}
+      {/* Pagination */}
       <div className="mb-0">
         <div className="d-flex justify-content-between align-items-center">
           <p className="mt-3 mb-0">Total Notes: {totalItems}</p>
@@ -420,7 +416,7 @@ const PartWizardNotesForm = () => {
         </div>
       </div>
 
-      {/* Silme Onay Modalı */}
+      {/* Delete Confirmation Modal */}
       <Modal
         show={showDeleteModal}
         onHide={() => setShowDeleteModal(false)}

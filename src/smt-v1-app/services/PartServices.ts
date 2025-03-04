@@ -155,7 +155,7 @@ export const getByItemFields = async (partId: string) => {
     const response = await api().get(`/part/id/${partId}`, {
       headers
     });
-    // console.log('Response from getByItemFields:', response);
+    console.log('Response from getByItemFields:', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -1193,7 +1193,7 @@ export const getByAlternatives = async (partId: string, pageNo: number) => {
         headers
       }
     );
-    console.log('Response from getByAlternatives :', response);
+    // console.log('Response from getByAlternatives :', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -1268,7 +1268,7 @@ export const getByAlternativesDetail = async (partId: string) => {
         headers
       }
     );
-    console.log('Response from getByAlternativesDetail :', response);
+    // console.log('Response from getByAlternativesDetail :', response);
 
     if (response.data.statusCode === 200) {
       return response.data;

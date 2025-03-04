@@ -157,14 +157,12 @@ const PartWizardAlternativesForm: React.FC<PartWizardAlternativesFormProps> = ({
       {/* History ve Timeline Bölümü: Başlangıçta gizli, Part Number tıklandığında görünür */}
       {showHistorySection && alternativeDetail && (
         <div style={{ marginTop: '20px' }}>
-          <h5>History Details for Part: {alternativeDetail.partNumber}</h5>
           <PartHistoryListSection
             onContactsChange={() => {}}
             initialContacts={alternativeDetail.partHistoryItems || []}
           />
           {alternativeDetail.partGraphItems && (
             <>
-              <h6>Timeline Graph</h6>
               <PartTimelineGraph
                 graphData={alternativeDetail.partGraphItems as PartGraphItem[]}
               />
