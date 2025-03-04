@@ -719,10 +719,80 @@ export const postNewNotes = async (newPart: newNotePayload) => {
   }
 };
 
+export const deleteByNotes = async (noteId: string) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().delete(`/part/note/note-id/${noteId}`, {
+      headers
+    });
+    // console.log('Response from deleteByNotes:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().delete(
+            `/part/note/note-id/${noteId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[deleteByNotes] Permission Error:', err);
+  }
+};
+
 // *****************************
-//           Notes API's
+//           Files API's
 // *****************************
-//${pageNo}/${pageSize}
 
 export const getByAttachedFiles = async (partId: string, pageNo: number) => {
   try {
@@ -740,7 +810,7 @@ export const getByAttachedFiles = async (partId: string, pageNo: number) => {
         headers
       }
     );
-    console.log('Response from getByAttachedFiles:', response);
+    // console.log('Response from getByAttachedFiles:', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -798,6 +868,77 @@ export const getByAttachedFiles = async (partId: string, pageNo: number) => {
   }
 };
 
+export const getByDownloadFiles = async (partFileId: string) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().get(`/part-file/attachment/${partFileId}`, {
+      headers
+    });
+    // console.log('Response from getByDownloadFiles:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/part-file/attachment/${partFileId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[getByDownloadFiles] Permission Error:', err);
+  }
+};
+
 export interface postFile {
   partId: string;
   fileName: string;
@@ -818,12 +959,12 @@ export const postFileCreate = async (newFile: postFile) => {
       window.location.assign('/');
       return;
     }
-    console.log('Payload', newFile);
+    // console.log('Payload', newFile);
 
     const response = await api().post(`/part-file/create`, newFile, {
       headers
     });
-    console.log('Client Payload RESPONSE', response);
+    // console.log('Client Payload RESPONSE', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -968,12 +1109,12 @@ export const putFileUpdate = async (payload: updateFilesPayload) => {
     } else {
       window.location.assign('/');
     }
-    console.log('Client putFileUpdate  payload', payload);
+    // console.log('Client putFileUpdate  payload', payload);
 
     const response = await api().put(`/part-file/update`, payload, {
       headers
     });
-    console.log('Client putFileUpdate  response ', response);
+    // console.log('Client putFileUpdate  response ', response);
 
     if (response.data.statusCode === 200) {
       return response.data;

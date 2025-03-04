@@ -14,7 +14,8 @@ import {
   getByAttachedFiles,
   postFileCreate,
   deleteByAttachedFiles,
-  putFileUpdate // Dosya güncelleme için varsayılan servis fonksiyonu
+  putFileUpdate, // Dosya güncelleme için varsayılan servis fonksiyonu
+  getByDownloadFiles
 } from 'smt-v1-app/services/PartServices';
 
 interface PartWizardFilesFormProps {
@@ -79,6 +80,70 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
   const [fileToEdit, setFileToEdit] = useState<any>(null);
   const [editFileName, setEditFileName] = useState('');
   const [editDescription, setEditDescription] = useState('');
+
+  // Base64 string verisini blob'a çevirip yeni sekmede açar.
+  const openFileInNewTab = (file: {
+    data: string;
+    contentType: string;
+    fileName: string;
+  }) => {
+    try {
+      const base64Index = file.data.indexOf('base64,');
+      const base64String =
+        base64Index !== -1 ? file.data.substring(base64Index + 7) : file.data;
+      const binaryData = atob(base64String);
+      const length = binaryData.length;
+      const bytes = new Uint8Array(length);
+      for (let i = 0; i < length; i++) {
+        bytes[i] = binaryData.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: file.contentType });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (error) {
+      console.error('Error opening file:', error);
+    }
+  };
+
+  const handleDownload = async (file: any) => {
+    try {
+      const response = await getByDownloadFiles(file.partFileId);
+      if (response && response.success) {
+        const base64Data = response.data.data;
+        // Dosya türüne göre contentType belirleniyor.
+        const contentType = getContentType(file);
+        openFileInNewTab({
+          data: base64Data,
+          contentType,
+          fileName: file.fileName
+        });
+      }
+    } catch (error) {
+      console.error('Error downloading file:', error);
+    }
+  };
+
+  // Dosya uzantısına veya fileType alanına göre uygun contentType'ı döndürür.
+  const getContentType = (file: any): string => {
+    const fileName = file.fileName.toLowerCase();
+    // Dosya adında uzantıdan faydalanarak contentType belirleyelim:
+    if (fileName.endsWith('.pdf')) {
+      return 'application/pdf';
+    } else if (fileName.endsWith('.xls')) {
+      return 'application/vnd.ms-excel';
+    } else if (fileName.endsWith('.xlsx')) {
+      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    } else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+      return 'image/jpeg';
+    } else if (fileName.endsWith('.png')) {
+      return 'image/png';
+    } else if (fileName.endsWith('.gif')) {
+      return 'image/gif';
+    } else {
+      return 'application/octet-stream';
+    }
+  };
 
   const handleFilesUpload = (
     uploadedFiles: {
@@ -235,7 +300,18 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
             <tbody>
               {files.map(file => (
                 <tr key={file.partFileId}>
-                  <td>{file.fileName}</td>
+                  <td>
+                    <a
+                      href="#"
+                      onClick={e => {
+                        e.preventDefault();
+                        handleDownload(file);
+                      }}
+                    >
+                      {file.fileName}
+                    </a>
+                  </td>
+
                   <td>{file.date}</td>
                   <td>{file.description}</td>
                   <td>{file.fileType}</td>

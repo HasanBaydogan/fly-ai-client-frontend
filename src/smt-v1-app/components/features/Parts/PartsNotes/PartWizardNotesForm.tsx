@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Card,
   Button,
   Form,
   Dropdown,
   Pagination,
-  Row,
-  Col
+  Modal,
+  Spinner
 } from 'react-bootstrap';
 import redPin from 'assets/icons/redPin.svg';
 import bluePin from 'assets/icons/bluePin.svg';
@@ -25,7 +25,8 @@ import {
 import {
   searchByNoteList,
   postNewNotes,
-  putUpdateNotes
+  putUpdateNotes,
+  deleteByNotes
 } from 'smt-v1-app/services/PartServices';
 
 const noteTypes = [
@@ -104,6 +105,11 @@ const PartWizardNotesForm = () => {
   const [showForm, setShowForm] = useState(false);
   const [filterCategory, setFilterCategory] = useState('all');
 
+  // Silme modalı ve loading state'leri
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const mapNoteType = (noteType: string): string => {
     switch (noteType) {
       case 'IMP_EXP_COMP':
@@ -130,7 +136,6 @@ const PartWizardNotesForm = () => {
     async (page: number) => {
       try {
         const response = await searchByNoteList(pageSize, page, mockPartId);
-        // console.log('API Response:', response);
         if (response && response.data) {
           const data = response.data;
           const mappedNotes: Note[] = data.allNotes.map((note: any) => ({
@@ -179,7 +184,6 @@ const PartWizardNotesForm = () => {
         console.error('Error updating note:', error);
       }
     } else {
-      // Yeni not ekleme işlemi
       const newPayload: newNotePayload = {
         partId: mockPartId,
         noteContent: noteForm.text,
@@ -220,8 +224,29 @@ const PartWizardNotesForm = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setNotes(notes.filter(note => note.id !== id));
+  // Normalde direkt state'ten siliniyordu; bunun yerine silme modalını açıyoruz.
+  const handleDeleteClick = (note: Note) => {
+    setNoteToDelete(note);
+    setShowDeleteModal(true);
+  };
+
+  // Modal üzerinden onay verildiğinde API çağrısı yapılıyor.
+  const confirmDelete = async () => {
+    if (!noteToDelete) return;
+    setIsDeleting(true);
+    try {
+      const response = await deleteByNotes(noteToDelete.id);
+      if (response.statusCode === 200) {
+        await fetchNotes(currentPage);
+      } else {
+        console.error('Silme işlemi başarısız:', response);
+      }
+    } catch (error) {
+      console.error('Silme hatası:', error);
+    }
+    setIsDeleting(false);
+    setShowDeleteModal(false);
+    setNoteToDelete(null);
   };
 
   return (
@@ -353,7 +378,10 @@ const PartWizardNotesForm = () => {
                 >
                   Edit
                 </Button>
-                <Button variant="danger" onClick={() => handleDelete(note.id)}>
+                <Button
+                  variant="danger"
+                  onClick={() => handleDeleteClick(note)}
+                >
                   Delete
                 </Button>
               </div>
@@ -366,37 +394,72 @@ const PartWizardNotesForm = () => {
 
       {/* Pagination Bölümü */}
       <div className="mb-0">
-        <Row className="align-items-center">
-          <Col className="text-start">
-            <p className="mt-3 mb-0">Total Notes: {totalItems}</p>
-          </Col>
-          <Col className="text-end">
-            <Pagination className="d-flex align-items-center justify-content-end">
-              <Pagination.Prev
-                onClick={() =>
-                  currentPage > 1 && setCurrentPage(currentPage - 1)
-                }
-                disabled={currentPage === 1}
-              />
-              {Array.from({ length: totalPages }, (_, i) => (
-                <Pagination.Item
-                  key={i + 1}
-                  active={i + 1 === currentPage}
-                  onClick={() => setCurrentPage(i + 1)}
-                >
-                  {i + 1}
-                </Pagination.Item>
-              ))}
-              <Pagination.Next
-                onClick={() =>
-                  currentPage < totalPages && setCurrentPage(currentPage + 1)
-                }
-                disabled={currentPage === totalPages}
-              />
-            </Pagination>
-          </Col>
-        </Row>
+        <div className="d-flex justify-content-between align-items-center">
+          <p className="mt-3 mb-0">Total Notes: {totalItems}</p>
+          <Pagination className="d-flex align-items-center justify-content-end">
+            <Pagination.Prev
+              onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            />
+            {Array.from({ length: totalPages }, (_, i) => (
+              <Pagination.Item
+                key={i + 1}
+                active={i + 1 === currentPage}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </Pagination.Item>
+            ))}
+            <Pagination.Next
+              onClick={() =>
+                currentPage < totalPages && setCurrentPage(currentPage + 1)
+              }
+              disabled={currentPage === totalPages}
+            />
+          </Pagination>
+        </div>
       </div>
+
+      {/* Silme Onay Modalı */}
+      <Modal
+        show={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete this note?</Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDeleteModal(false)}
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <>
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />{' '}
+                Deleting...
+              </>
+            ) : (
+              'Delete'
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

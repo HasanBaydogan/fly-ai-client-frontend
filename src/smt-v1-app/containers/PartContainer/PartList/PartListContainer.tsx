@@ -20,21 +20,21 @@ const PartListContainer = () => {
   const [pageIndex] = useState<number>(1);
   const [clientData, setClientData] = useState<ClientData[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await searchByClientList('', pageIndex);
-        if (response && response.data && response.data.clients) {
-        }
-      } catch (error) {
-        console.error('Error fetching client data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [pageIndex]);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const response = await searchByClientList('', pageIndex);
+  //       if (response && response.data && response.data.clients) {
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching client data:', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [pageIndex]);
 
   const table = useAdvanceTable({
     data: data,
