@@ -1,89 +1,153 @@
 import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
+import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from './AdvanceTable';
 import AdvanceTableFooter from './AdvanceTableFooter';
-import Badge from 'components/base/Badge';
+import { Col, Row, Dropdown, Badge } from 'react-bootstrap';
+import SearchBox from 'components/common/SearchBox';
+import debounce from 'lodash/debounce';
+import { getByQuoteList } from 'smt-v1-app/services/QuoteService';
+import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
-import { Col, Row, Dropdown, Button } from 'react-bootstrap';
-import SearchBox from 'components/common/SearchBox';
-import debounce from 'lodash/debounce';
 import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
-import {
-  ClientData,
-  searchByClientList
-} from 'smt-v1-app/services/ClientServices';
-import { searchByPartList } from 'smt-v1-app/services/PartServices';
-import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 
-export const ClientTableColumns: ColumnDef<ClientData>[] = [
+const formStatus: { [key: string]: string } = {
+  QUOTE_CREATED: 'warning',
+  PO_WAITING_FROM_CLIENT: 'info',
+  PO_RECEIVED_FROM_CLIENT: 'success',
+  PI_SENT_TO_CLIENT: 'primary'
+};
+
+const quoteStatus: { [key: string]: string } = {
+  QUOTE_CREATED: 'warning',
+  QUOTE_SENT: 'success'
+};
+
+export interface SupplierData {
+  quoteId: string;
+  quoteNumberId: string;
+  revisionNo: string;
+  clientsResponse: { clientId: string; clientName: string }[];
+  clientRFQId: string;
+  numOfProduct: number;
+  quoteStatus: any;
+  formStatus: any;
+  finalCost: number;
+  lastValidDate: string;
+  client?: string;
+}
+const formatStatus = (status: string): string => {
+  return status
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
   {
-    id: 'partNumber',
-    accessorKey: 'partNumber',
-    header: 'Part Number',
+    id: 'quoteNumberId',
+    accessorKey: 'quoteNumberId',
+    header: 'Quote Number',
+    cell: ({ row: { original } }) => (
+      <Link
+        to={`/quotes/quote?quoteId=${original.quoteId}`}
+        style={{ textDecoration: 'none', color: 'secondary' }}
+      >
+        {original.quoteNumberId}
+      </Link>
+    ),
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' } }
+      headerProps: { style: { width: '10%' } }
     }
   },
   {
-    header: 'Part Name',
-    accessorKey: 'partName',
+    header: 'Revision',
+    accessorKey: 'revisionNo',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '20%' }, className: 'ps-3' }
+      headerProps: { style: { width: '5%' }, className: 'ps-3' }
     }
   },
   {
-    header: 'Segments',
-    accessorKey: 'segments',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'aircraft',
-    header: 'Aircraft',
+    header: 'Client',
+    accessorKey: 'client',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '15%' }, className: 'ps-3' }
     }
   },
   {
-    header: 'Aircraft Model',
-    accessorKey: 'aircraftModel',
+    accessorKey: 'clientRFQId',
+    header: 'Client RFQ ID',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'oem',
-    header: 'Oem ',
+    header: 'Number Of Product',
+    accessorKey: 'numOfProduct',
     meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '5%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'hsCode',
-    header: 'Hs Code',
+    id: 'quoteStatus',
+    header: 'Quote Status',
+    cell: ({ row: { original } }) => {
+      const status = original.quoteStatus;
+      if (!status) return null;
+      const badgeColor = quoteStatus[status] || 'warning';
+      return <Badge bg={badgeColor}>{formatStatus(status)}</Badge>;
+    },
     meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      cellProps: { className: 'ps-8 py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-8' }
+    }
+  },
+  {
+    id: 'formStatus',
+    header: 'Form Status',
+    cell: ({ row: { original } }) => {
+      const status = original.formStatus;
+      if (!status) return null;
+      const badgeColor = formStatus[status] || 'warning';
+      return <Badge bg={badgeColor}>{formatStatus(status)}</Badge>;
+    },
+    meta: {
+      cellProps: { className: 'ps-8 py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-8' }
     }
   },
 
+  {
+    accessorKey: 'finalCost',
+    header: 'Final Cost',
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: 'lastValidDate',
+    header: 'Validity Date',
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
   {
     id: 'action',
     cell: ({ row: { original } }) => (
       <RevealDropdownTrigger>
         <RevealDropdown>
           <ActionDropdownItems
-            clientId={original.clientId ? original.clientId.toString() : ''}
-            clientDataDetail={original} // Prop adını güncelledik
+            clientId={original.quoteId ? original.quoteId.toString() : ''}
+            clientDataDetail={original}
           />
         </RevealDropdown>
       </RevealDropdownTrigger>
@@ -95,40 +159,28 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
   }
 ];
 
-/* ***********************
-   YARDIMCI FONKSİYONLAR
-   *********************** */
-const handleNullValue = (value: string) => {
-  return value === 'null null' ? '' : value;
-};
-
 type SearchColumn = {
   label: string;
-  value: keyof ClientData | 'all';
+  value: keyof SupplierData | 'all';
 };
 
 const searchColumns: SearchColumn[] = [
   { label: 'No Filter', value: 'all' },
-  { label: 'Quota ID', value: 'companyName' },
-  { label: 'Revision', value: 'currencyPreference' },
-  { label: 'Client', value: 'website' },
-  { label: 'Client RFQ ID', value: 'legalAddress' },
-  { label: 'Number Of Product', value: 'legalAddress' },
-  { label: 'Form Status', value: 'legalAddress' },
-  { label: 'Final Cost', value: 'legalAddress' },
-  { label: 'Validity Duration', value: 'legalAddress' }
+  { label: 'Quote ID', value: 'quoteId' },
+  { label: 'Revision', value: 'revisionNo' },
+  { label: 'Client', value: 'client' },
+  { label: 'Client RFQ ID', value: 'clientRFQId' },
+  { label: 'Number Of Product', value: 'numOfProduct' },
+  { label: 'Final Cost', value: 'finalCost' },
+  { label: 'Validity Date', value: 'lastValidDate' }
 ];
 
-/* ***********************
-   ANA BİLEŞEN: ClientList
-   (Hem arama/filtreleme hem de tablo görüntüleme)
-   *********************** */
-interface ClientListProps {
+interface QuoteListTableProps {
   activeView: string;
 }
 
-const PartListTable: FC<ClientListProps> = ({ activeView }) => {
-  const [data, setData] = useState<ClientData[]>([]);
+const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
+  const [data, setData] = useState<SupplierData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -137,93 +189,38 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
     searchColumns[0]
   );
   const [pageSize, setPageSize] = useState<number>(10);
-  // console.log('Page Size', pageSize);
 
   const { setGlobalFilter, setColumnFilters } =
-    useAdvanceTableContext<ClientData>();
+    useAdvanceTableContext<SupplierData>();
 
-  const fetchData = async (
-    term: string,
-    currentPage: number,
-    column: SearchColumn
-  ) => {
+  const fetchData = async (currentPage: number) => {
     setLoading(true);
     try {
-      let query = '';
-      if (term) {
-        query =
-          column.value !== 'all' ? `${column.value}=${term}` : `search=${term}`;
-      }
-      const response = await searchByPartList(query, currentPage + 1, pageSize);
-      const clients = response?.data?.clients || [];
-      if (Array.isArray(clients)) {
-        const mappedData: ClientData[] = clients.map((item: any) => ({
-          id: item.id,
-          clientId: item.clientId,
-          companyName: item.companyName,
-          segments: Array.isArray(item.segments)
-            ? item.segments.map((seg: any) => ({
-                segmentName: seg.segmentName || ''
-              }))
-            : [],
-          currencyPreference: item.currencyPreference || '',
-          website: item.website || '',
-          legalAddress: item.legalAddress || '',
-          email: item.email || '',
-          contacts: Array.isArray(item.contacts)
-            ? item.contacts
-            : [{ email: item.email || '' }],
-          clientStatus: {
-            label: item.clientStatus || 'NOT_CONTACTED',
-            type: 'warning'
-          },
-          quoteID: null,
-          attachmentResponses: Array.isArray(item.attachmentResponses)
-            ? item.attachmentResponses.map((att: any) => ({
-                attachmentId: att.attachmentId || '',
-                fileName: att.fileName || ''
-              }))
-            : [],
-          details: item.details || '',
-          subCompanyName: item.subCompanyName || '',
-          phone: item.phone || '',
-          clientRatings: item.clientRatings || {
-            dialogQuality: 0,
-            volumeOfOrder: 0,
-            continuityOfOrder: 0,
-            easeOfPayment: 0,
-            easeOfDelivery: 0
-          },
-          marginTable: item.marginTable || {
-            below200: 0,
-            btw200and500: 0,
-            btw500and1_000: 0,
-            btw1_000and5_000: 0,
-            btw5_000and10_000: 0,
-            btw10_000and50_000: 0,
-            btw50_000and100_000: 0,
-            btw100_000and150_000: 0,
-            btw150_000and200_000: 0,
-            btw200_000and400_000: 0,
-            btw400_000and800_000: 0,
-            btw800_000and1_000_000: 0,
-            btw1_000_000and2_000_000: 0,
-            btw2_000_000and4_000_000: 0,
-            above4_000_000: 0,
-            lastModifiedBy: ''
-          },
-          comment: item.comment || '',
-          createdBy: handleNullValue(item.createdBy || ''),
-          createdOn: item.createdOn || '',
-          lastModifiedBy: handleNullValue(item.lastModifiedBy || ''),
-          lastModifiedOn: item.lastModifiedOn || ''
-        }));
+      const response = await getByQuoteList(pageSize, currentPage + 1);
+      const quoteList = response?.data?.quotes || [];
 
-        setData(mappedData);
-        setTotalItems(response.data.totalItems);
-      } else {
-        console.error('Clients array not found in API response');
-      }
+      const mappedData: SupplierData[] = quoteList.map((item: any) => {
+        let clientNames = '';
+
+        if (Array.isArray(item.clientsResponse)) {
+          clientNames = item.clientsResponse
+            .map((c: any) => c.clientName)
+            .join(', ');
+        } else if (
+          item.clientsResponse &&
+          typeof item.clientsResponse === 'object'
+        ) {
+          clientNames = item.clientsResponse.clientName;
+        }
+
+        return {
+          ...item,
+          client: clientNames
+        };
+      });
+
+      setData(mappedData);
+      setTotalItems(response?.data?.totalElements || 0);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -247,7 +244,7 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
           setColumnFilters([]);
         }
         setPageIndex(0);
-        fetchData(term, 0, column);
+        fetchData(0);
       }, 300),
     [setGlobalFilter, setColumnFilters]
   );
@@ -264,13 +261,13 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
   };
 
   useEffect(() => {
-    fetchData(searchTerm, pageIndex, selectedColumn);
+    fetchData(pageIndex);
   }, [pageIndex, pageSize]);
 
   return (
     <div>
-      {/* Üst kısım: Arama ve filtreleme */}
-      <div className="mb-4 ">
+      {/* Arama ve filtreleme */}
+      <div className="mb-4">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>
             <div className="d-flex gap-2">
@@ -310,7 +307,7 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
                 id="dropdown-items-per-page"
                 style={{ minWidth: '100px' }}
               >
-                {pageSize} Parts
+                {pageSize} Items
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 {[5, 10, 25, 50, 100].map(size => (
@@ -337,7 +334,7 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
           tableProps={{
             className: 'phoenix-table border-top border-translucent fs-9',
             data: data,
-            columns: ClientTableColumns
+            columns: QuoteTableColumns
           }}
         />
         <AdvanceTableFooter
@@ -354,4 +351,4 @@ const PartListTable: FC<ClientListProps> = ({ activeView }) => {
   );
 };
 
-export default PartListTable;
+export default QuoteListTable;

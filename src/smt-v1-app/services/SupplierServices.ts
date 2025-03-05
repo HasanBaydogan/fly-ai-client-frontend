@@ -373,7 +373,7 @@ export const getBySupplierId = async (supplierId: string) => {
     const response = await api().get(`/supplier/id/${supplierId}`, {
       headers
     });
-    console.log('SupplierId Get Response', response);
+    // console.log('SupplierId Get Response', response);
 
     if (response.data.statusCode === 200) {
       return response.data;

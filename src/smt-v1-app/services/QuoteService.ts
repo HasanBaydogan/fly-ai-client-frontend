@@ -15,6 +15,16 @@ const api = () => {
   });
 };
 
+export type QuoteStatus = {
+  label: 'CONTACTED' | 'NOT_CONTACTED' | 'BLACK_LISTED';
+  type: 'success' | 'warning' | 'danger';
+};
+
+export type FormStatus = {
+  label: 'CONTACTED' | 'NOT_CONTACTED' | 'BLACK_LISTED';
+  type: 'success' | 'warning' | 'danger';
+};
+
 export const getQuoteDetailsById = async (quoteId: string) => {
   try {
     const accessToken = Cookies.get('access_token');
@@ -360,5 +370,89 @@ export const sendQuoteEmail = async (sendEmailProps: SendEmailProps) => {
     }
   } catch (err) {
     console.log('Send Email Permission Error');
+  }
+};
+
+export interface QuoteData {
+  quoteId: string;
+  quoteNumberId: string;
+  revisionNo: string;
+  clientsResponse: { clientId: string; clientName: string }[];
+  clientRFQId: string;
+  numOfProduct: number;
+  quoteStatus: QuoteStatus;
+  formStatus: FormStatus;
+  finalCost: number;
+  lastValidDate: string;
+}
+
+export const getByQuoteList = async (pageSize: number, pageNo: number) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().get(`/quote/all/${pageNo}/${pageSize}`, {
+      headers
+    });
+    console.log('Response from getByQuoteList:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/quote/all/${pageNo}/${pageNo}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[getByQuoteList] Permission Error:', err);
   }
 };

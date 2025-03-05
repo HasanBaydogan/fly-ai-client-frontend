@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Col, Dropdown, Form, Row, Button, Modal } from 'react-bootstrap';
+import {
+  Col,
+  Dropdown,
+  Form,
+  Row,
+  Button,
+  Modal,
+  Alert
+} from 'react-bootstrap';
 import PartUDFList, { udfTableColumns } from './PartUDFList';
-import { UDFData } from 'smt-v1-app/services/PartServices';
+import { UDFData, postUDFCreate } from 'smt-v1-app/services/PartServices';
 // İhtiyaç varsa diğer servis ve hook importları (ör. searchBySupplierList) eklenebilir.
 import useAdvanceTable from 'hooks/useAdvanceTable';
 import { ColumnDef } from '@tanstack/react-table';
@@ -88,26 +96,39 @@ const PartWizardUserDefFieldsForm = () => {
 
   if (loading) return <div>Loading...</div>;
 
-  const postFieldData = async (payload: any) => {
-    console.log('Posting field data:', payload);
-    // API entegrasyonunuzu buraya ekleyin.
-  };
-
+  // Yeni UDF oluşturma API çağrısı
   const handleSave = async () => {
-    const payload: any = { fieldType: selectedFieldType, fieldName };
+    // partId burada mevcut değilse boş string olarak gönderiliyor. Gerekirse ilgili partId değerini ekleyin.
+    let udfFieldType = '';
+    let fieldStringValues: string[] = [];
+    let fieldIntValues: number[] = [];
+
     if (selectedFieldType === 'Text Value') {
-      payload.defaultValue = textFieldDefault;
+      udfFieldType = 'SINGLE_TEXT';
+      fieldStringValues = [textFieldDefault];
     } else if (selectedFieldType === 'Number Value') {
-      payload.defaultValue = numberFieldDefault;
+      udfFieldType = 'SINGLE_NUMBER';
+      fieldIntValues = [Number(numberFieldDefault)];
     } else if (selectedFieldType === 'Multiple Text Choice Value') {
-      payload.choices = textChoices;
-      payload.defaultChoice = selectedMultipleTextChoice;
+      udfFieldType = 'MULTIPLE_TEXT';
+      // Tüm seçenekleri gönderiyoruz; default seçenek de eklenebilir.
+      fieldStringValues = textChoices;
     } else if (selectedFieldType === 'Multiple Number Choice Value') {
-      payload.choices = numberChoices;
-      payload.defaultChoice = selectedMultipleNumberChoice;
+      udfFieldType = 'MULTIPLE_NUMBER';
+      fieldIntValues = numberChoices.map(choice => Number(choice));
     }
+
+    const payload = {
+      partId: '', // Eğer mevcutsa ilgili partId'yi buraya ekleyin.
+      fieldName,
+      udfFieldType,
+      fieldStringValues,
+      fieldIntValues
+    };
+
     try {
-      await postFieldData(payload);
+      console.log('Posting UDF data:', payload);
+      await postUDFCreate(payload);
       alert('Field saved successfully!');
       resetForm();
     } catch (error) {
