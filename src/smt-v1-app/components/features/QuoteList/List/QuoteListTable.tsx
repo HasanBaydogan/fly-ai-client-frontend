@@ -11,7 +11,6 @@ import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
-import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 
 const formStatus: { [key: string]: string } = {
   QUOTE_CREATED: 'warning',
@@ -138,23 +137,6 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
-  {
-    id: 'action',
-    cell: ({ row: { original } }) => (
-      <RevealDropdownTrigger>
-        <RevealDropdown>
-          <ActionDropdownItems
-            clientId={original.quoteId ? original.quoteId.toString() : ''}
-            clientDataDetail={original}
-          />
-        </RevealDropdown>
-      </RevealDropdownTrigger>
-    ),
-    meta: {
-      headerProps: { style: { width: '5%' }, className: 'text-end' },
-      cellProps: { className: 'text-end' }
     }
   }
 ];

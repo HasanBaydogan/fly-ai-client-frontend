@@ -399,7 +399,7 @@ export const getByQuoteList = async (pageSize: number, pageNo: number) => {
     const response = await api().get(`/quote/all/${pageNo}/${pageSize}`, {
       headers
     });
-    console.log('Response from getByQuoteList:', response);
+    // console.log('Response from getByQuoteList:', response);
 
     if (response.data.statusCode === 200) {
       return response.data;

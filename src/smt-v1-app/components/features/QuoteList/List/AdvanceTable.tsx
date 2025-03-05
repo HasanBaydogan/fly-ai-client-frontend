@@ -60,7 +60,11 @@ const AdvanceTable = ({
         </thead>
         <tbody className={bodyClassName}>
           {table.getRowModel().rows.map(row => (
-            <tr key={row.id} className={rowClassName}>
+            <tr
+              key={row.id}
+              className={rowClassName}
+              style={{ height: '70px' }}
+            >
               {row.getVisibleCells().map(cell => (
                 <td key={cell.id} {...cell.column.columnDef.meta?.cellProps}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -69,6 +73,7 @@ const AdvanceTable = ({
             </tr>
           ))}
         </tbody>
+
         {hasFooter && (
           <tfoot>
             {table.getFooterGroups().map(footerGroup => (

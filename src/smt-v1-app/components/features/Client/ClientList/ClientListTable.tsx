@@ -95,9 +95,6 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
   }
 ];
 
-/* ***********************
-   YARDIMCI FONKSİYONLAR
-   *********************** */
 const handleNullValue = (value: string) => {
   return value === 'null null' ? '' : value;
 };
@@ -115,10 +112,6 @@ const searchColumns: SearchColumn[] = [
   { label: 'Legal Address', value: 'legalAddress' }
 ];
 
-/* ***********************
-   ANA BİLEŞEN: ClientList
-   (Hem arama/filtreleme hem de tablo görüntüleme)
-   *********************** */
 interface ClientListProps {
   activeView: string;
 }

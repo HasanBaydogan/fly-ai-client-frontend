@@ -68,11 +68,18 @@ const api = () => {
 //         Part List
 // *****************************
 
-export const searchByPartList = async (
-  udfId: string,
-  p0: number,
-  pageSize: number
-) => {
+export interface PartData {
+  partId: string;
+  partNumber: string;
+  partName: string;
+  segments: string[];
+  aircraft: string;
+  aircraftModel: string;
+  oem: string;
+  hsCode: string;
+}
+
+export const searchByPartList = async (pageNo: string, pageSize: number) => {
   try {
     const accessToken = Cookies.get('access_token');
     const headers = {};
@@ -82,10 +89,10 @@ export const searchByPartList = async (
       window.location.assign('/');
     }
 
-    const response = await api().get(`/part/???`, {
+    const response = await api().get(`/part/all/${pageNo}/${pageSize}`, {
       headers
     });
-    console.log('Response from getByClientDetailList:', response);
+    // console.log('Response from searchByPartList:', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -104,11 +111,14 @@ export const searchByPartList = async (
             'refresh_token',
             refreshTokenresponse.data.data.refresh_token
           );
-          let rfqMailResponseAfterRefresh = await api().get(`/part/???`, {
-            headers: {
-              Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/part/all/${pageNo}/${pageSize}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
             }
-          });
+          );
 
           return rfqMailResponseAfterRefresh.data;
         } else if (refreshTokenresponse.data.statusCode === 498) {
@@ -136,7 +146,7 @@ export const searchByPartList = async (
       window.location.assign('/');
     }
   } catch (err) {
-    console.log('[getByUDFPartList] Client Detail List Permission Error:', err);
+    console.log('[searchByPartList] Client Detail List Permission Error:', err);
   }
 };
 
@@ -157,7 +167,7 @@ export const getByItemFields = async (partId: string) => {
     const response = await api().get(`/part/part-number/${partId}`, {
       headers
     });
-    console.log('Response from getByItemFields:', response);
+    // console.log('Response from getByItemFields:', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
@@ -177,7 +187,7 @@ export const getByItemFields = async (partId: string) => {
             refreshTokenresponse.data.data.refresh_token
           );
           let rfqMailResponseAfterRefresh = await api().get(
-            `/part/id/${partId}`,
+            `/part/part-number/${partId}`,
             {
               headers: {
                 Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`

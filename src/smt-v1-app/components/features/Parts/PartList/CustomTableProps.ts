@@ -1,8 +1,8 @@
 import { TableProps as BootstrapTableProps } from 'react-bootstrap';
 import { ColumnDef } from '@tanstack/react-table';
-import { ClientData } from 'smt-v1-app/services/ClientServices';
+import { PartData } from 'smt-v1-app/services/PartServices';
 
 export interface CustomTableProps extends BootstrapTableProps {
-  data: ClientData[];
-  columns: ColumnDef<ClientData>[];
+  data: PartData[];
+  columns: ColumnDef<PartData>[];
 }

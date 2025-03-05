@@ -8,6 +8,7 @@ import RevealDropdown, {
 } from 'components/base/RevealDropdown';
 import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import { CustomTableProps } from './CustomTableProps';
+import { PartData } from 'smt-v1-app/services/PartServices';
 
 interface AdvanceTableProps {
   headerClassName?: string;
@@ -16,6 +17,29 @@ interface AdvanceTableProps {
   tableProps?: CustomTableProps;
   hasFooter?: boolean;
 }
+
+// Helper: Eğer segmentler dizisinde 2'den fazla öğe varsa, ilk 2 öğeyi render edip "• ..." ekler.
+const renderSegments = (segments: string[]) => {
+  if (!segments || segments.length === 0) return '';
+  if (segments.length === 1) {
+    return <div>• {segments[0]}</div>;
+  } else if (segments.length === 2) {
+    return (
+      <>
+        <div>• {segments[0]}</div>
+        <div>• {segments[1]}</div>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <div>• {segments[0]}</div>
+        <div>• {segments[1]}</div>
+        <div>• ...</div>
+      </>
+    );
+  }
+};
 
 const AdvanceTable = ({
   headerClassName,
@@ -26,7 +50,7 @@ const AdvanceTable = ({
 }: AdvanceTableProps) => {
   const table = useAdvanceTableContext();
   const { getFlatHeaders, getFooterGroups } = table;
-
+  // Parent bileşenden gelen data ve sütun bilgilerini alıyoruz.
   const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
 
   return (
@@ -54,39 +78,24 @@ const AdvanceTable = ({
           </tr>
         </thead>
         <tbody className={bodyClassName}>
-          {data.map(row => (
-            <tr key={row.clientId} className={rowClassName}>
-              <td>{row.companyName}</td>
-              <td>{row.details}</td>
-              <td>{row.currencyPreference}</td>
-              <td>{row.website}</td>
-              <td>{row.legalAddress}</td>
+          {data.map((row: PartData) => (
+            <tr
+              key={row.partId}
+              className={rowClassName}
+              style={{ height: '70px' }}
+            >
+              <td>{row.partNumber}</td>
               <td>
-                <Badge
-                  bg={
-                    row.clientStatus?.label.toLowerCase() === 'contacted'
-                      ? 'success'
-                      : row.clientStatus?.label.toLowerCase() ===
-                        'not_contacted'
-                      ? 'warning'
-                      : row.clientStatus?.label.toLowerCase() === 'black_listed'
-                      ? 'danger'
-                      : 'default'
-                  }
-                >
-                  {row.clientStatus?.label}
-                </Badge>
+                {Array.isArray(row.partName)
+                  ? row.partName.join(', ')
+                  : row.partName}
               </td>
-              <td>
-                <RevealDropdownTrigger>
-                  <RevealDropdown>
-                    <ActionDropdownItems
-                      clientId={row.clientId}
-                      clientDataDetail={row}
-                    />
-                  </RevealDropdown>
-                </RevealDropdownTrigger>
-              </td>
+              <td>{renderSegments(row.segments)}</td>
+              <td>{row.aircraft}</td>
+              <td>{row.aircraftModel}</td>
+              <td>{row.oem}</td>
+              <td>{row.hsCode}</td>
+              {/* İsteğe bağlı: ActionDropdownItems eklenebilir */}
             </tr>
           ))}
         </tbody>

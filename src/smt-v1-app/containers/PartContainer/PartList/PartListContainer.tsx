@@ -3,28 +3,25 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PartTopSection from 'smt-v1-app/components/features/Parts/PartList/PartTopSection';
 import ClientList, {
-  ClientTableColumns
+  PartTableColumns
 } from 'smt-v1-app/components/features/Parts/PartList/PartListTable';
 import useAdvanceTable from '../../../components/features/Client/ClientList/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
-import {
-  ClientData,
-  searchByClientList
-} from 'smt-v1-app/services/ClientServices';
 import { ColumnDef } from '@tanstack/react-table';
+import { PartData, searchByPartList } from 'smt-v1-app/services/PartServices';
 
 const PartListContainer = () => {
-  const [data] = useState<ClientData[]>([]);
+  const [data] = useState<PartData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [pageIndex] = useState<number>(1);
-  const [clientData, setClientData] = useState<ClientData[]>([]);
+  const [clientData, setClientData] = useState<PartData[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await searchByClientList('', pageIndex);
+        const response = await searchByPartList('', pageIndex);
         if (response && response.data && response.data.clients) {
         }
       } catch (error) {
@@ -38,7 +35,7 @@ const PartListContainer = () => {
 
   const table = useAdvanceTable({
     data: data,
-    columns: ClientTableColumns as ColumnDef<ClientData>[],
+    columns: PartTableColumns as ColumnDef<PartData>[],
     pageSize: 6,
     pagination: true,
     sortable: true
