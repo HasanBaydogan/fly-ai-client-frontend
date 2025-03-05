@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import PartHistoryListSection, {
   FormattedHistoryItem
 } from './HistoryList/PartHistoryListSection';
-
 import PartTimelineGraph, {
   PartGraphItem
 } from '../TimelineGraph/PartTimelineGraph';
@@ -17,6 +16,18 @@ import { TreeNode } from '../../SupplierDetailSegmentTreeSelect/SupplierDetailSe
 import SegmentSelection from '../../GlobalComponents/SegmentSelection';
 import { getbySegmentList } from 'smt-v1-app/services/GlobalServices';
 
+const getInitialSelectedIds = (nodes: any[] = []): string[] => {
+  return nodes.reduce((acc: string[], node: any) => {
+    if ((node.isSelected ?? false) === true) {
+      acc.push(node.segmentId);
+    }
+    if (node.subSegments && Array.isArray(node.subSegments)) {
+      acc.push(...getInitialSelectedIds(node.subSegments));
+    }
+    return acc;
+  }, []);
+};
+
 interface PartWizardItemFiledsFormProps {
   partData?: any;
   onPartCreated?: (data: any) => void;
@@ -28,13 +39,12 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  // Alanların başlangıç değerlerini, varsa partData'dan alıyoruz.
   const [partNumber, setPartNumber] = useState<string>(
     partData?.partNumber || ''
   );
   const [partName, setPartName] = useState<string>(partData?.partName || '');
   const [segmentIds, setSegmentIds] = useState<string[]>(
-    partData ? partData.segments?.map((s: any) => s.segmentId) : []
+    partData ? getInitialSelectedIds(partData.segments ?? []) : []
   );
   const [aircraftModel, setAircraftModel] = useState<string>(
     partData?.aircraftModel || ''
@@ -65,21 +75,26 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
 
-  // Segment verilerini çekiyoruz
   useEffect(() => {
     const fetchSegments = async () => {
-      try {
-        const response = await getbySegmentList();
-        setSegments(Array.isArray(response.data) ? response.data : []);
+      if (partData && partData.segments) {
+        setSegments(partData.segments);
+        setSegmentIds(getInitialSelectedIds(partData.segments));
         setLoadingSegments(false);
-      } catch (error) {
-        setErrorSegments('Failed to load segments.');
-        setLoadingSegments(false);
+      } else {
+        try {
+          const response = await getbySegmentList();
+          setSegments(Array.isArray(response.data) ? response.data : []);
+          setLoadingSegments(false);
+        } catch (error) {
+          setErrorSegments('Failed to load segments.');
+          setLoadingSegments(false);
+        }
       }
       setIsLoading(false);
     };
     fetchSegments();
-  }, []);
+  }, [partData]);
 
   useEffect(() => {
     if (partData && partData.partHistoryItems) {
@@ -89,7 +104,6 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
     }
   }, [partData]);
 
-  // partData güncellendiğinde ilgili alanları güncelle
   useEffect(() => {
     if (partData) {
       setPartNumber(partData.partNumber || '');
@@ -98,7 +112,9 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
       setOem(partData.oem || 'ANY');
       setHsCode(partData.hsCode || '');
       setComment(partData.comment || '');
-      setSegmentIds(partData.segments?.map((s: any) => s.segmentId) || []);
+      setSegmentIds(
+        partData.segments ? getInitialSelectedIds(partData.segments) : []
+      );
       setSelectedAircraft(partData.aircraft || 'ANY');
     }
   }, [partData]);
@@ -192,12 +208,10 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
         );
         setShowResultModal(true);
 
-        // 2 saniye sonra yönlendirme
         setTimeout(() => {
           navigate('/part/list');
         }, 2000);
 
-        // Eğer onPartCreated callback'ini kullanıyorsanız, yeni part verisini aktarabilirsiniz.
         if (onPartCreated && response.data) {
           onPartCreated(response.data);
         }
@@ -299,7 +313,6 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
               onChange={handlePartNumber}
               disabled={partData && partData.partId ? true : false}
             />
-
             <Form.Control.Feedback type="invalid">
               This field is required.
             </Form.Control.Feedback>
@@ -491,12 +504,11 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
         onContactsChange={setContacts}
         initialContacts={contacts}
       />
-      {/* Timeline Graph: partGraphItems verisini prop olarak gönderiyoruz */}
       {partData && partData.partGraphItems && (
         <PartTimelineGraph
           graphData={partData.partGraphItems as PartGraphItem[]}
         />
-      )}{' '}
+      )}
     </>
   );
 };

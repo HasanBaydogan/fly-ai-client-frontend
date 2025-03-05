@@ -20,7 +20,7 @@ const PartContainer = () => {
   useEffect(() => {
     if (lgShow) {
       setLoadingPartData(true);
-      getByItemFields('67b46eb46df6c65012330b95')
+      getByItemFields('7000-00')
         .then(response => {
           if (response.success && response.data && response.data.partId) {
             setPartData(response.data);

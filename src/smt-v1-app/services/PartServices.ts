@@ -64,7 +64,9 @@ const api = () => {
   });
 };
 
-//  ---     GET     ---
+// *****************************
+//         Part List
+// *****************************
 
 export const searchByPartList = async (
   udfId: string,
@@ -152,7 +154,7 @@ export const getByItemFields = async (partId: string) => {
       window.location.assign('/');
     }
 
-    const response = await api().get(`/part/id/${partId}`, {
+    const response = await api().get(`/part/part-number/${partId}`, {
       headers
     });
     console.log('Response from getByItemFields:', response);
