@@ -28,27 +28,19 @@ import PartWizardAlternativesForm from 'smt-v1-app/components/features/Parts/Par
 import useWizardForm from 'hooks/useWizardForm';
 
 const PartManagementContainer = () => {
-  // Ortak selected partId state
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
-  // Modal açılış kontrolü
   const [lgShow, setLgShow] = useState(false);
-  // Seçilen part ile ilgili detay verisi
   const [partData, setPartData] = useState<any>(null);
   const [loadingPartData, setLoadingPartData] = useState(false);
-
-  // Tablo verileri için state (örnek: API'den gelen liste)
   const [data, setData] = useState<PartData[]>([]);
   const [loadingList, setLoadingList] = useState<boolean>(true);
   const [pageIndex, setPageIndex] = useState<number>(1);
 
-  // Tablo verilerini çekme (örnek)
   useEffect(() => {
     const fetchListData = async () => {
       setLoadingList(true);
       try {
-        const response = await searchByPartList('', pageIndex);
-        // API yanıtına göre data'yı set edin
-        // Örneğin: setData(response.data.parts);
+        const response = await searchByPartList('', pageIndex, 10);
       } catch (error) {
         console.error('Error fetching list data:', error);
       } finally {
@@ -58,14 +50,6 @@ const PartManagementContainer = () => {
     fetchListData();
   }, [pageIndex]);
 
-  // Tablo içerisinden bir part seçildiğinde çağrılacak callback
-  const handlePartSelect = (partId: string) => {
-    setSelectedPartId(partId);
-    setLgShow(true);
-    console.log('Seçilen partId:', partId);
-  };
-
-  // Modal (PartContainer) açıldığında veya selectedPartId değiştiğinde, detayları çekiyoruz.
   useEffect(() => {
     if (lgShow && selectedPartId) {
       setLoadingPartData(true);
@@ -87,7 +71,6 @@ const PartManagementContainer = () => {
     }
   }, [lgShow, selectedPartId]);
 
-  // Tablo için advance table hook
   const table = useAdvanceTable({
     data: data,
     columns: PartTableColumns as ColumnDef<PartData>[],
@@ -96,13 +79,17 @@ const PartManagementContainer = () => {
     sortable: true
   });
 
-  // Wizard form işlemleri
   const form = useWizardForm({ totalStep: 5 });
   const isEditMode = partData && partData.partId;
 
   if (loadingList) {
     return <div>Loading...</div>;
   }
+  const handlePartSelect = (partId: string) => {
+    setSelectedPartId(partId);
+    setLgShow(true);
+    // console.log('Seçilen partId:', partId);
+  };
 
   return (
     <div>
@@ -118,11 +105,9 @@ const PartManagementContainer = () => {
           </Link>
         </div>
         <PartTopSection activeView="list" />
-        {/* PartListTable’a handlePartSelect prop’unu geçiriyoruz */}
         <PartListTable activeView={''} onPartSelect={handlePartSelect} />
       </AdvanceTableProvider>
 
-      {/* Modal: PartContainer benzeri yapı */}
       <Modal
         size="xl"
         className="Parts-NewPart-Modal"
@@ -166,9 +151,7 @@ const PartManagementContainer = () => {
                 </Tab.Pane>
               </Tab.Content>
             </Card.Body>
-            <Card.Footer className="border-top-0">
-              {/* Footer düzenlemeleri */}
-            </Card.Footer>
+            <Card.Footer className="border-top-0"></Card.Footer>
           </Card>
         </WizardFormProvider>
       </Modal>

@@ -14,7 +14,7 @@ import {
   getByAttachedFiles,
   postFileCreate,
   deleteByAttachedFiles,
-  putFileUpdate, // Dosya güncelleme için varsayılan servis fonksiyonu
+  putFileUpdate,
   getByDownloadFiles
 } from 'smt-v1-app/services/PartServices';
 
@@ -22,7 +22,6 @@ interface PartWizardFilesFormProps {
   partId?: string;
 }
 
-// Yardımcı fonksiyon: Dosya boyutunu uygun birime çevirir
 const convertFileSize = (
   sizeInBytes: number
 ): { size: number; unit: string } => {
@@ -35,7 +34,6 @@ const convertFileSize = (
   }
 };
 
-// Yardımcı fonksiyon: Dosya boyutu stringini biçimlendirir.
 const formatFileSize = (sizeStr: string): string => {
   if (!sizeStr) return '';
   const parts = sizeStr.split(' ');
@@ -57,7 +55,6 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  // base64Files: PartFileUpload'dan gelen dosyalar (boyut, base64, ad, açıklama vs.)
   const [base64Files, setBase64Files] = useState<
     {
       id?: string;
@@ -68,20 +65,19 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
     }[]
   >([]);
 
-  // Delete modal state'leri
+  // Delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<any>(null);
 
-  // Submit modal state'i
+  // Submit modal
   const [showSubmitModal, setShowSubmitModal] = useState(false);
 
-  // Edit modal state'leri
+  // Edit modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [fileToEdit, setFileToEdit] = useState<any>(null);
   const [editFileName, setEditFileName] = useState('');
   const [editDescription, setEditDescription] = useState('');
 
-  // Base64 string verisini blob'a çevirip yeni sekmede açar.
   const openFileInNewTab = (file: {
     data: string;
     contentType: string;
@@ -124,10 +120,8 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
     }
   };
 
-  // Dosya uzantısına veya fileType alanına göre uygun contentType'ı döndürür.
   const getContentType = (file: any): string => {
     const fileName = file.fileName.toLowerCase();
-    // Dosya adında uzantıdan faydalanarak contentType belirleyelim:
     if (fileName.endsWith('.pdf')) {
       return 'application/pdf';
     } else if (fileName.endsWith('.xls')) {
@@ -156,12 +150,10 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
     setBase64Files(uploadedFiles);
   };
 
-  // Dosya listesini sunucudan çekmek için fonksiyon, currentPage parametresi ekleniyor.
   const fetchFiles = useCallback(async () => {
     if (!partId) return;
     setLoading(true);
     try {
-      // currentPage'i API isteğine dahil ediyoruz.
       const response = await getByAttachedFiles(partId, currentPage);
       if (response && response.statusCode === 200 && response.data) {
         setFiles(response.data.partFileResponses);
@@ -177,13 +169,6 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
     fetchFiles();
   }, [partId, currentPage, fetchFiles]);
 
-  // Üç nokta menüsündeki işlemler
-
-  const handleView = (file: any) => {
-    window.open('/dosya-goruntuleme-url/' + file.partFileId, '_blank');
-  };
-
-  // Edit butonuna tıklanınca ilgili dosyanın bilgilerini modal'a yüklüyoruz.
   const handleEdit = (file: any) => {
     setFileToEdit(file);
     setEditFileName(file.fileName);
@@ -191,20 +176,17 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
     setShowEditModal(true);
   };
 
-  // Delete butonuna tıklanırsa modalı açar.
   const handleDeleteClick = (file: any) => {
     setFileToDelete(file);
     setShowDeleteModal(true);
   };
 
-  // Delete modal onayı verildiğinde API çağrısı yapılır.
   const confirmDelete = async () => {
     if (fileToDelete) {
       try {
         const deleteResponse = await deleteByAttachedFiles(
           fileToDelete.partFileId
         );
-        console.log('Dosya silindi:', deleteResponse);
         fetchFiles();
       } catch (error) {
         console.error('Dosya silme hatası:', error);
@@ -214,13 +196,11 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
     }
   };
 
-  // Dosya gönderme onayı verildiğinde
   const confirmSubmit = async () => {
     setShowSubmitModal(false);
     await handleSubmitFiles();
   };
 
-  // Dosya gönderme işlemi
   const handleSubmitFiles = async () => {
     if (!partId) return;
     for (const file of base64Files) {
@@ -235,7 +215,6 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
       };
       try {
         const result = await postFileCreate(newFilePayload);
-        console.log('Dosya gönderildi:', result);
       } catch (error) {
         console.error('Dosya gönderim hatası:', error);
       }
@@ -244,7 +223,6 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
     setBase64Files([]);
   };
 
-  // Edit modal'da düzenleme yapıldıktan sonra onay verildiğinde API çağrısı yapılır.
   const handleConfirmEdit = async () => {
     if (!fileToEdit) return;
     try {
@@ -253,7 +231,7 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
         description: editDescription
       };
       const response = await putFileUpdate(payload);
-      console.log('Dosya güncellendi:', response);
+      // console.log('Dosya güncellendi:', response);
       fetchFiles();
     } catch (error) {
       console.error('Dosya güncelleme hatası:', error);
@@ -269,10 +247,8 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
   return (
     <>
       <div>
-        {/* Dosya yükleme bileşeni */}
         <PartFileUpload onFilesUpload={handleFilesUpload} />
 
-        {/* Dosya gönderme butonu (onay modalı açar) */}
         {base64Files.length > 0 && (
           <div className="mb-3">
             <Button variant="primary" onClick={() => setShowSubmitModal(true)}>
@@ -338,7 +314,6 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
           </Table>
         )}
 
-        {/* Sayfalama alanı */}
         <div className="d-flex justify-content-between align-items-center">
           <div></div>
           <Pagination className="mb-0">
@@ -388,7 +363,6 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
         </Modal.Footer>
       </Modal>
 
-      {/* Dosya Gönderme Onay Modalı */}
       <Modal
         show={showSubmitModal}
         onHide={() => setShowSubmitModal(false)}

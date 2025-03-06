@@ -131,7 +131,6 @@ const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
     }
   };
 
-  // Notları API'den partId ve currentPage kullanarak çekiyoruz.
   const fetchNotes = useCallback(
     async (page: number) => {
       try {

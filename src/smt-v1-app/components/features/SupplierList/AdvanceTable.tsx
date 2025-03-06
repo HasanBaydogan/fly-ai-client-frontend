@@ -1,4 +1,3 @@
-// AdvanceTable.tsx
 import { Table, Badge } from 'react-bootstrap';
 import { flexRender } from '@tanstack/react-table';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
@@ -26,7 +25,6 @@ const AdvanceTable = ({
 }: AdvanceTableProps) => {
   const table = useAdvanceTableContext();
   const { getFlatHeaders, getFooterGroups } = table;
-  // Parent'ten gelen data burada kullanılacak.
   const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
 
   const renderSegments = (segments: { segmentName: string }[]) => {

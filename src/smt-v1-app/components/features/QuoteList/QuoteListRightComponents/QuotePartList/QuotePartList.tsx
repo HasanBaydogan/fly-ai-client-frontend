@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
 
@@ -7,38 +6,34 @@ import { QuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTy
 interface QuotePartListProps {
   parts: QuotePart[];
   setSelectedParts: React.Dispatch<React.SetStateAction<string[]>>;
-  selectedParts:string[]
+  selectedParts: string[];
 }
 
-const QuotePartList: React.FC<QuotePartListProps> = ({ parts,setSelectedParts,selectedParts }) => {
+const QuotePartList: React.FC<QuotePartListProps> = ({
+  parts,
+  setSelectedParts,
+  selectedParts
+}) => {
   const [showAddModal, setShowAddModal] = useState(false);
 
-
-  // parts değiştiğinde tüm parçaları seçili duruma getiriyoruz
   useEffect(() => {
     if (parts && parts.length > 0) {
       setSelectedParts(parts.map(part => part.quotePartId));
     }
   }, [parts]);
 
-  // Hepsi seçili mi bilgisini hesaplıyoruz
   const allSelected = selectedParts.length === parts.length;
 
-  // "Tümü seç" checkbox değiştiğinde çalışır
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      // Tüm id'leri seçili hale getir
       setSelectedParts(parts.map(part => part.quotePartId));
     } else {
-      // Seçili dizisini sıfırla
       setSelectedParts([]);
     }
   };
 
-  // Tek bir part checkbox’ı değiştiğinde çalışır
   const handleSelectPart = (quotePartId: string) => {
     setSelectedParts(prev => {
-      // Seçili dizide varsa çıkar, yoksa ekle
       return prev.includes(quotePartId)
         ? prev.filter(id => id !== quotePartId)
         : [...prev, quotePartId];
@@ -50,7 +45,7 @@ const QuotePartList: React.FC<QuotePartListProps> = ({ parts,setSelectedParts,se
       <h3 className="mt-3">Parts</h3>
       <hr className="custom-line m-0" />
 
-      <div className="mx-2" style={{ minHeight:"150px", overflowY: 'auto' }}>
+      <div className="mx-2" style={{ minHeight: '150px', overflowY: 'auto' }}>
         <Table responsive style={{ marginBottom: '0' }}>
           <thead
             style={{

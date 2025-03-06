@@ -183,7 +183,7 @@ export const quoteWizardIntro = async (
         headers
       }
     );
-    console.log(rfqResponse);
+    // console.log(rfqResponse);
     if (rfqResponse.data.statusCode === 200) {
       return rfqResponse.data;
     } else if (rfqResponse.data.statusCode === 498) {
@@ -238,6 +238,7 @@ export const quoteWizardIntro = async (
     console.log('quoteWizardIntro Permission Error');
   }
 };
+
 export const getPreEmailSendingParameters = async (quoteId: string) => {
   try {
     const accessToken = Cookies.get('access_token');
@@ -391,7 +392,7 @@ export const searchByQuoteList = async (
   pageNo: number,
   pageSize: number
 ) => {
-  console.log('Response from searchByQuoteList:', term);
+  // console.log('Response from searchByQuoteList:', term);
 
   try {
     const accessToken = Cookies.get('access_token');
@@ -406,9 +407,9 @@ export const searchByQuoteList = async (
     const url = term
       ? `/quote/filter/${pageNo}/${pageSize}?${term}`
       : `/quote/all/${pageNo}/${pageSize}`;
-    console.log('url', url);
+    // console.log('url', url);
     const quoteList = await api().get(url, { headers });
-    console.log('Response from searchByQuoteList:', quoteList);
+    // console.log('Response from searchByQuoteList:', quoteList);
 
     if (quoteList.data.statusCode === 200) {
       return quoteList.data;
@@ -457,76 +458,5 @@ export const searchByQuoteList = async (
     }
   } catch (err) {
     console.log('[searchByQuoteList] Supplier List Permission Error:', err);
-  }
-};
-
-export const getByQuoteList = async (pageSize: number, pageNo: number) => {
-  try {
-    const accessToken = Cookies.get('access_token');
-    const headers = {};
-    if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
-    } else {
-      window.location.assign('/');
-    }
-
-    const response = await api().get(`/quote/all/${pageNo}/${pageSize}`, {
-      headers
-    });
-    // console.log('Response from getByQuoteList:', response);
-
-    if (response.data.statusCode === 200) {
-      return response.data;
-    } else if (response.data.statusCode === 498) {
-      // Expired JWT
-      try {
-        const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refresh_token: Cookies.get('refresh_token')
-        });
-        if (refreshTokenresponse.data.statusCode === 200) {
-          setCookie(
-            'access_token',
-            refreshTokenresponse.data.data.access_token
-          );
-          setCookie(
-            'refresh_token',
-            refreshTokenresponse.data.data.refresh_token
-          );
-          let rfqMailResponseAfterRefresh = await api().get(
-            `/quote/all/${pageNo}/${pageNo}`,
-            {
-              headers: {
-                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
-              }
-            }
-          );
-
-          return rfqMailResponseAfterRefresh.data;
-        } else if (refreshTokenresponse.data.statusCode === 498) {
-          // Expired Refresh Token
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 411) {
-          // Invalid Refresh Token
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 404) {
-          console.log('User not found');
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    } else if (response.data.statusCode === 401) {
-      Cookies.remove('access_token');
-      Cookies.remove('refresh_token');
-      window.location.assign('/');
-    }
-  } catch (err) {
-    console.log('[getByQuoteList] Permission Error:', err);
   }
 };

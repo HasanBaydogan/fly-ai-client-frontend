@@ -34,7 +34,6 @@ const PartWizardAlternativesForm: React.FC<PartWizardAlternativesFormProps> = ({
   const [alternativeDetail, setAlternativeDetail] = useState<any>(null);
   const [showHistorySection, setShowHistorySection] = useState<boolean>(false);
 
-  // Alternatif parçaların listesini çekiyoruz.
   const fetchAlternatives = useCallback(async () => {
     if (!partId) return;
     setLoading(true);
@@ -54,7 +53,6 @@ const PartWizardAlternativesForm: React.FC<PartWizardAlternativesFormProps> = ({
     fetchAlternatives();
   }, [fetchAlternatives]);
 
-  // Part Number tıklandığında detay verilerini çekiyoruz.
   const handlePartNumberClick = async (alternativeId: string) => {
     try {
       const response = await getByAlternativesDetail(alternativeId);
@@ -67,7 +65,6 @@ const PartWizardAlternativesForm: React.FC<PartWizardAlternativesFormProps> = ({
     }
   };
 
-  // Sayfalama kontrolü
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -129,7 +126,6 @@ const PartWizardAlternativesForm: React.FC<PartWizardAlternativesFormProps> = ({
             </tbody>
           </Table>
 
-          {/* Sayfalama Alanı */}
           <div className="d-flex justify-content-end">
             <Pagination className="mb-0">
               <Pagination.Prev
@@ -154,7 +150,6 @@ const PartWizardAlternativesForm: React.FC<PartWizardAlternativesFormProps> = ({
         </>
       )}
 
-      {/* History ve Timeline Bölümü: Başlangıçta gizli, Part Number tıklandığında görünür */}
       {showHistorySection && alternativeDetail && (
         <div style={{ marginTop: '20px' }}>
           <PartHistoryListSection

@@ -10,7 +10,7 @@ interface WizardNavItemProps {
   label: string;
   step: number;
   isHorizontal?: boolean;
-  disabled?: boolean; // Yeni eklenen prop
+  disabled?: boolean;
 }
 
 const WizardNavItem = ({
@@ -24,7 +24,7 @@ const WizardNavItem = ({
   return (
     <Nav.Item as="li" className="nav-item">
       <Nav.Link
-        disabled={disabled} // disabled prop'u Nav.Link'e aktarılıyor
+        disabled={disabled}
         className={classNames('fw-semibold', {
           done: selectedStep > step && step !== totalStep,
           complete: selectedStep > step && step !== totalStep - 1,

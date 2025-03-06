@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Col, Form, Modal, Row, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 import PartHistoryListSection, {
   FormattedHistoryItem
 } from '../HistoryList/PartHistoryListSection';
@@ -37,8 +36,6 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   partData,
   onPartCreated
 }) => {
-  const navigate = useNavigate();
-
   const [partNumber, setPartNumber] = useState<string>(
     partData?.partNumber || ''
   );
@@ -55,20 +52,15 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
     partData?.aircraft || 'ANY'
   );
   const [hsCode, setHsCode] = useState<string>(partData?.hsCode || '');
-
-  // Segment ve tarih, history ile ilgili state'ler
   const [contacts, setContacts] = useState<FormattedHistoryItem[]>([]);
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
   const [segments, setSegments] = useState<TreeNode[]>([]);
-
-  // Sonuç modalı, alert ve save durumları
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultModalTitle, setResultModalTitle] = useState('');
   const [resultModalMessage, setResultModalMessage] = useState('');
   const [loadingSave, setLoadingSave] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
-
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -207,10 +199,6 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
           'Part information has been successfully Created!'
         );
         setShowResultModal(true);
-
-        // setTimeout(() => {
-        //   navigate('/part/list');
-        // }, 2000);
 
         if (onPartCreated && response.data) {
           onPartCreated(response.data);

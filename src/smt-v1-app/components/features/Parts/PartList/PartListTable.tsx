@@ -81,10 +81,7 @@ const searchColumns: SearchColumn[] = [
   { label: 'No Filter', value: 'all' },
   { label: 'Part Number', value: 'partNumber' },
   { label: 'Part Name', value: 'partName' },
-  { label: 'Aircraft', value: 'aircraft' },
-  { label: 'Aircraft Model', value: 'aircraftModel' },
-  { label: 'Oem', value: 'oem' },
-  { label: 'Hs Code', value: 'hsCode' }
+  { label: 'Aircraft Model', value: 'aircraftModel' }
 ];
 
 interface PartListProps {
@@ -93,7 +90,6 @@ interface PartListProps {
 }
 
 const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
-  // Artık state tipi PartData[] olarak tanımlanıyor.
   const [data, setData] = useState<PartData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageIndex, setPageIndex] = useState<number>(0);
@@ -107,15 +103,12 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<PartData>();
 
-  const fetchData = async (
-    term: string,
-    currentPage: number,
-    column: SearchColumn
-  ) => {
+  const fetchData = async (searchParam: string, currentPage: number) => {
     setLoading(true);
     try {
       const response = await searchByPartList(
-        (currentPage + 1).toString(),
+        searchParam,
+        currentPage + 1,
         pageSize
       );
       const parts = response?.data?.parts || [];
@@ -147,24 +140,20 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
   const debouncedFetchData = useMemo(
     () =>
       debounce((term: string, column: SearchColumn) => {
-        if (term) {
-          if (column.value === 'all') {
-            setGlobalFilter(term || undefined);
-            setColumnFilters([]);
-          } else {
-            setGlobalFilter(undefined);
-            setColumnFilters([{ id: column.value, value: term }]);
-          }
-        } else {
+        let searchParam = '';
+        if (term && column.value !== 'all') {
+          searchParam = `${column.value}=${term}`;
           setGlobalFilter(undefined);
+          setColumnFilters([{ id: column.value, value: term }]);
+        } else {
+          setGlobalFilter(term || undefined);
           setColumnFilters([]);
         }
         setPageIndex(0);
-        fetchData(term, 0, column);
+        fetchData(searchParam, 0);
       }, 300),
     [setGlobalFilter, setColumnFilters]
   );
-
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -177,7 +166,11 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
   };
 
   useEffect(() => {
-    fetchData(searchTerm, pageIndex, selectedColumn);
+    const searchParam =
+      selectedColumn.value === 'all'
+        ? ''
+        : `${selectedColumn.value}=${searchTerm}`;
+    fetchData(searchParam, pageIndex);
   }, [pageIndex, pageSize]);
 
   const openPartModal = (partId: string) => {
@@ -186,7 +179,6 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
 
   return (
     <div>
-      {/* Arama ve filtreleme alanı */}
       <div className="mb-4">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>

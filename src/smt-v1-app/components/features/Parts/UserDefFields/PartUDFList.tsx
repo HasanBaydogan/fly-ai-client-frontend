@@ -53,7 +53,6 @@ export const udfTableColumns: ColumnDef<UDFData>[] = [
   }
 ];
 
-// Arama için kullanılacak kolon tipi
 type SearchColumn = {
   label: string;
   value: string;

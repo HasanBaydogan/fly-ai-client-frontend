@@ -22,7 +22,6 @@ const AdvanceTable = ({
 }: AdvanceTableProps) => {
   const table = useAdvanceTableContext();
   const { getRowModel, getFlatHeaders, getFooterGroups } = table;
-  // Parent'ten gelen data ve kolon tanımını alıyoruz
   const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
 
   return (

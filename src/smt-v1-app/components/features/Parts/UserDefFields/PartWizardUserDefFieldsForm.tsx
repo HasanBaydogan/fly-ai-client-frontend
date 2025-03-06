@@ -10,7 +10,6 @@ import {
 } from 'react-bootstrap';
 import PartUDFList, { udfTableColumns } from './PartUDFList';
 import { UDFData, postUDFCreate } from 'smt-v1-app/services/PartServices';
-// İhtiyaç varsa diğer servis ve hook importları (ör. searchBySupplierList) eklenebilir.
 import useAdvanceTable from 'hooks/useAdvanceTable';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
@@ -18,17 +17,12 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const PartWizardUserDefFieldsForm = () => {
-  // UDF verilerini tutmak için UDFData tipi kullanılıyor.
   const [data] = useState<UDFData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [pageIndex] = useState<number>(1);
-
-  // Form görünürlüğü ve modalleri
   const [showUDFForm, setShowUDFForm] = useState<boolean>(false);
   const [showCancelModal, setShowCancelModal] = useState<boolean>(false);
   const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
-
-  // Form alanları
   const [selectedFieldType, setSelectedFieldType] = useState<string>('');
   const [fieldName, setFieldName] = useState<string>('');
   const [textFieldDefault, setTextFieldDefault] = useState<string>('');
@@ -42,7 +36,6 @@ const PartWizardUserDefFieldsForm = () => {
   const [selectedMultipleNumberChoice, setSelectedMultipleNumberChoice] =
     useState<string>('');
 
-  // Choice ekleme ve silme fonksiyonları
   const addTextChoice = () => {
     const choice = textChoiceInput.trim();
     if (choice && !textChoices.includes(choice)) {
@@ -71,12 +64,10 @@ const PartWizardUserDefFieldsForm = () => {
       setSelectedMultipleNumberChoice('');
   };
 
-  // Örnek veri çekimi (supplier verisi yerine burada sadece loading durumu)
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Eğer başka bir veri çekimi gerekiyorsa ekleyin.
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -96,9 +87,7 @@ const PartWizardUserDefFieldsForm = () => {
 
   if (loading) return <div>Loading...</div>;
 
-  // Yeni UDF oluşturma API çağrısı
   const handleSave = async () => {
-    // partId burada mevcut değilse boş string olarak gönderiliyor. Gerekirse ilgili partId değerini ekleyin.
     let udfFieldType = '';
     let fieldStringValues: string[] = [];
     let fieldIntValues: number[] = [];
@@ -111,7 +100,6 @@ const PartWizardUserDefFieldsForm = () => {
       fieldIntValues = [Number(numberFieldDefault)];
     } else if (selectedFieldType === 'Multiple Text Choice Value') {
       udfFieldType = 'MULTIPLE_TEXT';
-      // Tüm seçenekleri gönderiyoruz; default seçenek de eklenebilir.
       fieldStringValues = textChoices;
     } else if (selectedFieldType === 'Multiple Number Choice Value') {
       udfFieldType = 'MULTIPLE_NUMBER';
@@ -119,7 +107,7 @@ const PartWizardUserDefFieldsForm = () => {
     }
 
     const payload = {
-      partId: '', // Eğer mevcutsa ilgili partId'yi buraya ekleyin.
+      partId: '',
       fieldName,
       udfFieldType,
       fieldStringValues,

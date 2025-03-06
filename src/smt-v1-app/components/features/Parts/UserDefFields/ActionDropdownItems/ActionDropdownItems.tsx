@@ -42,7 +42,7 @@ interface SupplierDetailModalProps {
 
 interface ActionDropdownItemsProps {
   supplierId: string;
-  supplierData: SupplierData; // supplierData'yı props olarak alıyoruz
+  supplierData: SupplierData;
 }
 
 const ActionDropdownItems = ({

@@ -78,26 +78,33 @@ export interface PartData {
   oem: string;
   hsCode: string;
 }
+export const searchByPartList = async (
+  term: string,
+  pageNo: number,
+  pageSize: number
+) => {
+  // console.log('Response from searchByPartList:', term);
 
-export const searchByPartList = async (pageNo: string, pageSize: number) => {
   try {
     const accessToken = Cookies.get('access_token');
-    const headers = {};
+    const headers: Record<string, string> = {};
     if (accessToken) {
       headers['Authorization'] = `Bearer ${accessToken}`;
     } else {
       window.location.assign('/');
+      return;
     }
 
-    const response = await api().get(`/part/all/${pageNo}/${pageSize}`, {
-      headers
-    });
-    // console.log('Response from searchByPartList:', response);
+    const url = term
+      ? `/part/filter/${pageNo}/${pageSize}?${term}`
+      : `/part/all/${pageNo}/${pageSize}`;
+    // console.log('url', url);
+    const partList = await api().get(url, { headers });
+    // console.log('Response from searchByPartList:', partList);
 
-    if (response.data.statusCode === 200) {
-      return response.data;
-    } else if (response.data.statusCode === 498) {
-      // Expired JWT
+    if (partList.data.statusCode === 200) {
+      return partList.data;
+    } else if (partList.data.statusCode === 498) {
       try {
         const refreshTokenresponse = await api().post('/auth/refresh-token', {
           refresh_token: Cookies.get('refresh_token')
@@ -111,42 +118,37 @@ export const searchByPartList = async (pageNo: string, pageSize: number) => {
             'refresh_token',
             refreshTokenresponse.data.data.refresh_token
           );
-          let rfqMailResponseAfterRefresh = await api().get(
-            `/part/all/${pageNo}/${pageSize}`,
-            {
-              headers: {
-                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
-              }
+          const clientListAfterRefresh = await api().get(url, {
+            headers: {
+              Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
             }
-          );
+          });
 
-          return rfqMailResponseAfterRefresh.data;
-        } else if (refreshTokenresponse.data.statusCode === 498) {
-          // Expired Refresh Token
+          return clientListAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 411) {
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 411) {
-          // Invalid Refresh Token
+        } else if (refreshTokenresponse.data.statusCode === 498) {
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           window.location.assign('/');
         } else if (refreshTokenresponse.data.statusCode === 404) {
-          console.log('User not found');
+          console.log('[searchByPartList] User not found. Redirecting.');
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           window.location.assign('/');
         }
       } catch (err) {
-        console.log(err);
+        console.log('[searchByPartList] Refresh token error:', err);
       }
-    } else if (response.data.statusCode === 401) {
+    } else if (partList.data.statusCode === 401) {
       Cookies.remove('access_token');
       Cookies.remove('refresh_token');
       window.location.assign('/');
     }
   } catch (err) {
-    console.log('[searchByPartList] Client Detail List Permission Error:', err);
+    console.log('[searchByPartList] Supplier List Permission Error:', err);
   }
 };
 
@@ -428,7 +430,7 @@ export const getByUDFPartList = async (
     const response = await api().get(`/part/udf/part-id/${partId}`, {
       headers
     });
-    console.log('Response from getByClientDetailList:', response);
+    // console.log('Response from getByClientDetailList:', response);
 
     if (response.data.statusCode === 200) {
       return response.data;

@@ -14,20 +14,16 @@ interface QuoteContactsListProps {
 }
 
 const formatPhoneNumber = (phoneNumber: string) => {
-  // Remove all non-numeric characters
   const cleaned = phoneNumber.replace(/\D/g, '');
 
-  // Check if it's a valid number
   if (cleaned.length < 10) return phoneNumber;
 
-  // Format as (XXX) XXX-XXXX if US/Canada format
   if (cleaned.length === 10) {
     return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
       6
     )}`;
   }
 
-  // Format as +X (XXX) XXX-XXXX for international
   return `+${cleaned.slice(0, cleaned.length - 10)} (${cleaned.slice(
     -10,
     -7
@@ -50,12 +46,11 @@ const QuoteContactsList: React.FC<QuoteContactsListProps> = ({
 
   const handleNewContactAddition = () => {
     if (!fullName || !email) {
-      // You might want to add proper validation/error handling here
       return;
     }
 
     const newContact: Contact = {
-      id: Date.now().toString(), // Simple ID generation for demo
+      id: Date.now().toString(),
       fullName: fullName.trim(),
       email: email.trim(),
       title: title.trim(),
@@ -64,8 +59,6 @@ const QuoteContactsList: React.FC<QuoteContactsListProps> = ({
     };
 
     handleAddContact(newContact);
-
-    // Reset form
     setFullName('');
     setEmail('');
     setTitle('');

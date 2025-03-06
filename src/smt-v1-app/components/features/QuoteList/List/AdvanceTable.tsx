@@ -25,7 +25,6 @@ const AdvanceTable = ({
 }: AdvanceTableProps) => {
   const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
 
-  // TanStack Table instance'ını oluşturuyoruz.
   const table = useReactTable({
     data,
     columns,

@@ -212,7 +212,6 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     }
   };
 
-  // Debounce fonksiyonunda, term varsa ve seçilen key 'all' değilse, parametreyi oluşturuyoruz.
   const debouncedFetchData = useMemo(
     () =>
       debounce((term: string, column: SearchColumn) => {
@@ -242,7 +241,6 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     debouncedFetchData(searchTerm, column);
   };
 
-  // Herhangi bir sayfa veya sayfa boyutu değiştiğinde mevcut arama parametresini hesaba katarak veri çekiyoruz.
   useEffect(() => {
     const searchParam =
       selectedColumn.value === 'all'
@@ -253,7 +251,6 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
   return (
     <div>
-      {/* Arama ve filtreleme */}
       <div className="mb-4">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>

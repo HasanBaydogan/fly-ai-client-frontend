@@ -129,7 +129,6 @@ const searchColumns: SearchColumn[] = [
 
 /* ***********************
    ANA BİLEŞEN: SupplierList
-   (Hem arama/filtreleme hem de tablo görüntüleme)
    *********************** */
 interface SupplierListProps {
   activeView: string;
@@ -145,7 +144,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
     searchColumns[0]
   );
 
-  const [pageSize, setPageSize] = useState<number>(10); // Page size state,
+  const [pageSize, setPageSize] = useState<number>(10);
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<SupplierData>();
@@ -269,7 +268,6 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
 
   return (
     <div>
-      {/* Üst kısım: Arama ve filtreleme */}
       <div className="mb-4">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>
@@ -319,7 +317,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
                     active={pageSize === size}
                     onClick={() => {
                       setPageSize(size);
-                      setPageIndex(0); // Reset to first page
+                      setPageIndex(0);
                     }}
                   >
                     {size} Items
@@ -347,8 +345,8 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
           totalItems={totalItems}
           pageIndex={pageIndex}
           setPageIndex={setPageIndex}
-          pageSize={pageSize} // Pass pageSize here
-          setPageSize={setPageSize} // Allow page size change
+          pageSize={pageSize}
+          setPageSize={setPageSize}
         />
       </div>
     </div>

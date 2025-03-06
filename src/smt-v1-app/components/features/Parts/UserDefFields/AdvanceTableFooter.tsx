@@ -33,13 +33,11 @@ const AdvanceTableFooter = ({
   totalItems,
   pageIndex,
   setPageIndex,
-  pageSize, // Using the prop passed from ClientList
-  setPageSize // The function to update pageSize in ClientList
+  pageSize,
+  setPageSize
 }: AdvanceTableFooterProps) => {
-  // Toplam sayfa sayısını hesaplıyoruz.
   const totalPages = Math.ceil(totalItems / pageSize);
 
-  // usePagination hook’unu, backend’den gelen toplam sayfa sayısını kullanarak çağırıyoruz.
   const { hasNextEllipsis, hasPrevEllipsis, visiblePaginationItems } =
     usePagination({
       currentPageNo: pageIndex + 1,

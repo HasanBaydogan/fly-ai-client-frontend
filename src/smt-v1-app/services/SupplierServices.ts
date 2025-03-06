@@ -200,7 +200,7 @@ export const postSupplierCreate = async (newSupplier: CreateSupplier) => {
     const response = await api().post(`/supplier/create`, newSupplier, {
       headers
     });
-    console.log(response);
+    // console.log(response);
     if (response.data.statusCode === 200) {
       return response.data;
     } else if (response.data.statusCode === 498) {

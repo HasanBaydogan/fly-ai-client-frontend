@@ -44,13 +44,11 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
       dayjs(b.priceDate, 'DD.MM.YYYY').valueOf()
   );
 
-  // Verileri [Date, value] çiftlerine dönüştürüyoruz.
   const seriesData = sortedData.map(item => [
     dayjs(item.priceDate, 'DD.MM.YYYY').toDate(),
     item.unitPriceCost
   ]);
 
-  // X ekseninde kullanılacak etiket formatını belirlemek için benzersiz yılları tespit ediyoruz.
   const distinctYears = new Set(
     sortedData.map(item => dayjs(item.priceDate, 'DD.MM.YYYY').year())
   );
@@ -59,12 +57,10 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
       ? dayjs(value).format('D MMM YYYY')
       : dayjs(value).format('D MMM');
 
-  // Y ekseni için dinamik min/max hesaplama:
   const values = sortedData.map(item => item.unitPriceCost);
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
   const range = maxValue - minValue;
-  // Eğer maxValue > 100 ise sabit padding = 1000, aksi halde range'in %20'si kadar padding kullan.
   const padding = maxValue > 100 ? 1000 : range * 0.2 || 1;
   const yAxisMin = minValue - padding;
   const yAxisMax = maxValue + padding;

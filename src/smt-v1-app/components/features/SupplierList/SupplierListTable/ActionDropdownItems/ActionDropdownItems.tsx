@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 interface ActionDropdownItemsProps {
   supplierId: string;
-  supplierData: SupplierData; // supplierData'yı props olarak alıyoruz
+  supplierData: SupplierData;
 }
 
 const ActionDropdownItems = ({

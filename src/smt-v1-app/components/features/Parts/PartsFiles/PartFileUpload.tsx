@@ -12,11 +12,10 @@ interface Base64File {
   id: string;
   name: string;
   base64: string;
-  size: number; // dosya boyutu bayt cinsinden
-  description: string; // description alanı eklendi
+  size: number;
+  description: string;
 }
 
-// Genişletilmiş dosya ön izleme tipi
 interface ExtendedFileAttachment extends FileAttachment {
   customDescription?: string;
   isConfirmed?: boolean;
@@ -24,7 +23,7 @@ interface ExtendedFileAttachment extends FileAttachment {
 
 interface FileUploadProps {
   onFilesUpload: (base64Files: Base64File[]) => void;
-  hidePreviews?: boolean; // Parent tarafından gönderildiğinde dosya önizlemesini gizlemek için
+  hidePreviews?: boolean;
 }
 
 const PartFileUpload: React.FC<FileUploadProps> = ({
@@ -37,7 +36,6 @@ const PartFileUpload: React.FC<FileUploadProps> = ({
   );
   const [base64Files, setBase64Files] = useState<Base64File[]>([]);
 
-  // Eğer parent'dan hidePreviews true gönderilirse, iç state'leri temizleyelim.
   useEffect(() => {
     if (hidePreviews) {
       setUploadedFiles([]);
@@ -67,7 +65,7 @@ const PartFileUpload: React.FC<FileUploadProps> = ({
               name: file.name,
               base64: reader.result,
               size: file.size,
-              description: '' // Başlangıçta boş description
+              description: ''
             });
           } else {
             reject(new Error(`Base64 conversion failed for: ${file.name}`));
@@ -113,7 +111,6 @@ const PartFileUpload: React.FC<FileUploadProps> = ({
   };
 
   const handleConfirmDescription = (index: number) => {
-    // Ön izleme dosyası onaylanırken base64 dosyasına description ekleniyor
     const updatedFiles = [...uploadedFiles];
     updatedFiles[index] = {
       ...updatedFiles[index],
@@ -149,7 +146,6 @@ const PartFileUpload: React.FC<FileUploadProps> = ({
       />
       {errorMessage && <div className="text-danger mt-2">{errorMessage}</div>}
 
-      {/* Dosya gönderme ve açıklama alanları sadece hidePreviews false ise gösterilsin */}
       {!hidePreviews && (
         <div className="mt-3">
           {uploadedFiles.map((file, index) => (
@@ -158,7 +154,6 @@ const PartFileUpload: React.FC<FileUploadProps> = ({
                 attachment={file}
                 handleRemove={() => handleRemoveFile(index)}
               />
-              {/* Açıklama input alanı */}
               <input
                 type="text"
                 placeholder="Enter description"
