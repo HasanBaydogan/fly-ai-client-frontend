@@ -44,11 +44,11 @@ const SignUpForm = ({
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!name.trim()) {
-      toastError('Enter your name');
+      toastError('Please enter your name');
     } else if (!surname.trim()) {
-      toastError('Enter your surname');
+      toastError('Please enter your surname');
     } else if (!normalizedEmail || !isValidEmail(normalizedEmail)) {
-      toastError('Invalid Email!');
+      toastError('Invalid email!');
     } else if (password.includes(' ')) {
       toastError('Password should not contain spaces!');
     } else if (password.trim().length < 8) {

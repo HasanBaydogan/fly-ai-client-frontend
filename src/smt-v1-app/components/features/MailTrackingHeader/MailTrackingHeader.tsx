@@ -27,7 +27,7 @@ const MailTrackingHeader = ({
       <div className="d-flex justify-content-between align-items-center">
         <div className="d-flex justify-content-start align-items-center">
           <Form.Group as={Col} xs={9}>
-            <Form.Label>Since From</Form.Label>
+            <Form.Label>SINCE</Form.Label>
             <DatePicker
               placeholder="Select Date"
               hideIcon

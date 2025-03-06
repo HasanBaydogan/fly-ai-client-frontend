@@ -29,7 +29,7 @@ export interface RouteItems {
 
 export const routes: RouteItems[] = [
   {
-    label: 'smt apps',
+    label: '',
     icon: UilCube,
     pages: [
       {
