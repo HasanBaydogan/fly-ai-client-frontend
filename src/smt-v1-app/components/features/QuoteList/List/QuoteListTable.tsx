@@ -6,7 +6,7 @@ import AdvanceTableFooter from './AdvanceTableFooter';
 import { Col, Row, Dropdown, Badge } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import { getByQuoteList } from 'smt-v1-app/services/QuoteService';
+import { searchByQuoteList } from 'smt-v1-app/services/QuoteService';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import RevealDropdown, {
   RevealDropdownTrigger
@@ -37,6 +37,7 @@ export interface SupplierData {
   lastValidDate: string;
   client?: string;
 }
+
 const formatStatus = (status: string): string => {
   return status
     .split('_')
@@ -71,6 +72,7 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
     }
   },
   {
+    id: 'clientName',
     header: 'Client',
     accessorKey: 'client',
     meta: {
@@ -122,7 +124,6 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
       headerProps: { style: { width: '10%' }, className: 'ps-8' }
     }
   },
-
   {
     accessorKey: 'finalCost',
     header: 'Final Cost',
@@ -143,18 +144,14 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
 
 type SearchColumn = {
   label: string;
-  value: keyof SupplierData | 'all';
+  value: 'all' | 'quoteNumberId' | 'clientRFQId' | 'clientName';
 };
 
 const searchColumns: SearchColumn[] = [
   { label: 'No Filter', value: 'all' },
-  { label: 'Quote ID', value: 'quoteId' },
-  { label: 'Revision', value: 'revisionNo' },
-  { label: 'Client', value: 'client' },
-  { label: 'Client RFQ ID', value: 'clientRFQId' },
-  { label: 'Number Of Product', value: 'numOfProduct' },
-  { label: 'Final Cost', value: 'finalCost' },
-  { label: 'Validity Date', value: 'lastValidDate' }
+  { label: 'Quote Number', value: 'quoteNumberId' },
+  { label: 'Client', value: 'clientName' },
+  { label: 'Client RFQ ID', value: 'clientRFQId' }
 ];
 
 interface QuoteListTableProps {
@@ -175,10 +172,15 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<SupplierData>();
 
-  const fetchData = async (currentPage: number) => {
+  // fetchData artık arama parametresini de alıyor.
+  const fetchData = async (currentPage: number, searchParam: string = '') => {
     setLoading(true);
     try {
-      const response = await getByQuoteList(pageSize, currentPage + 1);
+      const response = await searchByQuoteList(
+        searchParam,
+        currentPage + 1,
+        pageSize
+      );
       const quoteList = response?.data?.quotes || [];
 
       const mappedData: SupplierData[] = quoteList.map((item: any) => {
@@ -210,23 +212,21 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     }
   };
 
+  // Debounce fonksiyonunda, term varsa ve seçilen key 'all' değilse, parametreyi oluşturuyoruz.
   const debouncedFetchData = useMemo(
     () =>
       debounce((term: string, column: SearchColumn) => {
-        if (term) {
-          if (column.value === 'all') {
-            setGlobalFilter(term || undefined);
-            setColumnFilters([]);
-          } else {
-            setGlobalFilter(undefined);
-            setColumnFilters([{ id: column.value, value: term }]);
-          }
-        } else {
+        let searchParam = '';
+        if (term && column.value !== 'all') {
+          searchParam = `${column.value}=${term}`;
           setGlobalFilter(undefined);
+          setColumnFilters([{ id: column.value, value: term }]);
+        } else {
+          setGlobalFilter(term || undefined);
           setColumnFilters([]);
         }
         setPageIndex(0);
-        fetchData(0);
+        fetchData(0, searchParam);
       }, 300),
     [setGlobalFilter, setColumnFilters]
   );
@@ -242,8 +242,13 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     debouncedFetchData(searchTerm, column);
   };
 
+  // Herhangi bir sayfa veya sayfa boyutu değiştiğinde mevcut arama parametresini hesaba katarak veri çekiyoruz.
   useEffect(() => {
-    fetchData(pageIndex);
+    const searchParam =
+      selectedColumn.value === 'all'
+        ? ''
+        : `${selectedColumn.value}=${searchTerm}`;
+    fetchData(pageIndex, searchParam);
   }, [pageIndex, pageSize]);
 
   return (
