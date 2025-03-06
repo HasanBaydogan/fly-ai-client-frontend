@@ -97,7 +97,7 @@ export const searchByClientList = async (
 
     // Term varsa query string olarak ekliyoruz
     const url = term
-      ? `/client/all/${pageNo}/${pageSize}?${term}`
+      ? `/client/filter/${pageNo}/${pageSize}?${term}`
       : `/client/all/${pageNo}/${pageSize}`;
     // console.log('url', url);
     const suppList = await api().get(url, { headers });

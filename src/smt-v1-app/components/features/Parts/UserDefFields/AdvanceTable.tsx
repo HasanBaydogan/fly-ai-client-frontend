@@ -1,4 +1,3 @@
-// AdvanceTable.tsx
 import { Table } from 'react-bootstrap';
 import { flexRender } from '@tanstack/react-table';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';

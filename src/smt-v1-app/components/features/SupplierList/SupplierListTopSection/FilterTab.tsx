@@ -7,7 +7,7 @@ export interface FilterTabItem {
   value: string;
   onClick: () => void;
   count: number;
-  active?: boolean; // Add the 'active' property
+  active?: boolean;
 }
 
 interface FilterTabProps {

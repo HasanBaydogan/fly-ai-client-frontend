@@ -19,7 +19,6 @@ const ActionDropdownItems = ({ clientId }: ActionDropdownItemsProps) => {
 
   const handleViewClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
-    // console.log(`Fetching client for ID: ${clientId}`);
 
     try {
       const response = await getByClientDetailList(clientId);

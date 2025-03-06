@@ -1,4 +1,3 @@
-// AdvanceTable.tsx
 import { Table, Badge } from 'react-bootstrap';
 import { flexRender } from '@tanstack/react-table';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
@@ -16,10 +15,9 @@ interface AdvanceTableProps {
   rowClassName?: string;
   tableProps?: CustomTableProps;
   hasFooter?: boolean;
-  openPartModal: (partId: string) => void; // Add this line
+  openPartModal: (partId: string) => void;
 }
 
-// Helper: Eğer segmentler dizisinde 2'den fazla öğe varsa, ilk 2 öğeyi render edip "• ..." ekler.
 const renderSegments = (segments: string[]) => {
   if (!segments || segments.length === 0) return '';
   if (segments.length === 1) {
@@ -48,11 +46,10 @@ const AdvanceTable = ({
   rowClassName,
   tableProps,
   hasFooter,
-  openPartModal // Destructure the prop here
+  openPartModal
 }: AdvanceTableProps) => {
   const table = useAdvanceTableContext();
   const { getFlatHeaders, getFooterGroups } = table;
-  // Parent bileşenden gelen data ve sütun bilgilerini alıyoruz.
   const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
 
   return (
