@@ -16,6 +16,7 @@ interface AdvanceTableProps {
   rowClassName?: string;
   tableProps?: CustomTableProps;
   hasFooter?: boolean;
+  openPartModal: (partId: string) => void; // Add this line
 }
 
 // Helper: Eğer segmentler dizisinde 2'den fazla öğe varsa, ilk 2 öğeyi render edip "• ..." ekler.
@@ -46,7 +47,8 @@ const AdvanceTable = ({
   bodyClassName,
   rowClassName,
   tableProps,
-  hasFooter
+  hasFooter,
+  openPartModal // Destructure the prop here
 }: AdvanceTableProps) => {
   const table = useAdvanceTableContext();
   const { getFlatHeaders, getFooterGroups } = table;
@@ -84,7 +86,18 @@ const AdvanceTable = ({
               className={rowClassName}
               style={{ height: '70px' }}
             >
-              <td>{row.partNumber}</td>
+              <td>
+                <a
+                  href="#"
+                  className="text-decoration-none"
+                  onClick={e => {
+                    e.preventDefault();
+                    openPartModal(row.partNumber);
+                  }}
+                >
+                  {row.partNumber}
+                </a>
+              </td>
               <td>
                 {Array.isArray(row.partName)
                   ? row.partName.join(', ')
@@ -95,7 +108,6 @@ const AdvanceTable = ({
               <td>{row.aircraftModel}</td>
               <td>{row.oem}</td>
               <td>{row.hsCode}</td>
-              {/* İsteğe bağlı: ActionDropdownItems eklenebilir */}
             </tr>
           ))}
         </tbody>

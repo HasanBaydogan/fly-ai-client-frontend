@@ -38,10 +38,10 @@ import AlreadyOpenedRfqBySomeoneError from 'smt-v1-app/components/error/AlreadyO
 import ClientListContainer from 'smt-v1-app/containers/Client/ClientListContainer/ClientListContainer';
 import NewClientContainer from 'smt-v1-app/containers/Client/NewClientContainer/NewClientContainer';
 import ClientEditContainer from 'smt-v1-app/containers/Client/ClientEditContainer/ClientEditContainer';
+import PartListContainer from 'smt-v1-app/containers/PartContainer/PartListContainer';
 import PartContainer from 'smt-v1-app/containers/PartContainer/PartContainer';
-import PartContainer2 from 'smt-v1-app/containers/PartContainer/PartContainer2';
 
-import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
+// import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
 const routes: RouteObject[] = [
   {
@@ -135,16 +135,12 @@ const routes: RouteObject[] = [
             path: 'part',
             children: [
               {
-                path: 'new-part',
-                element: <PartContainer />
-              },
-              {
-                path: 'new-part2',
-                element: <PartContainer2 />
-              },
-              {
                 path: 'list',
                 element: <PartListContainer />
+              },
+              {
+                path: 'new-part',
+                element: <PartContainer />
               }
             ]
           }

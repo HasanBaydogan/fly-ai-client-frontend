@@ -287,14 +287,6 @@ export const routes: RouteItems[] = [
                 icon: '',
                 active: true,
                 next: false
-              },
-              {
-                name: '• Add New Part2',
-                path: '/part/new-part2',
-                pathName: 'new-part2',
-                icon: '',
-                active: true,
-                next: false
               }
             ]
           },

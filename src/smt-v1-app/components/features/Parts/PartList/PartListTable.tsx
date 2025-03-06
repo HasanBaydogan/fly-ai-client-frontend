@@ -89,9 +89,10 @@ const searchColumns: SearchColumn[] = [
 
 interface PartListProps {
   activeView: string;
+  onPartSelect: (partId: string) => void;
 }
 
-const PartListTable: FC<PartListProps> = ({ activeView }) => {
+const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
   // Artık state tipi PartData[] olarak tanımlanıyor.
   const [data, setData] = useState<PartData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -123,7 +124,6 @@ const PartListTable: FC<PartListProps> = ({ activeView }) => {
           partId: item.partId,
           partNumber: item.partNumber,
           partName: item.partName,
-          // segments artık string array olarak saklanıyor.
           segments: Array.isArray(item.segments)
             ? item.segments.map((seg: any) => seg.segmentName)
             : [],
@@ -179,6 +179,10 @@ const PartListTable: FC<PartListProps> = ({ activeView }) => {
   useEffect(() => {
     fetchData(searchTerm, pageIndex, selectedColumn);
   }, [pageIndex, pageSize]);
+
+  const openPartModal = (partId: string) => {
+    onPartSelect(partId);
+  };
 
   return (
     <div>
@@ -247,6 +251,7 @@ const PartListTable: FC<PartListProps> = ({ activeView }) => {
       <div className="border-bottom border-translucent">
         {loading && <div>Loading...</div>}
         <AdvanceTable
+          openPartModal={openPartModal}
           tableProps={{
             className: 'phoenix-table border-top border-translucent fs-9',
             data: data,
