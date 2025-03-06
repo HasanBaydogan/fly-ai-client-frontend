@@ -9,7 +9,6 @@ import RevealDropdown, {
 import { Col, Row, Dropdown } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import {
   SupplierData,
   searchBySupplierList
@@ -89,18 +88,9 @@ export const projectListTableColumns: ColumnDef<SupplierData>[] = [
   },
   {
     id: 'action',
-    cell: ({ row: { original } }) => (
-      <RevealDropdownTrigger>
-        <RevealDropdown>
-          <ActionDropdownItems
-            supplierId={original.id ? original.id.toString() : ''}
-            supplierData={original}
-          />
-        </RevealDropdown>
-      </RevealDropdownTrigger>
-    ),
+
     meta: {
-      headerProps: { style: { width: '10%' }, className: 'text-end' },
+      headerProps: { style: { width: '3%' }, className: 'text-end' },
       cellProps: { className: 'text-end' }
     }
   }

@@ -2,10 +2,6 @@ import { Table, Badge } from 'react-bootstrap';
 import { flexRender } from '@tanstack/react-table';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import classNames from 'classnames';
-import RevealDropdown, {
-  RevealDropdownTrigger
-} from 'components/base/RevealDropdown';
-import ActionDropdownItems from './SupplierListTable/ActionDropdownItems/ActionDropdownItems';
 import { CustomTableProps } from './CustomTableProps';
 
 interface AdvanceTableProps {
@@ -76,7 +72,11 @@ const AdvanceTable = ({
         <tbody className={bodyClassName}>
           {data.map(row => (
             <tr key={row.id} className={rowClassName}>
-              <td>{row.companyName}</td>
+              <td>
+                <a href={`/supplier/edit?supplierId=${row.id}`}>
+                  {row.companyName}
+                </a>
+              </td>
               <td>{renderSegments(row.segments)}</td>
               <td>{row.brand}</td>
               <td>{row.country}</td>
@@ -96,16 +96,6 @@ const AdvanceTable = ({
                 >
                   {row.status?.label}
                 </Badge>
-              </td>
-              <td>
-                <RevealDropdownTrigger>
-                  <RevealDropdown>
-                    <ActionDropdownItems
-                      supplierId={row.id}
-                      supplierData={row}
-                    />
-                  </RevealDropdown>
-                </RevealDropdownTrigger>
               </td>
             </tr>
           ))}
