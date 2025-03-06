@@ -26,21 +26,24 @@ const ForgetPasswordContainer = () => {
 
   const handleEmail = async () => {
     setIsLoading(true);
-    if (!email || !isValidEmail(email)) {
+    // Normalize email to lowercase
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !isValidEmail(normalizedEmail)) {
       toastError('Invalid Email');
     } else {
-      const resp = await forgetPassword(email);
+      const resp = await forgetPassword(normalizedEmail);
       console.log(resp);
       if (resp && resp.statusCode === 200) {
-        // Success
+        // Success: set the normalized email in state as well
         setIsTwoFA(true);
         setClientValidationOTP(resp.data.clientValidationOTP);
+        setEmail(normalizedEmail);
       } else if (resp && resp.statusCode === 404) {
         // User not found
         toastError('There is no such a user');
       } else if (resp && resp.statusCode === 406) {
         // Not Expired OTP
-        toastError('Not Expired Code. Wait 2 minutes');
+        toastError('Not expired code. Wait 2 minutes');
       }
     }
     setIsLoading(false);
@@ -51,15 +54,23 @@ const ForgetPasswordContainer = () => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   }
+
   function toastError(message: string) {
     setMessageHeader('Error');
     setVariant('danger');
     setMessageBodyText(message);
     setIsShowToast(true);
   }
+
   const handleTwoFA = async (email: string, otp: string) => {
     setIsLoading(true);
-    const resp = await verifyPassRefreshOTP(email, otp, clientValidationOTP);
+    // Normalize email to lowercase before using it
+    const normalizedEmail = email.trim().toLowerCase();
+    const resp = await verifyPassRefreshOTP(
+      normalizedEmail,
+      otp,
+      clientValidationOTP
+    );
     if (resp && resp.statusCode === 200) {
       setOtpToken(resp.data.otpToken);
       setIsTwoFA(false);
@@ -69,12 +80,13 @@ const ForgetPasswordContainer = () => {
       toastError('Invalid Code');
     } else if (resp && resp.statusCode === 498) {
       // Expired OTP
-      toastError('Expired Code. New Code sent');
+      toastError('Expired code. New code sent');
     } else {
       toastError('Unknown Error!');
     }
     setIsLoading(false);
   };
+
   const isValidPassword = (password: string): boolean => {
     return (
       /[A-Z]/.test(password) && // Contains at least one uppercase character
@@ -94,11 +106,11 @@ const ForgetPasswordContainer = () => {
       setIsLoading(true);
       const resp = await refreshPassword(email, otpToken, newPassword);
       if (resp && resp.statusCode === 200) {
-        toastSuccess('Refresh Password', 'Successfully password refreshed');
+        toastSuccess('Refresh password', 'Successfully password refreshed');
         setIsNewPassword(false);
         setTimeout(() => navigation('/'), 1500);
       } else if (resp && resp.statusCode === 422) {
-        toastError('Invalid Operation. Come back to main Page');
+        toastError('Invalid operation. Come back to main Page');
       } else {
         toastError('Unknown Error');
       }

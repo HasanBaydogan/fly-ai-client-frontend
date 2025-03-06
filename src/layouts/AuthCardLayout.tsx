@@ -37,29 +37,22 @@ const AuthCardLayout = ({
               <Row className=" gx-0 ">
                 <Col
                   xs="auto"
-                  className="rounded-3 position-relative  auth-title-box "
+                  className="rounded-3 position-relative auth-title-box"
+                  style={{
+                    backgroundImage: `url(${bg99})`,
+                    backgroundSize: 'cover', // veya 'contain' tercihinize göre
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    minHeight: '500px', // Görselin doğal yüksekliğine göre ayarlayın
+                    overflow: 'hidden'
+                  }}
                 >
-                  <img
-                    className="bg-image"
-                    src={bg99}
-                    id="loginPageLeftBG"
-                    alt=""
-                    style={{
-                      position: 'absolute',
-                      top: 5,
-                      left: 0,
-                      width: '100%',
-                      objectFit: 'cover',
-                      zIndex: 1
-                    }}
-                  />
-
                   <div
                     className={classNames(
                       className,
                       'position-relative px-4 px-lg-7 py-7 pb-sm-5 text-center text-md-start pb-lg-7 text-overlay'
                     )}
-                    style={{ position: 'relative', zIndex: 2 }}
+                    style={{ zIndex: 2 }}
                   >
                     <h3
                       className="mb-3 text-body-emphasis fs-7"

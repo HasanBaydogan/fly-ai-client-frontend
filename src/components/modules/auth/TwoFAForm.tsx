@@ -84,7 +84,7 @@ const TwoFAForm = ({
                   </React.Fragment>
                 ))}
             </div>
-            <Form.Check type="checkbox" className="text-start mb-4">
+            {/* <Form.Check type="checkbox" className="text-start mb-4">
               <Form.Check.Input
                 type="checkbox"
                 name="2fa-checkbox"
@@ -96,7 +96,7 @@ const TwoFAForm = ({
               >
                 Don’t ask again on this device
               </Form.Check.Label>
-            </Form.Check>
+            </Form.Check> */}
             <Button
               variant="primary"
               className="w-100 mb-5"

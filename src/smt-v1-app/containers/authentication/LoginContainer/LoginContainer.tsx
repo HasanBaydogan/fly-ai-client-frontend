@@ -49,12 +49,12 @@ const LoginContainer = () => {
     } else if (resp && resp.statusCode === 411) {
       toastError('Error', 'Username or Password is invalid!');
     } else if (resp && resp.statusCode === 410) {
-      toastInfo('Info', 'Email Verification Needed! Directed...');
+      toastInfo('Info', 'Email verification needed! Directed...');
       setTimeout(() => {
         setIsTwoFA(true);
       }, 1500);
     } else if (resp && resp.statusCode === 403) {
-      toastInfo('Info', 'User Not Approved. Please Contact with admin');
+      toastInfo('Info', 'Account not approved. Please contact with admin.');
     } else {
       toastError('Error', 'Unknown Error');
     }
