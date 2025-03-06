@@ -66,13 +66,9 @@ const SupplierDetailContainer = () => {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
-
-  // Sonuç modalı için state'ler
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultModalTitle, setResultModalTitle] = useState('');
   const [resultModalMessage, setResultModalMessage] = useState('');
-
-  // Yeni: Save işleminde loading göstergesi için state
   const [loadingSave, setLoadingSave] = useState<boolean>(false);
 
   const handleRatingsChange = (updatedRatings: RatingData) => {
@@ -139,13 +135,6 @@ const SupplierDetailContainer = () => {
       return;
     }
 
-    // if (!segmentIds || segmentIds.length === 0) {
-    //   setAlertMessage('Please select at least one Segment.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
-
     if (!selectedCountryId) {
       setAlertMessage('Please select a Country.');
       setIsSuccess(false);
@@ -193,8 +182,6 @@ const SupplierDetailContainer = () => {
           'Supplier information has been successfully saved!'
         );
         setShowResultModal(true);
-
-        // 2 saniye sonra yönlendirme
         setTimeout(() => {
           navigate('/supplier/list');
         }, 2000);

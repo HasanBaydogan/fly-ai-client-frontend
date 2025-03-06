@@ -1,12 +1,7 @@
-// AdvanceTable.tsx
 import { Table, Badge } from 'react-bootstrap';
 import { flexRender } from '@tanstack/react-table';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import classNames from 'classnames';
-import RevealDropdown, {
-  RevealDropdownTrigger
-} from 'components/base/RevealDropdown';
-import ActionDropdownItems from './SupplierListTable/ActionDropdownItems/ActionDropdownItems';
 import { CustomTableProps } from './CustomTableProps';
 
 interface AdvanceTableProps {
@@ -25,8 +20,7 @@ const AdvanceTable = ({
   hasFooter
 }: AdvanceTableProps) => {
   const table = useAdvanceTableContext();
-  const { getRowModel, getFlatHeaders, getFooterGroups } = table;
-  // Parent'ten gelen data burada kullanılacak.
+  const { getFlatHeaders, getFooterGroups } = table;
   const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
 
   const renderSegments = (segments: { segmentName: string }[]) => {
@@ -61,12 +55,7 @@ const AdvanceTable = ({
                 key={header.id}
                 {...header.column.columnDef.meta?.headerProps}
                 className={classNames(
-                  header.column.columnDef.meta?.headerProps?.className,
-                  {
-                    sort: header.column.getCanSort(),
-                    desc: header.column.getIsSorted() === 'desc',
-                    asc: header.column.getIsSorted() === 'asc'
-                  }
+                  header.column.columnDef.meta?.headerProps?.className
                 )}
                 onClick={header.column.getToggleSortingHandler()}
               >
@@ -83,7 +72,11 @@ const AdvanceTable = ({
         <tbody className={bodyClassName}>
           {data.map(row => (
             <tr key={row.id} className={rowClassName}>
-              <td>{row.companyName}</td>
+              <td>
+                <a href={`/supplier/edit?supplierId=${row.id}`}>
+                  {row.companyName}
+                </a>
+              </td>
               <td>{renderSegments(row.segments)}</td>
               <td>{row.brand}</td>
               <td>{row.country}</td>
@@ -103,16 +96,6 @@ const AdvanceTable = ({
                 >
                   {row.status?.label}
                 </Badge>
-              </td>
-              <td>
-                <RevealDropdownTrigger>
-                  <RevealDropdown>
-                    <ActionDropdownItems
-                      supplierId={row.id}
-                      supplierData={row}
-                    />
-                  </RevealDropdown>
-                </RevealDropdownTrigger>
               </td>
             </tr>
           ))}

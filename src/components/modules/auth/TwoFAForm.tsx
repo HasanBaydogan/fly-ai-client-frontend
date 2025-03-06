@@ -55,7 +55,9 @@ const TwoFAForm = ({
             'mb-6': !(layout === 'split')
           })}
         >
-          <h4 className="text-body-highlight">Enter the verification code</h4>
+          <h4 className="text-body-highlight">
+            Please enter the verification code
+          </h4>
           <p className="text-body-tertiary mb-3">
             An email containing a 6-digit verification code has been sent to the
             email address - {email}
@@ -84,7 +86,7 @@ const TwoFAForm = ({
                   </React.Fragment>
                 ))}
             </div>
-            <Form.Check type="checkbox" className="text-start mb-4">
+            {/* <Form.Check type="checkbox" className="text-start mb-4">
               <Form.Check.Input
                 type="checkbox"
                 name="2fa-checkbox"
@@ -96,7 +98,7 @@ const TwoFAForm = ({
               >
                 Don’t ask again on this device
               </Form.Check.Label>
-            </Form.Check>
+            </Form.Check> */}
             <Button
               variant="primary"
               className="w-100 mb-5"

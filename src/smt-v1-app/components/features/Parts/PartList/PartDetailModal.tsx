@@ -18,7 +18,7 @@ interface ClientDetailModalProps {
     legalAddress: string;
     mail?: string;
     contacts: { email: string }[];
-    clientStatus?: any; // API'den string gelebilir, nesne de olabilir
+    clientStatus?: any;
     quoteID: string | null;
     attachmentResponses?: {
       attachmentId: string | null;
@@ -59,9 +59,7 @@ interface ClientDetailModalProps {
   };
 }
 
-// Yardımcı fonksiyon: marginTable anahtarlarını okunabilir formata çevirir
 const formatMarginKey = (key: string) => {
-  // Örneğin, "btw200and500" -> "Between 200 and 500"
   return key
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/_/g, ' ')
@@ -69,7 +67,7 @@ const formatMarginKey = (key: string) => {
     .replace(/and/, ' and ');
 };
 
-const ClientDetailModal = ({
+const PartDetailModal = ({
   show,
   onHide,
   ClientDataDetail
@@ -132,10 +130,10 @@ const ClientDetailModal = ({
 
   const handleAttachedClick = async (attachmentId: string | null) => {
     if (!attachmentId) return;
-    console.log(`Fetching attachment for ID: ${attachmentId}`);
+    // console.log(`Fetching attachment for ID: ${attachmentId}`);
     try {
       const response = await getAttachedFile(attachmentId);
-      console.log('Attachment Response:', response);
+      // console.log('Attachment Response:', response);
       if (response?.data) {
         openPdfInNewTab(response.data);
       } else {
@@ -164,7 +162,7 @@ const ClientDetailModal = ({
             <Table borderless>
               <tbody>
                 <tr>
-                  <td className="fw-bold">Company Name:</td>
+                  <td className="fw-bold">Quote ID:</td>
                   <td>{ClientDataDetail.companyName}</td>
                 </tr>
                 <tr>
@@ -321,4 +319,4 @@ const ClientDetailModal = ({
   );
 };
 
-export default ClientDetailModal;
+export default PartDetailModal;

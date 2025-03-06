@@ -41,13 +41,14 @@ const SignUpForm = ({
 
   const handleRegisterFields = e => {
     e.preventDefault();
+    const normalizedEmail = email.trim().toLowerCase();
 
     if (!name.trim()) {
-      toastError('Enter your name');
+      toastError('Please enter your name');
     } else if (!surname.trim()) {
-      toastError('Enter your surname');
-    } else if (!email.trim() || !isValidEmail(email)) {
-      toastError('Invalid Email!');
+      toastError('Please enter your surname');
+    } else if (!normalizedEmail || !isValidEmail(normalizedEmail)) {
+      toastError('Invalid email!');
     } else if (password.includes(' ')) {
       toastError('Password should not contain spaces!');
     } else if (password.trim().length < 8) {
@@ -64,7 +65,7 @@ const SignUpForm = ({
       const user = {
         name: name.trim(),
         surname: surname.trim(),
-        email: email.trim(),
+        email: normalizedEmail,
         password: password.trim()
       };
 

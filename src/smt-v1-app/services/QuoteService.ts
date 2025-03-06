@@ -15,6 +15,16 @@ const api = () => {
   });
 };
 
+export type QuoteStatus = {
+  label: 'CONTACTED' | 'NOT_CONTACTED' | 'BLACK_LISTED';
+  type: 'success' | 'warning' | 'danger';
+};
+
+export type FormStatus = {
+  label: 'CONTACTED' | 'NOT_CONTACTED' | 'BLACK_LISTED';
+  type: 'success' | 'warning' | 'danger';
+};
+
 export const getQuoteDetailsById = async (quoteId: string) => {
   try {
     const accessToken = Cookies.get('access_token');
@@ -173,7 +183,7 @@ export const quoteWizardIntro = async (
         headers
       }
     );
-    console.log(rfqResponse);
+    // console.log(rfqResponse);
     if (rfqResponse.data.statusCode === 200) {
       return rfqResponse.data;
     } else if (rfqResponse.data.statusCode === 498) {
@@ -228,6 +238,7 @@ export const quoteWizardIntro = async (
     console.log('quoteWizardIntro Permission Error');
   }
 };
+
 export const getPreEmailSendingParameters = async (quoteId: string) => {
   try {
     const accessToken = Cookies.get('access_token');
@@ -367,6 +378,7 @@ export const getRFQMailIdToGoToRFQMail = async (quoteId: string) => {
   try {
     const accessToken = Cookies.get('access_token');
     const headers = {};
+
     if (accessToken) {
       headers['Authorization'] = `Bearer ${accessToken}`;
     } else {
@@ -380,6 +392,7 @@ export const getRFQMailIdToGoToRFQMail = async (quoteId: string) => {
       return response.data;
     } else if (response.data.statusCode === 498) {
       // Expired JWT
+
       try {
         const refreshTokenresponse = await api().post('/auth/refresh-token', {
           refresh_token: Cookies.get('refresh_token')
@@ -393,6 +406,7 @@ export const getRFQMailIdToGoToRFQMail = async (quoteId: string) => {
             'refresh_token',
             refreshTokenresponse.data.data.refresh_token
           );
+
           let dataResponseAfterRefresh = await api().get(
             `/quote/go-to-rfq-mail/${quoteId}`,
             {
@@ -410,11 +424,13 @@ export const getRFQMailIdToGoToRFQMail = async (quoteId: string) => {
           window.location.assign('/');
         } else if (refreshTokenresponse.data.statusCode === 411) {
           // Invalid Refresh Token
+
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           window.location.assign('/');
         } else if (refreshTokenresponse.data.statusCode === 404) {
           console.log('User not found');
+
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           window.location.assign('/');
@@ -427,5 +443,92 @@ export const getRFQMailIdToGoToRFQMail = async (quoteId: string) => {
     }
   } catch (err) {
     console.log('Send Email Permission Error');
+  }
+};
+
+export interface QuoteData {
+  quoteId: string;
+  quoteNumberId: string;
+  revisionNo: string;
+  clientsResponse: { clientId: string; clientName: string }[];
+  clientRFQId: string;
+  numOfProduct: number;
+  quoteStatus: QuoteStatus;
+  formStatus: FormStatus;
+  finalCost: number;
+  lastValidDate: string;
+}
+
+export const searchByQuoteList = async (
+  term: string,
+  pageNo: number,
+  pageSize: number
+) => {
+  // console.log('Response from searchByQuoteList:', term);
+
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers: Record<string, string> = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+      return;
+    }
+
+    const url = term
+      ? `/quote/filter/${pageNo}/${pageSize}?${term}`
+      : `/quote/all/${pageNo}/${pageSize}`;
+    // console.log('url', url);
+    const quoteList = await api().get(url, { headers });
+    // console.log('Response from searchByQuoteList:', quoteList);
+
+    if (quoteList.data.statusCode === 200) {
+      return quoteList.data;
+    } else if (quoteList.data.statusCode === 498) {
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          const clientListAfterRefresh = await api().get(url, {
+            headers: {
+              Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+            }
+          });
+
+          return clientListAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('[searchByClientList] User not found. Redirecting.');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log('[searchByClientList] Refresh token error:', err);
+      }
+    } else if (quoteList.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[searchByQuoteList] Supplier List Permission Error:', err);
   }
 };

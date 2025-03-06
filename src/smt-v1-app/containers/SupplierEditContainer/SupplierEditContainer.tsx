@@ -29,10 +29,6 @@ import {
 import { FileAttachment } from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
 import AttachmentPreview from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
 
-/**
- * Dosyayı base64 verisinden açmak / indirmek için fonksiyon.
- * Gelen dosya objesi; url (base64 data), contentType ve fileName alanlarını içermelidir.
- */
 const openFileInNewTab = (file: {
   data: string;
   contentType: string;
@@ -93,11 +89,9 @@ const SupplierEditContainer = () => {
     euDemandOfParts: 0
   });
   const [segments, setSegments] = useState<TreeNode[]>([]);
-  // Attachment metadata'larını tutuyoruz.
   const [initialAttachments, setInitialAttachments] = useState<
     (FileAttachment & { id: string; contentType: string })[]
   >([]);
-
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -106,12 +100,8 @@ const SupplierEditContainer = () => {
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultModalTitle, setResultModalTitle] = useState('');
   const [resultModalMessage, setResultModalMessage] = useState('');
-  // Supplier verisi yüklenirken kullanılan loading state.
   const [loadingSupplier, setLoadingSupplier] = useState<boolean>(true);
-  // PUT isteği sırasında loading state.
   const [loadingSave, setLoadingSave] = useState<boolean>(false);
-
-  // Yeni: silinmek istenen attachment bilgisini ve modal gösterim durumunu tutan state'ler
   const [attachmentToDelete, setAttachmentToDelete] = useState<
     null | (FileAttachment & { id: string; contentType: string })
   >(null);
@@ -123,7 +113,6 @@ const SupplierEditContainer = () => {
 
   const getInitialSelectedIds = (nodes: any[]): string[] => {
     return nodes.reduce((acc: string[], node: any) => {
-      // node.isSelected değeri null ya da undefined ise false kabul edilir.
       if ((node.isSelected ?? false) === true) {
         acc.push(node.segmentId);
       }
@@ -173,14 +162,11 @@ const SupplierEditContainer = () => {
           // console.log('Supplier data:', supplier);
           setCompanyName(supplier.supplierCompanyName);
           setBrandInput(supplier.brand);
-          // Özyinelemeli olarak tüm true olan segmentlerin id'sini alıyoruz.
           const selectedSupplierSegmentIds = getInitialSelectedIds(
             supplier.segments
           );
           setSegmentIds(selectedSupplierSegmentIds);
-          // Eğer segment ağacını da güncellemek istiyorsanız:
           setSegments(supplier.segments);
-
           setSelectedCountryId(supplier.country.id);
           setPickUpAddress(supplier.pickUpAddress);
           setSelectedStatus(supplier.supplierStatus);
@@ -242,12 +228,6 @@ const SupplierEditContainer = () => {
       setShowAlert(true);
       return;
     }
-    // if (!segmentIds || segmentIds.length === 0) {
-    //   setAlertMessage('Please select at least one Segment.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
     if (!selectedCountryId) {
       setAlertMessage('Please select a Country.');
       setIsSuccess(false);
@@ -265,10 +245,10 @@ const SupplierEditContainer = () => {
       ...initialAttachments.map(att => ({
         id: att.id,
         fileName: att.name,
-        data: (att as any).url // Eğer url varsa
+        data: (att as any).url
       })),
       ...base64Files.map(file => ({
-        id: file.id,
+        id: null,
         fileName: file.name,
         data: file.base64
       }))
@@ -330,7 +310,6 @@ const SupplierEditContainer = () => {
       setResultModalMessage('An error occurred while updating supplier info.');
       setShowResultModal(true);
     } finally {
-      // İstek tamamlandığında loading state'i false yapıyoruz.
       setLoadingSave(false);
     }
   };
@@ -356,7 +335,6 @@ const SupplierEditContainer = () => {
     setBase64Files(files);
   };
 
-  // Tıklama: Attachment container'a tıklandığında dosya indirilir.
   const handleAttachmentClick = async (att: any) => {
     try {
       const fileResponse = await getAttachedFile(att.id);
@@ -376,13 +354,11 @@ const SupplierEditContainer = () => {
     }
   };
 
-  // Silme butonuna tıklanırsa: Modalı aç.
   const handleDeleteClick = (att: any) => {
     setAttachmentToDelete(att);
     setShowDeleteModal(true);
   };
 
-  // Delete confirmation modal'da onay verildiğinde attachment'i listeden kaldırıyoruz.
   const confirmDelete = () => {
     if (attachmentToDelete) {
       setInitialAttachments(prev =>
@@ -393,7 +369,6 @@ const SupplierEditContainer = () => {
     setAttachmentToDelete(null);
   };
 
-  // Eğer supplier verisi yükleniyorsa, loading göstergesi render edelim.
   if (loadingSupplier) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -567,7 +542,6 @@ const SupplierEditContainer = () => {
           className="d-flex justify-content-center align-items-center d-inline-block w-25 p-3"
           style={{ position: 'relative', minWidth: '200px', minHeight: '70px' }}
         >
-          {/* Normal içerik buraya gelebilir */}
           {loadingSave && (
             <div
               className="loading-overlay"

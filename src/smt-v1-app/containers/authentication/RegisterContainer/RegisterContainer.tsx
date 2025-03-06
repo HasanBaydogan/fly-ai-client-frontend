@@ -27,7 +27,7 @@ const RegisterContainer = () => {
       setIsTwoFactorAuth(true);
     } else if (response.statusCode === 409) {
       setMessageHeader('Already Registered');
-      setMessageBodyText('That Email is Already Registered');
+      setMessageBodyText('That email is already registered');
       setIsShowToast(true);
     }
     setIsLoading(false);
@@ -40,7 +40,7 @@ const RegisterContainer = () => {
       navigate('/');
     } else if (response.statusCode === 498) {
       setMessageHeader('Expired Email');
-      setMessageBodyText('New Code is sent to your email');
+      setMessageBodyText('New code is sent to your email');
       setIsShowToast(true);
       // Expired
     } else if (response.statusCode === 411) {
@@ -50,7 +50,7 @@ const RegisterContainer = () => {
       setIsShowToast(true);
     } else {
       setMessageHeader('An Error Occurs');
-      setMessageBodyText('An Error Occurs');
+      setMessageBodyText('An error occurs');
       setIsShowToast(true);
     }
     setIsLoading(false);

@@ -3,13 +3,9 @@ import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from './AdvanceTable';
 import AdvanceTableFooter from './AdvanceTableFooter';
 import Badge from 'components/base/Badge';
-import RevealDropdown, {
-  RevealDropdownTrigger
-} from 'components/base/RevealDropdown';
-import { Col, Row, Dropdown, Button } from 'react-bootstrap';
+import { Col, Row, Dropdown } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import {
   ClientData,
   searchByClientList
@@ -21,6 +17,11 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
     id: 'companyName',
     accessorKey: 'companyName',
     header: 'Company',
+    cell: ({ row }) => (
+      <a href={`/client/edit?clientId=${row.original.clientId}`}>
+        {row.original.companyName}
+      </a>
+    ),
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
       headerProps: { style: { width: '20%' } }
@@ -28,10 +29,10 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
   },
   {
     header: 'Details',
-    accessorKey: 'details ',
+    accessorKey: 'details',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '35%' }, className: 'ps-3' }
+      headerProps: { style: { width: '30%' }, className: 'ps-3' }
     }
   },
   {
@@ -47,7 +48,7 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
     accessorKey: 'website',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '20%' }, className: 'ps-3' }
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
@@ -73,21 +74,11 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
     },
     meta: {
       cellProps: { className: 'ps-8 py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-8' }
+      headerProps: { style: { width: '15%' }, className: 'ps-8' }
     }
   },
   {
     id: 'action',
-    cell: ({ row: { original } }) => (
-      <RevealDropdownTrigger>
-        <RevealDropdown>
-          <ActionDropdownItems
-            clientId={original.clientId ? original.clientId.toString() : ''}
-            clientDataDetail={original} // Prop adını güncelledik
-          />
-        </RevealDropdown>
-      </RevealDropdownTrigger>
-    ),
     meta: {
       headerProps: { style: { width: '10%' }, className: 'text-end' },
       cellProps: { className: 'text-end' }
@@ -95,9 +86,6 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
   }
 ];
 
-/* ***********************
-   YARDIMCI FONKSİYONLAR
-   *********************** */
 const handleNullValue = (value: string) => {
   return value === 'null null' ? '' : value;
 };
@@ -115,10 +103,6 @@ const searchColumns: SearchColumn[] = [
   { label: 'Legal Address', value: 'legalAddress' }
 ];
 
-/* ***********************
-   ANA BİLEŞEN: ClientList
-   (Hem arama/filtreleme hem de tablo görüntüleme)
-   *********************** */
 interface ClientListProps {
   activeView: string;
 }
@@ -132,7 +116,7 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const [pageSize, setPageSize] = useState<number>(5); // Page size state,
+  const [pageSize, setPageSize] = useState<number>(10); // Page size state,
   // console.log('Page Size', pageSize);
 
   const { setGlobalFilter, setColumnFilters } =
@@ -347,12 +331,12 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
         />
         <AdvanceTableFooter
           pagination
-          className="py-1"
+          className="py-1 advance-table-footer-client-list"
           totalItems={totalItems}
           pageIndex={pageIndex}
           setPageIndex={setPageIndex}
-          pageSize={pageSize} // Pass pageSize here
-          setPageSize={setPageSize} // Allow page size change
+          pageSize={pageSize}
+          setPageSize={setPageSize}
         />
       </div>
     </div>

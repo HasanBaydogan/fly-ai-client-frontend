@@ -54,7 +54,6 @@ const useAdvanceTable = <T,>({
   columns,
   data,
   selection,
-  sortable,
   pagination,
   pageSize,
   initialState
@@ -68,7 +67,6 @@ const useAdvanceTable = <T,>({
   const table = useReactTable<T>({
     data,
     columns: selection ? [selectionColumn, ...columns] : columns,
-    enableSorting: sortable,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

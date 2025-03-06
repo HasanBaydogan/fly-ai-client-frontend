@@ -200,7 +200,7 @@ export const postSupplierCreate = async (newSupplier: CreateSupplier) => {
     const response = await api().post(`/supplier/create`, newSupplier, {
       headers
     });
-    console.log(response);
+    // console.log(response);
     if (response.data.statusCode === 200) {
       return response.data;
     } else if (response.data.statusCode === 498) {
@@ -461,11 +461,10 @@ export const putBySupplierUpdate = async (payload: UpdateSupplierPayload) => {
     } else {
       window.location.assign('/');
     }
-
+    // console.log(payload);
     const response = await api().put(`/supplier/update`, payload, {
       headers
     });
-
     if (response.data.statusCode === 200) {
       return response.data;
     } else if (response.data.statusCode === 498) {

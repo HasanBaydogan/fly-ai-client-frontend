@@ -58,20 +58,17 @@ const SupplierDetailModal = ({
     try {
       const base64Data = file.data.split(',')[1];
 
-      // Base64 stringini binary formatına çevir
       const binaryData = atob(base64Data);
       const arrayBuffer = new Uint8Array(binaryData.length);
       for (let i = 0; i < binaryData.length; i++) {
         arrayBuffer[i] = binaryData.charCodeAt(i);
       }
 
-      // Blob nesnesi oluştur
       const blob = new Blob([arrayBuffer], {
         type: file.contentType || 'application/pdf'
       });
       const url = URL.createObjectURL(blob);
 
-      // Yeni sekmede aç
       window.open(url, '_blank');
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch (error) {
@@ -92,14 +89,13 @@ const SupplierDetailModal = ({
     }
   };
 
-  // Belirli bir attachment ID için dosyayı getir
   const handleAttachedClick = async (attachmentId: string | null) => {
     if (!attachmentId) return;
-    console.log(`Fetching attachment for ID: ${attachmentId}`);
+    // console.log(`Fetching attachment for ID: ${attachmentId}`);
 
     try {
       const response = await getAttachedFile(attachmentId);
-      console.log('Attachment Response:', response);
+      // console.log('Attachment Response:', response);
 
       if (response?.data) {
         openPdfInNewTab(response.data);
@@ -110,7 +106,6 @@ const SupplierDetailModal = ({
       console.error('Error fetching attachment:', error);
     }
   };
-  // /supplier/edit?supplierId={props}
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton className="gap-5">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
-import ClientDetailModal from '../ClientDetailModal';
+import PartDetailModal from '../PartDetailModal';
 import {
   ClientDataDetail,
   getByClientDetailList
@@ -19,7 +19,6 @@ const ActionDropdownItems = ({ clientId }: ActionDropdownItemsProps) => {
 
   const handleViewClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
-    // console.log(`Fetching client for ID: ${clientId}`);
 
     try {
       const response = await getByClientDetailList(clientId);
@@ -38,7 +37,7 @@ const ActionDropdownItems = ({ clientId }: ActionDropdownItemsProps) => {
         Edit
       </Dropdown.Item>
       {showDetailModal && (
-        <ClientDetailModal
+        <PartDetailModal
           show={showDetailModal}
           onHide={() => setShowDetailModal(false)}
           ClientDataDetail={fetchedClientData}

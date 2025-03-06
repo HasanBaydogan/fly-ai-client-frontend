@@ -184,12 +184,12 @@ const NewClientContainer = () => {
       return;
     }
 
-    // if (!segmentIds || segmentIds.length === 0) {
-    //   setAlertMessage('Please select at least one Segment.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
+    if (!clientMail) {
+      setAlertMessage('Please select a Mail.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
 
     if (!legalAddress) {
       setAlertMessage('Legal Address cannot be empty..');

@@ -132,7 +132,6 @@ const ClientEditContainer = () => {
 
   const getInitialSelectedIds = (nodes: any[]): string[] => {
     return nodes.reduce((acc: string[], node: any) => {
-      // node.isSelected değeri null ya da undefined ise false kabul edilir.
       if ((node.isSelected ?? false) === true) {
         acc.push(node.segmentId);
       }
@@ -147,14 +146,12 @@ const ClientEditContainer = () => {
     const fetchCurrencies = async () => {
       try {
         const response = await getbyCurrencyController();
-        // Adjust the next lines according to your API response structure.
         if (
           response &&
           response.statusCode === 200 &&
           Array.isArray(response.data)
         ) {
           setCurrencies(response.data);
-          // Optionally set the default selected currency:
           if (response.data.length > 0) {
             setSelectedCurrency(response.data[0]);
           }
@@ -199,12 +196,10 @@ const ClientEditContainer = () => {
           setPhone(client.phone);
           setUserComments(client.userComments);
           setMarginTable(client.marginTable);
-          // Özyinelemeli olarak tüm true olan segmentlerin id'sini alıyoruz.
           const selectedSupplierSegmentIds = getInitialSelectedIds(
             client.segments
           );
           setSegmentIds(selectedSupplierSegmentIds);
-          // Eğer segment ağacını da güncellemek istiyorsanız:
           setSegments(client.segments);
           setPickUpAddress(client.details);
           setSelectedStatus(client.clientStatus);
@@ -257,24 +252,27 @@ const ClientEditContainer = () => {
   const handleSave = async () => {
     setShowSaveModal(false);
 
-    // if (!companyName.trim()) {
-    //   setAlertMessage('Company Name cannot be empty.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
-    // if (!segmentIds || segmentIds.length === 0) {
-    //   setAlertMessage('Please select at least one Segment.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
-    // if (!selectedCountryId) {
-    //   setAlertMessage('Please select a Country.');
-    //   setIsSuccess(false);
-    //   setShowAlert(true);
-    //   return;
-    // }
+    if (!clientCompanyName.trim()) {
+      setAlertMessage('Company Name cannot be empty.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
+
+    if (!clientMail) {
+      setAlertMessage('Please select a Mail.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
+
+    if (!legalAddress) {
+      setAlertMessage('Legal Address cannot be empty..');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
+
     if (!selectedStatus) {
       setAlertMessage('Please select a Status.');
       setIsSuccess(false);

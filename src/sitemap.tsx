@@ -29,7 +29,7 @@ export interface RouteItems {
 
 export const routes: RouteItems[] = [
   {
-    label: 'smt apps',
+    label: '',
     icon: UilCube,
     pages: [
       {
@@ -274,7 +274,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Part List',
-                path: '/',
+                path: '/part/list',
                 pathName: 'part-list',
                 icon: '',
                 active: true,
@@ -282,7 +282,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Add New Part',
-                path: '/',
+                path: '/part/new-part',
                 pathName: 'new-part',
                 icon: '',
                 active: true,

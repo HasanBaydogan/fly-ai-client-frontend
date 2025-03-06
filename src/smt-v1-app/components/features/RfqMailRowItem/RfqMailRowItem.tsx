@@ -13,6 +13,7 @@ import completetionIcon from '../../../../assets/img/icons/completetionIcon.svg'
 import './RfqMailRowItem.css';
 import { point } from 'smt-v1-app/services/MailTrackingService';
 import RFQMailDetailModal from '../RFQMailDetailModal/RFQMailDetailModal';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const RfqMailRowItem = ({
   rfqMail,
@@ -39,11 +40,13 @@ const RfqMailRowItem = ({
   const forceReRender = () => {
     setComponentKey(prevKey => prevKey + 1);
   };
+
   const handleStatusColor = (rfqMailStatus: string) => {
     const returnColors = getColorStyles(rfqMailStatus);
     setBgColor(returnColors.bgColor);
     setTextColor(returnColors.textColor);
   };
+
   useEffect(() => {
     handleStatusColor(rfqMailStatus);
     // Default olarak hepsini aktif yapıyoruz
@@ -126,7 +129,7 @@ const RfqMailRowItem = ({
         <td>
           <img
             src={rightHalfArrow}
-            alt="rigth_Arrow"
+            alt="right_Arrow"
             className="rfq-mail-item-rigth-arrow"
             onClick={() => setIsDetailShow(true)}
           />
@@ -134,40 +137,62 @@ const RfqMailRowItem = ({
         <td>{rfqMail.rfqNumberId}</td>
         <td>
           <div className="d-flex mt-3">
-            <img
-              src={NotRfqIcon}
-              alt="Not RFQ Icon"
-              className={`me-2 ${
-                isNotRFQActive
-                  ? 'rfq-mail-listing-icon-opacity'
-                  : 'rfq-mail-listing-icon-hover'
-              }`}
-              onClick={
-                isNotRFQActive ? undefined : () => handlePoint('NOT_RFQ')
+            {/* Not RFQ Icon */}
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id="tooltip-not-rfq">Mark as Not RFQ</Tooltip>}
+            >
+              <img
+                src={NotRfqIcon}
+                alt="Not RFQ Icon"
+                className={`me-2 ${
+                  isNotRFQActive
+                    ? 'rfq-mail-listing-icon-opacity'
+                    : 'rfq-mail-listing-icon-hover'
+                }`}
+                onClick={
+                  isNotRFQActive ? undefined : () => handlePoint('NOT_RFQ')
+                }
+              />
+            </OverlayTrigger>
+
+            {/* No Quote Icon */}
+            <OverlayTrigger
+              placement="top"
+              overlay={
+                <Tooltip id="tooltip-no-quote">Mark as No Quote</Tooltip>
               }
-            />
-            <img
-              src={NoQuoteIcon}
-              alt="No Quote Icon"
-              className={`me-2 ${
-                isNoQuoteActive
-                  ? 'rfq-mail-listing-icon-opacity'
-                  : 'rfq-mail-listing-icon-hover'
-              }`}
-              onClick={
-                isNoQuoteActive ? undefined : () => handlePoint('NO_QUOTE')
-              }
-            />
-            <img
-              src={SpamIcon}
-              alt="Spam Icon"
-              className={`me-2 ${
-                isSpamActive
-                  ? 'rfq-mail-listing-icon-opacity'
-                  : 'rfq-mail-listing-icon-hover'
-              }`}
-              onClick={isSpamActive ? undefined : () => handlePoint('SPAM')}
-            />
+            >
+              <img
+                src={NoQuoteIcon}
+                alt="No Quote Icon"
+                className={`me-2 ${
+                  isNoQuoteActive
+                    ? 'rfq-mail-listing-icon-opacity'
+                    : 'rfq-mail-listing-icon-hover'
+                }`}
+                onClick={
+                  isNoQuoteActive ? undefined : () => handlePoint('NO_QUOTE')
+                }
+              />
+            </OverlayTrigger>
+
+            {/* Spam Icon */}
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id="tooltip-spam">Mark as Spam</Tooltip>}
+            >
+              <img
+                src={SpamIcon}
+                alt="Spam Icon"
+                className={`me-2 ${
+                  isSpamActive
+                    ? 'rfq-mail-listing-icon-opacity'
+                    : 'rfq-mail-listing-icon-hover'
+                }`}
+                onClick={isSpamActive ? undefined : () => handlePoint('SPAM')}
+              />
+            </OverlayTrigger>
           </div>
         </td>
         <td>
@@ -204,7 +229,6 @@ const RfqMailRowItem = ({
             <p>{rfqMail.comment == null ? '' : rfqMail.comment}</p>
           </div>
         </td>
-
         <td>
           <div className="d-flex flex-column align-items-end">
             <span className="fw-bold" style={{ fontSize: '12px' }}>

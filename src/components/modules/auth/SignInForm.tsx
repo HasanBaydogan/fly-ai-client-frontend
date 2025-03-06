@@ -36,14 +36,15 @@ const SignInForm = ({
 
   const handleLocalLogin = e => {
     e.preventDefault();
-    if (!localEmail.trim() || !password || !isValidEmail(localEmail)) {
+    const normalizedEmail = localEmail.trim().toLowerCase();
+    if (!normalizedEmail || !password || !isValidEmail(normalizedEmail)) {
       setVariant('danger');
       setMessageHeader('Invalid Email or Password!');
       setMessageBodyText('Check Email or Password');
       setIsShowToast(true);
     } else {
-      handleLogin(localEmail, password);
-      setEmail(localEmail);
+      handleLogin(normalizedEmail, password);
+      setEmail(normalizedEmail);
     }
   };
 

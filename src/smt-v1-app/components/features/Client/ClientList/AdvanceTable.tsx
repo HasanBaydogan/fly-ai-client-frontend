@@ -3,10 +3,6 @@ import { Table, Badge } from 'react-bootstrap';
 import { flexRender } from '@tanstack/react-table';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import classNames from 'classnames';
-import RevealDropdown, {
-  RevealDropdownTrigger
-} from 'components/base/RevealDropdown';
-import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import { CustomTableProps } from './CustomTableProps';
 
 interface AdvanceTableProps {
@@ -25,31 +21,9 @@ const AdvanceTable = ({
   hasFooter
 }: AdvanceTableProps) => {
   const table = useAdvanceTableContext();
-  const { getRowModel, getFlatHeaders, getFooterGroups } = table;
-  // Parent'ten gelen data burada kullanılacak.
-  const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
+  const { getFlatHeaders, getFooterGroups } = table;
 
-  const renderSegments = (segments: { segmentName: string }[]) => {
-    if (!segments || segments.length === 0) return '';
-    if (segments.length === 1) {
-      return <div>• {segments[0].segmentName}</div>;
-    } else if (segments.length === 2) {
-      return (
-        <>
-          <div>• {segments[0].segmentName}</div>
-          <div>• {segments[1].segmentName}</div>
-        </>
-      );
-    } else {
-      return (
-        <>
-          <div>• {segments[0].segmentName}</div>
-          <div>• {segments[1].segmentName}</div>
-          <div>• ...</div>
-        </>
-      );
-    }
-  };
+  const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
 
   return (
     <div className="scrollbar ms-n1 ps-1">
@@ -61,12 +35,7 @@ const AdvanceTable = ({
                 key={header.id}
                 {...header.column.columnDef.meta?.headerProps}
                 className={classNames(
-                  header.column.columnDef.meta?.headerProps?.className,
-                  {
-                    sort: header.column.getCanSort(),
-                    desc: header.column.getIsSorted() === 'desc',
-                    asc: header.column.getIsSorted() === 'asc'
-                  }
+                  header.column.columnDef.meta?.headerProps?.className
                 )}
                 onClick={header.column.getToggleSortingHandler()}
               >
@@ -83,7 +52,11 @@ const AdvanceTable = ({
         <tbody className={bodyClassName}>
           {data.map(row => (
             <tr key={row.clientId} className={rowClassName}>
-              <td>{row.companyName}</td>
+              <td>
+                <a href={`/client/edit?clientId=${row.clientId}`}>
+                  {row.companyName}
+                </a>
+              </td>
               <td>{row.details}</td>
               <td>{row.currencyPreference}</td>
               <td>{row.website}</td>
@@ -104,19 +77,10 @@ const AdvanceTable = ({
                   {row.clientStatus?.label}
                 </Badge>
               </td>
-              <td>
-                <RevealDropdownTrigger>
-                  <RevealDropdown>
-                    <ActionDropdownItems
-                      clientId={row.clientId}
-                      clientDataDetail={row}
-                    />
-                  </RevealDropdown>
-                </RevealDropdownTrigger>
-              </td>
             </tr>
           ))}
         </tbody>
+
         {hasFooter && (
           <tfoot>
             {getFooterGroups().map(footerGroup => (

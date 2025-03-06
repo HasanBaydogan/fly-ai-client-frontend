@@ -1,0 +1,21 @@
+
+
+#loginPageLeftBG
+{
+    height: auto !important;
+    width: 90% !important;
+}
+
+#loginPgaeLeftHeader{
+    color: #3264ad !important;
+}
+
+#loginPgaeLeftSubText{
+    color: #464646 !important;
+}
+@media (max-width: 768px) {
+    .auth-title-box {
+      display: none !important;
+    }
+  }
+  

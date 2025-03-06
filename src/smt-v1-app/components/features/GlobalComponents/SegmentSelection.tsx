@@ -17,7 +17,7 @@ const SegmentSelection: React.FC<SegmentSelectionProps> = ({
   setSegments
 }) => {
   return (
-    <Form>
+    <div>
       <Form.Group className="mb-5 mt-3">
         <Form.Label>Segments</Form.Label>
         <TreeSelect
@@ -26,7 +26,7 @@ const SegmentSelection: React.FC<SegmentSelectionProps> = ({
           setSegments={setSegments}
         />
       </Form.Group>
-    </Form>
+    </div>
   );
 };
 
