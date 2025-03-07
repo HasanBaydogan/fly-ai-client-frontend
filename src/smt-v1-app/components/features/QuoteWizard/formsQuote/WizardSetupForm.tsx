@@ -338,21 +338,29 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     );
   };
 
-  const handleDescriptionChange = (value: string, tempId: number) => {
+  const handleDescriptionChange = (
+    value: string,
+    identifier: number | string
+  ) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row =>
-        row.tempId === tempId ? { ...row, description: value } : row
+        (row.tempId != null ? row.tempId === identifier : row.id === identifier)
+          ? { ...row, description: value }
+          : row
       )
     );
   };
 
-  const handleLeadTimeChange = (value: number, tempId: number) => {
+  const handleLeadTimeChange = (value: number, identifier: number | string) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row =>
-        row.tempId === tempId ? { ...row, leadTime: value } : row
+        (row.tempId != null ? row.tempId === identifier : row.id === identifier)
+          ? { ...row, leadTime: value }
+          : row
       )
     );
   };
+
   const handleQuantityChange = (value: number, rowId: string) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row =>
@@ -559,7 +567,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <td className="text-white align-middle">DESCRIPTION</td>
               <td className="text-white align-middle">REQ CND</td>
               <td className="text-white align-middle">FND CND</td>
-              <td className="text-white align-middle">LEAD TIME (DAYS)</td>
+              <td className="text-white align-middle">LEAD TIME</td>
               <td className="text-white align-middle">QTY</td>
               <td className="text-white align-middle">UNIT PRICE</td>
               <td
@@ -601,18 +609,20 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   )}
                 </td>
                 <td>
-                  {row.isNew ? (
-                    <Form.Control
-                      type="text"
-                      value={row.description}
-                      onChange={e =>
-                        handleDescriptionChange(e.target.value, row.tempId)
-                      }
-                    />
-                  ) : (
-                    row.description
-                  )}
+                  <Form.Control
+                    as="textarea"
+                    rows={3} // Başlangıç satır sayısı
+                    value={row.description}
+                    onChange={e =>
+                      handleDescriptionChange(
+                        e.target.value,
+                        row.tempId != null ? row.tempId : row.id
+                      )
+                    }
+                    style={{ width: '100%', resize: 'vertical' }}
+                  />
                 </td>
+
                 <td>
                   {row.isNew ? (
                     <Form.Select
@@ -653,28 +663,24 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     row.fndCondition
                   )}
                 </td>
-                <td>
-                  {row.isNew ? (
-                    <div className="d-flex align-items-center">
-                      <Form.Control
-                        type="number"
-                        value={row.leadTime}
-                        onChange={e =>
-                          handleLeadTimeChange(
-                            Number(e.target.value),
-                            row.tempId
-                          )
-                        }
-                        style={{ width: '75px' }}
-                        min={1}
-                      />
-                      <span className="ms-2">Days</span>
-                    </div>
-                  ) : (
-                    `${row.leadTime} Days`
-                  )}
+                <td style={{ width: '75px' }}>
+                  <div className="d-flex align-items-center">
+                    <Form.Control
+                      type="number"
+                      value={row.leadTime}
+                      onChange={e =>
+                        handleLeadTimeChange(
+                          Number(e.target.value),
+                          row.tempId != null ? row.tempId : row.id
+                        )
+                      }
+                      style={{ width: '75px' }}
+                      min={1}
+                    />
+                  </div>
                 </td>
-                <td>
+
+                <td style={{ width: '75px' }}>
                   <Form.Control
                     type="number"
                     value={row.quantity}
@@ -682,8 +688,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       handleQuantityChange(parseInt(e.target.value, 10), row.id)
                     }
                     min={1}
+                    style={{ width: '75px' }} // Input genişliğini de ayarlıyoruz
                   />
                 </td>
+
                 <td>
                   <Form.Control
                     type="text"
