@@ -1,20 +1,24 @@
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useState } from 'react';
+import React from 'react';
 import editIcon from '../../../../../../assets/img/icons/edit-icon.svg';
 import './RFQPartTableRow.css';
 import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import { formatNumber } from './RFQPartTableRowHelper';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
 
-const RFQPartTableRow = ({
-  rfqParts,
-  handleEditPart,
-  handlePartDeletion
-}: {
+interface RFQPartTableRowProps {
   rfqParts: RFQPart[];
   handleEditPart: (partNumber: string) => void;
   handlePartDeletion: (partNumber: string) => void;
+  handleOpenPartModal: (partNumber: string) => void;
+}
+
+const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
+  rfqParts,
+  handleEditPart,
+  handlePartDeletion,
+  handleOpenPartModal
 }) => {
   return (
     <>
@@ -38,7 +42,16 @@ const RFQPartTableRow = ({
                 />
               </div>
             </td>
-            <td>{rfqPart.partNumber}</td>
+            <td
+              onClick={() => handleOpenPartModal(rfqPart.partNumber)}
+              style={{
+                cursor: 'pointer',
+                color: 'blue',
+                textDecoration: 'underline'
+              }}
+            >
+              {rfqPart.partNumber}
+            </td>
             <td>{rfqPart.partName}</td>
             <td className="text-center">{rfqPart.reqQTY}</td>
             <td className="text-center">{rfqPart.fndQTY}</td>
@@ -59,7 +72,6 @@ const RFQPartTableRow = ({
               </span>{' '}
               {formatNumber(rfqPart.price * rfqPart.fndQTY)}
             </td>
-
             <td>{rfqPart.comment}</td>
             <td className="text-center">
               {rfqPart.dgPackagingCost ? 'YES' : 'NO'}

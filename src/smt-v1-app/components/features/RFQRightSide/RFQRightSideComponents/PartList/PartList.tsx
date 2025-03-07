@@ -1,4 +1,6 @@
 import { faArrowRotateRight, faPlus } from '@fortawesome/free-solid-svg-icons';
+import useWizardForm from 'hooks/useWizardForm';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {
   ChangeEvent,
@@ -7,7 +9,7 @@ import React, {
   useRef,
   useState
 } from 'react';
-import { Button, Form, Table } from 'react-bootstrap';
+import { Button, Card, Form, Modal, Tab, Table } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import CustomButton from '../../../../../../components/base/Button';
 import {
@@ -32,6 +34,14 @@ import {
   RFQPart
 } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
+import WizardFormProvider from 'providers/WizardFormProvider';
+import PartWizardItemFiledsForm from 'smt-v1-app/components/features/Parts/PartsItemFields/NewPartsItemFields/PartWizardItemFiledsForm';
+import PartWizardUserDefFieldsForm from 'smt-v1-app/components/features/Parts/UserDefFields/PartWizardUserDefFieldsForm';
+import PartWizardNotesForm from 'smt-v1-app/components/features/Parts/PartsNotes/PartWizardNotesForm';
+import PartWizardFilesForm from 'smt-v1-app/components/features/Parts/PartsFiles/PartWizardFilesForm';
+import PartWizardAlternativesForm from 'smt-v1-app/components/features/Parts/PartAlternatives/PartWizardAlternativesForm';
+import WizardForm from 'components/wizard/WizardForm';
+import WizardNav from 'smt-v1-app/components/features/Parts/PartWizardNav';
 
 const PartList = ({
   parts,
@@ -101,6 +111,11 @@ const PartList = ({
   const [airlineCompany, setAirlineCompany] = useState<string>('');
   const [MSDS, setMSDS] = useState<string>('');
 
+  //Wizard
+  const [selectedPart, setSelectedPart] = useState<RFQPart | null>(null);
+  const [showPartModal, setShowPartModal] = useState(false);
+  const form = useWizardForm({ totalStep: 5 });
+
   const [isNewSupplierLoading, setIsNewSupplierLoading] = useState(false);
 
   const partNumberRef = useRef<HTMLInputElement>(null);
@@ -151,6 +166,16 @@ const PartList = ({
 
   const handleNewSupplier = () => {
     window.open('/supplier/new-supplier', '_blank');
+  };
+
+  const handleOpenPartModal = (partNumber: string) => {
+    const foundRFQ = parts.find(part => part.partNumber === partNumber);
+    if (!foundRFQ) {
+      console.log('Part not found');
+    } else {
+      setSelectedPart(foundRFQ);
+      setShowPartModal(true);
+    }
   };
 
   const formatCurrency = (inputValue: string, blur: string = ''): string => {
@@ -475,6 +500,7 @@ const PartList = ({
                 rfqParts={parts}
                 handleEditPart={handleEditPart}
                 handlePartDeletion={handlePartDeletion}
+                handleOpenPartModal={handleOpenPartModal}
               />
             }
 
@@ -491,21 +517,21 @@ const PartList = ({
               <td>
                 <Form.Group>
                   <Form.Control
-                    placeholder="Part Number" // Parça Numarası
+                    placeholder="Part Number"
                     value={partNumber}
                     ref={partNumberRef}
                     onChange={e => {
                       setPartNumber(e.target.value);
-                      setIsPartNumberEmpty(false); // Reset error when user types
+                      setIsPartNumberEmpty(false);
                     }}
                     onBlur={e => {
                       if (!e.target.value.trim()) {
-                        setIsPartNumberEmpty(true); // Set error if input is empty
+                        setIsPartNumberEmpty(true);
                       }
                     }}
                     style={{
                       width: '180px',
-                      borderColor: isPartNumberEmpty ? 'red' : '' // Apply red border if empty
+                      borderColor: isPartNumberEmpty ? 'red' : ''
                     }}
                     required
                   />
@@ -967,6 +993,57 @@ const PartList = ({
             </tr>
           </tbody>
         </Table>
+      )}
+      {showPartModal && (
+        <Modal
+          size="xl"
+          className="Parts-NewPart-Modal"
+          show={showPartModal}
+          onHide={() => setShowPartModal(false)}
+        >
+          <WizardFormProvider {...form}>
+            <Card className="theme-wi">
+              <Card.Header className="bg-body-highlight pt-3 pb-2 border-bottom-0">
+                <WizardNav />
+              </Card.Header>
+              <Card.Body>
+                <Tab.Content>
+                  <Tab.Pane eventKey={1}>
+                    <WizardForm step={1}>
+                      <PartWizardItemFiledsForm
+                        partData={selectedPart}
+                        onPartCreated={data => setSelectedPart(data)}
+                      />
+                    </WizardForm>
+                  </Tab.Pane>
+                  <Tab.Pane eventKey={2}>
+                    <WizardForm step={2}>
+                      <PartWizardUserDefFieldsForm />
+                    </WizardForm>
+                  </Tab.Pane>
+                  <Tab.Pane eventKey={3}>
+                    <WizardForm step={3}>
+                      <PartWizardNotesForm partId={selectedPart?.partId} />
+                    </WizardForm>
+                  </Tab.Pane>
+                  <Tab.Pane eventKey={4}>
+                    <WizardForm step={4}>
+                      <PartWizardFilesForm partId={selectedPart?.partId} />
+                    </WizardForm>
+                  </Tab.Pane>
+                  <Tab.Pane eventKey={5}>
+                    <WizardForm step={5}>
+                      <PartWizardAlternativesForm
+                        partId={selectedPart?.partId}
+                      />
+                    </WizardForm>
+                  </Tab.Pane>
+                </Tab.Content>
+              </Card.Body>
+              <Card.Footer className="border-top-0"></Card.Footer>
+            </Card>
+          </WizardFormProvider>
+        </Modal>
       )}
 
       {
