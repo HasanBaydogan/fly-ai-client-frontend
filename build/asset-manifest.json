@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.f587f21e.css",
-    "main.js": "/static/js/main.4dd881f6.js",
+    "main.css": "/static/css/main.45c67795.css",
+    "main.js": "/static/js/main.98f531c2.js",
     "static/js/905.992582f4.chunk.js": "/static/js/905.992582f4.chunk.js",
     "static/js/313.c6024fed.chunk.js": "/static/js/313.c6024fed.chunk.js",
     "static/js/249.0a520196.chunk.js": "/static/js/249.0a520196.chunk.js",
@@ -88,6 +88,8 @@
     "static/media/39.png": "/static/media/39.a4d8cd61c7a8cb5b7ff4.png",
     "static/media/15.png": "/static/media/15.8f3a0c03c4aecabcf9d4.png",
     "static/media/83.png": "/static/media/83.b09944af7391a94da24e.png",
+    "static/media/logoAsparel.jpg": "/static/media/logoAsparel.dad8e46fa3d71cecd61c.jpg",
+    "static/media/bg99Alternative.jpg": "/static/media/bg99Alternative.03e352cef0f9c865598c.jpg",
     "static/media/71.png": "/static/media/71.05a348ba67696407d218.png",
     "static/media/73.png": "/static/media/73.781adfd2dba72c8320da.png",
     "static/media/70.png": "/static/media/70.da975769b3b9b251ea1b.png",
@@ -99,7 +101,6 @@
     "static/media/asparelLogo.jpg": "/static/media/asparelLogo.6904f403a613f333d95b.jpg",
     "static/media/60.webp": "/static/media/60.c450bd57bbf4ca4db76f.webp",
     "static/media/dark_403.png": "/static/media/dark_403.5db925272ce719941e45.png",
-    "static/media/login-ilustr.svg": "/static/media/login-ilustr.5c9c65a3d50200465c8464aacf788be7.svg",
     "static/media/bg-right-28.png": "/static/media/bg-right-28.7c70512ef72cc399184f.png",
     "static/media/403.png": "/static/media/403.00b91bfc2f6951d95b46.png",
     "static/media/500.png": "/static/media/500.7279d4729a8f65b05f2c.png",
@@ -134,10 +135,17 @@
     "static/media/completetionIcon.svg": "/static/media/completetionIcon.03b9e60a17de211785cb20f156355705.svg",
     "static/media/slack.webp": "/static/media/slack.fe9ebfbddee23e04fd07.webp",
     "static/media/user-icon-circle.svg": "/static/media/user-icon-circle.7b1f174aaea9416038268fcf68d58cb9.svg",
+    "static/media/bluePin.svg": "/static/media/bluePin.3229dba5aa43b3bd490be85212170260.svg",
+    "static/media/burlywoodPin.svg": "/static/media/burlywoodPin.c33b4b212e57f2e40c8662e3b52c339a.svg",
+    "static/media/greenPin.svg": "/static/media/greenPin.c6d2b93dae5643ea0d618bfeb8c7c138.svg",
+    "static/media/skybluePin.svg": "/static/media/skybluePin.5d455e72fdcaecc6872f2b03c0f6d245.svg",
+    "static/media/violetPin.svg": "/static/media/violetPin.5946dc498562b0ee78ce153419718f03.svg",
+    "static/media/brownPin.svg": "/static/media/brownPin.2f3260d74cee159fbc497dc8f270d81b.svg",
+    "static/media/redPin.svg": "/static/media/redPin.80a289018c20648087f69e393da28fb6.svg",
     "static/media/right-half-arrow.svg": "/static/media/right-half-arrow.7bf7e2004762cc74626d6817918a627f.svg",
     "static/media/no_quote_icon.svg": "/static/media/no_quote_icon.8f515bdcfdfcfdd92f95b1fcb930218f.svg",
-    "index.html": "/index.html",
     "static/media/not_rfq_icon.svg": "/static/media/not_rfq_icon.7331551f6bdbb356f56289edb6274c1f.svg",
+    "index.html": "/index.html",
     "static/media/figma.webp": "/static/media/figma.6704fd935606082b1ac6.webp",
     "static/media/pdf_icon.svg": "/static/media/pdf_icon.342131c5105cdb26fbe3c170239892fc.svg",
     "static/media/edit-icon.svg": "/static/media/edit-icon.5118b484d85e2ec5f941d600cb4bb558.svg",
@@ -150,7 +158,7 @@
     "static/media/spam_icon.svg": "/static/media/spam_icon.f8a404e2cbf04f7a62411176c2f01044.svg"
   },
   "entrypoints": [
-    "static/css/main.f587f21e.css",
-    "static/js/main.4dd881f6.js"
+    "static/css/main.45c67795.css",
+    "static/js/main.98f531c2.js"
   ]
 }
