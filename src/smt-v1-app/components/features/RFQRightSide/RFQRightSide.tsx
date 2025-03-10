@@ -77,15 +77,15 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const handleAddPart = (rfqPart: RFQPart) => {
     setParts([...parts, rfqPart]);
   };
-  const handleDeletePart = (partNumber: string) => {
-    const updatedArray = parts.filter(item => item.partNumber !== partNumber);
+  const handleDeletePart = (rfqPartId: string) => {
+    const updatedArray = parts.filter(item => item.rfqPartId !== rfqPartId);
     setParts(updatedArray);
   };
   const handleDeleteAlternativePartAccordingToParentRFQNumber = (
-    partNumber: string
+    rfqPartId: string
   ) => {
     const updatedArray = alternativeParts.filter(
-      item => item.parentRFQPart.partNumber !== partNumber
+      item => item.parentRFQPart.rfqPartId !== rfqPartId
     );
     setAlternativeParts(updatedArray);
   };

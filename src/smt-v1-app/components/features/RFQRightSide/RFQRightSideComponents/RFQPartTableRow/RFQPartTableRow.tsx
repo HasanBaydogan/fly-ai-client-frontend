@@ -9,9 +9,9 @@ import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
 
 interface RFQPartTableRowProps {
   rfqParts: RFQPart[];
-  handleEditPart: (partNumber: string) => void;
-  handlePartDeletion: (partNumber: string) => void;
-  handleOpenPartModal: (partNumber: string) => void;
+  handleEditPart: (rfqPartId: string) => void;
+  handlePartDeletion: (rfqPartId: string) => void;
+  handleOpenPartModal: (rfqPartId: string) => void;
 }
 
 const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
@@ -30,7 +30,7 @@ const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
                 <span
                   className="action-icon"
                   style={{ cursor: 'pointer', marginRight: '8px' }}
-                  onClick={() => handlePartDeletion(rfqPart.partNumber)}
+                  onClick={() => handlePartDeletion(rfqPart.rfqPartId)}
                 >
                   <FontAwesomeIcon icon={faMinus} />
                 </span>
@@ -38,7 +38,7 @@ const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
                   src={editIcon}
                   alt="edit-icon"
                   className="part-number-addition-edit-icon"
-                  onClick={() => handleEditPart(rfqPart.partNumber)}
+                  onClick={() => handleEditPart(rfqPart.rfqPartId)}
                 />
               </div>
             </td>

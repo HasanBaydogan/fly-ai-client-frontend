@@ -56,7 +56,7 @@ const PartList = ({
   setPartNumber
 }: {
   parts: RFQPart[];
-  handleDeletePart: (partNumber: string) => void;
+  handleDeletePart: (rfqPartId: string) => void;
   handleAddPart: (rfqPart: RFQPart) => void;
   alternativeParts: AlternativeRFQPart[];
   handleDeleteAlternativePartAccordingToParentRFQNumber: (
@@ -235,10 +235,10 @@ const PartList = ({
     const formattedValue = formatCurrency(e.target.value);
     setUnitPricevalueString(formattedValue);
   };
-  const handleUnitPriceChangeForEdit = (value: string): void => {
-    const formattedValue = formatCurrency(value);
-    setUnitPricevalueString(formattedValue);
-  };
+  // const handleUnitPriceChangeForEdit = (value: string): void => {
+  //   const formattedValue = formatCurrency(value);
+  //   setUnitPricevalueString(formattedValue);
+  // };
 
   const handleBlur = (e: FocusEvent<HTMLInputElement>): void => {
     const formattedValue = formatCurrency(unitPricevalueString, 'blur');
@@ -251,15 +251,17 @@ const PartList = ({
     setToastMessageBody(message);
     setIsShowToast(true);
   }
-  const handleEditPart = (partNumber: string) => {
+  const handleEditPart = (rfqPartId: string) => {
     const foundRFQ: RFQPart | null = parts.filter(
-      part => part.partNumber === partNumber
+      part => part.rfqPartId === rfqPartId
     )[0];
+    console.log('rfqparid', rfqPartId);
     if (!foundRFQ) {
       console.log('Found RFQ is not valid');
+      console.log('Current parts array:', parts);
     } else {
       // Old Part Number
-      setOldPartNumber(foundRFQ.partNumber);
+      // setOldPartNumber(foundRFQ.partNumber);
 
       setIsEditing(true);
       setPartName(foundRFQ.partName);
@@ -289,7 +291,7 @@ const PartList = ({
         partNumberRef.current.focus();
       }
 
-      handleDeletePart(partNumber);
+      handleDeletePart(rfqPartId);
     }
   };
 
@@ -302,15 +304,15 @@ const PartList = ({
     setShowDeleteModal(false);
     setDesiredPartNumberToDelete('');
   };
-  const handlePartDeletion = (partNumber: string) => {
+
+  const handlePartDeletion = (rfqPartId: string) => {
     setShowDeleteModal(true);
     const connectedAlternativeRFQParts = alternativeParts.filter(
-      alternativePart => alternativePart.parentRFQPart.partNumber === partNumber
+      alternativePart => alternativePart.parentRFQPart.rfqPartId === rfqPartId
     );
-    //console.log(connectedAlternativeRFQParts);
     setConnectedAlternativeRFQPartsForDeletion(connectedAlternativeRFQParts);
     setNumOfconnectedAlternativeRFQ(connectedAlternativeRFQParts.length);
-    setDesiredPartNumberToDelete(partNumber);
+    setDesiredPartNumberToDelete(rfqPartId);
   };
 
   const updateUnitPrice = (foundRFQ: RFQPart) => {
@@ -370,10 +372,10 @@ const PartList = ({
     }
 
     // Aynı `partNumber` kontrolü
-    if (parts.some(element => element.partNumber === partNumber.trim())) {
-      toastError('Invalid Part Number', 'Part number is already added!');
-      return;
-    }
+    // if (parts.some(element => element.partNumber === partNumber.trim())) {
+    //   toastError('Invalid Part Number', 'Part number is already added!');
+    //   return;
+    // }
 
     // Her şey doğruysa, yeni parça ekleme işlemi
     const rfqPart: RFQPart = {
