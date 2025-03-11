@@ -853,6 +853,9 @@ const PartList = ({
                   <option value="CAA_Form_1">CAA Form 1</option>
                   <option value="CAAC">CAAC</option>
                   <option value="CofC">CofC</option>
+                  <option value="OEM_Certs">OEM Certs</option>
+                  <option value="MFG_Certs">MFG Certs</option>
+                  <option value="DUAL_FAA_EASA">DUAL (FAA&EASA)</option>
                 </Form.Select>
               </td>
               {/* Certificate Type END */}
