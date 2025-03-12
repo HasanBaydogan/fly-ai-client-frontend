@@ -11,8 +11,10 @@ interface AddressDetailsProps {
   clientMail: string;
   setClientWebsite: (value: string) => void;
   clientWebsite: string;
-  phone: string; // Yeni prop: phone
-  setPhone: (value: string) => void; // Yeni prop: setPhone
+  phone: string;
+  setPhone: (value: string) => void;
+  // Yeni prop: contact listede kaç kişi var?
+  contactsCount?: number;
 }
 
 const ClientMidPart = ({
@@ -25,10 +27,11 @@ const ClientMidPart = ({
   setClientWebsite,
   clientWebsite,
   phone,
-  setPhone
+  setPhone,
+  contactsCount
 }: AddressDetailsProps) => {
   const [selectedStatus, setSelectedStatus] = useState('');
-  // Tek bir hata nesnesi kullanıyoruz; örneğin, email veya phone için.
+  // Örneğin, email veya phone için hata mesajlarını tutuyoruz.
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
@@ -50,7 +53,7 @@ const ClientMidPart = ({
   const handleClientMailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setClientMail(value);
-    // Eğer değer boş değilse email hatasını temizleyelim.
+    // Eğer değer boş değilse, email hatasını temizle
     if (value.trim() !== '') {
       setErrors(prev => ({ ...prev, email: '' }));
     }
@@ -61,7 +64,6 @@ const ClientMidPart = ({
     return emailRegex.test(email);
   };
 
-  // İsim çakışmasını önlemek için fonksiyon adını validateClientMail olarak değiştirdik.
   const validateClientMail = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -89,8 +91,8 @@ const ClientMidPart = ({
             <Form.Label>Phone*</Form.Label>
             <PhoneInput
               country={'tr'}
-              value={phone} // Parent'tan gelen state kullanılıyor
-              onChange={value => setPhone(value)} // Parent fonksiyonu ile güncelleniyor
+              value={phone}
+              onChange={value => setPhone(value)}
               inputStyle={{
                 width: '100%',
                 borderColor: errors.phone ? '#dc3545' : ''
@@ -111,6 +113,14 @@ const ClientMidPart = ({
             <option value="CONTACTED">Contacted</option>
             <option value="BLACK_LISTED">Black</option>
           </Form.Select>
+          {/* Eğer status CONTACTED seçildiyse ve contactsCount sıfırsa uyarı göster */}
+          {selectedStatus === 'CONTACTED' &&
+            contactsCount !== undefined &&
+            contactsCount === 0 && (
+              <div className="text-danger" style={{ fontSize: '0.875em' }}>
+                When status is CONTACTED, you must add at least one contact.
+              </div>
+            )}
         </Col>
       </Row>
       <Row className="mb-2">
