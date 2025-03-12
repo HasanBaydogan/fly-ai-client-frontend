@@ -26,6 +26,8 @@ export const openAttachment = async (attachmentId: string) => {
     const attachmentResp = await api().get(`/attachment/id/${attachmentId}`, {
       headers
     });
+
+    console.log('attachmentResp', attachmentResp);
     if (attachmentResp.data.statusCode === 200) {
       return attachmentResp.data;
     } else if (attachmentResp.data.statusCode === 498) {
