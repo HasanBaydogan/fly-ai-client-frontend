@@ -224,8 +224,8 @@ const RFQAttachments = ({
     }
   };
 
-  const generateHtmlTable = (worksheet: XLSX.IWorkSheet): JSX.Element => {
-    const getUsedRange = (ws: XLSX.IWorkSheet) => {
+  const generateHtmlTable = (worksheet: XLSX.WorkSheet): JSX.Element => {
+    const getUsedRange = (ws: XLSX.WorkSheet) => {
       let minRow = Infinity,
         maxRow = -Infinity;
       let minCol = Infinity,
@@ -239,7 +239,7 @@ const RFQAttachments = ({
         if (cellRef.c > maxCol) maxCol = cellRef.c;
       });
       const merges = ws['!merges'] || [];
-      merges.forEach((merge: XLSX.IRange) => {
+      merges.forEach((merge: XLSX.Range) => {
         if (merge.s.r < minRow) minRow = merge.s.r;
         if (merge.s.c < minCol) minCol = merge.s.c;
         if (merge.e.r > maxRow) maxRow = merge.e.r;
@@ -255,7 +255,7 @@ const RFQAttachments = ({
     if (maxR < minR || maxC < minC) {
       return <div>No data found on this page.</div>;
     }
-    const merges: XLSX.IRange[] = worksheet['!merges'] || [];
+    const merges: XLSX.Range[] = worksheet['!merges'] || [];
     const rendered: Record<string, boolean> = {};
     const tableRows: JSX.Element[] = [];
     for (let row = minR; row <= maxR; row++) {
