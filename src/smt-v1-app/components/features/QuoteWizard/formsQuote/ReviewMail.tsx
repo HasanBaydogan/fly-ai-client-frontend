@@ -4,6 +4,7 @@ import { EmailProps } from './WizardSendMailForm';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
+import { useNavigate } from 'react-router-dom';
 
 interface ReviewMailProps {
   emailProps: EmailProps;
@@ -15,28 +16,6 @@ interface ReviewMailProps {
   isEmailSendLoading: boolean;
 }
 
-// Helper function to determine MIME type based on file extension
-const getMimeType = (filename: string): string => {
-  const ext = filename.split('.').pop()?.toLowerCase();
-  switch (ext) {
-    case 'jpg':
-    case 'jpeg':
-      return 'image/jpeg';
-    case 'png':
-      return 'image/png';
-    case 'gif':
-      return 'image/gif';
-    case 'pdf':
-      return 'application/pdf';
-    case 'doc':
-      return 'application/msword';
-    case 'docx':
-      return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    default:
-      return 'application/octet-stream';
-  }
-};
-
 const ReviewMail: React.FC<ReviewMailProps> = ({
   emailProps,
   quoteNumberId,
@@ -46,11 +25,19 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
   handleSendQuoteEmail,
   isEmailSendLoading
 }) => {
+  const navigate = useNavigate();
   const { toEmails, subject, ccEmails, bccEmails, content, base64Files } =
     emailProps;
 
   return (
-    <div className="p-4">
+    <div className="p-4" style={{ position: 'relative' }}>
+      {/* Sağ üst köşeye "Go Mail Tracking" butonu ekledik */}
+      <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
+        <Button variant="primary" onClick={() => navigate('/mail-tracking')}>
+          Go Mail Tracking
+        </Button>
+      </div>
+
       {isSendEmailSuccess ? (
         <>
           <div className="text-center mb-5">
@@ -96,7 +83,17 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
               {base64Files.length > 0
                 ? base64Files.map((file, index) => {
                     // Get MIME type based on file name extension.
-                    const mimeType = getMimeType(file.name);
+                    const ext = file.name.split('.').pop()?.toLowerCase();
+                    const mimeType =
+                      ext === 'jpg' || ext === 'jpeg'
+                        ? 'image/jpeg'
+                        : ext === 'png'
+                        ? 'image/png'
+                        : ext === 'gif'
+                        ? 'image/gif'
+                        : ext === 'pdf'
+                        ? 'application/pdf'
+                        : 'application/octet-stream';
 
                     // Construct the data URL using the determined MIME type.
                     const dataUrl = file.base64;
