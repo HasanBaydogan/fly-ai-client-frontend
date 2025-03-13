@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import classNames from 'classnames';
 import Button from 'components/base/Button';
 import React, { ChangeEvent, useRef, useState } from 'react';
@@ -20,6 +19,7 @@ const TwoFAForm = ({
   email: string;
 }) => {
   const [otp, setOtp] = useState('');
+  const [buttonLoading, setButtonLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (
@@ -47,6 +47,13 @@ const TwoFAForm = ({
     setOtp(updatedOtp);
   };
 
+  const handleButtonClick = () => {
+    setButtonLoading(true);
+    setTimeout(() => {
+      handleTwoFA(email, otp);
+    }, 1500);
+  };
+
   return (
     <div>
       <div className={classNames({ 'px-xxl-5': !(layout === 'split') })}>
@@ -62,10 +69,6 @@ const TwoFAForm = ({
             An email containing a 6-digit verification code has been sent to the
             email address - {email}
           </p>
-          {/*<p className="fs-10 mb-5">
-            Don’t have access?
-            <Link to="#!"> Use another method</Link>
-          </p> */}
           <div className="verification-form">
             <div className="d-flex align-items-center gap-2 mb-3">
               {Array(totalInputLength)
@@ -86,27 +89,14 @@ const TwoFAForm = ({
                   </React.Fragment>
                 ))}
             </div>
-            {/* <Form.Check type="checkbox" className="text-start mb-4">
-              <Form.Check.Input
-                type="checkbox"
-                name="2fa-checkbox"
-                id="2fa-checkbox"
-              />
-              <Form.Check.Label
-                className="fs-8 fw-medium"
-                htmlFor="2fa-checkbox"
-              >
-                Don’t ask again on this device
-              </Form.Check.Label>
-            </Form.Check> */}
             <Button
               variant="primary"
               className="w-100 mb-5"
               type="button"
-              onClick={() => handleTwoFA(email, otp)}
-              disabled={otp.length < totalInputLength}
+              onClick={handleButtonClick}
+              disabled={otp.length < totalInputLength || buttonLoading}
             >
-              {isLoading ? <LoadingAnimation /> : 'Verify'}
+              {buttonLoading || isLoading ? <LoadingAnimation /> : 'Verify'}
             </Button>
             <Link to="#!" className="fs-9">
               Didn’t receive the code?
