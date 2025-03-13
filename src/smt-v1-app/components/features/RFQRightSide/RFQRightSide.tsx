@@ -63,9 +63,9 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     setTextColor(returnColors.textColor);
   }, []);
 
-  const handleDeleteAlternativePart = (alternPartNumber: string) => {
+  const handleDeleteAlternativePart = (rfqPartId: string) => {
     const updatedArray = alternativeParts.filter(
-      item => item.partNumber !== alternPartNumber
+      item => item.rfqPartId !== rfqPartId
     );
     setAlternativeParts(updatedArray);
   };
@@ -225,8 +225,9 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
       };
       console.log(savedRFQ);
       console.log(rfq);
-      const resp = await saveRFQToDB(savedRFQ);
 
+      const resp = await saveRFQToDB(savedRFQ);
+      console.log(resp);
       if (resp && resp.statusCode === 200) {
         toastSuccess(
           'Saving Success',
@@ -238,7 +239,10 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
           setIsLoading(false);
         }, 1500);
       } else {
-        toastError('An Error', 'An error occurs when saving data');
+        toastError(
+          'An Error',
+          'An error occurs when saving data. Also check parent Part Number'
+        );
         setIsLoadingSave(false);
         setIsLoading(false);
       }

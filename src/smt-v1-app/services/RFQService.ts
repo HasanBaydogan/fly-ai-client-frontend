@@ -307,7 +307,7 @@ export const saveRFQToDB = async (saveRFQ: SaveRFQ) => {
     const rfqResponse = await api().post(`/rfq/save`, saveRFQ, {
       headers
     });
-    // console.log(rfqResponse);
+    console.log(rfqResponse);
 
     if (rfqResponse.data.statusCode === 200) {
       return rfqResponse.data;

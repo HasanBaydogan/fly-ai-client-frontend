@@ -156,7 +156,7 @@ export const searchByPartList = async (
 //         Item Fields
 // *****************************
 
-export const getByItemFields = async (partId: string) => {
+export const getByItemFields = async (partNumber: string) => {
   try {
     const accessToken = Cookies.get('access_token');
     const headers = {};
@@ -166,7 +166,7 @@ export const getByItemFields = async (partId: string) => {
       window.location.assign('/');
     }
 
-    const response = await api().get(`/part/part-number/${partId}`, {
+    const response = await api().get(`/part/part-number/${partNumber}`, {
       headers
     });
     // console.log('Response from getByItemFields:', response);
@@ -189,7 +189,7 @@ export const getByItemFields = async (partId: string) => {
             refreshTokenresponse.data.data.refresh_token
           );
           let rfqMailResponseAfterRefresh = await api().get(
-            `/part/part-number/${partId}`,
+            `/part/part-number/${partNumber}`,
             {
               headers: {
                 Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`

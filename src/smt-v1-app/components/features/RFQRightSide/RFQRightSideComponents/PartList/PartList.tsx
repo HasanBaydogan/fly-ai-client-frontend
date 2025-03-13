@@ -42,6 +42,16 @@ import PartWizardFilesForm from 'smt-v1-app/components/features/Parts/PartsFiles
 import PartWizardAlternativesForm from 'smt-v1-app/components/features/Parts/PartAlternatives/PartWizardAlternativesForm';
 import WizardForm from 'components/wizard/WizardForm';
 import WizardNav from 'smt-v1-app/components/features/Parts/PartWizardNav';
+import { getByItemFields } from 'smt-v1-app/services/PartServices';
+
+let tempIdCount = 1; // <-- Eklendi: Her seferinde artacak global bir counter (veya state olarak da tutabilirsin).
+
+function generateTempRFQPartId() {
+  // Her çağrıda temp-1, temp-2, vb. döndürüyor
+  const id = `temp-${String(tempIdCount).padStart(2, '0')}`;
+  tempIdCount++;
+  return id;
+}
 
 const PartList = ({
   parts,
@@ -173,8 +183,19 @@ const PartList = ({
     if (!foundRFQ) {
       console.log('Part not found');
     } else {
-      setSelectedPart(foundRFQ);
-      setShowPartModal(true);
+      getByItemFields(partNumber)
+        .then(response => {
+          if (response.success && response.data && response.data.partId) {
+            setSelectedPart(response.data);
+          } else {
+            setSelectedPart(null);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching part data:', err);
+          setSelectedPart(null);
+        })
+        .finally(() => setShowPartModal(true));
     }
   };
 
@@ -235,10 +256,6 @@ const PartList = ({
     const formattedValue = formatCurrency(e.target.value);
     setUnitPricevalueString(formattedValue);
   };
-  // const handleUnitPriceChangeForEdit = (value: string): void => {
-  //   const formattedValue = formatCurrency(value);
-  //   setUnitPricevalueString(formattedValue);
-  // };
 
   const handleBlur = (e: FocusEvent<HTMLInputElement>): void => {
     const formattedValue = formatCurrency(unitPricevalueString, 'blur');
@@ -325,7 +342,7 @@ const PartList = ({
   };
 
   const handleNewPartAddition = () => {
-    // Zorunlu alanların kontrolü
+    // Zorunlu alanlar...
     if (!partNumber || !partName || reqQTY === 0 || !reqCND) {
       toastError(
         'RFQPart Required Field',
@@ -334,7 +351,7 @@ const PartList = ({
       return;
     }
 
-    // Koşullu alanların kontrolü
+    // Koşullu alanların kontrolü...
     const additionalFieldsProvided =
       fndQTY !== 0 ||
       fndCND ||
@@ -362,7 +379,7 @@ const PartList = ({
       }
     }
 
-    // `clientLT` ve `supplierLT` kontrolü
+    // clientLT vs. supplierLT kontrolü
     if (clientLT < supplierLT) {
       toastError(
         'Invalid LeadTime',
@@ -371,25 +388,33 @@ const PartList = ({
       return;
     }
 
-    // Aynı `partNumber` kontrolü
+    // PART NUMBER’ı UNIQUE yapmayı ARTIK KALDIRIYORUZ
     // if (parts.some(element => element.partNumber === partNumber.trim())) {
     //   toastError('Invalid Part Number', 'Part number is already added!');
     //   return;
     // }
 
-    // Her şey doğruysa, yeni parça ekleme işlemi
+    // Yeni (veya düzenlenmiş) bir parça oluşturuyoruz.
+    // Eğer DB'den id geldiyse ondan devam edelim, yoksa temp-id üretelim.
+    const finalRFQPartId =
+      isEditing && rfqPartId ? rfqPartId : generateTempRFQPartId(); // <-- Yeni eklenen parça için "temp-xx"
+
     const rfqPart: RFQPart = {
+      // DB'den gelen 'partId' varsa koru. (part tablosundaki PK gibi düşün.)
       partId: isEditing ? partId : null,
-      rfqPartId: isEditing ? rfqPartId : null,
+
+      // Ekrandaki asıl ID, eğer edit modundaysan eskisini koru, yoksa temp-xx ver.
+      rfqPartId: finalRFQPartId,
+
       partNumber: partNumber.trim(),
       partName: partName.trim(),
-      reqQTY: reqQTY,
-      fndQTY: fndQTY,
-      reqCND: reqCND,
-      fndCND: fndCND,
-      supplierLT: supplierLT,
-      clientLT: clientLT,
-      currency: currency,
+      reqQTY,
+      fndQTY,
+      reqCND,
+      fndCND,
+      supplierLT,
+      clientLT,
+      currency,
       price: unitPricevalueNumber,
       supplier:
         supplier.length > 0
@@ -401,41 +426,43 @@ const PartList = ({
       comment: comment && comment.trim(),
       dgPackagingCost: dgPackagingCst,
       tagDate: tagDate ? formatDate(tagDate) : null,
-      lastUpdatedDate: lastUpdatedDate,
+      lastUpdatedDate,
       certificateType: certType,
       MSN: MSN && MSN.trim(),
       wareHouse: warehouse && warehouse.trim(),
-      stock: stock,
+      stock,
       stockLocation: stockLocation && stockLocation.trim(),
       airlineCompany: airlineCompany && airlineCompany.trim(),
       MSDS: MSDS && MSDS.trim()
     };
 
-    // Change  parent rfqNumber of alternativerfqpart.
+    // Eğer eski partNumber ile yeni partNumber değiştiyse,
+    // alternativeParts'taki parentRFQPart'ı da güncellemek istersen:
     if (oldPartNumber !== partNumber.trim()) {
-      const newAlternativeParts: AlternativeRFQPart[] = alternativeParts.map(
-        alternativePart =>
-          alternativePart.parentRFQPart.partNumber === oldPartNumber
-            ? {
-                ...alternativePart,
-                parentRFQPart: {
-                  ...alternativePart.parentRFQPart,
-                  partNumber: partNumber.trim() // Update parent part number
-                }
+      const newAlternativeParts = alternativeParts.map(ap =>
+        ap.parentRFQPart.partNumber === oldPartNumber
+          ? {
+              ...ap,
+              parentRFQPart: {
+                ...ap.parentRFQPart,
+                partNumber: partNumber.trim()
               }
-            : alternativePart
+            }
+          : ap
       );
       setAlternativeParts(newAlternativeParts);
     }
 
     setOldPartNumber('');
     handleAddPart(rfqPart);
+    console.log(rfqPart);
+    // Formu sıfırlıyoruz.
     setRfqPartId('');
     setPartNumber('');
     setPartName('');
-    setReqQTY(0);
+    setReqQTY(1);
     setFndQTY(0);
-    setReqCND('');
+    setReqCND('NE');
     setFndCND('');
     setSupplierLT(0);
     setClientLT(0);
