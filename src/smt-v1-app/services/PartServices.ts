@@ -1436,7 +1436,7 @@ export const getByAlternativesDetail = async (partId: string) => {
         headers
       }
     );
-    // console.log('Response from getByAlternativesDetail :', response);
+    console.log('Response from getByAlternativesDetail :', response);
 
     if (response.data.statusCode === 200) {
       return response.data;

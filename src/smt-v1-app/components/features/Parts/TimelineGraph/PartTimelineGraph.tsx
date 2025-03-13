@@ -44,10 +44,16 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
       dayjs(b.priceDate, 'DD.MM.YYYY').valueOf()
   );
 
-  const seriesData = sortedData.map(item => [
-    dayjs(item.priceDate, 'DD.MM.YYYY').toDate(),
-    item.unitPriceCost
-  ]);
+  const dateOccurrence: Record<string, number> = {};
+
+  const seriesData = sortedData.map(item => {
+    const date = dayjs(item.priceDate, 'DD.MM.YYYY');
+    const dateKey = date.format('YYYY-MM-DD');
+    const count = dateOccurrence[dateKey] || 0;
+    dateOccurrence[dateKey] = count + 1;
+    const offset = count * 60000;
+    return [date.valueOf() + offset, item.unitPriceCost];
+  });
 
   const distinctYears = new Set(
     sortedData.map(item => dayjs(item.priceDate, 'DD.MM.YYYY').year())
@@ -73,10 +79,15 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
       borderColor: getThemeColor('secondary-bg'),
       formatter: (params: any) =>
         params
-          .map(
-            (p: any) =>
-              `${dayjs(p.data[0]).format('D MMM YYYY')}<br/>$${p.data[1]}`
-          )
+          .map((p: any) => {
+            const formattedCost = p.data[1].toLocaleString('de-DE', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            });
+            return `${dayjs(p.data[0]).format(
+              'D MMM YYYY'
+            )}<br/>$${formattedCost}`;
+          })
           .join('')
     },
     legend: {
@@ -111,7 +122,12 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
       axisLabel: {
         color: getThemeColor('body-color'),
         fontSize: 12,
-        formatter: (value: number) => `$${value}`
+        formatter: (value: number) =>
+          '$' +
+          value.toLocaleString('de-DE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })
       },
       splitLine: {
         lineStyle: {
@@ -125,7 +141,7 @@ const PartTimelineGraph: React.FC<PartTimelineGraphProps> = ({
         name: 'Unit Price Cost',
         type: 'line',
         data: seriesData,
-        smooth: false // Düz, köşeli çizgiler
+        smooth: false
       }
     ],
     grid: {

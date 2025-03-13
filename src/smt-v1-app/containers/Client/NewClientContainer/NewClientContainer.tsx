@@ -23,6 +23,7 @@ import FileUpload from 'smt-v1-app/components/features/Client/NewClient/NewClien
 import ContactListSection from 'smt-v1-app/components/features/Client/NewClient/NewClientContact/ContactListSection';
 import ClientBottomSection from 'smt-v1-app/components/features/Client/NewClient/ClientBottomSection';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
+import { SupplierStatus } from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
 
 // const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
 // const [errorSegments, setErrorSegments] = useState<string | null>(null);
@@ -48,7 +49,8 @@ const NewClientContainer = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<string>('');
   const [clientWebsite, setClientWebsite] = useState('');
 
-  const [selectedStatus, setSelectedStatus] = useState<Status | ''>('');
+  // Yeni: Status veya null saklayacak şekilde state tanımı:
+  const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
   const [base64Files, setBase64Files] = useState<
     { name: string; base64: string }[]
   >([]);
@@ -205,9 +207,16 @@ const NewClientContainer = () => {
       return;
     }
 
+    if (selectedStatus.label === 'CONTACTED' && contacts.length === 0) {
+      setAlertMessage(
+        'When status is CONTACTED, you must add at least one contact.'
+      );
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
     const numericMarginTable = Object.fromEntries(
       Object.entries(priceMargins).map(([key, value]) => {
-        // Virgülü nokta ile değiştirip Number'a dönüştürüyoruz.
         const numericValue = Number(value.toString().replace(',', '.'));
         return [key, isNaN(numericValue) ? 0 : numericValue];
       })
@@ -220,7 +229,7 @@ const NewClientContainer = () => {
       currencyPreference: selectedCurrency,
       segmentIdList: segmentIds,
       details: clientDetail,
-      clientStatus: selectedStatus,
+      clientStatus: selectedStatus!.label as unknown as SupplierStatus,
       phone: phone,
       website: clientWebsite,
       mail: clientMail,
@@ -245,7 +254,7 @@ const NewClientContainer = () => {
         easeOfDelivery: ratings.easeOfDelivery
       }
     };
-    // console.log('Client Payload', clientPayload);
+    console.log('Client Payload', clientPayload);
 
     setLoadingSave(true);
     try {
@@ -277,7 +286,21 @@ const NewClientContainer = () => {
   };
 
   const handleStatusChange = (value: string) => {
-    setSelectedStatus(value as unknown as Status);
+    let status: Status | null = null;
+    switch (value) {
+      case 'CONTACTED':
+        status = { label: 'CONTACTED', type: 'success' };
+        break;
+      case 'NOT_CONTACTED':
+        status = { label: 'NOT_CONTACTED', type: 'warning' };
+        break;
+      case 'BLACK_LISTED':
+        status = { label: 'BLACK_LISTED', type: 'danger' };
+        break;
+      default:
+        status = null;
+    }
+    setSelectedStatus(status);
   };
 
   return (
