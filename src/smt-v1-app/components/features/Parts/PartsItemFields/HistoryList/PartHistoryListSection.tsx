@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef } from 'react';
 import { Col, Form } from 'react-bootstrap';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from './HistoryAdvanceTable';
@@ -36,52 +35,15 @@ interface PartHistoryListSectionProps {
 
 const PartHistoryListSection = ({
   onContactsChange,
-  initialContacts
+  initialContacts = []
 }: PartHistoryListSectionProps) => {
-  const [historyItems, setHistoryItems] = useState<PartHistoryItem[]>(() => {
-    if (initialContacts && initialContacts.length > 0) {
-      return initialContacts.map(item => ({
-        id: item.id,
-        entryDate: item.entryDate,
-        suppCompany: item.suppCompany,
-        fndQty: item.fndQty,
-        fndPartCondition: item.fndPartCondition,
-        unitCost: item.unitCost,
-        historyOrderStatus: item.historyOrderStatus,
-        partNumber: item.partNumber,
-        partDesc: item.partDesc
-      }));
-    }
-    return [];
-  });
+  // Artık yerel state yerine doğrudan initialContacts değerini kullanıyoruz
+  const historyItems = initialContacts;
 
-  const prevInitialContactsRef = useRef<FormattedHistoryItem[] | undefined>();
-
-  useEffect(() => {
-    if (
-      initialContacts &&
-      JSON.stringify(initialContacts) !==
-        JSON.stringify(prevInitialContactsRef.current)
-    ) {
-      setHistoryItems(initialContacts);
-      prevInitialContactsRef.current = initialContacts;
-    }
-  }, [initialContacts]);
-
-  useEffect(() => {
-    const formatted = historyItems.map(item => ({
-      id: item.id,
-      entryDate: item.entryDate,
-      suppCompany: item.suppCompany,
-      fndQty: item.fndQty,
-      fndPartCondition: item.fndPartCondition,
-      unitCost: item.unitCost,
-      historyOrderStatus: item.historyOrderStatus,
-      partNumber: item.partNumber,
-      partDesc: item.partDesc
-    }));
-    onContactsChange(formatted);
-  }, [historyItems, onContactsChange]);
+  // Eğer ebeveynin güncel veriye ihtiyacı varsa, sadece bir kez bildirebilirsiniz:
+  // useEffect(() => {
+  //   onContactsChange(historyItems);
+  // }, [historyItems, onContactsChange]);
 
   const columns: ColumnDef<PartHistoryItem>[] = [
     { accessorKey: 'entryDate', header: 'Entry Date' },
@@ -105,7 +67,6 @@ const PartHistoryListSection = ({
         return <span className={badgeClass}>{displayText}</span>;
       }
     },
-
     { accessorKey: 'partNumber', header: 'PN' },
     { accessorKey: 'partDesc', header: 'PN Description' }
   ];
