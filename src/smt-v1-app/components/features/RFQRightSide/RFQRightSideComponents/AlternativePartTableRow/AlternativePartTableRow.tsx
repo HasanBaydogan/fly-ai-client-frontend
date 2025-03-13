@@ -9,11 +9,13 @@ import editIcon from '../../../../../../assets/img/icons/edit-icon.svg';
 const AlternativePartTableRow = ({
   alternativeRFQParts,
   handleEditAlternativeRFQPart,
-  handleAlternativeRFQPartDeletion
+  handleAlternativeRFQPartDeletion,
+  handleOpenPartModal
 }: {
   alternativeRFQParts: AlternativeRFQPart[];
-  handleEditAlternativeRFQPart: (partNumber: string) => void;
-  handleAlternativeRFQPartDeletion: (partNumber: string) => void;
+  handleEditAlternativeRFQPart: (partId: string) => void;
+  handleAlternativeRFQPartDeletion: (partId: string) => void;
+  handleOpenPartModal: (partNumber: string) => void;
 }) => {
   return (
     <>
@@ -27,7 +29,7 @@ const AlternativePartTableRow = ({
                   style={{ cursor: 'pointer', marginRight: '8px' }}
                   onClick={() =>
                     handleAlternativeRFQPartDeletion(
-                      alternativeRFQPart.partNumber
+                      alternativeRFQPart.rfqPartId
                     )
                   }
                 >
@@ -38,12 +40,21 @@ const AlternativePartTableRow = ({
                   alt="edit-icon"
                   className="part-number-addition-edit-icon"
                   onClick={() =>
-                    handleEditAlternativeRFQPart(alternativeRFQPart.partNumber)
+                    handleEditAlternativeRFQPart(alternativeRFQPart.rfqPartId)
                   }
                 />
               </div>
             </td>
-            <td>{alternativeRFQPart.partNumber}</td>
+            <td
+              onClick={() => handleOpenPartModal(alternativeRFQPart.partNumber)}
+              style={{
+                cursor: 'pointer',
+                color: 'blue',
+                textDecoration: 'underline'
+              }}
+            >
+              {alternativeRFQPart.partNumber}
+            </td>
             <td>{alternativeRFQPart.partName}</td>
             <td>{alternativeRFQPart.parentRFQPart.partNumber}</td>
             <td className="text-center">{alternativeRFQPart.reqQTY}</td>

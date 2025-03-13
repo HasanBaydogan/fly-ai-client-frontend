@@ -156,7 +156,7 @@ export const searchByPartList = async (
 //         Item Fields
 // *****************************
 
-export const getByItemFields = async (partId: string) => {
+export const getByItemFields = async (partNumber: string) => {
   try {
     const accessToken = Cookies.get('access_token');
     const headers = {};
@@ -166,7 +166,7 @@ export const getByItemFields = async (partId: string) => {
       window.location.assign('/');
     }
 
-    const response = await api().get(`/part/part-number/${partId}`, {
+    const response = await api().get(`/part/part-number/${partNumber}`, {
       headers
     });
     // console.log('Response from getByItemFields:', response);
@@ -189,7 +189,78 @@ export const getByItemFields = async (partId: string) => {
             refreshTokenresponse.data.data.refresh_token
           );
           let rfqMailResponseAfterRefresh = await api().get(
-            `/part/part-number/${partId}`,
+            `/part/part-number/${partNumber}`,
+            {
+              headers: {
+                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+              }
+            }
+          );
+
+          return rfqMailResponseAfterRefresh.data;
+        } else if (refreshTokenresponse.data.statusCode === 498) {
+          // Expired Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 411) {
+          // Invalid Refresh Token
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        } else if (refreshTokenresponse.data.statusCode === 404) {
+          console.log('User not found');
+          Cookies.remove('access_token');
+          Cookies.remove('refresh_token');
+          window.location.assign('/');
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (response.data.statusCode === 401) {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      window.location.assign('/');
+    }
+  } catch (err) {
+    console.log('[getByItemFields] Permission Error:', err);
+  }
+};
+
+export const getPartDataModal = async (partNumber: string) => {
+  try {
+    const accessToken = Cookies.get('access_token');
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    } else {
+      window.location.assign('/');
+    }
+
+    const response = await api().get(`/part/part-number/${partNumber}`, {
+      headers
+    });
+    // console.log('Response from getByItemFields:', response);
+
+    if (response.data.statusCode === 200) {
+      return response.data;
+    } else if (response.data.statusCode === 498) {
+      // Expired JWT
+      try {
+        const refreshTokenresponse = await api().post('/auth/refresh-token', {
+          refresh_token: Cookies.get('refresh_token')
+        });
+        if (refreshTokenresponse.data.statusCode === 200) {
+          setCookie(
+            'access_token',
+            refreshTokenresponse.data.data.access_token
+          );
+          setCookie(
+            'refresh_token',
+            refreshTokenresponse.data.data.refresh_token
+          );
+          let rfqMailResponseAfterRefresh = await api().get(
+            `/part/part-number/${partNumber}`,
             {
               headers: {
                 Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`

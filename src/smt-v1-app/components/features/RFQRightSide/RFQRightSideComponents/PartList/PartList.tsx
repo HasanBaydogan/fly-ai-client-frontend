@@ -1,4 +1,6 @@
 import { faArrowRotateRight, faPlus } from '@fortawesome/free-solid-svg-icons';
+import useWizardForm from 'hooks/useWizardForm';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {
   ChangeEvent,
@@ -7,7 +9,7 @@ import React, {
   useRef,
   useState
 } from 'react';
-import { Button, Form, Table } from 'react-bootstrap';
+import { Button, Card, Form, Modal, Tab, Table } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import CustomButton from '../../../../../../components/base/Button';
 import {
@@ -32,6 +34,24 @@ import {
   RFQPart
 } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
+import WizardFormProvider from 'providers/WizardFormProvider';
+import PartWizardItemFiledsForm from 'smt-v1-app/components/features/Parts/PartsItemFields/NewPartsItemFields/PartWizardItemFiledsForm';
+import PartWizardUserDefFieldsForm from 'smt-v1-app/components/features/Parts/UserDefFields/PartWizardUserDefFieldsForm';
+import PartWizardNotesForm from 'smt-v1-app/components/features/Parts/PartsNotes/PartWizardNotesForm';
+import PartWizardFilesForm from 'smt-v1-app/components/features/Parts/PartsFiles/PartWizardFilesForm';
+import PartWizardAlternativesForm from 'smt-v1-app/components/features/Parts/PartAlternatives/PartWizardAlternativesForm';
+import WizardForm from 'components/wizard/WizardForm';
+import WizardNav from 'smt-v1-app/components/features/Parts/PartWizardNav';
+import { getByItemFields } from 'smt-v1-app/services/PartServices';
+
+let tempIdCount = 1; // <-- Eklendi: Her seferinde artacak global bir counter (veya state olarak da tutabilirsin).
+
+function generateTempRFQPartId() {
+  // Her çağrıda temp-1, temp-2, vb. döndürüyor
+  const id = `temp-${String(tempIdCount).padStart(2, '0')}`;
+  tempIdCount++;
+  return id;
+}
 
 const PartList = ({
   parts,
@@ -46,7 +66,7 @@ const PartList = ({
   setPartNumber
 }: {
   parts: RFQPart[];
-  handleDeletePart: (partNumber: string) => void;
+  handleDeletePart: (rfqPartId: string) => void;
   handleAddPart: (rfqPart: RFQPart) => void;
   alternativeParts: AlternativeRFQPart[];
   handleDeleteAlternativePartAccordingToParentRFQNumber: (
@@ -101,6 +121,11 @@ const PartList = ({
   const [airlineCompany, setAirlineCompany] = useState<string>('');
   const [MSDS, setMSDS] = useState<string>('');
 
+  //Wizard
+  const [selectedPart, setSelectedPart] = useState<RFQPart | null>(null);
+  const [showPartModal, setShowPartModal] = useState(false);
+  const form = useWizardForm({ totalStep: 5 });
+
   const [isNewSupplierLoading, setIsNewSupplierLoading] = useState(false);
 
   const partNumberRef = useRef<HTMLInputElement>(null);
@@ -151,6 +176,27 @@ const PartList = ({
 
   const handleNewSupplier = () => {
     window.open('/supplier/new-supplier', '_blank');
+  };
+
+  const handleOpenPartModal = (partNumber: string) => {
+    const foundRFQ = parts.find(part => part.partNumber === partNumber);
+    if (!foundRFQ) {
+      console.log('Part not found');
+    } else {
+      getByItemFields(partNumber)
+        .then(response => {
+          if (response.success && response.data && response.data.partId) {
+            setSelectedPart(response.data);
+          } else {
+            setSelectedPart(null);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching part data:', err);
+          setSelectedPart(null);
+        })
+        .finally(() => setShowPartModal(true));
+    }
   };
 
   const formatCurrency = (inputValue: string, blur: string = ''): string => {
@@ -210,10 +256,6 @@ const PartList = ({
     const formattedValue = formatCurrency(e.target.value);
     setUnitPricevalueString(formattedValue);
   };
-  const handleUnitPriceChangeForEdit = (value: string): void => {
-    const formattedValue = formatCurrency(value);
-    setUnitPricevalueString(formattedValue);
-  };
 
   const handleBlur = (e: FocusEvent<HTMLInputElement>): void => {
     const formattedValue = formatCurrency(unitPricevalueString, 'blur');
@@ -226,15 +268,17 @@ const PartList = ({
     setToastMessageBody(message);
     setIsShowToast(true);
   }
-  const handleEditPart = (partNumber: string) => {
+  const handleEditPart = (rfqPartId: string) => {
     const foundRFQ: RFQPart | null = parts.filter(
-      part => part.partNumber === partNumber
+      part => part.rfqPartId === rfqPartId
     )[0];
+    console.log('rfqparid', rfqPartId);
     if (!foundRFQ) {
       console.log('Found RFQ is not valid');
+      console.log('Current parts array:', parts);
     } else {
       // Old Part Number
-      setOldPartNumber(foundRFQ.partNumber);
+      // setOldPartNumber(foundRFQ.partNumber);
 
       setIsEditing(true);
       setPartName(foundRFQ.partName);
@@ -264,7 +308,7 @@ const PartList = ({
         partNumberRef.current.focus();
       }
 
-      handleDeletePart(partNumber);
+      handleDeletePart(rfqPartId);
     }
   };
 
@@ -277,15 +321,15 @@ const PartList = ({
     setShowDeleteModal(false);
     setDesiredPartNumberToDelete('');
   };
-  const handlePartDeletion = (partNumber: string) => {
+
+  const handlePartDeletion = (rfqPartId: string) => {
     setShowDeleteModal(true);
     const connectedAlternativeRFQParts = alternativeParts.filter(
-      alternativePart => alternativePart.parentRFQPart.partNumber === partNumber
+      alternativePart => alternativePart.parentRFQPart.rfqPartId === rfqPartId
     );
-    //console.log(connectedAlternativeRFQParts);
     setConnectedAlternativeRFQPartsForDeletion(connectedAlternativeRFQParts);
     setNumOfconnectedAlternativeRFQ(connectedAlternativeRFQParts.length);
-    setDesiredPartNumberToDelete(partNumber);
+    setDesiredPartNumberToDelete(rfqPartId);
   };
 
   const updateUnitPrice = (foundRFQ: RFQPart) => {
@@ -298,7 +342,7 @@ const PartList = ({
   };
 
   const handleNewPartAddition = () => {
-    // Zorunlu alanların kontrolü
+    // Zorunlu alanlar...
     if (!partNumber || !partName || reqQTY === 0 || !reqCND) {
       toastError(
         'RFQPart Required Field',
@@ -307,7 +351,7 @@ const PartList = ({
       return;
     }
 
-    // Koşullu alanların kontrolü
+    // Koşullu alanların kontrolü...
     const additionalFieldsProvided =
       fndQTY !== 0 ||
       fndCND ||
@@ -335,7 +379,7 @@ const PartList = ({
       }
     }
 
-    // `clientLT` ve `supplierLT` kontrolü
+    // clientLT vs. supplierLT kontrolü
     if (clientLT < supplierLT) {
       toastError(
         'Invalid LeadTime',
@@ -344,25 +388,33 @@ const PartList = ({
       return;
     }
 
-    // Aynı `partNumber` kontrolü
-    if (parts.some(element => element.partNumber === partNumber.trim())) {
-      toastError('Invalid Part Number', 'Part number is already added!');
-      return;
-    }
+    // PART NUMBER’ı UNIQUE yapmayı ARTIK KALDIRIYORUZ
+    // if (parts.some(element => element.partNumber === partNumber.trim())) {
+    //   toastError('Invalid Part Number', 'Part number is already added!');
+    //   return;
+    // }
 
-    // Her şey doğruysa, yeni parça ekleme işlemi
+    // Yeni (veya düzenlenmiş) bir parça oluşturuyoruz.
+    // Eğer DB'den id geldiyse ondan devam edelim, yoksa temp-id üretelim.
+    const finalRFQPartId =
+      isEditing && rfqPartId ? rfqPartId : generateTempRFQPartId(); // <-- Yeni eklenen parça için "temp-xx"
+
     const rfqPart: RFQPart = {
+      // DB'den gelen 'partId' varsa koru. (part tablosundaki PK gibi düşün.)
       partId: isEditing ? partId : null,
-      rfqPartId: isEditing ? rfqPartId : null,
+
+      // Ekrandaki asıl ID, eğer edit modundaysan eskisini koru, yoksa temp-xx ver.
+      rfqPartId: finalRFQPartId,
+
       partNumber: partNumber.trim(),
       partName: partName.trim(),
-      reqQTY: reqQTY,
-      fndQTY: fndQTY,
-      reqCND: reqCND,
-      fndCND: fndCND,
-      supplierLT: supplierLT,
-      clientLT: clientLT,
-      currency: currency,
+      reqQTY,
+      fndQTY,
+      reqCND,
+      fndCND,
+      supplierLT,
+      clientLT,
+      currency,
       price: unitPricevalueNumber,
       supplier:
         supplier.length > 0
@@ -374,41 +426,43 @@ const PartList = ({
       comment: comment && comment.trim(),
       dgPackagingCost: dgPackagingCst,
       tagDate: tagDate ? formatDate(tagDate) : null,
-      lastUpdatedDate: lastUpdatedDate,
+      lastUpdatedDate,
       certificateType: certType,
       MSN: MSN && MSN.trim(),
       wareHouse: warehouse && warehouse.trim(),
-      stock: stock,
+      stock,
       stockLocation: stockLocation && stockLocation.trim(),
       airlineCompany: airlineCompany && airlineCompany.trim(),
       MSDS: MSDS && MSDS.trim()
     };
 
-    // Change  parent rfqNumber of alternativerfqpart.
+    // Eğer eski partNumber ile yeni partNumber değiştiyse,
+    // alternativeParts'taki parentRFQPart'ı da güncellemek istersen:
     if (oldPartNumber !== partNumber.trim()) {
-      const newAlternativeParts: AlternativeRFQPart[] = alternativeParts.map(
-        alternativePart =>
-          alternativePart.parentRFQPart.partNumber === oldPartNumber
-            ? {
-                ...alternativePart,
-                parentRFQPart: {
-                  ...alternativePart.parentRFQPart,
-                  partNumber: partNumber.trim() // Update parent part number
-                }
+      const newAlternativeParts = alternativeParts.map(ap =>
+        ap.parentRFQPart.partNumber === oldPartNumber
+          ? {
+              ...ap,
+              parentRFQPart: {
+                ...ap.parentRFQPart,
+                partNumber: partNumber.trim()
               }
-            : alternativePart
+            }
+          : ap
       );
       setAlternativeParts(newAlternativeParts);
     }
 
     setOldPartNumber('');
     handleAddPart(rfqPart);
+    console.log(rfqPart);
+    // Formu sıfırlıyoruz.
     setRfqPartId('');
     setPartNumber('');
     setPartName('');
-    setReqQTY(0);
+    setReqQTY(1);
     setFndQTY(0);
-    setReqCND('');
+    setReqCND('NE');
     setFndCND('');
     setSupplierLT(0);
     setClientLT(0);
@@ -475,6 +529,7 @@ const PartList = ({
                 rfqParts={parts}
                 handleEditPart={handleEditPart}
                 handlePartDeletion={handlePartDeletion}
+                handleOpenPartModal={handleOpenPartModal}
               />
             }
 
@@ -491,21 +546,21 @@ const PartList = ({
               <td>
                 <Form.Group>
                   <Form.Control
-                    placeholder="Part Number" // Parça Numarası
+                    placeholder="Part Number"
                     value={partNumber}
                     ref={partNumberRef}
                     onChange={e => {
                       setPartNumber(e.target.value);
-                      setIsPartNumberEmpty(false); // Reset error when user types
+                      setIsPartNumberEmpty(false);
                     }}
                     onBlur={e => {
                       if (!e.target.value.trim()) {
-                        setIsPartNumberEmpty(true); // Set error if input is empty
+                        setIsPartNumberEmpty(true);
                       }
                     }}
                     style={{
                       width: '180px',
-                      borderColor: isPartNumberEmpty ? 'red' : '' // Apply red border if empty
+                      borderColor: isPartNumberEmpty ? 'red' : ''
                     }}
                     required
                   />
@@ -970,6 +1025,57 @@ const PartList = ({
             </tr>
           </tbody>
         </Table>
+      )}
+      {showPartModal && (
+        <Modal
+          size="xl"
+          className="Parts-NewPart-Modal"
+          show={showPartModal}
+          onHide={() => setShowPartModal(false)}
+        >
+          <WizardFormProvider {...form}>
+            <Card className="theme-wi">
+              <Card.Header className="bg-body-highlight pt-3 pb-2 border-bottom-0">
+                <WizardNav />
+              </Card.Header>
+              <Card.Body>
+                <Tab.Content>
+                  <Tab.Pane eventKey={1}>
+                    <WizardForm step={1}>
+                      <PartWizardItemFiledsForm
+                        partData={selectedPart}
+                        onPartCreated={data => setSelectedPart(data)}
+                      />
+                    </WizardForm>
+                  </Tab.Pane>
+                  <Tab.Pane eventKey={2}>
+                    <WizardForm step={2}>
+                      <PartWizardUserDefFieldsForm />
+                    </WizardForm>
+                  </Tab.Pane>
+                  <Tab.Pane eventKey={3}>
+                    <WizardForm step={3}>
+                      <PartWizardNotesForm partId={selectedPart?.partId} />
+                    </WizardForm>
+                  </Tab.Pane>
+                  <Tab.Pane eventKey={4}>
+                    <WizardForm step={4}>
+                      <PartWizardFilesForm partId={selectedPart?.partId} />
+                    </WizardForm>
+                  </Tab.Pane>
+                  <Tab.Pane eventKey={5}>
+                    <WizardForm step={5}>
+                      <PartWizardAlternativesForm
+                        partId={selectedPart?.partId}
+                      />
+                    </WizardForm>
+                  </Tab.Pane>
+                </Tab.Content>
+              </Card.Body>
+              <Card.Footer className="border-top-0"></Card.Footer>
+            </Card>
+          </WizardFormProvider>
+        </Modal>
       )}
 
       {

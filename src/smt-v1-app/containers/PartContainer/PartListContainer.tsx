@@ -26,6 +26,7 @@ import PartWizardNotesForm from 'smt-v1-app/components/features/Parts/PartsNotes
 import PartWizardFilesForm from 'smt-v1-app/components/features/Parts/PartsFiles/PartWizardFilesForm';
 import PartWizardAlternativesForm from 'smt-v1-app/components/features/Parts/PartAlternatives/PartWizardAlternativesForm';
 import useWizardForm from 'hooks/useWizardForm';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const PartManagementContainer = () => {
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
@@ -50,6 +51,7 @@ const PartManagementContainer = () => {
     fetchListData();
   }, [pageIndex]);
 
+  // Fetching Part Detail From Backend
   useEffect(() => {
     if (lgShow && selectedPartId) {
       setLoadingPartData(true);
@@ -83,7 +85,11 @@ const PartManagementContainer = () => {
   const isEditMode = partData && partData.partId;
 
   if (loadingList) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        <LoadingAnimation></LoadingAnimation>
+      </div>
+    );
   }
   const handlePartSelect = (partId: string) => {
     setSelectedPartId(partId);
