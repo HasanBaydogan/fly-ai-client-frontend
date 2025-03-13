@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Col, Form } from 'react-bootstrap';
+import { Col, Form, Button } from 'react-bootstrap';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from './HistoryAdvanceTable';
 import useAdvanceTable from 'hooks/useAdvanceTable';
@@ -88,7 +88,20 @@ const PartHistoryListSection = ({
     { accessorKey: 'suppCompany', header: 'Company' },
     { accessorKey: 'fndQty', header: 'Qty' },
     { accessorKey: 'fndPartCondition', header: 'Condition' },
-    { accessorKey: 'unitCost', header: 'Unit Cost' },
+    {
+      accessorKey: 'unitCost',
+      header: 'Unit Cost',
+      cell: info => {
+        const cost = info.getValue() as number;
+        const formattedCost =
+          '$' +
+          cost.toLocaleString('de-DE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        return <span>{formattedCost}</span>;
+      }
+    },
     {
       accessorKey: 'historyOrderStatus',
       header: 'Order Status',
@@ -105,16 +118,18 @@ const PartHistoryListSection = ({
         return <span className={badgeClass}>{displayText}</span>;
       }
     },
-
     { accessorKey: 'partNumber', header: 'PN' },
     { accessorKey: 'partDesc', header: 'PN Description' }
   ];
 
+  // Pagination entegrasyonu: pagination true olarak ayarlanıp, sayfa başına 10 kayıt gösteriliyor.
   const table = useAdvanceTable({
     data: historyItems,
     columns,
     selection: false,
-    sortable: true
+    sortable: true,
+    pagination: true,
+    pageSize: 10
   });
 
   return (
@@ -135,6 +150,30 @@ const PartHistoryListSection = ({
             rowClassName="hover-actions-trigger btn-reveal-trigger position-static"
           />
         </AdvanceTableProvider>
+
+        {/* Basit Pagination Kontrolleri */}
+        <div className="d-flex justify-content-between align-items-center mt-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <span>
+            Page {table.getState().pagination.pageIndex + 1} of{' '}
+            {table.getPageCount()}
+          </span>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
       </Col>
     </div>
   );
