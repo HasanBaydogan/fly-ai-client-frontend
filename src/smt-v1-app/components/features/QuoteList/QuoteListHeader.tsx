@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge, Form } from 'react-bootstrap';
+import POModal from 'smt-v1-app/components/features/PoModal/POModal';
 
 const Header = ({
   date,
@@ -34,6 +35,10 @@ const Header = ({
   bgColor: string;
   textColor: string;
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
   return (
     <>
       <div>
@@ -42,7 +47,6 @@ const Header = ({
           <span className="last-modified">Last Modified Date:</span>
           <span className="last-modified-date">{' ' + date}</span>
         </div>
-
         {/* RFQ Header */}
         <div
           className="d-flex mt-6 align-item-center justify-content-between"
@@ -59,7 +63,21 @@ const Header = ({
               </Badge>
             </h4>
             <h4 className="mb-3">
-              RFQ Id: <span className="valueRFQ-id">{' ' + rfqNumberId}</span>
+              RFQ Id:{' '}
+              <button
+                className="valueRFQ-id"
+                onClick={openModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  color: 'blue',
+                  textDecoration: 'underline',
+                  cursor: 'pointer'
+                }}
+              >
+                {rfqNumberId}
+              </button>
             </h4>
             <h4 className="mb-4">
               ClientRFQ Id:{' '}
@@ -97,6 +115,11 @@ const Header = ({
             </div>
           </div>
         </div>
+        <POModal
+          show={isModalOpen}
+          onHide={closeModal}
+          rfqNumberId={rfqNumberId}
+        />
       </div>
     </>
   );

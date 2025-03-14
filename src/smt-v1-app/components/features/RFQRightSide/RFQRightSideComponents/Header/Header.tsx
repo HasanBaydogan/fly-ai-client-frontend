@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import POModal from 'smt-v1-app/components/features/PoModal/POModal';
 
 const Header = ({
   date,
@@ -24,11 +23,6 @@ const Header = ({
   bgColor: string;
   textColor: string;
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-
   return (
     <>
       <div>
@@ -48,21 +42,7 @@ const Header = ({
             style={{ gap: '50px' }}
           >
             <h3>
-              RFQ Id:{' '}
-              <button
-                className="valueRFQ-id"
-                onClick={openModal}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  color: 'blue',
-                  textDecoration: 'underline',
-                  cursor: 'pointer'
-                }}
-              >
-                {rfqNumberId}
-              </button>
+              RFQ Id: <span className="valueRFQ-id">{' ' + rfqNumberId}</span>
             </h3>
           </div>
           <div>
@@ -76,13 +56,6 @@ const Header = ({
             </div>
           </div>
         </div>
-
-        {/* React Bootstrap Modal */}
-        <POModal
-          show={isModalOpen}
-          onHide={closeModal}
-          rfqNumberId={rfqNumberId}
-        />
       </div>
     </>
   );
