@@ -74,7 +74,7 @@ const Client = ({
 
   const handleSelectClient = (selected: Client[]) => {
     if (selected.length > 0) {
-      setFoundClient(selected[0]); // Set the first selected client
+      setFoundClient(selected[0]);
     } else {
       setFoundClient(null);
     }
@@ -102,14 +102,14 @@ const Client = ({
                 <Typeahead
                   id="client-search"
                   labelKey="clientName"
-                  options={clientList || []} // Use the client list
+                  options={clientList || []}
                   placeholder="Search by Client Name"
-                  onInputChange={handleSearch} // Handle input change for filtering
-                  onChange={handleSelectClient} // Handle selection
-                  selected={foundClient ? [foundClient] : []} // Preselect found client
-                  multiple={false} // Single selection only
-                  positionFixed // Keeps dropdown attached to the input
-                  style={{ zIndex: 10 }} // Ensure visibility of dropdown
+                  onInputChange={handleSearch}
+                  onChange={handleSelectClient}
+                  selected={foundClient ? [foundClient] : []}
+                  multiple={false}
+                  positionFixed
+                  style={{ zIndex: 10 }}
                 />
               </Form.Group>
             </div>
@@ -148,8 +148,8 @@ const Client = ({
               type="checkbox"
               className="form-check-input me-2"
               checked={!!foundClient}
-              onChange={() => setFoundClient(null)} // Clear selection on uncheck
-              disabled={!foundClient} // Disable if no client is selected
+              onChange={() => setFoundClient(null)}
+              disabled={!foundClient}
             />
           </div>
 
@@ -159,7 +159,7 @@ const Client = ({
               <DatePicker
                 placeholder="Select Date"
                 value={rfqDeadline}
-                onChange={date => setRFQDeadline(date[0])} // Flatpickr returns an array of dates.
+                onChange={date => setRFQDeadline(date[0])}
               />
             </div>
             <div className="d-flex align-items-center">
