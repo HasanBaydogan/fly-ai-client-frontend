@@ -58,7 +58,13 @@ const ContactAddModal: React.FC<ContactAddModalProps> = ({
   };
 
   return (
-    <Modal show={show} onHide={onHide} centered>
+    <Modal
+      show={show}
+      onHide={onHide}
+      centered
+      keyboard={false}
+      backdrop="static"
+    >
       <Modal.Header closeButton>
         <Modal.Title>Add New Contact</Modal.Title>
       </Modal.Header>
