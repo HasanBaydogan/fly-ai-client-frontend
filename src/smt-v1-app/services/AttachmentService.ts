@@ -27,7 +27,7 @@ export const openAttachment = async (attachmentId: string) => {
       headers
     });
 
-    console.log('attachmentResp', attachmentResp);
+    // console.log('attachmentResp', attachmentResp);
     if (attachmentResp.data.statusCode === 200) {
       return attachmentResp.data;
     } else if (attachmentResp.data.statusCode === 498) {

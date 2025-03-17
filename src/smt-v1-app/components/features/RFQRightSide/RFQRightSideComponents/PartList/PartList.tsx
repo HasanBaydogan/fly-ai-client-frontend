@@ -61,13 +61,10 @@ const PartList: React.FC<PartListProps> = ({
   setPartNumber
 }) => {
   // Genel state'ler
-  const [isPartNumberEmpty, setIsPartNumberEmpty] = useState(false);
-  const [isPartNameEmpty, setIsPartNameEmpty] = useState(false);
   const [isShowToast, setIsShowToast] = useState(false);
   const [toastMessageHeader, setToastMessageHeader] = useState('');
   const [toastMessageBody, setToastMessageBody] = useState('');
   const [toastVariant, setToastVariant] = useState('danger');
-
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [desiredPartNumberToDelete, setDesiredPartNumberToDelete] =
     useState('');
@@ -426,6 +423,7 @@ const PartList: React.FC<PartListProps> = ({
       ) : (
         <PartListTable
           parts={parts}
+          handleAddPart={handleAddPart}
           partNumber={partNumber}
           setPartNumber={setPartNumber}
           partName={partName}

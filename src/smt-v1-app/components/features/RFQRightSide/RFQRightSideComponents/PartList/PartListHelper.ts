@@ -53,3 +53,10 @@ export function convertDateFormat(inputDate: string): string {
   // Return the date in the desired format
   return `${year}-${month}-${day}`;
 }
+
+export let tempIdCount = 1;
+export function generateTempRFQPartId(): string {
+  const id = `temp-${String(tempIdCount).padStart(2, '0')}`;
+  tempIdCount++;
+  return id;
+}

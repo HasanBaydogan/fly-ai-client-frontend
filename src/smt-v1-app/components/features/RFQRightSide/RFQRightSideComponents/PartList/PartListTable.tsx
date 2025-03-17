@@ -1,6 +1,5 @@
-// PartListTable.tsx
-import React from 'react';
-import { Table, Form, Button } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Table, Form, Button, Modal } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRotateRight, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
@@ -9,12 +8,16 @@ import RFQPartTableRow from '../RFQPartTableRow/RFQPartTableRow';
 import CustomButton from '../../../../../../components/base/Button';
 import { tableHeaders } from './PartListHelper';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
+import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import { generateTempRFQPartId } from './PartListHelper';
 
-type Supplier = any; // Gerçek tip ile değiştirebilirsiniz.
+type Supplier = any;
 
 interface PartListTableProps {
-  parts: any[];
+  parts: RFQPart[];
   partNumber: string;
+  handleAddPart: (rfqPart: RFQPart) => void;
+  setParts?: React.Dispatch<React.SetStateAction<RFQPart[]>>;
   setPartNumber: React.Dispatch<React.SetStateAction<string>>;
   partName: string;
   setPartName: React.Dispatch<React.SetStateAction<string>>;
@@ -72,6 +75,7 @@ interface PartListTableProps {
 
 const PartListTable: React.FC<PartListTableProps> = ({
   parts,
+  handleAddPart,
   partNumber,
   setPartNumber,
   partName,
@@ -127,17 +131,112 @@ const PartListTable: React.FC<PartListTableProps> = ({
   handleOpenPartModal,
   handleNewPartAddition
 }) => {
+  const [showMultiAddModal, setShowMultiAddModal] = useState(false);
+  const [multiPartNumbers, setMultiPartNumbers] = useState('');
+  const [multiPartNames, setMultiPartNames] = useState('');
+  const [multiQty, setMultiQty] = useState('');
+
+  const parseMultiLineInput = (input: string): string[] => {
+    const lines = input
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean);
+
+    const results: string[] = [];
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i];
+      //OR içeren satırları tek satır haline getirme
+      if (line.toUpperCase() === 'OR' && i > 0 && i < lines.length - 1) {
+        const combined = results[results.length - 1] + ' OR ' + lines[i + 1];
+        results[results.length - 1] = combined;
+        i += 2;
+      } else {
+        // normal satırsa direkt ekle
+        results.push(line);
+        i++;
+      }
+    }
+    return results;
+  };
+
+  const handleMultiAdd = () => {
+    const parsedPartNumbers = parseMultiLineInput(multiPartNumbers);
+    const parsedPartNames = parseMultiLineInput(multiPartNames);
+    const parsedQty = parseMultiLineInput(multiQty);
+
+    if (
+      parsedPartNumbers.length !== parsedPartNames.length ||
+      parsedPartNumbers.length !== parsedQty.length
+    ) {
+      alert('Part Number, Part Name and Qty line numbers do not match!');
+      return;
+    }
+
+    const newParts = parsedPartNumbers.map((pn, idx) => ({
+      partNumber: pn.trim(),
+      partName: parsedPartNames[idx].trim(),
+      reqQty: parseInt(parsedQty[idx], 10) || 1
+    }));
+
+    newParts.forEach(np => {
+      handleAddPart({
+        partId: null,
+        rfqPartId: generateTempRFQPartId(),
+        partNumber: np.partNumber,
+        partName: np.partName,
+        reqQTY: np.reqQty,
+        fndQTY: 0,
+        reqCND: 'NE',
+        fndCND: '',
+        supplierLT: 0,
+        clientLT: 0,
+        currency: 'USD',
+        price: 0.0,
+        supplier: null,
+        comment: '',
+        dgPackagingCost: false,
+        tagDate: null,
+        lastUpdatedDate: '',
+        certificateType: '',
+        MSN: '',
+        wareHouse: '',
+        stock: 0,
+        stockLocation: '',
+        airlineCompany: '',
+        MSDS: ''
+      });
+    });
+
+    setShowMultiAddModal(false);
+    setMultiPartNumbers('');
+    setMultiPartNames('');
+    setMultiQty('');
+  };
+
   return (
     <div>
       <div
         className="d-flex justify-content-end"
         style={{ padding: '10px', paddingRight: '0px' }}
       >
+        {/* Single*/}
         <CustomButton
           variant="primary"
           startIcon={<FontAwesomeIcon icon={faPlus} className="ms-0" />}
           onClick={handleNewPartAddition}
         />
+
+        {/* Multi */}
+        <Button
+          variant="secondary"
+          className="ms-2"
+          onClick={() => setShowMultiAddModal(true)}
+        >
+          {<FontAwesomeIcon icon={faPlus} className="ms-0" />}
+          {<FontAwesomeIcon icon={faPlus} className="ms-0" />}
+          {<FontAwesomeIcon icon={faPlus} className="ms-0" />}
+        </Button>
       </div>
       <Table responsive style={{ overflow: 'visible' }}>
         <thead>
@@ -500,6 +599,59 @@ const PartListTable: React.FC<PartListTableProps> = ({
           </tr>
         </tbody>
       </Table>
+      {/* Çoklu Ekleme Modal'ı */}
+      <Modal
+        show={showMultiAddModal}
+        onHide={() => setShowMultiAddModal(false)}
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add Multiple Parts</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-3">
+            <Form.Label>Part Numbers</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              value={multiPartNumbers}
+              onChange={e => setMultiPartNumbers(e.target.value)}
+              placeholder={`Part Number1\nPart Number2\nPart Number3`}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Part Names</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              value={multiPartNames}
+              onChange={e => setMultiPartNames(e.target.value)}
+              placeholder={`Part Name1\nPart Name2\nPart Name3`}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>QTY</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              value={multiQty}
+              onChange={e => setMultiQty(e.target.value)}
+              placeholder={`QTY 1\nQTY 2\nQTY 3`}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowMultiAddModal(false)}
+          >
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleMultiAdd}>
+            Save
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

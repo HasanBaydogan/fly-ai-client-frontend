@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getColorStyles } from '../RfqMailRowItem/RfqMailRowHelper';
 import Client from './RFQRightSideComponents/Client/Client';
 import PartList from './RFQRightSideComponents/PartList/PartList';
@@ -28,11 +28,15 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [bgColor, setBgColor] = useState('');
   const [textColor, setTextColor] = useState('');
   const navigation = useNavigate();
-  const [parts, setParts] = useState(rfq.savedRFQItems);
+  const [parts, setParts] = useState<RFQPart[]>(rfq.savedRFQItems);
+
   const [alternativeParts, setAlternativeParts] = useState(
     rfq.alternativeRFQPartResponses
   );
 
+  const handleAddPart = (rfqPart: RFQPart) => {
+    setParts(prev => [...prev, rfqPart]);
+  };
   const [partName, setPartName] = useState<string>('');
   const [partNumber, setPartNumber] = useState<string>('');
 
@@ -74,9 +78,6 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     setAlternativeParts([...alternativeParts, alternativePart]);
   };
 
-  const handleAddPart = (rfqPart: RFQPart) => {
-    setParts([...parts, rfqPart]);
-  };
   const handleDeletePart = (rfqPartId: string) => {
     const updatedArray = parts.filter(item => item.rfqPartId !== rfqPartId);
     setParts(updatedArray);
@@ -109,6 +110,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   };
 
   const handleSaveUpdate = async () => {
+    // console.log('Parts being sent to backend:', parts);
     setIsLoadingSave(true);
     setIsLoading(true);
     if (!foundClient) {
@@ -223,8 +225,8 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
         rfqDeadline: formatDateToString(rfqDeadline),
         clientRFQId: clientRFQId !== '' ? clientRFQId : null
       };
-      console.log(savedRFQ);
-      console.log(rfq);
+      // console.log(savedRFQ);
+      // console.log(rfq);
 
       const resp = await saveRFQToDB(savedRFQ);
       console.log(resp);
