@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DatePicker from 'components/base/DatePicker';
 import SearchBox from 'components/common/SearchBox';
 import React from 'react';
-import { Col, Form, Row } from 'react-bootstrap';
+import { Col, Form, Row, Button } from 'react-bootstrap';
 
 const MailTrackingHeader = ({
   loading,
@@ -13,7 +13,8 @@ const MailTrackingHeader = ({
   setPageNo,
   pageSize,
   handlePageSizeChange,
-  handleSubjectSearch
+  handleSubjectSearch,
+  onRefresh // Refresh fonksiyonunu prop olarak alıyoruz
 }: {
   loading: boolean;
   sinceFromDate: Date;
@@ -23,6 +24,7 @@ const MailTrackingHeader = ({
   pageSize: number;
   handlePageSizeChange: (size: number) => void;
   handleSubjectSearch: (subject: string) => void;
+  onRefresh: () => void;
 }) => {
   return (
     <Row className="mb-3">
@@ -33,15 +35,35 @@ const MailTrackingHeader = ({
             <DatePicker
               placeholder="Select Date"
               hideIcon
-              value={sinceFromDate} // Pass the initial date
+              value={sinceFromDate}
               onChange={selectedDates => {
-                // `selectedDates` is an array, and the first element is the selected date
                 setPageNo(1);
                 const selectedDate = selectedDates[0];
-                setSinceFromDate(selectedDate); // Pass the Date object to the state
+                setSinceFromDate(selectedDate);
               }}
             />
           </Form.Group>
+          {/* Refresh Butonu */}
+          <Button
+            variant="outline-secondary"
+            onClick={onRefresh}
+            style={{
+              marginLeft: '10px',
+              marginTop: '25px',
+              backgroundColor: '#f0f0f0',
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              padding: '8px 12px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faArrowRotateRight}
+              style={{ marginRight: '5px' }}
+            />
+            Refresh
+          </Button>
         </div>
         <div className="d-flex justify-content-center align-items-center">
           <SearchBox
