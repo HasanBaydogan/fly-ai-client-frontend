@@ -1,6 +1,7 @@
 import React from 'react';
 import RfqMailRowItem from '../RfqMailRowItem/RfqMailRowItem';
 import { Table } from 'react-bootstrap';
+
 interface RFQMail {
   rfqMailId: string; // Unique identifier
   rfqNumberId: string;
@@ -12,8 +13,8 @@ interface RFQMail {
     | 'FQ'
     | 'NOT_RFQ'
     | 'NO_QUOTE'
-    | 'SPAM'; // Mail subject
-  assignTo: string | null; // Mail content
+    | 'SPAM';
+  assignTo: string | null;
   comment: string | null;
   emailSender: string;
   subject: string;
@@ -40,9 +41,9 @@ const RFQMailRfqNumberIdSearch = ({
   setVariant: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   return (
-    <>
+    <div className="table-scroll-container">
       <Table responsive>
-        <thead>
+        <thead className="sticky-top-table-header-rfq">
           <tr>
             <th></th>
             <th>RFQ Id</th>
@@ -68,7 +69,7 @@ const RFQMailRfqNumberIdSearch = ({
             ))}
         </tbody>
       </Table>
-    </>
+    </div>
   );
 };
 

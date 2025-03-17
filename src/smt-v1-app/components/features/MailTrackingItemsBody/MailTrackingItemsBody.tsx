@@ -15,10 +15,11 @@ const MailTrackingItemsBody = ({
   setVariant: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const reduxRfqMails = useRFQMailsSelector();
+
   return (
-    <>
+    <div className="table-scroll-container">
       <Table responsive>
-        <thead>
+        <thead className="sticky-top-table-header-rfq">
           <tr>
             <th></th>
             <th>RFQ Id</th>
@@ -44,7 +45,7 @@ const MailTrackingItemsBody = ({
             ))}
         </tbody>
       </Table>
-    </>
+    </div>
   );
 };
 

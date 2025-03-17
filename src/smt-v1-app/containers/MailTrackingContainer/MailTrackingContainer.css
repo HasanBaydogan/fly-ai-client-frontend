@@ -1,3 +1,49 @@
 .tab-link-text-size {
   font-size: 18px !important;
 }
+
+.table-scroll-container {
+  max-height: 860px;
+  overflow-y: auto;
+}
+
+@media (max-height: 1200px) {
+  .table-scroll-container {
+    max-height: 750px;
+  }
+}
+@media (max-height: 1100px) {
+  .table-scroll-container {
+    max-height: 650px;
+  }
+}
+/* Orta ekranlar (768px altında) */
+@media (max-height: 1000px) {
+  .table-scroll-container {
+    max-height: 580px;
+  }
+}
+@media (max-height: 900px) {
+  .table-scroll-container {
+    max-height: 450px;
+  }
+}
+
+@media (max-height: 800px) {
+  .table-scroll-container {
+    max-height: 380px;
+  }
+}
+@media (max-height: 700px) {
+  .table-scroll-container {
+    max-height: 300px;
+  }
+}
+
+
+.sticky-top-table-header-rfq {
+  position: sticky;
+  top: 0; 
+  z-index: 9999;
+  background-color: #f5f7fa;
+}

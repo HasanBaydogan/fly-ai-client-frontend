@@ -169,79 +169,83 @@ const MailTrackingContainer = () => {
 
   return (
     <>
-      <MailTrackingHeader
-        loading={loading}
-        sinceFromDate={sinceFromDate}
-        setSinceFromDate={setSinceFromDate}
-        handleRFQNumberIdSearch={handleRFQNumberIdSearch}
-        setPageNo={setPageNo}
-        pageSize={pageSize}
-        handlePageSizeChange={handlePageSizeChange}
-        handleSubjectSearch={handleSubjectSearch}
-      />
-      {isShowSubjectSearch ? (
-        <RFQMailRfqNumberIdSearch
-          rfqNumberSearchrfqMails={subjectSearchRFQMails}
-          setIsShow={setIsShow}
-          setMessageHeader={setMessageHeader}
-          setMessageBodyText={setMessageBodyText}
-          setVariant={setVariant}
-        />
-      ) : isShowRFQNumberSearch ? (
-        <RFQMailRfqNumberIdSearch
-          rfqNumberSearchrfqMails={rfqNumberSearchrfqMails}
-          setIsShow={setIsShow}
-          setMessageHeader={setMessageHeader}
-          setMessageBodyText={setMessageBodyText}
-          setVariant={setVariant}
-        />
-      ) : (
-        <Tab.Container
-          id="rfq-mails-tabs"
-          defaultActiveKey="All"
-          onSelect={handleTabSelect}
-        >
-          <Nav variant="underline" className="mb-3">
-            {links.map(tab => (
-              <Nav.Item key={tab}>
-                <Nav.Link eventKey={tab} className="tab-link-text-size">
-                  {tab}
-                </Nav.Link>
-              </Nav.Item>
-            ))}
-          </Nav>
+      <div>
+        <div className="sticky-header-mail-tracking">
+          <MailTrackingHeader
+            loading={loading}
+            sinceFromDate={sinceFromDate}
+            setSinceFromDate={setSinceFromDate}
+            handleRFQNumberIdSearch={handleRFQNumberIdSearch}
+            setPageNo={setPageNo}
+            pageSize={pageSize}
+            handlePageSizeChange={handlePageSizeChange}
+            handleSubjectSearch={handleSubjectSearch}
+          />
+        </div>
+        {isShowSubjectSearch ? (
+          <RFQMailRfqNumberIdSearch
+            rfqNumberSearchrfqMails={subjectSearchRFQMails}
+            setIsShow={setIsShow}
+            setMessageHeader={setMessageHeader}
+            setMessageBodyText={setMessageBodyText}
+            setVariant={setVariant}
+          />
+        ) : isShowRFQNumberSearch ? (
+          <RFQMailRfqNumberIdSearch
+            rfqNumberSearchrfqMails={rfqNumberSearchrfqMails}
+            setIsShow={setIsShow}
+            setMessageHeader={setMessageHeader}
+            setMessageBodyText={setMessageBodyText}
+            setVariant={setVariant}
+          />
+        ) : (
+          <Tab.Container
+            id="rfq-mails-tabs"
+            defaultActiveKey="All"
+            onSelect={handleTabSelect}
+          >
+            <Nav variant="underline" className="mb-3">
+              {links.map(tab => (
+                <Nav.Item key={tab}>
+                  <Nav.Link eventKey={tab} className="tab-link-text-size">
+                    {tab}
+                  </Nav.Link>
+                </Nav.Item>
+              ))}
+            </Nav>
 
-          <Tab.Content>
-            <Tab.Pane eventKey={stringActiveStatus}>
-              {loading ? (
-                <LoadingAnimation />
-              ) : (
-                <MailTrackingItemsBody
-                  setIsShow={setIsShow}
-                  setMessageHeader={setMessageHeader}
-                  setMessageBodyText={setMessageBodyText}
-                  setVariant={setVariant}
+            <Tab.Content>
+              <Tab.Pane eventKey={stringActiveStatus}>
+                {loading ? (
+                  <LoadingAnimation />
+                ) : (
+                  <MailTrackingItemsBody
+                    setIsShow={setIsShow}
+                    setMessageHeader={setMessageHeader}
+                    setMessageBodyText={setMessageBodyText}
+                    setVariant={setVariant}
+                  />
+                )}
+                <CustomPagination
+                  pageNo={pageNo}
+                  setPageNo={setPageNo}
+                  totalPage={totalPage}
+                  totalItem={totalRFQMail}
                 />
-              )}
-              <CustomPagination
-                pageNo={pageNo}
-                setPageNo={setPageNo}
-                totalPage={totalPage}
-                totalItem={totalRFQMail}
-              />
-            </Tab.Pane>
-          </Tab.Content>
-        </Tab.Container>
-      )}
+              </Tab.Pane>
+            </Tab.Content>
+          </Tab.Container>
+        )}
 
-      <ToastNotification
-        isShow={isShow}
-        setIsShow={setIsShow}
-        variant={variant}
-        messageHeader={messageHeader}
-        messageBodyText={messageBodyText}
-        position={position}
-      />
+        <ToastNotification
+          isShow={isShow}
+          setIsShow={setIsShow}
+          variant={variant}
+          messageHeader={messageHeader}
+          messageBodyText={messageBodyText}
+          position={position}
+        />
+      </div>
     </>
   );
 };
