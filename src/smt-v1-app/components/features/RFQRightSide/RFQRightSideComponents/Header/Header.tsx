@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 const Header = ({
   date,
+  emailSentDate,
   rfqNumberId,
   clientRFQId,
   status,
@@ -9,6 +10,7 @@ const Header = ({
   textColor
 }: {
   date: string;
+  emailSentDate: string;
   rfqNumberId: string;
   clientRFQId: string;
   status:
@@ -30,6 +32,10 @@ const Header = ({
         <div className="d-flex justify-content-end me-6">
           <span className="last-modified">Last Modified Date:</span>
           <span className="last-modified-date">{' ' + date}</span>
+        </div>
+        <div className="d-flex justify-content-end me-6">
+          <span className="last-modified">RFQ Date:</span>
+          <span className="last-modified-date">{' ' + emailSentDate}</span>
         </div>
 
         {/* RFQ Header */}

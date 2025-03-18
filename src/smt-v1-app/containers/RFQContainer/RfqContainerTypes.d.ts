@@ -71,6 +71,7 @@ interface RFQ {
   clientRFQNumberId: string | null;
   clientResponse: Client;
   lastModifiedDate: string;
+  emailSentDate: string;
   mailItemMoreDetailResponse: MailItemMoreDetail;
   rfqDeadline: string;
   rfqId: string | null;

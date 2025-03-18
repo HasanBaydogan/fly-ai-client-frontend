@@ -268,6 +268,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
       <div className="rfq-right">
         <Header
           date={rfq.lastModifiedDate}
+          emailSentDate={rfq.emailSentDate}
           rfqNumberId={rfq.rfqNumberId}
           clientRFQId={rfq.clientRFQNumberId}
           bgColor={bgColor}
