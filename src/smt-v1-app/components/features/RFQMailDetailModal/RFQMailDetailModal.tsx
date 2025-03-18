@@ -1,22 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { CloseButton, Form, Modal } from 'react-bootstrap';
+import { CloseButton, Modal } from 'react-bootstrap';
 import './RFQMailDetailModal.css';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getRfqMailDetailFromDB } from 'smt-v1-app/services/MailTrackingService';
 import RFQActionButtons from '../RFQActionButton/RFQActionButton';
 import RFQMailLogs from '../RFQMailLogs/RFQMailLogs';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
+import RFQAttachments from 'smt-v1-app/components/features/RFQLeftSide/RFQLeftSideComponents/RFQAttachments/RFQAttachments'; // Import yolunu projenize göre ayarlayın
 
-const RFQMailDetailModal = ({
-  isDetailShow,
-  setIsDetailShow,
-  bgColor,
-  textColor,
-  rfqMailId,
-  setRfqMailStatus,
-  rfqMailStatus,
-  handleStatusColor
-}: {
+interface RFQMailDetailModalProps {
   isDetailShow: boolean;
   setIsDetailShow: React.Dispatch<React.SetStateAction<boolean>>;
   bgColor: string;
@@ -46,8 +38,19 @@ const RFQMailDetailModal = ({
     | 'Hide Not RFQ'
     | 'SPAM';
   handleStatusColor: (rfqMailStatus: string) => void;
+}
+
+const RFQMailDetailModal: React.FC<RFQMailDetailModalProps> = ({
+  isDetailShow,
+  setIsDetailShow,
+  bgColor,
+  textColor,
+  rfqMailId,
+  setRfqMailStatus,
+  rfqMailStatus,
+  handleStatusColor
 }) => {
-  const [rfqMailDetail, setRfqMailDetail] = useState<RFQMailDetail>();
+  const [rfqMailDetail, setRfqMailDetail] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isShowLogs, setIsShowLogs] = useState(false);
 
@@ -88,7 +91,7 @@ const RFQMailDetailModal = ({
       >
         <Modal.Header>
           <Modal.Title id="example-modal-sizes-title-lg">
-            RFQ :{rfqMailDetail && rfqMailDetail.rfqMailNumberRefId}
+            RFQ : {rfqMailDetail && rfqMailDetail.rfqMailNumberRefId}
           </Modal.Title>
           <CloseButton onClick={() => setIsDetailShow(false)} />
         </Modal.Header>
@@ -110,31 +113,39 @@ const RFQMailDetailModal = ({
               <div className="d-flex justify-content-between">
                 <div className="me-3">
                   <div className="py-1">
-                    <span className="fw-bold">From : </span>{' '}
-                    <a href="#">{rfqMailDetail.from} </a>
+                    <span className="fw-bold">From: </span>
+                    <a href="#">{rfqMailDetail.from}</a>
                   </div>
 
                   <div className="py-1">
-                    <span className="fw-bold">Subject : </span>
-                    <span>{` ${rfqMailDetail.subject}`}</span>
+                    <span className="fw-bold">Subject: </span>
+                    <span>{rfqMailDetail.subject}</span>
                   </div>
 
-                  <div className="py-1 d-flex">
-                    <span className="fw-bold me-1">Content :</span>
+                  <div className="py-1">
+                    <span className="fw-bold">Content: </span>
                     <div
                       className="rfq-mail-detail-content"
                       style={{
                         maxWidth: '460px',
-
-                        overflowY: 'auto', // Yüksekliği aşan içerik için dikey kaydırma ekler
-                        overflowX: 'auto' // Yatay kaydırmayı gizler
+                        overflowY: 'auto',
+                        overflowX: 'auto'
                       }}
                       dangerouslySetInnerHTML={{
-                        __html: `${rfqMailDetail.content}`
+                        __html: rfqMailDetail.content
                       }}
                     ></div>
                   </div>
+
+                  {/* Ek Dosyaların Görüntülenmesi */}
+                  {rfqMailDetail.mailItemAttachmentResponses &&
+                    rfqMailDetail.mailItemAttachmentResponses.length > 0 && (
+                      <RFQAttachments
+                        attachments={rfqMailDetail.mailItemAttachmentResponses}
+                      />
+                    )}
                 </div>
+
                 <div className="ms-3">
                   <div>
                     <div className="d-flex justify-content-end">
@@ -169,28 +180,26 @@ const RFQMailDetailModal = ({
                   </div>
                 </div>
               </div>
+
               <div className="d-flex justify-content-end">
-                <div className="d-flex justify-content-end">
-                  {
-                    <RFQActionButtons
-                      rfqMailDetail={rfqMailDetail}
-                      setRfqMailDetail={setRfqMailDetail}
-                      rfqMailId={rfqMailDetail.rfqMailId}
-                      setIsShow={setIsShowToast}
-                      setMessageHeader={setMessageHeader}
-                      setMessageBodyText={setMessageBodyText}
-                      setVariant={setVariant}
-                      setRfqMailRowStatus={setRfqMailStatus}
-                      handleStatusColor={handleStatusColor}
-                    />
-                  }
-                </div>
+                <RFQActionButtons
+                  rfqMailDetail={rfqMailDetail}
+                  setRfqMailDetail={setRfqMailDetail}
+                  rfqMailId={rfqMailDetail.rfqMailId}
+                  setIsShow={setIsShowToast}
+                  setMessageHeader={setMessageHeader}
+                  setMessageBodyText={setMessageBodyText}
+                  setVariant={setVariant}
+                  setRfqMailRowStatus={setRfqMailStatus}
+                  handleStatusColor={handleStatusColor}
+                />
               </div>
             </>
           )}
-          {isShowLogs ? (
+
+          {isShowLogs && rfqMailDetail && (
             <RFQMailLogs rfqMailId={rfqMailDetail.rfqMailId} />
-          ) : null}
+          )}
 
           <ToastNotification
             isShow={isShowToast}

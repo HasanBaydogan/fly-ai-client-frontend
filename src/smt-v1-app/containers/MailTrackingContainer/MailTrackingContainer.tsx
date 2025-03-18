@@ -88,7 +88,6 @@ const MailTrackingContainer = () => {
   const [messageBodyText, setMessageBodyText] = useState('');
   const [position, setPosition] = useState<ToastPosition>('middle-end');
 
-  // Yenileme fonksiyonunu tanımlıyoruz
   const refreshRFQMails = async () => {
     try {
       setLoading(true);
@@ -114,7 +113,6 @@ const MailTrackingContainer = () => {
     }
   };
 
-  // Component mount ve bağımlılık değişikliklerinde sayfayı yenilemek için
   useEffect(() => {
     refreshRFQMails();
   }, [pageNo, pageSize, filterType, sinceFromDate, dispatch]);
@@ -149,7 +147,7 @@ const MailTrackingContainer = () => {
 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
-    setPageNo(1); // Sayfa boyutu değişince ilk sayfaya dön
+    setPageNo(1);
   };
 
   const handleSubjectSearch = async (subject: string) => {

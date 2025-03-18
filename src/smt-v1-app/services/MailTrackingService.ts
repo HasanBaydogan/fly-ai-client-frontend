@@ -278,7 +278,7 @@ export const getRfqMailDetailFromDB = async (rfqMailId: string) => {
     const response = await api().get(`/rfq-mail/detail/${rfqMailId}`, {
       headers
     });
-
+    console.log('mail detail', response);
     if (response.data.statusCode === 200) {
       return response.data;
     } else if (response.data.statusCode === 498) {
