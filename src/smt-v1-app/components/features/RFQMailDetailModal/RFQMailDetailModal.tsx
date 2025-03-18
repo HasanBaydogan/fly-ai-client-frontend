@@ -24,7 +24,15 @@ const RFQMailDetailModal = ({
   rfqMailId: string;
   setRfqMailStatus: React.Dispatch<
     React.SetStateAction<
-      'UNREAD' | 'OPEN' | 'WFS' | 'PQ' | 'FQ' | 'NOT_RFQ' | 'NO_QUOTE' | 'SPAM'
+      | 'UNREAD'
+      | 'OPEN'
+      | 'WFS'
+      | 'PQ'
+      | 'FQ'
+      | 'NOT_RFQ'
+      | 'NO_QUOTE'
+      | 'Hide Not RFQ'
+      | 'SPAM'
     >
   >;
   rfqMailStatus:
@@ -35,6 +43,7 @@ const RFQMailDetailModal = ({
     | 'FQ'
     | 'NOT_RFQ'
     | 'NO_QUOTE'
+    | 'Hide Not RFQ'
     | 'SPAM';
   handleStatusColor: (rfqMailStatus: string) => void;
 }) => {

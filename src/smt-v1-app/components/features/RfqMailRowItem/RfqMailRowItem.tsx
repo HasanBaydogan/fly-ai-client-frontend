@@ -75,6 +75,8 @@ const RfqMailRowItem = ({
       setIsNotRFQActive(true); // Not_RFQ aktif
     } else if (rfqMail.isNoQuote) {
       setIsNoQuoteActive(true); // No_Quote aktif
+    } else if (rfqMail.isHideNotRFQ) {
+      setSpamActive(true); // Spam aktif
     } else if (rfqMail.isSpam) {
       setSpamActive(true); // Spam aktif
     }

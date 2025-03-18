@@ -18,6 +18,8 @@ export const getActiveStatusFromStringStatus = (stringActiveStatus: string) => {
       return 'NOT_RFQ';
     case 'NO Quote':
       return 'NO_QUOTE';
+    case 'Hide Not RFQ':
+      return 'HIDE_NOT_RFQ';
     case 'Released 120 Hours':
       return 'RELEASED_120_HOURS';
     default:

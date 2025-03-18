@@ -27,6 +27,7 @@ const links = [
   'FQ',
   'NOT RFQ',
   'NO Quote',
+  'Hide Not RFQ',
   'Released 120 Hours'
 ];
 
@@ -50,6 +51,7 @@ type filterType =
   | 'FQ'
   | 'NOT_RFQ'
   | 'NO_QUOTE'
+  | 'HIDE_NOT_RFQ'
   | 'RELEASED_120_HOURS';
 
 const MailTrackingContainer = () => {

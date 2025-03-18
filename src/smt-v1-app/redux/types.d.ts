@@ -14,6 +14,7 @@ interface RFQMail {
     | 'FQ'
     | 'NOT_RFQ'
     | 'NO_QUOTE'
+    | 'Hide Not RFQ'
     | 'SPAM'; // Mail subject
   assignTo: string | null; // Mail content
   comment: string | null;
@@ -21,6 +22,7 @@ interface RFQMail {
   emailSender: string;
   isNoQuote: boolean;
   isNotRFQ: boolean;
+  isHideNotRFQ: boolean;
   isSpam: boolean;
   mailSentDate: string;
   pricedProductCount: number;

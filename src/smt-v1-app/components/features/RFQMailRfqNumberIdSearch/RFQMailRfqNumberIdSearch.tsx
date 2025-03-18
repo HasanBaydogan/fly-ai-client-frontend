@@ -3,7 +3,7 @@ import RfqMailRowItem from '../RfqMailRowItem/RfqMailRowItem';
 import { Table } from 'react-bootstrap';
 
 interface RFQMail {
-  rfqMailId: string; // Unique identifier
+  rfqMailId: string;
   rfqNumberId: string;
   rfqMailStatus:
     | 'UNREAD'
@@ -13,6 +13,7 @@ interface RFQMail {
     | 'FQ'
     | 'NOT_RFQ'
     | 'NO_QUOTE'
+    | 'Hide Not RFQ'
     | 'SPAM';
   assignTo: string | null;
   comment: string | null;
@@ -20,6 +21,7 @@ interface RFQMail {
   subject: string;
   isNoQuote: boolean;
   isNotRFQ: boolean;
+  isHideNotRFQ: boolean;
   isSpam: boolean;
   mailSentDate: string;
   pricedProductCount: number;

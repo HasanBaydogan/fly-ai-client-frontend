@@ -2,6 +2,7 @@ import axios from 'axios';
 import { baseURL } from './ApiConstants';
 import Cookies from 'js-cookie';
 import { setCookie } from './CookieService';
+import { Console } from 'console';
 
 const api = () => {
   return axios.create({
@@ -27,7 +28,7 @@ export const getAllRFQMails = async (
     } else {
       window.location.assign('/');
     }
-
+    // console.log('filtertype', filterType);
     const rfqMailResp = await api().post(
       `/rfq-mail/previews`,
       {
