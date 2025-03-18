@@ -40,6 +40,7 @@ import PartWizardNotesForm from 'smt-v1-app/components/features/Parts/PartsNotes
 import PartWizardFilesForm from 'smt-v1-app/components/features/Parts/PartsFiles/PartWizardFilesForm';
 import PartWizardAlternativesForm from 'smt-v1-app/components/features/Parts/PartAlternatives/PartWizardAlternativesForm';
 import useWizardForm from 'hooks/useWizardForm';
+import { getByItemFields } from 'smt-v1-app/services/PartServices';
 
 let tempAltIdCount = 1; // <-- Alternative Partlar için ayrı counter
 
@@ -225,8 +226,19 @@ const AlternativePartList = ({
     if (!foundRFQ) {
       console.log('Part not found');
     } else {
-      setSelectedPart(foundRFQ);
-      setShowPartModal(true);
+      getByItemFields(partNumber)
+        .then(response => {
+          if (response.success && response.data && response.data.partId) {
+            setSelectedPart(response.data);
+          } else {
+            setSelectedPart(null);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching part data:', err);
+          setSelectedPart(null);
+        })
+        .finally(() => setShowPartModal(true));
     }
   };
 

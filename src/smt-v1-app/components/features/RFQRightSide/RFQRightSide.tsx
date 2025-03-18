@@ -229,7 +229,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
       // console.log(rfq);
 
       const resp = await saveRFQToDB(savedRFQ);
-      console.log(resp);
+      // console.log(resp);
       if (resp && resp.statusCode === 200) {
         toastSuccess(
           'Saving Success',
