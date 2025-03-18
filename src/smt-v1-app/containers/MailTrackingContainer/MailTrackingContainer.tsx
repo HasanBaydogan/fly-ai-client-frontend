@@ -217,12 +217,7 @@ const MailTrackingContainer = () => {
                 </Nav.Item>
               ))}
             </Nav>
-            <CustomPagination
-              pageNo={pageNo}
-              setPageNo={setPageNo}
-              totalPage={totalPage}
-              totalItem={totalRFQMail}
-            />
+
             <Tab.Content>
               <Tab.Pane eventKey={stringActiveStatus}>
                 {loading ? (

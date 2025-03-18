@@ -21,16 +21,17 @@ const MailTrackingItemsBody = ({
       <Table responsive>
         <thead className="sticky-top-table-header-rfq">
           <tr>
-            <th></th>
-            <th>RFQ Id</th>
-            <th></th>
-            <th></th>
-            <th>Status</th>
-            <th>Assign To</th>
-            <th>Comments</th>
-            <th></th>
+            <th style={{ width: '2%' }}></th>
+            <th style={{ width: '6%' }}>RFQ Id</th>
+            <th style={{ width: '7%' }}></th>
+            <th style={{ width: '35%' }}></th>
+            <th style={{ width: '8%' }}>Status</th>
+            <th style={{ width: '7%' }}>Assign To</th>
+            <th style={{ width: '20%' }}>Comments</th>
+            <th style={{ width: '10%' }}></th>
           </tr>
         </thead>
+
         <tbody>
           {reduxRfqMails &&
             reduxRfqMails.map((rfqMail, key) => (
