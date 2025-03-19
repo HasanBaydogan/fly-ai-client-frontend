@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { Table, Form, Button, Modal } from 'react-bootstrap';
+import { Table, Form, Button, Modal, Tooltip } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRotateRight, faPlus } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowRotateRight,
+  faInfoCircle,
+  faPlus
+} from '@fortawesome/free-solid-svg-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import RFQPartTableRow from '../RFQPartTableRow/RFQPartTableRow';
@@ -10,6 +14,8 @@ import { tableHeaders } from './PartListHelper';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
 import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import { generateTempRFQPartId } from './PartListHelper';
+import { OverlayTrigger } from 'react-bootstrap';
+import { Alert } from 'react-bootstrap';
 
 type Supplier = any;
 
@@ -135,6 +141,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
   const [multiPartNumbers, setMultiPartNumbers] = useState('');
   const [multiPartNames, setMultiPartNames] = useState('');
   const [multiQty, setMultiQty] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const parseMultiLineInput = (input: string): string[] => {
     const lines = input
@@ -169,7 +176,9 @@ const PartListTable: React.FC<PartListTableProps> = ({
       parsedPartNumbers.length !== parsedPartNames.length ||
       parsedPartNumbers.length !== parsedQty.length
     ) {
-      alert('Part Number, Part Name and Qty line numbers do not match!');
+      setErrorMessage(
+        'Part Number, Part Name and Qty line numbers do not match!'
+      );
       return;
     }
 
@@ -212,6 +221,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
     setMultiPartNumbers('');
     setMultiPartNames('');
     setMultiQty('');
+    setErrorMessage(''); // Hata yoksa state sıfırlayın
   };
 
   return (
@@ -606,9 +616,42 @@ const PartListTable: React.FC<PartListTableProps> = ({
         size="lg"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Add Multiple Parts</Modal.Title>
+          <Modal.Title>
+            Add Multiple Parts{' '}
+            <OverlayTrigger
+              placement="right"
+              overlay={
+                <Tooltip id="tooltip-multiple-parts">
+                  Part Number, Part Name and QTY line numbers must be equal.
+                  <br />
+                  QTY can only be a number.
+                </Tooltip>
+              }
+            >
+              <span style={{ marginLeft: '8px', cursor: 'pointer' }}>
+                <FontAwesomeIcon icon={faInfoCircle} size="lg" />
+              </span>
+            </OverlayTrigger>
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body style={{ position: 'relative' }}>
+          {errorMessage && (
+            <Alert
+              variant="danger"
+              onClose={() => setErrorMessage('')}
+              dismissible
+              style={{
+                position: 'absolute',
+                bottom: '0px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1051, // Yeterince yüksek bir değer veriyoruz
+                width: '90%'
+              }}
+            >
+              {errorMessage}
+            </Alert>
+          )}
           <div className="d-flex justify-content-between">
             <Form.Group className="mb-3 me-2" style={{ flex: 1 }}>
               <Form.Label>Part Numbers</Form.Label>
@@ -642,7 +685,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
             </Form.Group>
           </div>
         </Modal.Body>
-
         <Modal.Footer>
           <Button
             variant="secondary"
