@@ -609,37 +609,40 @@ const PartListTable: React.FC<PartListTableProps> = ({
           <Modal.Title>Add Multiple Parts</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form.Group className="mb-3">
-            <Form.Label>Part Numbers</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={5}
-              value={multiPartNumbers}
-              onChange={e => setMultiPartNumbers(e.target.value)}
-              placeholder={`Part Number1\nPart Number2\nPart Number3`}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Part Names</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={5}
-              value={multiPartNames}
-              onChange={e => setMultiPartNames(e.target.value)}
-              placeholder={`Part Name1\nPart Name2\nPart Name3`}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>QTY</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={5}
-              value={multiQty}
-              onChange={e => setMultiQty(e.target.value)}
-              placeholder={`QTY 1\nQTY 2\nQTY 3`}
-            />
-          </Form.Group>
+          <div className="d-flex justify-content-between">
+            <Form.Group className="mb-3 me-2" style={{ flex: 1 }}>
+              <Form.Label>Part Numbers</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={20}
+                value={multiPartNumbers}
+                onChange={e => setMultiPartNumbers(e.target.value)}
+                placeholder={`Part Number1\nPart Number2\nPart Number3`}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3 me-2" style={{ flex: 1 }}>
+              <Form.Label>Part Names</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={20}
+                value={multiPartNames}
+                onChange={e => setMultiPartNames(e.target.value)}
+                placeholder={`Part Name1\nPart Name2\nPart Name3`}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" style={{ flex: 1 }}>
+              <Form.Label>QTY</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={20}
+                value={multiQty}
+                onChange={e => setMultiQty(e.target.value)}
+                placeholder={`QTY 1\nQTY 2\nQTY 3`}
+              />
+            </Form.Group>
+          </div>
         </Modal.Body>
+
         <Modal.Footer>
           <Button
             variant="secondary"

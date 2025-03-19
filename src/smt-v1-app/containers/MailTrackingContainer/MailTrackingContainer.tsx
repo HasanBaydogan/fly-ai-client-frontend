@@ -217,7 +217,6 @@ const MailTrackingContainer = () => {
                 </Nav.Item>
               ))}
             </Nav>
-
             <Tab.Content>
               <Tab.Pane eventKey={stringActiveStatus}>
                 {loading ? (
