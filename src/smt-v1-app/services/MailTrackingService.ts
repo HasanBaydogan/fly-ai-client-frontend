@@ -570,6 +570,7 @@ export const convertOpenToWFS = async (rfqMailId: string) => {
         headers
       }
     );
+    console.log('Response', response);
 
     if (response.data.statusCode === 200) {
       return response.data;
