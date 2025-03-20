@@ -100,9 +100,9 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
     setIsLoading(true);
     setConvertWFSIsLoading(true);
     const resp = await convertOpenToWFS(rfqMailId);
-    console.log('Resp', resp);
-    console.log('rfqMailId', rfqMailId);
-
+    // console.log('Resp', resp);
+    // console.log('rfqMailId', rfqMailId);
+    // debugger;
     if (resp && resp.statusCode === 200) {
       setStatusType('WFS');
       setRfqMailRowStatus('WFS');
@@ -111,8 +111,10 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
         'Success WFS Conversation',
         'RFQ Mail is converted WFS successfully'
       );
-    } else {
+    } else if (resp?.statusCode === 422) {
       toastError('Error', 'First open and save RFQMail then convert to WFS');
+    } else {
+      toastError('Unknown Error', 'An Unknown error occurs');
     }
     setIsLoading(false);
     setConvertWFSIsLoading(false);

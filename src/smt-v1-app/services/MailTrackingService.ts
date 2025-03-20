@@ -570,59 +570,60 @@ export const convertOpenToWFS = async (rfqMailId: string) => {
         headers
       }
     );
-    console.log('Response', response);
+    // console.log('Response', response);
 
-    if (response.data.statusCode === 200) {
-      return response.data;
-    } else if (response.data.statusCode === 498) {
-      // Expired JWT
-      try {
-        const refreshTokenresponse = await api().post('/auth/refresh-token', {
-          refresh_token: Cookies.get('refresh_token')
-        });
-        if (refreshTokenresponse.data.statusCode === 200) {
-          setCookie(
-            'access_token',
-            refreshTokenresponse.data.data.access_token
-          );
-          setCookie(
-            'refresh_token',
-            refreshTokenresponse.data.data.refresh_token
-          );
-          let rfqMailResponseAfterRefresh = await api().put(
-            `/rfq-mail/status-to-wfs/${rfqMailId}`,
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+    if (response.status === 200) {
+      if (response.data.statusCode === 498) {
+        // Expired JWT
+        try {
+          const refreshTokenresponse = await api().post('/auth/refresh-token', {
+            refresh_token: Cookies.get('refresh_token')
+          });
+          if (refreshTokenresponse.data.statusCode === 200) {
+            setCookie(
+              'access_token',
+              refreshTokenresponse.data.data.access_token
+            );
+            setCookie(
+              'refresh_token',
+              refreshTokenresponse.data.data.refresh_token
+            );
+            let rfqMailResponseAfterRefresh = await api().put(
+              `/rfq-mail/status-to-wfs/${rfqMailId}`,
+              {},
+              {
+                headers: {
+                  Authorization: `Bearer ${refreshTokenresponse.data.accessToken}`
+                }
               }
-            }
-          );
+            );
 
-          return rfqMailResponseAfterRefresh.data;
-        } else if (refreshTokenresponse.data.statusCode === 498) {
-          // Expired Refresh Token
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 411) {
-          // Invalid Refresh Token
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
-        } else if (refreshTokenresponse.data.statusCode === 404) {
-          console.log('User not found');
-          Cookies.remove('access_token');
-          Cookies.remove('refresh_token');
-          window.location.assign('/');
+            return rfqMailResponseAfterRefresh.data;
+          } else if (refreshTokenresponse.data.statusCode === 498) {
+            // Expired Refresh Token
+            Cookies.remove('access_token');
+            Cookies.remove('refresh_token');
+            window.location.assign('/');
+          } else if (refreshTokenresponse.data.statusCode === 411) {
+            // Invalid Refresh Token
+            Cookies.remove('access_token');
+            Cookies.remove('refresh_token');
+            window.location.assign('/');
+          } else if (refreshTokenresponse.data.statusCode === 404) {
+            console.log('User not found');
+            Cookies.remove('access_token');
+            Cookies.remove('refresh_token');
+            window.location.assign('/');
+          }
+        } catch (err) {
+          console.log(err);
         }
-      } catch (err) {
-        console.log(err);
+      } else if (response.data.statusCode === 401) {
+        Cookies.remove('access_token');
+        Cookies.remove('refresh_token');
+        window.location.assign('/');
       }
-    } else if (response.data.statusCode === 401) {
-      Cookies.remove('access_token');
-      Cookies.remove('refresh_token');
-      window.location.assign('/');
+      return response.data;
     }
   } catch (err) {
     console.log('RFQMail Detail Permission Error');
