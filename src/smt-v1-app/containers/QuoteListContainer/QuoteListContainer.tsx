@@ -9,7 +9,7 @@ import useAdvanceTable from '../../components/features/Client/ClientList/useAdva
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import { searchByClientList } from 'smt-v1-app/services/ClientServices';
-import { QuoteData } from 'smt-v1-app/services/QuoteService';
+import { QuoteData } from 'smt-v1-app/types/QuoteTypes';
 import { ColumnDef } from '@tanstack/react-table';
 
 const PartListContainer = () => {
