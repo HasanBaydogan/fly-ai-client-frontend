@@ -6,7 +6,7 @@ import { Col, Row } from 'react-bootstrap';
 import debounce from 'lodash/debounce';
 import { getByUDFPartList } from 'smt-v1-app/services/PartServices';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
-import { UDFData } from 'smt-v1-app/services/PartServices';
+import { UDFData } from 'smt-v1-app/types/PartTypes';
 
 // Tabloda görüntülenecek kolon tanımlamaları
 export const udfTableColumns: ColumnDef<UDFData>[] = [

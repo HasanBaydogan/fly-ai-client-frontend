@@ -9,7 +9,10 @@ import { Col, Row, Dropdown } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
-import { PartData, searchByPartList } from 'smt-v1-app/services/PartServices';
+import { searchByPartList } from 'smt-v1-app/services/PartServices';
+
+import { PartData } from 'smt-v1-app/types/PartTypes';
+
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 
 export const PartTableColumns: ColumnDef<PartData>[] = [

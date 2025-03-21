@@ -9,7 +9,9 @@ import {
   Alert
 } from 'react-bootstrap';
 import PartUDFList, { udfTableColumns } from './PartUDFList';
-import { UDFData, postUDFCreate } from 'smt-v1-app/services/PartServices';
+import { postUDFCreate } from 'smt-v1-app/services/PartServices';
+import { UDFData } from 'smt-v1-app/types/PartTypes';
+
 import useAdvanceTable from 'hooks/useAdvanceTable';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';

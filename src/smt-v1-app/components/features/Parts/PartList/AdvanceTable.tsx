@@ -7,7 +7,7 @@ import RevealDropdown, {
 } from 'components/base/RevealDropdown';
 import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import { CustomTableProps } from './CustomTableProps';
-import { PartData } from 'smt-v1-app/services/PartServices';
+import { PartData } from 'smt-v1-app/types/PartTypes';
 
 interface AdvanceTableProps {
   headerClassName?: string;

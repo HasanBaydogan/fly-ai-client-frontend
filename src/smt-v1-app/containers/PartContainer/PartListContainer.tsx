@@ -12,10 +12,10 @@ import PartListTable, {
 } from 'smt-v1-app/components/features/Parts/PartList/PartListTable';
 import { ColumnDef } from '@tanstack/react-table';
 import {
-  PartData,
   searchByPartList,
   getByItemFields
 } from 'smt-v1-app/services/PartServices';
+import { PartData } from 'smt-v1-app/types/PartTypes';
 
 import WizardNav from 'smt-v1-app/components/features/Parts/PartWizardNav';
 import WizardForm from 'components/wizard/WizardForm';
