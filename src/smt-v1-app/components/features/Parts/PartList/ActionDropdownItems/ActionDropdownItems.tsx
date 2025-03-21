@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import PartDetailModal from '../PartDetailModal';
-import {
-  ClientDataDetail,
-  getByClientDetailList
-} from 'smt-v1-app/services/ClientServices';
+import { getByClientDetailList } from 'smt-v1-app/services/ClientServices';
 import { Link } from 'react-router-dom';
+import { ClientDataDetail } from 'smt-v1-app/types/ClientTypes';
 
 interface ActionDropdownItemsProps {
   clientId: string;

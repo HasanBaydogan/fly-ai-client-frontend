@@ -13,7 +13,7 @@ import ContactListSection, {
 import CustomButton from '../../../../components/base/Button'; //
 import {
   getByClientId,
-  putByClientUpdate,
+  updateClient,
   getbyCurrencyController
 } from '../../../services/ClientServices'; //
 import {
@@ -335,8 +335,8 @@ const ClientEditContainer = () => {
 
     setLoadingSave(true);
     try {
-      const response = await putByClientUpdate(editPayload);
-      // console.log('Response from putByClientUpdate:', response);
+      const response = await updateClient(editPayload);
+      // console.log('Response from updateClient:', response);
       if (response && response.statusCode === 200) {
         setResultModalTitle('Client update successful');
         setResultModalMessage(

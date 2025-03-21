@@ -8,10 +8,9 @@ import ClientList, {
 import useAdvanceTable from '../../../components/features/Client/ClientList/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
-import {
-  ClientData,
-  searchByClientList
-} from 'smt-v1-app/services/ClientServices';
+import { searchByClientList } from 'smt-v1-app/services/ClientServices';
+import { ClientData } from 'smt-v1-app/types/ClientTypes';
+
 import { ColumnDef } from '@tanstack/react-table';
 
 const ClientListContainer = () => {

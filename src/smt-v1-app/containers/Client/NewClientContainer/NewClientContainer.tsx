@@ -8,7 +8,7 @@ import ClientInfo from 'smt-v1-app/components/features/Client/NewClient/ClientIn
 import {
   getbyCurrencyController,
   getByMarginTable,
-  postClientCreate
+  createClient
 } from 'smt-v1-app/services/ClientServices';
 import { getbySegmentList } from 'smt-v1-app/services/GlobalServices';
 import CustomButton from '../../../../components/base/Button';
@@ -255,7 +255,7 @@ const NewClientContainer = () => {
 
     setLoadingSave(true);
     try {
-      const response = await postClientCreate(clientPayload);
+      const response = await createClient(clientPayload);
 
       if (response && response.statusCode === 200) {
         setResultModalTitle('Client addition successful');

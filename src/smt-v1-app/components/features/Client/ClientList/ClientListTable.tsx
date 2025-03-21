@@ -6,10 +6,8 @@ import Badge from 'components/base/Badge';
 import { Col, Row, Dropdown } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import {
-  ClientData,
-  searchByClientList
-} from 'smt-v1-app/services/ClientServices';
+import { searchByClientList } from 'smt-v1-app/services/ClientServices';
+import { ClientData } from 'smt-v1-app/types/ClientTypes';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 
 export const ClientTableColumns: ColumnDef<ClientData>[] = [
