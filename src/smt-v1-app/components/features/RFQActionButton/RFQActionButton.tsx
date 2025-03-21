@@ -186,7 +186,6 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
 
   return (
     <>
-      {/* Üst Div: Sadece Cancel Butonu, sola yaslı */}
       <div
         style={{
           marginBottom: '0.5rem',
@@ -199,7 +198,6 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
           Cancel
         </Button>
       </div>
-      {/* Alt Div: İki sütuna bölünmüş */}
       <div
         style={{
           display: 'flex',
@@ -207,7 +205,6 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
           alignItems: 'center'
         }}
       >
-        {/* Sol Kolon: No Quote ve Spam Butonları, sola yaslı */}
         <div
           style={{
             display: 'flex',
@@ -232,7 +229,6 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
             </Button>
           )}
         </div>
-        {/* Sağ Kolon: Diğer Butonlar, sağa yaslı */}
         <div
           style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}
         >
