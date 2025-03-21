@@ -9,10 +9,9 @@ import RevealDropdown, {
 import { Col, Row, Dropdown } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import {
-  SupplierData,
-  searchBySupplierList
-} from 'smt-v1-app/services/SupplierServices';
+import { searchBySupplierList } from 'smt-v1-app/services/SupplierServices';
+import { SupplierData } from 'smt-v1-app/types/SupplierTypes';
+
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 
 /* ***********************

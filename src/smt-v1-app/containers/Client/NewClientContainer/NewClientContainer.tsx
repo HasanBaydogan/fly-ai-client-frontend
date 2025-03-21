@@ -10,12 +10,9 @@ import {
   getByMarginTable,
   postClientCreate
 } from 'smt-v1-app/services/ClientServices';
-import {
-  getbySegmentList,
-  TreeNode,
-  Status
-} from 'smt-v1-app/services/GlobalServices';
+import { getbySegmentList } from 'smt-v1-app/services/GlobalServices';
 import CustomButton from '../../../../components/base/Button';
+import { TreeNode, Status } from 'smt-v1-app/types';
 
 import AddressDetails from 'smt-v1-app/components/features/Client/NewClient/ClientMidPart';
 import RatingSection from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';

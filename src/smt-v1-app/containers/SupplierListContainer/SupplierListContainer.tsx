@@ -10,10 +10,9 @@ import { defaultBreadcrumbItems } from 'data/commonData';
 import useAdvanceTable from '../../components/features/SupplierList/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
-import {
-  SupplierData,
-  searchBySupplierList
-} from 'smt-v1-app/services/SupplierServices';
+import { searchBySupplierList } from 'smt-v1-app/services/SupplierServices';
+import { SupplierData } from 'smt-v1-app/types/SupplierTypes';
+
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/SupplierList/AdvanceTable';
 import SupplierTopSection from '../../components/features/SupplierList/SupplierListTopSection/SupplierTopSection';

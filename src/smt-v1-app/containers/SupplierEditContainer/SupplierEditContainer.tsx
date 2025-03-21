@@ -21,10 +21,9 @@ import {
 } from '../../services/SupplierServices';
 import {
   getbySegmentList,
-  TreeNode,
-  Certypes,
   getAttachedFile
 } from 'smt-v1-app/services/GlobalServices';
+import { TreeNode, Certypes } from 'smt-v1-app/types';
 
 import { FileAttachment } from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
 import AttachmentPreview from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';

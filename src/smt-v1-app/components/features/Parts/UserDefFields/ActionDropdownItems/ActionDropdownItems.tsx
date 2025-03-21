@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import SupplierDetailModal from '../SupplierDetailModal';
-import { SupplierData } from 'smt-v1-app/services/SupplierServices';
+import { SupplierData } from 'smt-v1-app/types/SupplierTypes';
 import { Link } from 'react-router-dom';
 
 interface SupplierDetailModalProps {

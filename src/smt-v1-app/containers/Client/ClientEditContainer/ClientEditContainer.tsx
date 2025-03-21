@@ -18,11 +18,10 @@ import {
 } from '../../../services/ClientServices'; //
 import {
   getbySegmentList,
-  getAttachedFile,
-  TreeNode,
-  Status,
-  Certypes
+  getAttachedFile
 } from 'smt-v1-app/services/GlobalServices';
+import { TreeNode, Status, Certypes } from 'smt-v1-app/types';
+
 import { FileAttachment } from '../../../components/features/Client/NewClient/NewClientAttachment/AttachmentPreview';
 import AttachmentPreview from '../../../components/features/Client/NewClient/NewClientAttachment/AttachmentPreview';
 import ClientBottomSection from 'smt-v1-app/components/features/Client/NewClient/ClientBottomSection';

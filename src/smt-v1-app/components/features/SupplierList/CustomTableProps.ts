@@ -1,6 +1,6 @@
 import { TableProps as BootstrapTableProps } from 'react-bootstrap';
 import { ColumnDef } from '@tanstack/react-table';
-import { SupplierData } from 'smt-v1-app/services/SupplierServices';
+import { SupplierData } from 'smt-v1-app/types/SupplierTypes';
 
 export interface CustomTableProps extends BootstrapTableProps {
   data: SupplierData[];
