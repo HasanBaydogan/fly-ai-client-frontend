@@ -1,151 +1,92 @@
-import { useState } from 'react';
-import { Col, Pagination, Row } from 'react-bootstrap';
-import Button from 'components/base/Button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import classNames from 'classnames';
-import usePagination from 'hooks/usePagination';
-import {
-  faAngleRight,
-  faChevronLeft,
-  faChevronRight
-} from '@fortawesome/free-solid-svg-icons';
+import React from 'react';
+import Pagination from 'react-bootstrap/Pagination';
 
 interface AdvanceTableFooterProps {
-  className?: string;
-  pagination?: boolean;
-  navBtn?: boolean;
-  showViewAllBtn?: boolean;
-  viewAllBtnClass?: string;
-  tableInfo?: string;
-  totalItems: number;
-  pageIndex: number;
+  currentPage: number;
   pageSize: number;
-  setPageSize: (size: number) => void;
-  setPageIndex: (index: number) => void;
+  totalItems: number;
+  onPageChange: (page: number) => void;
 }
 
-const AdvanceTableFooter = ({
-  className,
-  pagination,
-  navBtn,
-  tableInfo,
+const AdvanceTableFooter: React.FC<AdvanceTableFooterProps> = ({
+  currentPage,
+  pageSize,
   totalItems,
-  pageIndex,
-  setPageIndex,
-  pageSize // Using the prop passed from ClientList
-}: AdvanceTableFooterProps) => {
-  // Toplam sayfa sayısını hesaplıyoruz.
+  onPageChange
+}) => {
   const totalPages = Math.ceil(totalItems / pageSize);
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalItems);
 
-  // usePagination hook’unu, backend’den gelen toplam sayfa sayısını kullanarak çağırıyoruz.
-  const { hasNextEllipsis, hasPrevEllipsis, visiblePaginationItems } =
-    usePagination({
-      currentPageNo: pageIndex + 1,
-      totalPage: totalPages,
-      maxPaginationButtonCount: 4
-    });
+  const renderPaginationItems = () => {
+    const items = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // First page
+    items.push(
+      <Pagination.First
+        key="first"
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(1)}
+      />
+    );
+
+    // Previous page
+    items.push(
+      <Pagination.Prev
+        key="prev"
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+      />
+    );
+
+    // Page numbers
+    for (let page = startPage; page <= endPage; page++) {
+      items.push(
+        <Pagination.Item
+          key={page}
+          active={page === currentPage}
+          onClick={() => onPageChange(page)}
+        >
+          {page}
+        </Pagination.Item>
+      );
+    }
+
+    // Next page
+    items.push(
+      <Pagination.Next
+        key="next"
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+      />
+    );
+
+    // Last page
+    items.push(
+      <Pagination.Last
+        key="last"
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(totalPages)}
+      />
+    );
+
+    return items;
+  };
 
   return (
-    <Row className={classNames(className, 'align-items-center py-1')}>
-      <Col className="d-flex fs-9">
-        <p
-          className={classNames(
-            tableInfo,
-            'mb-0 d-none d-sm-block me-3 fw-semibold text-body'
-          )}
-        >
-          {pageSize * pageIndex + 1} to{' '}
-          {pageSize * (pageIndex + 1) > totalItems
-            ? totalItems
-            : pageSize * (pageIndex + 1)}
-          <span className="text-body-tertiary"> items of </span>
-          {totalItems}
-        </p>
-      </Col>
-
-      {navBtn && (
-        <Col xs="auto" className="d-flex gap-2 ">
-          <Button
-            variant="link"
-            startIcon={
-              <FontAwesomeIcon icon={faChevronLeft} className="me-2" />
-            }
-            className={classNames('px-1', {
-              disabled: pageIndex === 0
-            })}
-            onClick={() => {
-              if (pageIndex > 0) setPageIndex(pageIndex - 1);
-            }}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="link"
-            endIcon={<FontAwesomeIcon icon={faChevronRight} className="ms-2" />}
-            className={classNames('px-1', {
-              disabled: pageIndex >= totalPages - 1
-            })}
-            onClick={() => {
-              if (pageIndex < totalPages - 1) setPageIndex(pageIndex + 1);
-            }}
-          >
-            Next
-          </Button>
-        </Col>
-      )}
-      {pagination && (
-        <Col xs="auto">
-          <Pagination className="mb-0 justify-content-center">
-            <Pagination.Prev
-              disabled={pageIndex === 0}
-              onClick={() => setPageIndex(pageIndex - 1)}
-            >
-              <FontAwesomeIcon icon={faChevronLeft} />
-            </Pagination.Prev>
-
-            {hasPrevEllipsis && (
-              <>
-                <Pagination.Item
-                  active={pageIndex === 0}
-                  onClick={() => setPageIndex(0)}
-                >
-                  1
-                </Pagination.Item>
-                <Pagination.Ellipsis disabled />
-              </>
-            )}
-
-            {visiblePaginationItems.map(page => (
-              <Pagination.Item
-                key={page}
-                active={pageIndex === page - 1}
-                onClick={() => setPageIndex(page - 1)}
-              >
-                {page}
-              </Pagination.Item>
-            ))}
-
-            {hasNextEllipsis && (
-              <>
-                <Pagination.Ellipsis disabled />
-                <Pagination.Item
-                  active={pageIndex === totalPages - 1}
-                  onClick={() => setPageIndex(totalPages - 1)}
-                >
-                  {totalPages}
-                </Pagination.Item>
-              </>
-            )}
-            <Pagination.Next
-              disabled={pageIndex >= totalPages - 1}
-              onClick={() => setPageIndex(pageIndex + 1)}
-            >
-              <FontAwesomeIcon icon={faChevronRight} />
-            </Pagination.Next>
-          </Pagination>
-        </Col>
-      )}
-    </Row>
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <div>
+        Showing {startItem} to {endItem} of {totalItems} entries
+      </div>
+      <Pagination>{renderPaginationItems()}</Pagination>
+    </div>
   );
 };
 

@@ -184,7 +184,6 @@ const RFQList: FC<RFQListContainerProps> = ({
     <div>
       <div className="d-flex flex-wrap mb-2 gap-3 gap-sm-6 align-items-center">
         <h2 className="mb-0">
-          <span className="me-3">{title}</span>
           <span className="fw-normal text-body-tertiary"></span>
         </h2>
         {showAddButton && (
@@ -196,12 +195,25 @@ const RFQList: FC<RFQListContainerProps> = ({
       </div>
 
       <GenericListTable<RFQData>
+        headerName="RFQ"
+        addButtonUrl="/rfq/new-rfq"
         columns={RFQTableColumns}
         fetchData={fetchRFQData}
         searchColumns={searchColumns}
         defaultPageSize={10}
         searchPlaceholder="Search RFQs..."
         data={data}
+        loading={false}
+        filterOptions={[
+          { key: 'status', label: 'Status' },
+          { key: 'client', label: 'Client' }
+        ]}
+        totalItems={data.length}
+        currentPage={0}
+        pageSize={10}
+        onPageChange={page => console.log('Page changed:', page)}
+        onPageSizeChange={newSize => console.log('Page size changed:', newSize)}
+        onFilterChange={filterKey => console.log('Filter changed:', filterKey)}
       />
     </div>
   );

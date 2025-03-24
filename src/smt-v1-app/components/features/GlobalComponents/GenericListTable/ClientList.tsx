@@ -1,89 +1,110 @@
-// import { FC } from 'react';
-// import GenericListTable from './GenericListTable';
-// import { ClientData } from 'smt-v1-app/types/ClientTypes';
-// import { searchByClientList } from 'smt-v1-app/services/ClientServices';
-// import { ColumnDef } from '@tanstack/react-table';
-// import { Badge } from 'react-bootstrap';
-// import { SearchColumn } from './GenericListTable';
+import React, { useState, useEffect } from 'react';
+import GenericListTable from './GenericListTable';
+import { ColumnDef, ColumnMeta } from '@tanstack/react-table';
 
-// const searchColumns: SearchColumn<ClientData>[] = [
-//   { label: 'No Filter', value: 'all' },
-//   { label: 'Company Name', value: 'companyName' },
-//   { label: 'Currency', value: 'currencyPreference' },
-//   { label: 'Website', value: 'website' },
-//   { label: 'Legal Address', value: 'legalAddress' }
-// ];
+interface Client {
+  id: string | number;
+  company: string;
+  details: string;
+  currency: string;
+  website: string;
+  legalAddress: string;
+  status: string;
+}
 
-// // Column definitions moved here
-// const ClientTableColumns: ColumnDef<ClientData>[] = [
-//   {
-//     header: 'Company Name',
-//     accessorKey: 'companyName',
-//     cell: ({ row }) => (
-//       <a href={`/client/edit?clientId=${row.original.clientId}`}>
-//         {row.original.companyName}
-//       </a>
-//     )
-//   },
-//   {
-//     header: 'Details',
-//     accessorKey: 'details'
-//   },
-//   {
-//     header: 'Currency',
-//     accessorKey: 'currencyPreference'
-//   },
-//   {
-//     header: 'Website',
-//     accessorKey: 'website'
-//   },
-//   {
-//     header: 'Legal Address',
-//     accessorKey: 'legalAddress'
-//   },
-//   {
-//     header: 'Status',
-//     accessorKey: 'clientStatus',
-//     cell: ({ row }) => (
-//       <Badge
-//         bg={
-//           row.original.clientStatus?.label.toLowerCase() === 'contacted'
-//             ? 'success'
-//             : row.original.clientStatus?.label.toLowerCase() === 'not_contacted'
-//             ? 'warning'
-//             : row.original.clientStatus?.label.toLowerCase() === 'black_listed'
-//             ? 'danger'
-//             : 'default'
-//         }
-//       >
-//         {row.original.clientStatus?.label}
-//       </Badge>
-//     )
-//   }
-// ];
+// Define custom meta type for columns
+interface CustomColumnMeta {
+  width?: string;
+}
 
-// const ClientList: FC = () => {
-//   const fetchClientData = async (
-//     query: string,
-//     page: number,
-//     pageSize: number
-//   ) => {
-//     const response = await searchByClientList(query, page, pageSize);
-//     return {
-//       data: response.data.clients,
-//       totalItems: response.data.totalItems
-//     };
-//   };
+const ClientList: React.FC = () => {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterValue, setFilterValue] = useState('');
 
-//   return (
-//     <GenericListTable<ClientData>
-//       columns={ClientTableColumns}
-//       fetchData={fetchClientData}
-//       searchColumns={searchColumns}
-//       defaultPageSize={10}
-//       searchPlaceholder="Search clients..."
-//     />
-//   );
-// };
+  const columns: ColumnDef<Client, unknown>[] = [
+    {
+      header: 'Company',
+      accessorKey: 'company',
+      size: 200 // Using size instead of meta.width
+    },
+    {
+      header: 'Details',
+      accessorKey: 'details',
+      size: 200
+    },
+    {
+      header: 'Currency',
+      accessorKey: 'currency',
+      size: 100
+    },
+    {
+      header: 'Website',
+      accessorKey: 'website',
+      size: 200
+    },
+    {
+      header: 'Legal Address',
+      accessorKey: 'legalAddress',
+      size: 200
+    },
+    {
+      header: 'Status',
+      accessorKey: 'status',
+      size: 100
+    }
+  ];
 
-// export default ClientList;
+  const searchColumns: Array<{
+    label: string;
+    value: keyof Client | 'all';
+  }> = [
+    { label: 'All', value: 'all' },
+    { label: 'Company', value: 'company' },
+    { label: 'Details', value: 'details' },
+    { label: 'Website', value: 'website' }
+  ];
+
+  const filterOptions = [
+    { key: 'all', label: 'All' },
+    { key: 'active', label: 'Active' },
+    { key: 'inactive', label: 'Inactive' }
+  ];
+
+  const fetchData = async (
+    query: string,
+    page: number,
+    pageSize: number
+  ): Promise<{ data: Client[]; totalItems: number }> => {
+    // Implement your API call here
+    // This is just a placeholder
+    return {
+      data: [],
+      totalItems: 0
+    };
+  };
+
+  return (
+    <GenericListTable<Client>
+      headerName="Client"
+      addButtonUrl="/clients/new"
+      data={clients}
+      columns={columns}
+      filterOptions={filterOptions}
+      totalItems={totalItems}
+      currentPage={currentPage}
+      pageSize={pageSize}
+      onPageChange={setCurrentPage}
+      onPageSizeChange={setPageSize}
+      onSearch={setSearchTerm}
+      onFilterChange={setFilterValue}
+      fetchData={fetchData}
+      searchColumns={searchColumns}
+    />
+  );
+};
+
+export default ClientList;
