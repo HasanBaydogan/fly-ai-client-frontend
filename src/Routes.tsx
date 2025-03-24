@@ -72,11 +72,13 @@ const routes: RouteObject[] = [
             children: [
               {
                 path: 'list',
-                element: <RFQListContainer />
-              },
-              {
-                path: 'rfq',
-                element: <RFQContainer />
+                element: (
+                  <RFQListContainer
+                    title="RFQ List"
+                    showAddButton={false}
+                    addButtonPath="/rfq/new-rfq"
+                  />
+                )
               },
               {
                 path: '',
