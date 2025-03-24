@@ -1,6 +1,5 @@
 import { getRequest, postRequest, putRequest } from './ApiCore/GlobalApiCore';
 
-// RFQ Mail Listeleme
 export const getAllRFQMails = async (
   pageNo: number,
   pageSize: number,
@@ -15,7 +14,6 @@ export const getAllRFQMails = async (
   });
 };
 
-// RFQ Mail RFQ Number ID ile arama
 export const searchByRfqNumberId = async (
   rfqNumberId: string,
   pageNo: number,
@@ -26,7 +24,7 @@ export const searchByRfqNumberId = async (
   );
 };
 
-// RFQ Mail puanlama
+// RFQ Mail point status
 export const point = async (
   rfqMailId: string,
   rfqMailPointStatus: 'SPAM' | 'NOT_RFQ' | 'NO_QUOTE' | 'UNREAD'
@@ -34,37 +32,37 @@ export const point = async (
   return await putRequest('/rfq-mail/point', { rfqMailPointStatus, rfqMailId });
 };
 
-// RFQ Mail detayını çek
+// RFQ Mail detail
 export const getRfqMailDetailFromDB = async (rfqMailId: string) => {
   return await getRequest(`/rfq-mail/detail/${rfqMailId}`);
 };
 
-// RFQ Mail loglarını çek
+// RFQ Mail log
 export const getRFQMailLogsFromDB = async (rfqMailId: string) => {
   return await getRequest(`/rfq-mail/detail/logs/${rfqMailId}`);
 };
 
-// RFQ Mail açık mı kontrolü
+// RFQ Mail open control
 export const isOpenRFQMail = async (rfqMailId: string) => {
   return await getRequest(`/rfq-mail/is-open-rfq-mail/${rfqMailId}`);
 };
 
-// RFQ Mail iptal et
+// RFQ Mail cancel
 export const cancelRFQMail = async (rfqMailId: string) => {
   return await putRequest(`/rfq-mail/cancel-rfq-mail/${rfqMailId}`, {});
 };
 
-// RFQ Mail OPEN -> WFS dönüşümü
+// RFQ Mail OPEN -> WFS transition
 export const convertOpenToWFS = async (rfqMailId: string) => {
   return await putRequest(`/rfq-mail/status-to-wfs/${rfqMailId}`, {});
 };
 
-// RFQ Maili tersine çevir (revert)
+// RFQ Maili revert
 export const reverseRFQMail = async (rfqMailId: string) => {
   return await putRequest(`/rfq-mail/reverse-rfq-mail-status/${rfqMailId}`, {});
 };
 
-// RFQ Mail Subject ile arama
+// RFQ Mail Subject search
 export const searchRFQMailBySubject = async (
   subject: string,
   pageNo: number,
