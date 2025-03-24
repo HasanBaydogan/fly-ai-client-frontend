@@ -81,6 +81,10 @@ const routes: RouteObject[] = [
                 )
               },
               {
+                path: 'rfq',
+                element: <RFQContainer />
+              },
+              {
                 path: '',
                 element: <Error404 />
               }

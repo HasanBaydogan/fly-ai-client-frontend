@@ -1,7 +1,3 @@
-// Bu dosya GlobalApiCore yapısına uygun şekilde refaktör edilmelidir
-// getRequest, postRequest, putRequest, deleteRequest fonksiyonlarını kullanmalıyız
-// Örnek olarak bir iki fonksiyon refaktör edilmiştir
-
 import {
   createPart,
   createUDF,
@@ -18,7 +14,18 @@ import {
   deleteRequest
 } from './ApiCore/GlobalApiCore';
 
-// Örnek Refactor: Parça Listesi Arama
+interface PartHistorySuggestionResponse {
+  success: boolean;
+  data: {
+    partNumber: string;
+    partName: string;
+    reqCND?: string;
+    reqQTY?: number;
+    dgPackagingCost?: boolean;
+  }[];
+}
+
+// Parça Listesi Arama
 export const searchByPartList = async (
   term: string,
   pageNo: number,
@@ -111,4 +118,8 @@ export const getByAttachedFiles = async (partId: string, pageNo: number) => {
 
 export const getByDownloadFiles = async (partFileId: string) => {
   return await getRequest(`/part-file/attachment/${partFileId}`);
+};
+
+export const getPartHistorySuggestion = async (term: string) => {
+  return await getRequest(`/rfq-part/history?partNumber=${term}`);
 };

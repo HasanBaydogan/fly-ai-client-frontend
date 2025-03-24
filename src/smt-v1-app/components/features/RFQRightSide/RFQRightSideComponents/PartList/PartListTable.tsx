@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Table, Form, Button, Modal, Tooltip } from 'react-bootstrap';
+import React, { useState, useCallback } from 'react';
+import { Table, Form, Button, Modal, Tooltip, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowRotateRight,
@@ -16,8 +16,18 @@ import { RFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import { generateTempRFQPartId } from './PartListHelper';
 import { OverlayTrigger } from 'react-bootstrap';
 import { Alert } from 'react-bootstrap';
+import debounce from 'lodash/debounce';
+import { createPortal } from 'react-dom';
 
 type Supplier = any;
+
+interface PartSuggestion {
+  partNumber: string;
+  partName: string;
+  reqCND: string;
+  reqQTY: number;
+  dgPackagingCost: boolean;
+}
 
 interface PartListTableProps {
   parts: RFQPart[];
@@ -77,6 +87,7 @@ interface PartListTableProps {
   handlePartDeletion: (rfqPartId: string) => void;
   handleOpenPartModal: (partNumber: string) => void;
   handleNewPartAddition: () => void;
+  handlePartSearch: (searchTerm: string) => Promise<PartSuggestion[]>;
 }
 
 const PartListTable: React.FC<PartListTableProps> = ({
@@ -135,13 +146,16 @@ const PartListTable: React.FC<PartListTableProps> = ({
   handleEditPart,
   handlePartDeletion,
   handleOpenPartModal,
-  handleNewPartAddition
+  handleNewPartAddition,
+  handlePartSearch
 }) => {
   const [showMultiAddModal, setShowMultiAddModal] = useState(false);
   const [multiPartNumbers, setMultiPartNumbers] = useState('');
   const [multiPartNames, setMultiPartNames] = useState('');
   const [multiQty, setMultiQty] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [suggestions, setSuggestions] = useState<PartSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const parseMultiLineInput = (input: string): string[] => {
     const lines = input
@@ -224,6 +238,35 @@ const PartListTable: React.FC<PartListTableProps> = ({
     setErrorMessage(''); // Hata yoksa state sıfırlayın
   };
 
+  const debouncedSearch = useCallback(
+    debounce(async (searchTerm: string) => {
+      if (searchTerm.length >= 3) {
+        const results = await handlePartSearch(searchTerm);
+        setSuggestions(results);
+        setShowSuggestions(true);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300),
+    [handlePartSearch]
+  );
+
+  const handlePartNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPartNumber(value);
+    debouncedSearch(value);
+  };
+
+  const handleSuggestionSelect = (suggestion: PartSuggestion) => {
+    setPartNumber(suggestion.partNumber);
+    setPartName(suggestion.partName);
+    setReqCND(suggestion.reqCND);
+    setReqQTY(suggestion.reqQTY);
+    setDgPackagingCost(suggestion.dgPackagingCost);
+    setShowSuggestions(false);
+  };
+
   return (
     <div>
       <div
@@ -248,7 +291,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
           {<FontAwesomeIcon icon={faPlus} className="ms-0" />}
         </Button>
       </div>
-      <Table responsive style={{ overflow: 'visible' }}>
+      <Table responsive style={{ overflow: 'visible', position: 'relative' }}>
         <thead>
           <tr>
             <th></th>
@@ -280,17 +323,124 @@ const PartListTable: React.FC<PartListTableProps> = ({
               </span>
             </td>
             {/* Part Number */}
-            <td>
-              <Form.Group>
+            <td style={{ overflow: 'visible', position: 'static' }}>
+              <Form.Group style={{ position: 'relative' }}>
                 <Form.Control
                   placeholder="Part Number"
                   value={partNumber}
-                  onChange={e => {
-                    setPartNumber(e.target.value);
-                  }}
+                  onChange={handlePartNumberChange}
                   style={{ width: '180px' }}
                   required
                 />
+                {showSuggestions &&
+                  suggestions.length > 0 &&
+                  createPortal(
+                    <div
+                      style={{
+                        position: 'fixed',
+                        top: `${(
+                          document.activeElement as HTMLElement
+                        )?.getBoundingClientRect().bottom}px`,
+                        left: `${(
+                          document.activeElement as HTMLElement
+                        )?.getBoundingClientRect().left}px`,
+                        width: '600px',
+                        zIndex: 99999,
+                        backgroundColor: 'white',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px',
+                        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                        maxHeight: '300px',
+                        overflowY: 'auto'
+                      }}
+                    >
+                      {suggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleSuggestionSelect(suggestion)}
+                          style={{
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #eee',
+                            backgroundColor: 'white',
+                            display: 'grid',
+                            gridTemplateColumns: '2fr 3fr 1fr 1fr 1fr',
+                            gap: '12px',
+                            alignItems: 'center'
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.backgroundColor = '#f5f5f5';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.backgroundColor = 'white';
+                          }}
+                        >
+                          {/* Part Number Column */}
+                          <div>
+                            <div style={{ fontWeight: 'bold' }}>
+                              {suggestion.partNumber}
+                            </div>
+                          </div>
+
+                          {/* Part Name Column */}
+                          <div>
+                            <div style={{ color: '#666' }}>
+                              {suggestion.partName}
+                            </div>
+                          </div>
+
+                          {/* Req CND Column */}
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.85em', color: '#444' }}>
+                              <div
+                                style={{
+                                  color: '#31374a',
+                                  marginBottom: '2px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                Req CND
+                              </div>
+                              {suggestion.reqCND}
+                            </div>
+                          </div>
+
+                          {/* Req QTY Column */}
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.85em', color: '#444' }}>
+                              <div
+                                style={{
+                                  color: '#31374a',
+                                  marginBottom: '2px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                Req QTY
+                              </div>
+                              {suggestion.reqQTY}
+                            </div>
+                          </div>
+
+                          {/* DG Packaging Cost Column */}
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.85em', color: '#444' }}>
+                              <div
+                                style={{
+                                  color: '#31374a',
+                                  marginBottom: '2px',
+                                  fontWeight: 'bold'
+                                }}
+                              >
+                                DG Pack
+                              </div>
+                              {suggestion.dgPackagingCost ? 'Yes' : 'No'}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>,
+                    document.body
+                  )}
               </Form.Group>
             </td>
             {/* Part Name */}

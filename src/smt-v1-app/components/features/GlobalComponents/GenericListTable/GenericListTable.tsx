@@ -27,8 +27,7 @@ interface GenericListTableProps<T> {
   searchColumns: SearchColumn<T>[];
   defaultPageSize?: number;
   searchPlaceholder?: string;
-  pageSizeOptions?: number[];
-  data: any[];
+  data: T[];
   loading?: boolean;
   searchConfig?: {
     placeholder?: string;
@@ -55,7 +54,7 @@ function GenericListTable<T extends { id: string | number }>({
   searchColumns,
   defaultPageSize = 10,
   searchPlaceholder = 'Search...',
-  pageSizeOptions = [5, 10, 25, 50, 100],
+  // pageSizeOptions = [5, 10, 25, 50, 100],
   data,
   loading: externalLoading,
   searchConfig,
@@ -179,7 +178,7 @@ function GenericListTable<T extends { id: string | number }>({
                 {pageSize} Items
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                {pageSizeOptions.map(size => (
+                {/* {pageSizeOptions.map(size => (
                   <Dropdown.Item
                     key={size}
                     active={pageSize === size}
@@ -190,7 +189,7 @@ function GenericListTable<T extends { id: string | number }>({
                   >
                     {size} Items
                   </Dropdown.Item>
-                ))}
+                ))} */}
               </Dropdown.Menu>
             </Dropdown>
           </Col>

@@ -22,7 +22,10 @@ import {
 } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
 import { formatDate, convertDateFormat } from './PartListHelper';
 import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
-import { getByItemFields } from 'smt-v1-app/services/PartServices';
+import {
+  getByItemFields,
+  getPartHistorySuggestion
+} from 'smt-v1-app/services/PartServices';
 
 let tempIdCount = 1;
 function generateTempRFQPartId() {
@@ -46,6 +49,25 @@ interface PartListProps {
   setPartName: React.Dispatch<React.SetStateAction<string>>;
   partNumber: string;
   setPartNumber: React.Dispatch<React.SetStateAction<string>>;
+}
+
+interface PartSuggestion {
+  partNumber: string;
+  partName: string;
+  reqCND: string;
+  reqQTY: number;
+  dgPackagingCost: boolean;
+}
+
+interface PartHistorySuggestionResponse {
+  success: boolean;
+  data: {
+    partNumber: string;
+    partName: string;
+    reqCND?: string;
+    reqQTY?: number;
+    dgPackagingCost?: boolean;
+  }[];
 }
 
 const PartList: React.FC<PartListProps> = ({
@@ -412,6 +434,29 @@ const PartList: React.FC<PartListProps> = ({
     setRfqPartId(null);
   };
 
+  const handlePartSearch = async (
+    searchTerm: string
+  ): Promise<PartSuggestion[]> => {
+    try {
+      const response = await getPartHistorySuggestion(searchTerm);
+      const typedResponse = response as PartHistorySuggestionResponse;
+
+      if (typedResponse.success && typedResponse.data) {
+        return typedResponse.data.map(item => ({
+          partNumber: item.partNumber,
+          partName: item.partName,
+          reqCND: item.reqCND || 'NE',
+          reqQTY: item.reqQTY || 1,
+          dgPackagingCost: item.dgPackagingCost || false
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching part suggestions:', error);
+      return [];
+    }
+  };
+
   return (
     <div>
       <h3 className="mt-3">Part</h3>
@@ -478,6 +523,7 @@ const PartList: React.FC<PartListProps> = ({
           handlePartDeletion={handlePartDeletion}
           handleOpenPartModal={handleOpenPartModal}
           handleNewPartAddition={handleNewPartAddition}
+          handlePartSearch={handlePartSearch}
         />
       )}
       {showPartModal && (
