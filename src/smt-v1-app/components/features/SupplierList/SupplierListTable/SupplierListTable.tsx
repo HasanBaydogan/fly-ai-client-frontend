@@ -108,7 +108,7 @@ type SearchColumn = {
 };
 
 const searchColumns: SearchColumn[] = [
-  { label: 'No Filter', value: 'all' },
+  // { label: 'No Filter', value: 'all' },
   { label: 'Company Name', value: 'companyName' },
   { label: 'Brand', value: 'brand' },
   { label: 'Country', value: 'country' },

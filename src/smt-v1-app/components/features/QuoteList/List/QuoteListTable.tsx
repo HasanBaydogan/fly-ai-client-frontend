@@ -148,7 +148,7 @@ type SearchColumn = {
 };
 
 const searchColumns: SearchColumn[] = [
-  { label: 'No Filter', value: 'all' },
+  // { label: 'No Filter', value: 'all' },
   { label: 'Quote Number', value: 'quoteNumberId' },
   { label: 'Client', value: 'clientName' },
   { label: 'Client RFQ ID', value: 'clientRFQId' }

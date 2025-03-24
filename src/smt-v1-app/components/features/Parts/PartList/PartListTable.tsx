@@ -81,7 +81,7 @@ type SearchColumn = {
 };
 
 const searchColumns: SearchColumn[] = [
-  { label: 'No Filter', value: 'all' },
+  // { label: 'No Filter', value: 'all' },
   { label: 'Part Number', value: 'partNumber' },
   { label: 'Part Name', value: 'partName' },
   { label: 'Aircraft Model', value: 'aircraftModel' }
