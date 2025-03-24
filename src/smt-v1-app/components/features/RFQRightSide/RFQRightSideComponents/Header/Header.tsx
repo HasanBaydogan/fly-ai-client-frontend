@@ -30,12 +30,12 @@ const Header = ({
       <div>
         {/* Last Modified Date */}
         <div className="d-flex justify-content-end me-6">
-          <span className="last-modified">Last Modified Date:</span>
-          <span className="last-modified-date">{' ' + date}</span>
-        </div>
-        <div className="d-flex justify-content-end me-6">
           <span className="last-modified">RFQ Date:</span>
           <span className="last-modified-date">{' ' + emailSentDate}</span>
+        </div>
+        <div className="d-flex justify-content-end me-6">
+          <span className="last-modified">Last Modified Date:</span>
+          <span className="last-modified-date">{' ' + date}</span>
         </div>
 
         {/* RFQ Header */}

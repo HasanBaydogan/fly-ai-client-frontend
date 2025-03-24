@@ -6,9 +6,11 @@ import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/Load
 import {
   convertOpenToWFS,
   isOpenRFQMail,
-  reverseRFQMail
+  reverseRFQMail,
+  point
 } from 'smt-v1-app/services/MailTrackingService';
 import { convertRFQToQuote } from 'smt-v1-app/services/QuoteService';
+import { mapPointTypeToRfqMailStatus } from '../RfqMailRowItem/RfqMailRowHelper';
 
 interface RFQActionButtonsProps {
   rfqMailDetail: RFQMailDetail;
@@ -20,10 +22,19 @@ interface RFQActionButtonsProps {
   setVariant: React.Dispatch<React.SetStateAction<string>>;
   setRfqMailRowStatus: React.Dispatch<
     React.SetStateAction<
-      'WFS' | 'PQ' | 'FQ' | 'UNREAD' | 'OPEN' | 'SPAM' | 'NOT_RFQ' | 'NO_QUOTE'
+      | 'WFS'
+      | 'PQ'
+      | 'FQ'
+      | 'UNREAD'
+      | 'OPEN'
+      | 'SPAM'
+      | 'NOT_RFQ'
+      | 'NO_QUOTE'
+      | 'Hide Not RFQ'
     >
   >;
   handleStatusColor: (rfqMailStatus: string) => void;
+  onCancel: () => void; // Cancel butonu için
 }
 
 const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
@@ -34,21 +45,46 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
   setMessageBodyText,
   setVariant,
   setRfqMailRowStatus,
-  handleStatusColor
+  handleStatusColor,
+  onCancel
 }) => {
   const navigation = useNavigate();
-  const [statusType, setStatusType] = useState(rfqMailDetail.rfqMailStatus);
+  const [statusType, setStatusType] = useState<
+    | 'WFS'
+    | 'PQ'
+    | 'FQ'
+    | 'UNREAD'
+    | 'OPEN'
+    | 'SPAM'
+    | 'NOT_RFQ'
+    | 'NO_QUOTE'
+    | 'Hide Not RFQ'
+  >(rfqMailDetail.rfqMailStatus);
 
   const [isLoading, setIsLoading] = useState(false);
   const [openIsLoading, setOpenIsLoading] = useState(false);
   const [convertWFSIsLoading, setConvertWFSIsLoading] = useState(false);
   const [convertToQuoteIsLoading, setConvertToQuoteIsLoading] = useState(false);
 
+  // disable durumlarını tanımlıyoruz: Belirtilen durumlarda No Quote ve Spam butonları gizlenecek.
+  const disableNoQuote =
+    statusType === 'FQ' ||
+    statusType === 'PQ' ||
+    statusType === 'NOT_RFQ' ||
+    statusType === 'NO_QUOTE' ||
+    statusType === 'SPAM';
+  const disableSpam =
+    statusType === 'FQ' ||
+    statusType === 'PQ' ||
+    statusType === 'WFS' ||
+    statusType === 'NOT_RFQ' ||
+    statusType === 'NO_QUOTE' ||
+    statusType === 'SPAM';
+
   const openRFQMail = async () => {
     setIsLoading(true);
     setOpenIsLoading(true);
     const response = await isOpenRFQMail(rfqMailId);
-    // 200
     if (response.statusCode === 200) {
       if (response.data) {
         toastError('Invalid Operation', 'Already RFQMail opened');
@@ -64,6 +100,9 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
     setIsLoading(true);
     setConvertWFSIsLoading(true);
     const resp = await convertOpenToWFS(rfqMailId);
+    // console.log('Resp', resp);
+    // console.log('rfqMailId', rfqMailId);
+    // debugger;
     if (resp && resp.statusCode === 200) {
       setStatusType('WFS');
       setRfqMailRowStatus('WFS');
@@ -72,35 +111,19 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
         'Success WFS Conversation',
         'RFQ Mail is converted WFS successfully'
       );
+    } else if (resp?.statusCode === 422) {
+      toastError('Error', 'First open and save RFQMail then convert to WFS');
     } else {
-      toastError('An Unknown error', 'An Unknown error occurs');
+      toastError('Unknown Error', 'An Unknown error occurs');
     }
     setIsLoading(false);
     setConvertWFSIsLoading(false);
   };
 
-  function toastError(messageHeader: string, message: string) {
-    setVariant('danger');
-    setMessageHeader(messageHeader);
-    setMessageBodyText(message);
-    setIsShow(true);
-  }
-  function toastInfo(messageHeader: string, message: string) {
-    setVariant('info');
-    setMessageHeader(messageHeader);
-    setMessageBodyText(message);
-    setIsShow(true);
-  }
-  function toastSuccess(messageHeader: string, message: string) {
-    setVariant('success');
-    setMessageHeader(messageHeader);
-    setMessageBodyText(message);
-    setIsShow(true);
-  }
   const handleReverseStatus = async () => {
     const response = await reverseRFQMail(rfqMailDetail.rfqMailId);
     if (response && response.statusCode === 200) {
-      toastSuccess('Success', 'RFQMail is convert to UNREAD');
+      toastSuccess('Success', 'RFQMail is converted to UNREAD');
       setStatusType('UNREAD');
       setRfqMailRowStatus('UNREAD');
       handleStatusColor('UNREAD');
@@ -108,6 +131,7 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
       toastError('Error', 'Unknown Error');
     }
   };
+
   const handleConvertToQuote = async () => {
     setIsLoading(true);
     setConvertToQuoteIsLoading(true);
@@ -124,140 +148,156 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
       }, 1500);
     } else {
       toastError('Unknown Error', 'There is unknown error');
-      //console.log(response);
       setIsLoading(false);
       setConvertToQuoteIsLoading(false);
     }
   };
 
-  const renderActionButtons = () => {
-    switch (statusType) {
-      case 'UNREAD':
-        return (
-          <Button
-            variant="outline-primary"
-            onClick={openRFQMail}
-            disabled={isLoading}
-          >
-            {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
-          </Button>
-        );
-      case 'OPEN':
-        return (
-          <>
-            <Button
-              variant="outline-primary"
-              className="me-3"
-              onClick={openRFQMail}
-              disabled={isLoading}
-            >
-              {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
-            </Button>
-            <Button
-              variant="outline-warning"
-              onClick={convertToWFS}
-              disabled={isLoading}
-            >
-              {convertWFSIsLoading ? <LoadingAnimation /> : 'Convert to WFS'}
-            </Button>
-          </>
-        );
-      case 'WFS':
-        return (
-          <>
-            <Button
-              variant="outline-primary"
-              className="me-3"
-              onClick={openRFQMail}
-              disabled={isLoading}
-            >
-              {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
-            </Button>
-            <Button
-              variant="outline-success"
-              disabled={isLoading}
-              onClick={handleConvertToQuote}
-            >
-              {convertToQuoteIsLoading ? (
-                <LoadingAnimation />
-              ) : (
-                'Convert to Quote'
-              )}
-            </Button>
-          </>
-        );
-      case 'PQ':
-        return (
-          <>
-            <Button
-              variant="outline-primary"
-              className="me-3"
-              onClick={openRFQMail}
-              disabled={isLoading}
-            >
-              {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
-            </Button>
-            <Button
-              variant="outline-success"
-              disabled={isLoading}
-              onClick={handleConvertToQuote}
-            >
-              {convertToQuoteIsLoading ? (
-                <LoadingAnimation />
-              ) : (
-                'Convert to Quote'
-              )}
-            </Button>
-          </>
-        );
-      case 'FQ':
-        return (
-          <>
-            <Button
-              variant="outline-primary"
-              className="me-3"
-              onClick={openRFQMail}
-              disabled={isLoading}
-            >
-              {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
-            </Button>
-            <Button
-              variant="outline-success"
-              disabled={isLoading}
-              onClick={handleConvertToQuote}
-            >
-              {convertToQuoteIsLoading ? (
-                <LoadingAnimation />
-              ) : (
-                'Convert to Quote'
-              )}
-            </Button>
-          </>
-        );
-      case 'NO_QUOTE':
-        return (
-          <Button variant="outline-secondary" onClick={handleReverseStatus}>
-            There is a Quote
-          </Button>
-        );
-      case 'SPAM':
-        return (
-          <Button variant="outline-secondary" onClick={handleReverseStatus}>
-            No Spam
-          </Button>
-        );
-      case 'NOT_RFQ':
-        return (
-          <Button variant="outline-secondary" onClick={handleReverseStatus}>
-            It is a RFQ
-          </Button>
-        );
-      default:
-        return null;
+  const handlePoint = async (pointType: 'SPAM' | 'NO_QUOTE') => {
+    const response = await point(rfqMailId, pointType);
+    if (response && response.statusCode === 200) {
+      const mappedStatus = mapPointTypeToRfqMailStatus(pointType);
+      setStatusType(mappedStatus);
+      setRfqMailRowStatus(mappedStatus);
+      handleStatusColor(mappedStatus);
+      toastSuccess('Success', 'RFQMail pointed as ' + pointType);
+    } else if (response && response.statusCode === 406) {
+      toastError(
+        'RFQMail Point Error',
+        'Priced RFQMail cannot be pointed as ' + pointType
+      );
+    } else {
+      toastError('Unknown Error', 'There is unknown error');
     }
   };
 
-  return <>{renderActionButtons()}</>;
+  function toastError(messageHeader: string, message: string) {
+    setVariant('danger');
+    setMessageHeader(messageHeader);
+    setMessageBodyText(message);
+    setIsShow(true);
+  }
+  function toastSuccess(messageHeader: string, message: string) {
+    setVariant('success');
+    setMessageHeader(messageHeader);
+    setMessageBodyText(message);
+    setIsShow(true);
+  }
+
+  return (
+    <>
+      <div
+        style={{
+          marginBottom: '0.5rem',
+          marginTop: '1rem',
+          display: 'flex',
+          justifyContent: 'flex-start'
+        }}
+      >
+        <Button variant="danger" style={{ color: 'white' }} onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            gap: '0.5rem',
+            justifyContent: 'flex-start'
+          }}
+        >
+          {!disableNoQuote && (
+            <Button
+              variant="outline-secondary"
+              onClick={() => handlePoint('NO_QUOTE')}
+            >
+              No Quote
+            </Button>
+          )}
+          {!disableSpam && (
+            <Button
+              variant="outline-secondary"
+              onClick={() => handlePoint('SPAM')}
+            >
+              Spam
+            </Button>
+          )}
+        </div>
+        <div
+          style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}
+        >
+          {statusType === 'UNREAD' && (
+            <Button
+              variant="outline-primary"
+              onClick={openRFQMail}
+              disabled={isLoading}
+            >
+              {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
+            </Button>
+          )}
+          {statusType === 'OPEN' && (
+            <>
+              <Button
+                variant="outline-primary"
+                onClick={openRFQMail}
+                disabled={isLoading}
+              >
+                {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
+              </Button>
+              <Button
+                variant="outline-warning"
+                onClick={convertToWFS}
+                disabled={isLoading}
+              >
+                {convertWFSIsLoading ? <LoadingAnimation /> : 'Convert to WFS'}
+              </Button>
+            </>
+          )}
+          {(statusType === 'WFS' ||
+            statusType === 'PQ' ||
+            statusType === 'FQ') && (
+            <>
+              <Button
+                variant="outline-primary"
+                onClick={openRFQMail}
+                disabled={isLoading}
+              >
+                {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
+              </Button>
+              <Button
+                variant="outline-success"
+                onClick={handleConvertToQuote}
+                disabled={isLoading}
+              >
+                {convertToQuoteIsLoading ? (
+                  <LoadingAnimation />
+                ) : (
+                  'Convert to Quote'
+                )}
+              </Button>
+            </>
+          )}
+          {(statusType === 'NO_QUOTE' ||
+            statusType === 'SPAM' ||
+            statusType === 'NOT_RFQ') && (
+            <Button variant="outline-secondary" onClick={handleReverseStatus}>
+              {statusType === 'NO_QUOTE'
+                ? 'There is a Quote'
+                : statusType === 'SPAM'
+                ? 'No Spam'
+                : 'It is a RFQ'}
+            </Button>
+          )}
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default RFQActionButtons;

@@ -181,7 +181,7 @@ const RFQMailDetailModal: React.FC<RFQMailDetailModalProps> = ({
                 </div>
               </div>
 
-              <div className="d-flex justify-content-end">
+              <div>
                 <RFQActionButtons
                   rfqMailDetail={rfqMailDetail}
                   setRfqMailDetail={setRfqMailDetail}
@@ -192,6 +192,7 @@ const RFQMailDetailModal: React.FC<RFQMailDetailModalProps> = ({
                   setVariant={setVariant}
                   setRfqMailRowStatus={setRfqMailStatus}
                   handleStatusColor={handleStatusColor}
+                  onCancel={() => setIsDetailShow(false)}
                 />
               </div>
             </>
