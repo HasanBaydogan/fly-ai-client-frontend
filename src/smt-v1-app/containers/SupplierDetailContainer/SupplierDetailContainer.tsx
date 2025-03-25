@@ -2,7 +2,7 @@ import { Row, Col, Alert, Modal, Button, Spinner } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SupplierInfo from '../../components/features/SupplierDetail/SupplierDetailComponents/SupplierInfo';
-import SegmentSelection from '../../components/features/GlobalComponents/SegmentSelection';
+import SegmentSelection from '../../components/features/GlobalComponents/Segments/SegmentSelection';
 import AddressDetails from '../../components/features/SupplierDetail/SupplierDetailComponents/AddressDetails';
 import RatingSection, {
   RatingData
@@ -20,7 +20,7 @@ import {
   getbyCountryList,
   postSupplierCreate
 } from '../../services/SupplierServices';
-import { TreeNode } from '../../components/features/SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
+import { TreeNode } from 'smt-v1-app/types/index';
 import {
   SupplierStatus,
   Certypes

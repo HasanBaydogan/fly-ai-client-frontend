@@ -3,7 +3,7 @@ import { Alert, Button, Col, Modal, Row, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FormattedContactData } from 'smt-v1-app/components/features/Client/NewClient/NewClientContact/ContactListSection';
 import { RatingData } from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';
-import SegmentSelection from 'smt-v1-app/components/features/GlobalComponents/SegmentSelection';
+import SegmentSelection from 'smt-v1-app/components/features/GlobalComponents/Segments/SegmentSelection';
 import ClientInfo from 'smt-v1-app/components/features/Client/NewClient/ClientInfo';
 import {
   getbyCurrencyController,

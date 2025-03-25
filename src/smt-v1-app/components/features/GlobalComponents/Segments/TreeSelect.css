@@ -1,14 +1,18 @@
-/* .tree-select-container {
+.tree-select-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  
 }
 
 .selected-segments {
   display: flex;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
+  flex-direction: column;
   gap: 8px;
-  min-height: 40px;
+  height: 300px;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -17,7 +21,10 @@
 .selected-segment-tag {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
+  width: 200px;
+  height: 40px;
   padding: 4px 8px;
   background-color: #e3f2fd;
   border-radius: 4px;
@@ -80,3 +87,21 @@
   margin-left: 8px;
 }
 
+/* Scrollbar styling */
+.tree-select::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tree-select::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.tree-select::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.tree-select::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -2,7 +2,7 @@ import { Row, Col, Alert, Modal, Button, Spinner } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ClientInfo from '../../../components/features/Client/NewClient/ClientInfo';
-import SegmentSelection from '../../../components/features/GlobalComponents/SegmentSelection';
+import SegmentSelection from '../../../components/features/GlobalComponents/Segments/SegmentSelection';
 import AddressDetails from 'smt-v1-app/components/features/Client/NewClient/ClientMidPart';
 import RatingSection from '../../../components/features/Client/NewClient/RatingComponent';
 import { RatingData } from 'smt-v1-app/components/features/Client/NewClient/RatingComponent';

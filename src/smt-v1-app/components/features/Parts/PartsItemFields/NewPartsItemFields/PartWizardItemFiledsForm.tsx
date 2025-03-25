@@ -11,8 +11,8 @@ import {
   putPartUpdate
 } from 'smt-v1-app/services/PartServices';
 import CustomButton from '../../../../../../components/base/Button';
-import { TreeNode } from '../../../SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
-import SegmentSelection from '../../../GlobalComponents/SegmentSelection';
+import { TreeNode } from 'smt-v1-app/types/index';
+import SegmentSelection from '../../../GlobalComponents/Segments/SegmentSelection';
 import { getbySegmentList } from 'smt-v1-app/services/GlobalServices';
 
 const getInitialSelectedIds = (nodes: any[] = []): string[] => {

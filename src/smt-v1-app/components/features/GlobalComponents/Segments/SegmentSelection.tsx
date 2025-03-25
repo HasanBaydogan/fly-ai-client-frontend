@@ -1,9 +1,6 @@
 import React from 'react';
 import Form from 'react-bootstrap/Form';
-import {
-  TreeSelect,
-  TreeNode
-} from '../SupplierDetailSegmentTreeSelect/SupplierDetailSegmentTreeSelect';
+import { TreeSelect, TreeNode } from './TreeSelect';
 
 interface SegmentSelectionProps {
   data: TreeNode[];
