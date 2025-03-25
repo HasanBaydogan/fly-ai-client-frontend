@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Table, Form, Button, Modal, Tooltip, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -21,12 +21,30 @@ import { createPortal } from 'react-dom';
 
 type Supplier = any;
 
-interface PartSuggestion {
+export interface PartSuggestion {
   partNumber: string;
-  partName: string;
+  partName: string | null;
   reqCND: string;
   reqQTY: number;
+  fndQTY: number;
+  fndCND: string;
+  supplierLT: number;
+  clientLT: number;
+  price: number;
+  currency: string;
+  total: number;
+  supplier: string;
+  comment: string | null;
   dgPackagingCost: boolean;
+  tagDate: string | null;
+  lastUpdatedDate: string;
+  certificateType: string | null;
+  stock: number | null;
+  stockLocation: string | null;
+  wareHouse: string | null;
+  MSN: string | null;
+  airlineCompany: string | null;
+  MSDS: string | null;
 }
 
 interface PartListTableProps {
@@ -88,7 +106,31 @@ interface PartListTableProps {
   handleOpenPartModal: (partNumber: string) => void;
   handleNewPartAddition: () => void;
   handlePartSearch: (searchTerm: string) => Promise<PartSuggestion[]>;
+  setTagDate: React.Dispatch<React.SetStateAction<string>>;
 }
+
+const headerCellStyle: React.CSSProperties = {
+  padding: '4px 8px',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  textAlign: 'center'
+};
+
+const cellStyle: React.CSSProperties = {
+  padding: '4px 8px',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  textAlign: 'center'
+};
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+};
 
 const PartListTable: React.FC<PartListTableProps> = ({
   parts,
@@ -147,7 +189,8 @@ const PartListTable: React.FC<PartListTableProps> = ({
   handlePartDeletion,
   handleOpenPartModal,
   handleNewPartAddition,
-  handlePartSearch
+  handlePartSearch,
+  setTagDate
 }) => {
   const [showMultiAddModal, setShowMultiAddModal] = useState(false);
   const [multiPartNumbers, setMultiPartNumbers] = useState('');
@@ -156,6 +199,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [suggestions, setSuggestions] = useState<PartSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionRef = React.useRef<HTMLDivElement>(null);
 
   const parseMultiLineInput = (input: string): string[] => {
     const lines = input
@@ -260,11 +304,62 @@ const PartListTable: React.FC<PartListTableProps> = ({
 
   const handleSuggestionSelect = (suggestion: PartSuggestion) => {
     setPartNumber(suggestion.partNumber);
-    setPartName(suggestion.partName);
+    setPartName(suggestion.partName || '');
     setReqCND(suggestion.reqCND);
     setReqQTY(suggestion.reqQTY);
+    //setFndQTY(suggestion.fndQTY);
+    //setFndCND(suggestion.fndCND);
+    setSupplierLT(suggestion.supplierLT);
+    setClientLT(suggestion.clientLT);
+    setCurrency(suggestion.currency);
+    //setSupplier([{ supplierName: suggestion.supplier }]);
+    setComment(suggestion.comment || '');
     setDgPackagingCost(suggestion.dgPackagingCost);
+    setTagDate(suggestion.tagDate || '');
+    setCertType(suggestion.certificateType || '');
+    setMSN(suggestion.MSN || '');
+    setWarehouse(suggestion.wareHouse || '');
+    //setStock(suggestion.stock || 0);
+    //setStockLocation(suggestion.stockLocation || '');
+    //setAirlineCompany(suggestion.airlineCompany || '');
+    setMSDS(suggestion.MSDS || '');
+
+    // Unit price için string formatına çevirme
+    const priceString = suggestion.price ? suggestion.price.toString() : '0';
+    unitPriceChange({
+      target: { value: priceString }
+    } as React.ChangeEvent<HTMLInputElement>);
+
     setShowSuggestions(false);
+  };
+
+  // Dışarı tıklamayı dinlemek için useEffect ekleyelim
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionRef.current &&
+        !suggestionRef.current.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest(
+          'input[placeholder="Part Number"]'
+        )
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Part Number input focus kaybedildiğinde tabloyu hemen kapatmayalım
+  const handlePartNumberBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Eğer tıklanan yer suggestion tablosu ise, tabloyu kapatmayalım
+    if (suggestionRef.current?.contains(e.relatedTarget as Node)) {
+      return;
+    }
   };
 
   return (
@@ -329,6 +424,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
                   placeholder="Part Number"
                   value={partNumber}
                   onChange={handlePartNumberChange}
+                  onBlur={handlePartNumberBlur}
                   style={{ width: '180px' }}
                   required
                 />
@@ -336,6 +432,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
                   suggestions.length > 0 &&
                   createPortal(
                     <div
+                      ref={suggestionRef}
                       style={{
                         position: 'fixed',
                         top: `${(
@@ -344,100 +441,193 @@ const PartListTable: React.FC<PartListTableProps> = ({
                         left: `${(
                           document.activeElement as HTMLElement
                         )?.getBoundingClientRect().left}px`,
-                        width: '600px',
+                        width: '90vw',
+                        maxWidth: '1400px',
                         zIndex: 99999,
                         backgroundColor: 'white',
                         border: '1px solid #ddd',
                         borderRadius: '4px',
                         boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                        maxHeight: '300px',
-                        overflowY: 'auto'
+                        maxHeight: '400px',
+                        display: 'flex',
+                        flexDirection: 'column'
                       }}
                     >
-                      {suggestions.map((suggestion, index) => (
+                      {/* Sabit başlık */}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: `
+                            minmax(170px, 170px)  /* Part Number */
+                            minmax(170px, 170px)  /* Part Name */
+                            minmax(100px, 100px)  /* Req/Fnd QTY */
+                            minmax(100px, 100px)  /* Req/Fnd CND */
+                            minmax(100px, 100px)  /* Lead Times */
+                            minmax(80px, 80px)    /* Price */
+                            minmax(80px, 80px)    /* Currency */
+                            minmax(80px, 80px)    /* Total */
+                            minmax(120px, 120px)  /* Supplier */
+                            minmax(80px, 80px)    /* Stock */
+                            minmax(100px, 100px)  /* Location */
+                            minmax(100px, 100px)  /* Certificate */
+                            minmax(80px, 80px)    /* DG Pack */
+                            minmax(100px, 100px)  /* MSN */
+                            minmax(80px, 80px)    /* MSDS */
+                            minmax(100px, 100px)  /* Last Updated */
+                            minmax(120px, 120px)  /* Comment */
+                          `,
+                          gap: '4px',
+                          padding: '8px',
+                          backgroundColor: '#f8f9fa',
+                          borderBottom: '2px solid #dee2e6',
+                          fontWeight: 'bold',
+                          fontSize: '0.8em',
+                          position: 'sticky',
+                          top: 0,
+                          zIndex: 2
+                        }}
+                      >
+                        <div style={headerCellStyle}>Part Number</div>
+                        <div style={headerCellStyle}>Part Name</div>
+                        <div style={headerCellStyle}>Req/Fnd QTY</div>
+                        <div style={headerCellStyle}>Req/Fnd CND</div>
+                        <div style={headerCellStyle}>Lead Times</div>
+                        <div style={headerCellStyle}>Price</div>
+                        <div style={headerCellStyle}>Currency</div>
+                        <div style={headerCellStyle}>Total</div>
+                        <div style={headerCellStyle}>Supplier</div>
+                        <div style={headerCellStyle}>Stock</div>
+                        <div style={headerCellStyle}>Location</div>
+                        <div style={headerCellStyle}>Certificate</div>
+                        <div style={headerCellStyle}>DG Pack</div>
+                        <div style={headerCellStyle}>MSN</div>
+                        <div style={headerCellStyle}>MSDS</div>
+                        <div style={headerCellStyle}>Last Updated</div>
+                        <div style={headerCellStyle}>Comment</div>
+                      </div>
+
+                      {/* Kaydırılabilir içerik alanı */}
+                      <div
+                        style={{
+                          overflowY: 'auto',
+                          overflowX: 'scroll',
+                          flex: 1,
+                          position: 'relative'
+                        }}
+                      >
                         <div
-                          key={index}
-                          onClick={() => handleSuggestionSelect(suggestion)}
                           style={{
-                            padding: '8px 12px',
-                            cursor: 'pointer',
-                            borderBottom: '1px solid #eee',
-                            backgroundColor: 'white',
-                            display: 'grid',
-                            gridTemplateColumns: '2fr 3fr 1fr 1fr 1fr',
-                            gap: '12px',
-                            alignItems: 'center'
-                          }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.backgroundColor = '#f5f5f5';
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.backgroundColor = 'white';
+                            minWidth: '1200px',
+                            paddingBottom: '12px' // Scroll bar için extra padding
                           }}
                         >
-                          {/* Part Number Column */}
-                          <div>
-                            <div style={{ fontWeight: 'bold' }}>
-                              {suggestion.partNumber}
-                            </div>
-                          </div>
-
-                          {/* Part Name Column */}
-                          <div>
-                            <div style={{ color: '#666' }}>
-                              {suggestion.partName}
-                            </div>
-                          </div>
-
-                          {/* Req CND Column */}
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.85em', color: '#444' }}>
-                              <div
-                                style={{
-                                  color: '#31374a',
-                                  marginBottom: '2px',
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                Req CND
+                          {/* Suggestion satırları */}
+                          {suggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              onClick={() => handleSuggestionSelect(suggestion)}
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: `
+                                  minmax(170px, 170px)
+                                  minmax(170px, 170px)
+                                  minmax(100px, 100px)
+                                  minmax(100px, 100px)
+                                  minmax(100px, 100px)
+                                  minmax(80px, 80px)
+                                  minmax(80px, 80px)
+                                  minmax(80px, 80px)
+                                  minmax(120px, 120px)
+                                  minmax(80px, 80px)
+                                  minmax(100px, 100px)
+                                  minmax(100px, 100px)
+                                  minmax(80px, 80px)
+                                  minmax(100px, 100px)
+                                  minmax(80px, 80px)
+                                  minmax(100px, 100px)
+                                  minmax(120px, 120px)
+                                `,
+                                gap: '4px',
+                                padding: '8px',
+                                cursor: 'pointer',
+                                borderBottom: '1px solid #eee',
+                                alignItems: 'center',
+                                fontSize: '0.85em',
+                                backgroundColor: 'white'
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.backgroundColor =
+                                  '#f5f5f5';
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.backgroundColor = 'white';
+                              }}
+                            >
+                              <div style={cellStyle}>
+                                {suggestion.partNumber}
                               </div>
-                              {suggestion.reqCND}
-                            </div>
-                          </div>
-
-                          {/* Req QTY Column */}
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.85em', color: '#444' }}>
-                              <div
-                                style={{
-                                  color: '#31374a',
-                                  marginBottom: '2px',
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                Req QTY
+                              <div style={cellStyle}>
+                                {suggestion.partName || '-'}
                               </div>
-                              {suggestion.reqQTY}
-                            </div>
-                          </div>
-
-                          {/* DG Packaging Cost Column */}
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.85em', color: '#444' }}>
                               <div
-                                style={{
-                                  color: '#31374a',
-                                  marginBottom: '2px',
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                DG Pack
+                                style={cellStyle}
+                              >{`${suggestion.reqQTY}/${suggestion.fndQTY}`}</div>
+                              <div
+                                style={cellStyle}
+                              >{`${suggestion.reqCND}/${suggestion.fndCND}`}</div>
+                              <div
+                                style={cellStyle}
+                              >{`${suggestion.supplierLT}/${suggestion.clientLT}`}</div>
+                              <div style={cellStyle}>
+                                {formatCurrency(suggestion.price)}
                               </div>
-                              {suggestion.dgPackagingCost ? 'Yes' : 'No'}
+                              <div style={cellStyle}>{suggestion.currency}</div>
+                              <div style={cellStyle}>
+                                {formatCurrency(suggestion.total)}
+                              </div>
+                              <div style={cellStyle}>
+                                {suggestion.supplier || '-'}
+                              </div>
+                              <div style={cellStyle}>
+                                {suggestion.stock || '-'}
+                              </div>
+                              <div style={cellStyle}>
+                                {suggestion.stockLocation || '-'}
+                              </div>
+                              <div style={cellStyle}>
+                                {suggestion.certificateType || '-'}
+                              </div>
+                              <div style={cellStyle}>
+                                {suggestion.dgPackagingCost ? 'Yes' : 'No'}
+                              </div>
+                              <div style={cellStyle}>
+                                {suggestion.MSN || '-'}
+                              </div>
+                              <div style={cellStyle}>
+                                {suggestion.MSDS || '-'}
+                              </div>
+                              <div style={cellStyle}>
+                                {suggestion.lastUpdatedDate || '-'}
+                              </div>
+                              <div style={cellStyle}>
+                                {suggestion.comment || '-'}
+                              </div>
                             </div>
-                          </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Sabit scroll bar alanı */}
+                      <div
+                        style={{
+                          height: '12px',
+                          backgroundColor: '#f8f9fa',
+                          borderTop: '1px solid #dee2e6',
+                          position: 'sticky',
+                          bottom: 0,
+                          zIndex: 2
+                        }}
+                      />
                     </div>,
                     document.body
                   )}
@@ -563,10 +753,21 @@ const PartListTable: React.FC<PartListTableProps> = ({
                   type="text"
                   value={unitPricevalueString}
                   onChange={unitPriceChange}
-                  onBlur={handleBlur}
-                  placeholder={
-                    getPriceCurrencySymbol(currency) + '1,000,000.00'
-                  }
+                  onBlur={e => {
+                    handleBlur(
+                      e as React.FocusEvent<HTMLInputElement, Element>
+                    );
+
+                    const numValue = parseFloat(
+                      e.target.value.replace(/,/g, '')
+                    );
+                    if (!isNaN(numValue)) {
+                      e.target.value = formatCurrency(numValue);
+                    }
+                  }}
+                  placeholder={`${getPriceCurrencySymbol(
+                    currency
+                  )}1,000,000.00`}
                   style={{ width: '110px' }}
                 />
               </div>
@@ -621,9 +822,11 @@ const PartListTable: React.FC<PartListTableProps> = ({
               <div className="d-flex align-items-center mt-2">
                 <span className="fw-bold">{currency}</span>
                 <span className="ms-2">
-                  {(unitPricevalueNumber
-                    ? Math.round(unitPricevalueNumber * 100) / 100
-                    : 0) * fndQTY}
+                  {formatCurrency(
+                    (unitPricevalueNumber
+                      ? Math.round(unitPricevalueNumber * 100) / 100
+                      : 0) * fndQTY
+                  )}
                 </span>
               </div>
             </td>

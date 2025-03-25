@@ -26,6 +26,7 @@ import {
   getByItemFields,
   getPartHistorySuggestion
 } from 'smt-v1-app/services/PartServices';
+import PartSuggestion from './PartListTable';
 
 let tempIdCount = 1;
 function generateTempRFQPartId() {
@@ -53,10 +54,28 @@ interface PartListProps {
 
 interface PartSuggestion {
   partNumber: string;
-  partName: string;
+  partName: string | null;
   reqCND: string;
   reqQTY: number;
+  fndQTY: number;
+  fndCND: string;
+  supplierLT: number;
+  clientLT: number;
+  price: number;
+  currency: string;
+  total: number;
+  supplier: string;
+  comment: string | null;
   dgPackagingCost: boolean;
+  tagDate: string | null;
+  lastUpdatedDate: string;
+  certificateType: string | null;
+  stock: number | null;
+  stockLocation: string | null;
+  wareHouse: string | null;
+  MSN: string | null;
+  airlineCompany: string | null;
+  MSDS: string | null;
 }
 
 interface PartHistorySuggestionResponse {
@@ -64,9 +83,27 @@ interface PartHistorySuggestionResponse {
   data: {
     partNumber: string;
     partName: string;
-    reqCND?: string;
-    reqQTY?: number;
-    dgPackagingCost?: boolean;
+    reqCND: string;
+    reqQTY: number;
+    fndQTY: number;
+    fndCND: string;
+    supplierLT: number;
+    clientLT: number;
+    price: number;
+    currency: string;
+    total: number;
+    supplier: string;
+    comment: string | null;
+    dgPackagingCost: boolean;
+    tagDate: string | null;
+    lastUpdatedDate: string;
+    certificateType: string | null;
+    stock: number | null;
+    stockLocation: string | null;
+    wareHouse: string | null;
+    MSN: string | null;
+    airlineCompany: string | null;
+    MSDS: string | null;
   }[];
 }
 
@@ -445,9 +482,27 @@ const PartList: React.FC<PartListProps> = ({
         return typedResponse.data.map(item => ({
           partNumber: item.partNumber,
           partName: item.partName,
-          reqCND: item.reqCND || 'NE',
-          reqQTY: item.reqQTY || 1,
-          dgPackagingCost: item.dgPackagingCost || false
+          reqCND: item.reqCND || '-',
+          reqQTY: item.reqQTY || 0,
+          dgPackagingCost: item.dgPackagingCost || false,
+          fndQTY: item.fndQTY || 0,
+          fndCND: item.fndCND || '-',
+          supplierLT: item.supplierLT || 0,
+          clientLT: item.clientLT || 0,
+          price: item.price || 0,
+          currency: item.currency || 'USD',
+          total: item.total || 0,
+          supplier: item.supplier || 'Unknown Supplier',
+          comment: item.comment || null,
+          tagDate: item.tagDate || null,
+          lastUpdatedDate: item.lastUpdatedDate || '-',
+          certificateType: item.certificateType || null,
+          stock: item.stock || null,
+          stockLocation: item.stockLocation || null,
+          wareHouse: item.wareHouse || null,
+          MSN: item.MSN || null,
+          airlineCompany: item.airlineCompany || null,
+          MSDS: item.MSDS || null
         }));
       }
       return [];
@@ -524,6 +579,7 @@ const PartList: React.FC<PartListProps> = ({
           handleOpenPartModal={handleOpenPartModal}
           handleNewPartAddition={handleNewPartAddition}
           handlePartSearch={handlePartSearch}
+          setTagDate={setTagDate}
         />
       )}
       {showPartModal && (
