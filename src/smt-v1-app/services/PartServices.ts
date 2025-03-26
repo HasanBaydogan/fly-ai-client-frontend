@@ -29,12 +29,18 @@ interface PartHistorySuggestionResponse {
 export const searchByPartList = async (
   term: string,
   pageNo: number,
-  pageSize: number
+  pageSize: number | 'all'
 ) => {
-  const url = term
-    ? `/part/filter/${pageNo}/${pageSize}?${term}`
-    : `/part/all/${pageNo}/${pageSize}`;
-
+  let url = '';
+  if (pageSize === 'all') {
+    // All seçili: pagination bilgisi gerekmez
+    url = term ? `/part/filter?${term}` : `/part/all-list`;
+  } else {
+    // Normal durum: pageNo ve pageSize kullanılıyor
+    url = term
+      ? `/part/filter/${pageNo}/${pageSize}?${term}`
+      : `/part/all/${pageNo}/${pageSize}`;
+  }
   return await getRequest(url);
 };
 

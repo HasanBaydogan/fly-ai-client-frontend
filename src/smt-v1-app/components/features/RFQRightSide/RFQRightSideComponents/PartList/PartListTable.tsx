@@ -211,13 +211,11 @@ const PartListTable: React.FC<PartListTableProps> = ({
     let i = 0;
     while (i < lines.length) {
       const line = lines[i];
-      //OR içeren satırları tek satır haline getirme
       if (line.toUpperCase() === 'OR' && i > 0 && i < lines.length - 1) {
         const combined = results[results.length - 1] + ' OR ' + lines[i + 1];
         results[results.length - 1] = combined;
         i += 2;
       } else {
-        // normal satırsa direkt ekle
         results.push(line);
         i++;
       }
@@ -279,7 +277,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
     setMultiPartNumbers('');
     setMultiPartNames('');
     setMultiQty('');
-    setErrorMessage(''); // Hata yoksa state sıfırlayın
+    setErrorMessage('');
   };
 
   const debouncedSearch = useCallback(
@@ -324,7 +322,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
     //setAirlineCompany(suggestion.airlineCompany || '');
     setMSDS(suggestion.MSDS || '');
 
-    // Unit price için string formatına çevirme
     const priceString = suggestion.price ? suggestion.price.toString() : '0';
     unitPriceChange({
       target: { value: priceString }
@@ -333,7 +330,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
     setShowSuggestions(false);
   };
 
-  // Dışarı tıklamayı dinlemek için useEffect ekleyelim
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -354,9 +350,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
     };
   }, []);
 
-  // Part Number input focus kaybedildiğinde tabloyu hemen kapatmayalım
   const handlePartNumberBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Eğer tıklanan yer suggestion tablosu ise, tabloyu kapatmayalım
     if (suggestionRef.current?.contains(e.relatedTarget as Node)) {
       return;
     }
@@ -526,7 +520,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
                             <div style={headerCellStyle}>Last Updated</div>
                             <div style={headerCellStyle}>Comment</div>
                           </div>
-                          {/* İçerik kısmı */}
                           <div
                             style={{
                               maxHeight: '340px',
@@ -543,24 +536,24 @@ const PartListTable: React.FC<PartListTableProps> = ({
                                   style={{
                                     display: 'grid',
                                     gridTemplateColumns: `
-                      minmax(170px, 170px)
-                      minmax(170px, 170px)
-                      minmax(100px, 100px)
-                      minmax(100px, 100px)
-                      minmax(100px, 100px)
-                      minmax(80px, 80px)
-                      minmax(80px, 80px)
-                      minmax(80px, 80px)
-                      minmax(120px, 120px)
-                      minmax(80px, 80px)
-                      minmax(100px, 100px)
-                      minmax(100px, 100px)
-                      minmax(80px, 80px)
-                      minmax(100px, 100px)
-                      minmax(80px, 80px)
-                      minmax(100px, 100px)
-                      minmax(120px, 120px)
-                    `,
+                                      minmax(170px, 170px)
+                                      minmax(170px, 170px)
+                                      minmax(100px, 100px)
+                                      minmax(100px, 100px)
+                                      minmax(100px, 100px)
+                                      minmax(80px, 80px)
+                                      minmax(80px, 80px)
+                                      minmax(80px, 80px)
+                                      minmax(120px, 120px)
+                                      minmax(80px, 80px)
+                                      minmax(100px, 100px)
+                                      minmax(100px, 100px)
+                                      minmax(80px, 80px)
+                                      minmax(100px, 100px)
+                                      minmax(80px, 80px)
+                                      minmax(100px, 100px)
+                                      minmax(120px, 120px)
+                                    `,
                                     gap: '4px',
                                     padding: '8px',
                                     cursor: 'pointer',
@@ -1005,7 +998,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
                 bottom: '0px',
                 left: '50%',
                 transform: 'translateX(-50%)',
-                zIndex: 1051, // Yeterince yüksek bir değer veriyoruz
+                zIndex: 1051,
                 width: '90%'
               }}
             >

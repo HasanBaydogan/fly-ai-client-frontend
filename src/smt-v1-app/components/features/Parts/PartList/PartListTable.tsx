@@ -101,7 +101,8 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const pageSizeOptions: (number | 'all')[] = [5, 10, 25, 50, 100, 'all'];
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<PartData>();
@@ -222,19 +223,20 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
                 id="dropdown-items-per-page"
                 style={{ minWidth: '100px' }}
               >
-                {pageSize} Parts
+                {pageSize === 'all' ? 'All Items' : `${pageSize} Parts`}
               </Dropdown.Toggle>
+
               <Dropdown.Menu>
-                {[5, 10, 25, 50, 100].map(size => (
+                {pageSizeOptions.map(size => (
                   <Dropdown.Item
-                    key={size}
+                    key={size.toString()}
                     active={pageSize === size}
                     onClick={() => {
                       setPageSize(size);
                       setPageIndex(0);
                     }}
                   >
-                    {size} Items
+                    {size === 'all' ? 'All Items' : `${size} Items`}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>
