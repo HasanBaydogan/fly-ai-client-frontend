@@ -144,20 +144,23 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
   const debouncedFetchData = useMemo(
     () =>
       debounce((term: string, column: SearchColumn) => {
-        let searchParam = '';
-        if (term && column.value !== 'all') {
-          searchParam = `${column.value}=${term}`;
+        const effectiveTerm = term.trim();
+        const searchParam = effectiveTerm
+          ? `${column.value}=${effectiveTerm}`
+          : '';
+        if (pageSize !== 'all') {
           setGlobalFilter(undefined);
-          setColumnFilters([{ id: column.value, value: term }]);
+          setColumnFilters([{ id: column.value, value: effectiveTerm }]);
         } else {
-          setGlobalFilter(term || undefined);
+          setGlobalFilter(effectiveTerm || undefined);
           setColumnFilters([]);
         }
         setPageIndex(0);
         fetchData(searchParam, 0);
       }, 300),
-    [setGlobalFilter, setColumnFilters]
+    [setGlobalFilter, setColumnFilters, pageSize]
   );
+
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);

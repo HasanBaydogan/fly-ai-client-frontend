@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PartTopSection from 'smt-v1-app/components/features/Parts/PartList/PartTopSection';
-import ClientList, {
+import QuoteListTable, {
   QuoteTableColumns
 } from 'smt-v1-app/components/features/QuoteList/List/QuoteListTable';
 import useAdvanceTable from '../../components/features/Client/ClientList/useAdvanceTable';
@@ -60,7 +60,7 @@ const PartListContainer = () => {
           </Link>
         </div>
         <PartTopSection activeView="list" />
-        <ClientList activeView={''} />
+        <QuoteListTable activeView={''} />
       </AdvanceTableProvider>
     </div>
   );

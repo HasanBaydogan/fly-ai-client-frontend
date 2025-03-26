@@ -114,8 +114,8 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const [pageSize, setPageSize] = useState<number>(10); // Page size state,
-  // console.log('Page Size', pageSize);
+  // pageSize artık number veya 'all' alabiliyor
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<ClientData>();
@@ -176,7 +176,6 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
             easeOfPayment: 0,
             easeOfDelivery: 0
           },
-          // marginTable alanını ekliyoruz:
           marginTable: item.marginTable || {
             below200: 0,
             btw200and500: 0,
@@ -195,7 +194,6 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
             above4_000_000: 0,
             lastModifiedBy: ''
           },
-          // Düzeltme: "commet" yerine "comment" kullanıyoruz:
           comment: item.comment || '',
           createdBy: handleNullValue(item.createdBy || ''),
           createdOn: item.createdOn || '',
@@ -218,23 +216,30 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
   const debouncedFetchData = useMemo(
     () =>
       debounce((term: string, column: SearchColumn) => {
-        if (term) {
-          if (column.value === 'all') {
-            setGlobalFilter(term || undefined);
-            setColumnFilters([]);
-          } else {
-            setGlobalFilter(undefined);
-            setColumnFilters([{ id: column.value, value: term }]);
-          }
-        } else {
+        const effectiveTerm = term.trim();
+        const searchParam = effectiveTerm
+          ? `${column.value}=${effectiveTerm}`
+          : '';
+        if (pageSize !== 'all') {
           setGlobalFilter(undefined);
+          setColumnFilters([{ id: column.value, value: effectiveTerm }]);
+        } else {
+          setGlobalFilter(effectiveTerm || undefined);
           setColumnFilters([]);
         }
         setPageIndex(0);
         fetchData(term, 0, column);
       }, 300),
-    [setGlobalFilter, setColumnFilters]
+    [setGlobalFilter, setColumnFilters, pageSize]
   );
+  // useEffect(() => {
+  //   const effectivePageIndex = pageSize === 'all' ? 0 : pageIndex;
+  //   const effectiveTerm = searchTerm.trim();
+  //   const searchParam = effectiveTerm
+  //     ? `${selectedColumn.value}=${effectiveTerm}`
+  //     : '';
+  //   fetchData(effectivePageIndex, searchParam);
+  // }, [pageIndex, pageSize]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -254,7 +259,7 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
   return (
     <div>
       {/* Üst kısım: Arama ve filtreleme */}
-      <div className="mb-4 ">
+      <div className="mb-4">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>
             <div className="d-flex gap-2">
@@ -296,21 +301,23 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
                 id="dropdown-items-per-page"
                 style={{ minWidth: '100px' }}
               >
-                {pageSize} Clients
+                {pageSize === 'all' ? 'All Clients' : `${pageSize} Clients`}
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                {[5, 10, 25, 50, 100].map(size => (
-                  <Dropdown.Item
-                    key={size}
-                    active={pageSize === size}
-                    onClick={() => {
-                      setPageSize(size);
-                      setPageIndex(0); // Reset to first page
-                    }}
-                  >
-                    {size} Items
-                  </Dropdown.Item>
-                ))}
+                {([5, 10, 25, 50, 100, 'all'] as (number | 'all')[]).map(
+                  size => (
+                    <Dropdown.Item
+                      key={size.toString()}
+                      active={pageSize === size}
+                      onClick={() => {
+                        setPageSize(size);
+                        setPageIndex(0);
+                      }}
+                    >
+                      {size === 'all' ? 'All Items' : `${size} Items`}
+                    </Dropdown.Item>
+                  )
+                )}
               </Dropdown.Menu>
             </Dropdown>
           </Col>

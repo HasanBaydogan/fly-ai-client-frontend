@@ -40,11 +40,16 @@ export const getRFQMailIdToGoToRFQMail = async (quoteId: string) => {
 export const searchByQuoteList = async (
   term: string,
   pageNo: number,
-  pageSize: number
+  pageSize: number | 'all' = 10
 ) => {
-  const url = term
-    ? `/quote/filter/${pageNo}/${pageSize}?${term}`
-    : `/quote/all/${pageNo}/${pageSize}`;
-
+  let url = '';
+  if (pageSize === 'all') {
+    // 'All' seçiliyse pagination bilgisi olmadan çağrı yapılıyor.
+    url = term ? `/quote/filter?${term}` : `/quote/all-list`;
+  } else {
+    url = term
+      ? `/quote/filter/${pageNo}/${pageSize}?${term}`
+      : `/quote/all/${pageNo}/${pageSize}`;
+  }
   return await getRequest(url);
 };

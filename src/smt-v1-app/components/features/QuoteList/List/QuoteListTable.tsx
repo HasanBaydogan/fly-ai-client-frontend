@@ -167,12 +167,10 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<SupplierData>();
-
-  // fetchData artık arama parametresini de alıyor.
   const fetchData = async (currentPage: number, searchParam: string = '') => {
     setLoading(true);
     try {
@@ -182,10 +180,8 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         pageSize
       );
       const quoteList = response?.data?.quotes || [];
-
       const mappedData: SupplierData[] = quoteList.map((item: any) => {
         let clientNames = '';
-
         if (Array.isArray(item.clientsResponse)) {
           clientNames = item.clientsResponse
             .map((c: any) => c.clientName)
@@ -196,13 +192,11 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         ) {
           clientNames = item.clientsResponse.clientName;
         }
-
         return {
           ...item,
           client: clientNames
         };
       });
-
       setData(mappedData);
       setTotalItems(response?.data?.totalElements || 0);
     } catch (error) {
@@ -215,20 +209,31 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const debouncedFetchData = useMemo(
     () =>
       debounce((term: string, column: SearchColumn) => {
-        let searchParam = '';
-        if (term && column.value !== 'all') {
-          searchParam = `${column.value}=${term}`;
+        const effectiveTerm = term.trim();
+        const searchParam = effectiveTerm
+          ? `${column.value}=${effectiveTerm}`
+          : '';
+        if (pageSize !== 'all') {
           setGlobalFilter(undefined);
-          setColumnFilters([{ id: column.value, value: term }]);
+          setColumnFilters([{ id: column.value, value: effectiveTerm }]);
         } else {
-          setGlobalFilter(term || undefined);
+          setGlobalFilter(effectiveTerm || undefined);
           setColumnFilters([]);
         }
         setPageIndex(0);
         fetchData(0, searchParam);
       }, 300),
-    [setGlobalFilter, setColumnFilters]
+    [setGlobalFilter, setColumnFilters, pageSize]
   );
+
+  useEffect(() => {
+    const effectivePageIndex = pageSize === 'all' ? 0 : pageIndex;
+    const effectiveTerm = searchTerm.trim();
+    const searchParam = effectiveTerm
+      ? `${selectedColumn.value}=${effectiveTerm}`
+      : '';
+    fetchData(effectivePageIndex, searchParam);
+  }, [pageIndex, pageSize]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -291,21 +296,23 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
                 id="dropdown-items-per-page"
                 style={{ minWidth: '100px' }}
               >
-                {pageSize} Items
+                {pageSize === 'all' ? 'All Items' : `${pageSize} Items`}
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                {[5, 10, 25, 50, 100].map(size => (
-                  <Dropdown.Item
-                    key={size}
-                    active={pageSize === size}
-                    onClick={() => {
-                      setPageSize(size);
-                      setPageIndex(0);
-                    }}
-                  >
-                    {size} Items
-                  </Dropdown.Item>
-                ))}
+                {([5, 10, 25, 50, 100, 'all'] as (number | 'all')[]).map(
+                  size => (
+                    <Dropdown.Item
+                      key={size.toString()}
+                      active={pageSize === size}
+                      onClick={() => {
+                        setPageSize(size);
+                        setPageIndex(0);
+                      }}
+                    >
+                      {size === 'all' ? 'All Items' : `${size} Items`}
+                    </Dropdown.Item>
+                  )
+                )}
               </Dropdown.Menu>
             </Dropdown>
           </Col>

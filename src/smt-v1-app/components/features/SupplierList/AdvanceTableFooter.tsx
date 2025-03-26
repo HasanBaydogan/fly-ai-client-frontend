@@ -55,7 +55,7 @@ const AdvanceTableFooter = ({
           )}
         >
           {pageSize === 'all'
-            ? '1 to All'
+            ? `1 to ${totalItems}`
             : `${pageSize * pageIndex + 1} to ${
                 pageSize * (pageIndex + 1) > totalItems
                   ? totalItems

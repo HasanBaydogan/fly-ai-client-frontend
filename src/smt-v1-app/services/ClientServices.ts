@@ -5,11 +5,16 @@ import { CreateClient, UpdateClientPayload } from '../types/ClientTypes';
 export const searchByClientList = async (
   term: string,
   pageNo: number,
-  pageSize = 10
+  pageSize: number | 'all' = 10
 ) => {
-  const url = term
-    ? `/client/filter/${pageNo}/${pageSize}?${term}`
-    : `/client/all/${pageNo}/${pageSize}`;
+  let url = '';
+  if (pageSize === 'all') {
+    url = term ? `/client/filter?${term}` : `/client/all-list`;
+  } else {
+    url = term
+      ? `/client/filter/${pageNo}/${pageSize}?${term}`
+      : `/client/all/${pageNo}/${pageSize}`;
+  }
   return await getRequest(url);
 };
 
