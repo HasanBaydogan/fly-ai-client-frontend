@@ -27,10 +27,16 @@ export const putBySupplierUpdate = async (payload: UpdateSupplierPayload) => {
 export const searchBySupplierList = async (
   term: string,
   pageNo: number,
-  pageSize: number = 6
+  pageSize: number | 'all' = 6
 ) => {
-  const url = term
-    ? `/supplier/all/filtered/${pageNo}/${pageSize}?${term}`
-    : `/supplier/all/filtered/${pageNo}/${pageSize}`;
+  let url = '';
+  if (pageSize === 'all') {
+    // 'All' seçiliyse pagination parametresi kullanılmadan çağrı yapılıyor.
+    url = term ? `/supplier/filter?${term}` : `/supplier/all-list`;
+  } else {
+    url = term
+      ? `/supplier/all/filtered/${pageNo}/${pageSize}?${term}`
+      : `/supplier/all/filtered/${pageNo}/${pageSize}`;
+  }
   return await getRequest(url);
 };
