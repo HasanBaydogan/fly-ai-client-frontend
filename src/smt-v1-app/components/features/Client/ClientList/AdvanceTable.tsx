@@ -58,7 +58,7 @@ const AdvanceTable = ({
                 </a>
               </td>
               <td>{row.details}</td>
-              <td>{row.currencyPreference}</td>
+              <td>{row.currency}</td>
               <td>{row.website}</td>
               <td>{row.legalAddress}</td>
               <td>

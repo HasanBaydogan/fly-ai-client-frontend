@@ -31,12 +31,11 @@ export const searchBySupplierList = async (
 ) => {
   let url = '';
   if (pageSize === 'all') {
-    // 'All' seçiliyse pagination parametresi kullanılmadan çağrı yapılıyor.
-    url = term ? `/supplier/filter?${term}` : `/supplier/all-list`;
+    url = `/supplier/filter?${term}`;
   } else {
     url = term
-      ? `/supplier/all/filtered/${pageNo}/${pageSize}?${term}`
-      : `/supplier/all/filtered/${pageNo}/${pageSize}`;
+      ? `/supplier/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`
+      : `/supplier/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
   }
   return await getRequest(url);
 };

@@ -126,7 +126,7 @@ export interface ClientData {
   clientId: string;
   companyName: string;
   segments: { segmentName: string }[];
-  currencyPreference: string;
+  currency: string;
   website: string;
   legalAddress: string;
   email?: string;

@@ -25,7 +25,6 @@ interface PartHistorySuggestionResponse {
   }[];
 }
 
-// Parça Listesi Arama
 export const searchByPartList = async (
   term: string,
   pageNo: number,
@@ -33,43 +32,35 @@ export const searchByPartList = async (
 ) => {
   let url = '';
   if (pageSize === 'all') {
-    // All seçili: pagination bilgisi gerekmez
-    url = term ? `/part/filter?${term}` : `/part/all-list`;
+    url = `/part/filter?${term}`;
   } else {
-    // Normal durum: pageNo ve pageSize kullanılıyor
     url = term
-      ? `/part/filter/${pageNo}/${pageSize}?${term}`
-      : `/part/all/${pageNo}/${pageSize}`;
+      ? `/part/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`
+      : `/part/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
   }
   return await getRequest(url);
 };
 
-// Parça Detayı Getir
 export const getByItemFields = async (partNumber: string) => {
   return await getRequest(`/part/part-number/${partNumber}`);
 };
 
-// Yeni Parça Ekleme
 export const postPartCreate = async (newPart: createPart) => {
   return await postRequest(`/part/create`, newPart);
 };
 
-// Parça Güncelleme
 export const putPartUpdate = async (payload: updatePartPayload) => {
   return await putRequest(`/part/update`, payload);
 };
 
-// UDF Getir
 export const getByUDFPartList = async (partId: string) => {
   return await getRequest(`/part/udf/part-id/${partId}`);
 };
 
-// UDF Ekle
 export const postUDFCreate = async (newUDF: createUDF) => {
   return await postRequest(`/part/udf/create`, newUDF);
 };
 
-// Notları Listele
 export const searchByNoteList = async (
   pageSize: number,
   pageNo: number,
@@ -78,34 +69,28 @@ export const searchByNoteList = async (
   return await getRequest(`/part/note/part-id/${partId}/${pageNo}/${pageSize}`);
 };
 
-// Not Güncelle
 export const putUpdateNotes = async (payload: updatePayload) => {
   return await putRequest(`/part/note/update`, payload);
 };
 
-// Not Ekle
 export const postNewNotes = async (newPart: newNotePayload) => {
   return await postRequest(`/part/note/create`, newPart);
 };
 
-// Not Sil
 export const deleteByNotes = async (noteId: string) => {
   return await deleteRequest(`/part/note/note-id/${noteId}`);
 };
 
-// Alternatif Parçaları Listele
 export const getByAlternatives = async (partId: string, pageNo: number) => {
   return await getRequest(
     `/part/alternative-part/part-id/${partId}/${pageNo}/5`
   );
 };
 
-// Dosya ekleme
 export const postFileCreate = async (newFile: postFile) => {
   return await postRequest(`/part-file/create`, newFile);
 };
 
-// Dosya Sil
 export const deleteByAttachedFiles = async (partFileId: string) => {
   return await deleteRequest(`/part-file/id/${partFileId}`);
 };

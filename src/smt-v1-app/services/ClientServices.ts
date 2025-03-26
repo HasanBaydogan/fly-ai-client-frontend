@@ -9,11 +9,11 @@ export const searchByClientList = async (
 ) => {
   let url = '';
   if (pageSize === 'all') {
-    url = term ? `/client/filter?${term}` : `/client/all-list`;
+    url = `/client/filter?${term}`;
   } else {
     url = term
-      ? `/client/filter/${pageNo}/${pageSize}?${term}`
-      : `/client/all/${pageNo}/${pageSize}`;
+      ? `/client/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`
+      : `/client/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
   }
   return await getRequest(url);
 };

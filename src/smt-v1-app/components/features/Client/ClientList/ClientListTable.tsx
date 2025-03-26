@@ -34,7 +34,7 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
     }
   },
   {
-    accessorKey: 'currencyPreference',
+    accessorKey: 'currency',
     header: 'Currency',
     meta: {
       cellProps: { className: 'fs-9 text-body white-space-nowrap py-2' },
@@ -96,7 +96,7 @@ type SearchColumn = {
 const searchColumns: SearchColumn[] = [
   // { label: 'No Filter', value: 'all' },
   { label: 'Company Name', value: 'companyName' },
-  { label: 'Currency', value: 'currencyPreference' },
+  { label: 'Currency', value: 'currency' },
   { label: 'Website', value: 'website' },
   { label: 'Legal Address', value: 'legalAddress' }
 ];
@@ -148,7 +148,7 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
                 segmentName: seg.segmentName || ''
               }))
             : [],
-          currencyPreference: item.currencyPreference || '',
+          currency: item.currencyPreference || '',
           website: item.website || '',
           legalAddress: item.legalAddress || '',
           email: item.email || '',
@@ -232,14 +232,6 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
       }, 300),
     [setGlobalFilter, setColumnFilters, pageSize]
   );
-  // useEffect(() => {
-  //   const effectivePageIndex = pageSize === 'all' ? 0 : pageIndex;
-  //   const effectiveTerm = searchTerm.trim();
-  //   const searchParam = effectiveTerm
-  //     ? `${selectedColumn.value}=${effectiveTerm}`
-  //     : '';
-  //   fetchData(effectivePageIndex, searchParam);
-  // }, [pageIndex, pageSize]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
