@@ -442,192 +442,177 @@ const PartListTable: React.FC<PartListTableProps> = ({
                           document.activeElement as HTMLElement
                         )?.getBoundingClientRect().left}px`,
                         width: '90vw',
-                        maxWidth: '1400px',
+                        maxWidth: '750px',
                         zIndex: 99999,
                         backgroundColor: 'white',
                         border: '1px solid #ddd',
                         borderRadius: '4px',
                         boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                        maxHeight: '400px',
-                        display: 'flex',
-                        flexDirection: 'column'
+                        maxHeight: '400px'
                       }}
                     >
-                      {/* Sabit başlık */}
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: `
-                            minmax(170px, 170px)  /* Part Number */
-                            minmax(170px, 170px)  /* Part Name */
-                            minmax(100px, 100px)  /* Req/Fnd QTY */
-                            minmax(100px, 100px)  /* Req/Fnd CND */
-                            minmax(100px, 100px)  /* Lead Times */
-                            minmax(80px, 80px)    /* Price */
-                            minmax(80px, 80px)    /* Currency */
-                            minmax(80px, 80px)    /* Total */
-                            minmax(120px, 120px)  /* Supplier */
-                            minmax(80px, 80px)    /* Stock */
-                            minmax(100px, 100px)  /* Location */
-                            minmax(100px, 100px)  /* Certificate */
-                            minmax(80px, 80px)    /* DG Pack */
-                            minmax(100px, 100px)  /* MSN */
-                            minmax(80px, 80px)    /* MSDS */
-                            minmax(100px, 100px)  /* Last Updated */
-                            minmax(120px, 120px)  /* Comment */
-                          `,
-                          gap: '4px',
-                          padding: '8px',
-                          backgroundColor: '#f8f9fa',
-                          borderBottom: '2px solid #dee2e6',
-                          fontWeight: 'bold',
-                          fontSize: '0.8em',
-                          position: 'sticky',
-                          top: 0,
-                          zIndex: 2
-                        }}
-                      >
-                        <div style={headerCellStyle}>Part Number</div>
-                        <div style={headerCellStyle}>Part Name</div>
-                        <div style={headerCellStyle}>Req/Fnd QTY</div>
-                        <div style={headerCellStyle}>Req/Fnd CND</div>
-                        <div style={headerCellStyle}>Lead Times</div>
-                        <div style={headerCellStyle}>Price</div>
-                        <div style={headerCellStyle}>Currency</div>
-                        <div style={headerCellStyle}>Total</div>
-                        <div style={headerCellStyle}>Supplier</div>
-                        <div style={headerCellStyle}>Stock</div>
-                        <div style={headerCellStyle}>Location</div>
-                        <div style={headerCellStyle}>Certificate</div>
-                        <div style={headerCellStyle}>DG Pack</div>
-                        <div style={headerCellStyle}>MSN</div>
-                        <div style={headerCellStyle}>MSDS</div>
-                        <div style={headerCellStyle}>Last Updated</div>
-                        <div style={headerCellStyle}>Comment</div>
-                      </div>
-
-                      {/* Kaydırılabilir içerik alanı */}
-                      <div
-                        style={{
-                          overflowY: 'auto',
-                          overflowX: 'scroll',
-                          flex: 1,
-                          position: 'relative'
-                        }}
-                      >
-                        <div
-                          style={{
-                            minWidth: '1200px',
-                            paddingBottom: '12px' // Scroll bar için extra padding
-                          }}
-                        >
-                          {/* Suggestion satırları */}
-                          {suggestions.map((suggestion, index) => (
-                            <div
-                              key={index}
-                              onClick={() => handleSuggestionSelect(suggestion)}
-                              style={{
-                                display: 'grid',
-                                gridTemplateColumns: `
-                                  minmax(170px, 170px)
-                                  minmax(170px, 170px)
-                                  minmax(100px, 100px)
-                                  minmax(100px, 100px)
-                                  minmax(100px, 100px)
-                                  minmax(80px, 80px)
-                                  minmax(80px, 80px)
-                                  minmax(80px, 80px)
-                                  minmax(120px, 120px)
-                                  minmax(80px, 80px)
-                                  minmax(100px, 100px)
-                                  minmax(100px, 100px)
-                                  minmax(80px, 80px)
-                                  minmax(100px, 100px)
-                                  minmax(80px, 80px)
-                                  minmax(100px, 100px)
-                                  minmax(120px, 120px)
-                                `,
-                                gap: '4px',
-                                padding: '8px',
-                                cursor: 'pointer',
-                                borderBottom: '1px solid #eee',
-                                alignItems: 'center',
-                                fontSize: '0.85em',
-                                backgroundColor: 'white'
-                              }}
-                              onMouseEnter={e => {
-                                e.currentTarget.style.backgroundColor =
-                                  '#f5f5f5';
-                              }}
-                              onMouseLeave={e => {
-                                e.currentTarget.style.backgroundColor = 'white';
-                              }}
-                            >
-                              <div style={cellStyle}>
-                                {suggestion.partNumber}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.partName || '-'}
-                              </div>
-                              <div
-                                style={cellStyle}
-                              >{`${suggestion.reqQTY}/${suggestion.fndQTY}`}</div>
-                              <div
-                                style={cellStyle}
-                              >{`${suggestion.reqCND}/${suggestion.fndCND}`}</div>
-                              <div
-                                style={cellStyle}
-                              >{`${suggestion.supplierLT}/${suggestion.clientLT}`}</div>
-                              <div style={cellStyle}>
-                                {formatCurrency(suggestion.price)}
-                              </div>
-                              <div style={cellStyle}>{suggestion.currency}</div>
-                              <div style={cellStyle}>
-                                {formatCurrency(suggestion.total)}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.supplier || '-'}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.stock || '-'}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.stockLocation || '-'}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.certificateType || '-'}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.dgPackagingCost ? 'Yes' : 'No'}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.MSN || '-'}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.MSDS || '-'}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.lastUpdatedDate || '-'}
-                              </div>
-                              <div style={cellStyle}>
-                                {suggestion.comment || '-'}
-                              </div>
+                      <div style={{ overflowX: 'auto' }}>
+                        <div style={{ minWidth: '1840px' }}>
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: `
+                                minmax(170px, 170px)
+                                minmax(170px, 170px)
+                                minmax(100px, 100px)
+                                minmax(100px, 100px)
+                                minmax(100px, 100px)
+                                minmax(80px, 80px)
+                                minmax(80px, 80px)
+                                minmax(80px, 80px)
+                                minmax(120px, 120px)
+                                minmax(80px, 80px)
+                                minmax(100px, 100px)
+                                minmax(100px, 100px)
+                                minmax(80px, 80px)
+                                minmax(100px, 100px)
+                                minmax(80px, 80px)
+                                minmax(100px, 100px)
+                                minmax(120px, 120px)
+                              `,
+                              gap: '4px',
+                              padding: '8px',
+                              backgroundColor: '#f8f9fa',
+                              borderBottom: '2px solid #dee2e6',
+                              fontWeight: 'bold',
+                              fontSize: '0.8em',
+                              position: 'sticky',
+                              top: 0,
+                              zIndex: 2
+                            }}
+                          >
+                            <div style={headerCellStyle}>Part Number</div>
+                            <div style={headerCellStyle}>Part Name</div>
+                            <div style={headerCellStyle}>Req/Fnd QTY</div>
+                            <div style={headerCellStyle}>Req/Fnd CND</div>
+                            <div style={headerCellStyle}>Lead Times</div>
+                            <div style={headerCellStyle}>Price</div>
+                            <div style={headerCellStyle}>Currency</div>
+                            <div style={headerCellStyle}>Total</div>
+                            <div style={headerCellStyle}>Supplier</div>
+                            <div style={headerCellStyle}>Stock</div>
+                            <div style={headerCellStyle}>Location</div>
+                            <div style={headerCellStyle}>Certificate</div>
+                            <div style={headerCellStyle}>DG Pack</div>
+                            <div style={headerCellStyle}>MSN</div>
+                            <div style={headerCellStyle}>MSDS</div>
+                            <div style={headerCellStyle}>Last Updated</div>
+                            <div style={headerCellStyle}>Comment</div>
+                          </div>
+                          {/* İçerik kısmı */}
+                          <div
+                            style={{
+                              maxHeight: '340px',
+                              position: 'relative'
+                            }}
+                          >
+                            <div style={{ paddingBottom: '12px' }}>
+                              {suggestions.map((suggestion, index) => (
+                                <div
+                                  key={index}
+                                  onClick={() =>
+                                    handleSuggestionSelect(suggestion)
+                                  }
+                                  style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: `
+                      minmax(170px, 170px)
+                      minmax(170px, 170px)
+                      minmax(100px, 100px)
+                      minmax(100px, 100px)
+                      minmax(100px, 100px)
+                      minmax(80px, 80px)
+                      minmax(80px, 80px)
+                      minmax(80px, 80px)
+                      minmax(120px, 120px)
+                      minmax(80px, 80px)
+                      minmax(100px, 100px)
+                      minmax(100px, 100px)
+                      minmax(80px, 80px)
+                      minmax(100px, 100px)
+                      minmax(80px, 80px)
+                      minmax(100px, 100px)
+                      minmax(120px, 120px)
+                    `,
+                                    gap: '4px',
+                                    padding: '8px',
+                                    cursor: 'pointer',
+                                    borderBottom: '1px solid #eee',
+                                    alignItems: 'center',
+                                    fontSize: '0.85em',
+                                    backgroundColor: 'white'
+                                  }}
+                                  onMouseEnter={e => {
+                                    e.currentTarget.style.backgroundColor =
+                                      '#f5f5f5';
+                                  }}
+                                  onMouseLeave={e => {
+                                    e.currentTarget.style.backgroundColor =
+                                      'white';
+                                  }}
+                                >
+                                  <div style={cellStyle}>
+                                    {suggestion.partNumber}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.partName || '-'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {`${suggestion.reqQTY}/${suggestion.fndQTY}`}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {`${suggestion.reqCND}/${suggestion.fndCND}`}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {`${suggestion.supplierLT}/${suggestion.clientLT}`}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {formatCurrency(suggestion.price)}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.currency}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {formatCurrency(suggestion.total)}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.supplier || '-'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.stock || '-'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.stockLocation || '-'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.certificateType || '-'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.dgPackagingCost ? 'Yes' : 'No'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.MSN || '-'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.MSDS || '-'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.lastUpdatedDate || '-'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.comment || '-'}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          </div>
                         </div>
                       </div>
-
-                      {/* Sabit scroll bar alanı */}
-                      <div
-                        style={{
-                          height: '12px',
-                          backgroundColor: '#f8f9fa',
-                          borderTop: '1px solid #dee2e6',
-                          position: 'sticky',
-                          bottom: 0,
-                          zIndex: 2
-                        }}
-                      />
                     </div>,
                     document.body
                   )}
