@@ -1,7 +1,6 @@
 import { getRequest, postRequest, putRequest } from './ApiCore/GlobalApiCore';
 import { CreateClient, UpdateClientPayload } from '../types/ClientTypes';
 
-/** Client filtreli veya tüm listeyi getirir */
 export const searchByClientList = async (
   term: string,
   pageNo: number,
