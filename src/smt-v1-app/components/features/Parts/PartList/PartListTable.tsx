@@ -239,7 +239,7 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
                       setPageIndex(0);
                     }}
                   >
-                    {size === 'all' ? 'All Items' : `${size} Items`}
+                    {size === 'all' ? 'All Parts' : `${size} Parts`}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>

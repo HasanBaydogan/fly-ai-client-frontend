@@ -308,7 +308,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
                         setPageIndex(0);
                       }}
                     >
-                      {size === 'all' ? 'All Items' : `${size} Items`}
+                      {size === 'all' ? 'All Suppliers' : `${size} Suppliers`}
                     </Dropdown.Item>
                   )
                 )}

@@ -306,7 +306,7 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
                         setPageIndex(0);
                       }}
                     >
-                      {size === 'all' ? 'All Items' : `${size} Items`}
+                      {size === 'all' ? 'All Clients' : `${size} Clients`}
                     </Dropdown.Item>
                   )
                 )}
