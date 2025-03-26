@@ -362,6 +362,28 @@ const PartListTable: React.FC<PartListTableProps> = ({
     }
   };
 
+  useEffect(() => {
+    const handleGlobalAction = (event: Event) => {
+      if (
+        suggestionRef.current &&
+        suggestionRef.current.contains(event.target as Node)
+      ) {
+        return;
+      }
+      setShowSuggestions(false);
+    };
+
+    window.addEventListener('scroll', handleGlobalAction);
+    window.addEventListener('click', handleGlobalAction);
+    // window.addEventListener('keydown', handleGlobalAction);
+
+    return () => {
+      window.removeEventListener('scroll', handleGlobalAction);
+      window.removeEventListener('click', handleGlobalAction);
+      // window.removeEventListener('keydown', handleGlobalAction);
+    };
+  }, []);
+
   return (
     <div>
       <div
