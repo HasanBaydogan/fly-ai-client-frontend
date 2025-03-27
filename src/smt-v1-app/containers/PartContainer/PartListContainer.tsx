@@ -4,9 +4,9 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
-import useAdvanceTable from '../../components/features/Client/ClientList/useAdvanceTable';
+import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/useAdvanceTable';
 
-import PartTopSection from 'smt-v1-app/components/features/Parts/PartList/PartTopSection';
+import PartTopSection from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/ListTopSection';
 import PartListTable, {
   PartTableColumns
 } from 'smt-v1-app/components/features/Parts/PartList/PartListTable';

@@ -5,7 +5,7 @@ import ProjectsTopSection from '../../../components/features/Client/ClientList/C
 import ClientList, {
   ClientTableColumns
 } from '../../../components/features/Client/ClientList/ClientListTable';
-import useAdvanceTable from '../../../components/features/Client/ClientList/useAdvanceTable';
+import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import { searchByClientList } from 'smt-v1-app/services/ClientServices';

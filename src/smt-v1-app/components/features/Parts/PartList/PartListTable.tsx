@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from './AdvanceTable';
-import AdvanceTableFooter from './AdvanceTableFooter';
+import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
 import { Col, Row, Dropdown } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import { searchByPartList } from 'smt-v1-app/services/PartServices';
 
 import { PartData } from 'smt-v1-app/types/PartTypes';
@@ -101,7 +100,8 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const pageSizeOptions: (number | 'all')[] = [5, 10, 25, 50, 100, 'all'];
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<PartData>();
@@ -143,20 +143,23 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
   const debouncedFetchData = useMemo(
     () =>
       debounce((term: string, column: SearchColumn) => {
-        let searchParam = '';
-        if (term && column.value !== 'all') {
-          searchParam = `${column.value}=${term}`;
+        const effectiveTerm = term.trim();
+        const searchParam = effectiveTerm
+          ? `${column.value}=${effectiveTerm}`
+          : '';
+        if (pageSize !== 'all') {
           setGlobalFilter(undefined);
-          setColumnFilters([{ id: column.value, value: term }]);
+          setColumnFilters([{ id: column.value, value: effectiveTerm }]);
         } else {
-          setGlobalFilter(term || undefined);
+          setGlobalFilter(effectiveTerm || undefined);
           setColumnFilters([]);
         }
         setPageIndex(0);
         fetchData(searchParam, 0);
       }, 300),
-    [setGlobalFilter, setColumnFilters]
+    [setGlobalFilter, setColumnFilters, pageSize]
   );
+
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -222,19 +225,20 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
                 id="dropdown-items-per-page"
                 style={{ minWidth: '100px' }}
               >
-                {pageSize} Parts
+                {pageSize === 'all' ? 'All Items' : `${pageSize} Parts`}
               </Dropdown.Toggle>
+
               <Dropdown.Menu>
-                {[5, 10, 25, 50, 100].map(size => (
+                {pageSizeOptions.map(size => (
                   <Dropdown.Item
-                    key={size}
+                    key={size.toString()}
                     active={pageSize === size}
                     onClick={() => {
                       setPageSize(size);
                       setPageIndex(0);
                     }}
                   >
-                    {size} Items
+                    {size === 'all' ? 'All Parts' : `${size} Parts`}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>

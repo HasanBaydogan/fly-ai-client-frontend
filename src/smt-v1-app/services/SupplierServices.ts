@@ -27,10 +27,15 @@ export const putBySupplierUpdate = async (payload: UpdateSupplierPayload) => {
 export const searchBySupplierList = async (
   term: string,
   pageNo: number,
-  pageSize: number = 6
+  pageSize: number | 'all' = 6
 ) => {
-  const url = term
-    ? `/supplier/all/filtered/${pageNo}/${pageSize}?${term}`
-    : `/supplier/all/filtered/${pageNo}/${pageSize}`;
+  let url = '';
+  if (pageSize === 'all') {
+    url = `/supplier/filter?${term}`;
+  } else {
+    url = term
+      ? `/supplier/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`
+      : `/supplier/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
+  }
   return await getRequest(url);
 };

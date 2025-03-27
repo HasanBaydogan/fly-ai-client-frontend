@@ -32,10 +32,13 @@ const NavbarBrand = ({ logo }: { logo?: string }) => {
             </>
           ) : (
             <div className="d-flex align-items-center ms-2">
-              <img src={logo} alt="asparel1" width={100} className="my-2" />
+              <img src={logo} alt="asparel1" width={100} className="mt-2" />
               <p className="logo-text ms-2 d-none d-sm-block"></p>
             </div>
           )}
+          <div className="small fs-10 text-center  text-muted">
+            v1.6.0-27.03.25
+          </div>
         </Navbar.Brand>
       </div>
     </>

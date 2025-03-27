@@ -79,7 +79,8 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
     statusType === 'WFS' ||
     statusType === 'NOT_RFQ' ||
     statusType === 'NO_QUOTE' ||
-    statusType === 'SPAM';
+    statusType === 'SPAM' ||
+    statusType === 'OPEN';
 
   const openRFQMail = async () => {
     setIsLoading(true);

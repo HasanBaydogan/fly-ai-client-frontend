@@ -5,7 +5,6 @@ import classNames from 'classnames';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
-import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import { CustomTableProps } from './CustomTableProps';
 import { PartData } from 'smt-v1-app/types/PartTypes';
 

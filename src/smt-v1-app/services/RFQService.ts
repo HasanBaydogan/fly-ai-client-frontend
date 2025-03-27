@@ -27,3 +27,19 @@ export const getAllCurrenciesFromDB = async () => {
 export const saveRFQToDB = async (saveRFQ: SaveRFQ) => {
   return await postRequest(`/rfq/save`, saveRFQ);
 };
+
+export const searchByRFQList = async (
+  term: string,
+  pageNo: number,
+  pageSize: number | 'all' = 10
+) => {
+  let url = '';
+  if (pageSize === 'all') {
+    url = `/rfq/filter?${term}`;
+  } else {
+    url = term
+      ? `/rfq/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`
+      : `/rfq/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
+  }
+  return await getRequest(url);
+};

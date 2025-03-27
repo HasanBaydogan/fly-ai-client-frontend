@@ -36,15 +36,18 @@ export const getRFQMailIdToGoToRFQMail = async (quoteId: string) => {
   return await getRequest(`/quote/go-to-rfq-mail/${quoteId}`);
 };
 
-/** Quote Liste Filtreleme */
 export const searchByQuoteList = async (
   term: string,
   pageNo: number,
-  pageSize: number
+  pageSize: number | 'all' = 10
 ) => {
-  const url = term
-    ? `/quote/filter/${pageNo}/${pageSize}?${term}`
-    : `/quote/all/${pageNo}/${pageSize}`;
-
+  let url = '';
+  if (pageSize === 'all') {
+    url = `/quote/filter?${term}`;
+  } else {
+    url = term
+      ? `/quote/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`
+      : `/quote/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
+  }
   return await getRequest(url);
 };

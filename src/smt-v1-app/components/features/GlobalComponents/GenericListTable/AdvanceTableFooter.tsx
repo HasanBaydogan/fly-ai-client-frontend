@@ -1,92 +1,148 @@
-import React from 'react';
-import Pagination from 'react-bootstrap/Pagination';
+import { useState } from 'react';
+import { Col, Pagination, Row } from 'react-bootstrap';
+import Button from 'components/base/Button';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import classNames from 'classnames';
+import usePagination from 'hooks/usePagination';
+import {
+  faChevronLeft,
+  faChevronRight
+} from '@fortawesome/free-solid-svg-icons';
 
 interface AdvanceTableFooterProps {
-  currentPage: number;
-  pageSize: number;
+  className?: string;
+  pagination?: boolean;
+  navBtn?: boolean;
   totalItems: number;
-  onPageChange: (page: number) => void;
+  pageIndex: number;
+  // pageSize artık number veya 'all' alabiliyor:
+  pageSize: number | 'all';
+  setPageSize: (size: number | 'all') => void;
+  setPageIndex: (index: number) => void;
 }
 
-const AdvanceTableFooter: React.FC<AdvanceTableFooterProps> = ({
-  currentPage,
-  pageSize,
+const AdvanceTableFooter = ({
+  className,
+  pagination,
+  navBtn,
   totalItems,
-  onPageChange
-}) => {
-  const totalPages = Math.ceil(totalItems / pageSize);
-  const startItem = (currentPage - 1) * pageSize + 1;
-  const endItem = Math.min(currentPage * pageSize, totalItems);
-
-  const renderPaginationItems = () => {
-    const items = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    // First page
-    items.push(
-      <Pagination.First
-        key="first"
-        disabled={currentPage === 1}
-        onClick={() => onPageChange(1)}
-      />
-    );
-
-    // Previous page
-    items.push(
-      <Pagination.Prev
-        key="prev"
-        disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
-      />
-    );
-
-    // Page numbers
-    for (let page = startPage; page <= endPage; page++) {
-      items.push(
-        <Pagination.Item
-          key={page}
-          active={page === currentPage}
-          onClick={() => onPageChange(page)}
-        >
-          {page}
-        </Pagination.Item>
-      );
-    }
-
-    // Next page
-    items.push(
-      <Pagination.Next
-        key="next"
-        disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
-      />
-    );
-
-    // Last page
-    items.push(
-      <Pagination.Last
-        key="last"
-        disabled={currentPage === totalPages}
-        onClick={() => onPageChange(totalPages)}
-      />
-    );
-
-    return items;
-  };
+  pageIndex,
+  setPageIndex,
+  pageSize
+}: AdvanceTableFooterProps) => {
+  // Eğer 'all' seçiliyse toplam sayfa 1 olarak ayarlanır.
+  const totalPages = pageSize === 'all' ? 1 : Math.ceil(totalItems / pageSize);
+  const { hasNextEllipsis, hasPrevEllipsis, visiblePaginationItems } =
+    usePagination({
+      currentPageNo: pageIndex + 1,
+      totalPage: totalPages,
+      maxPaginationButtonCount: 4
+    });
 
   return (
-    <div className="d-flex justify-content-between align-items-center mt-3">
-      <div>
-        Showing {startItem} to {endItem} of {totalItems} entries
-      </div>
-      <Pagination>{renderPaginationItems()}</Pagination>
-    </div>
+    <Row className={classNames(className, 'align-items-center py-1')}>
+      <Col className="d-flex fs-9">
+        <p
+          className={classNames(
+            'mb-0 d-none d-sm-block me-3 fw-semibold text-body'
+          )}
+        >
+          {pageSize === 'all'
+            ? `1 to ${totalItems}`
+            : `${pageSize * pageIndex + 1} to ${
+                pageSize * (pageIndex + 1) > totalItems
+                  ? totalItems
+                  : pageSize * (pageIndex + 1)
+              } items of ${totalItems}`}
+        </p>
+      </Col>
+
+      {navBtn && (
+        <Col xs="auto" className="d-flex gap-2">
+          <Button
+            variant="link"
+            startIcon={
+              <FontAwesomeIcon icon={faChevronLeft} className="me-2" />
+            }
+            className={classNames('px-1', { disabled: pageIndex === 0 })}
+            onClick={() => {
+              if (pageIndex > 0) setPageIndex(pageIndex - 1);
+            }}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="link"
+            endIcon={<FontAwesomeIcon icon={faChevronRight} className="ms-2" />}
+            className={classNames('px-1', {
+              disabled: pageIndex >= totalPages - 1
+            })}
+            onClick={() => {
+              if (pageIndex < totalPages - 1) setPageIndex(pageIndex + 1);
+            }}
+          >
+            Next
+          </Button>
+        </Col>
+      )}
+      {pagination && (
+        <Col xs="auto">
+          <Pagination className="mb-0 justify-content-center">
+            <Pagination.Prev
+              disabled={pageIndex === 0}
+              onClick={() => setPageIndex(pageIndex - 1)}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} />
+            </Pagination.Prev>
+            {pageSize === 'all' ? (
+              <Pagination.Item active onClick={() => setPageIndex(0)}>
+                1
+              </Pagination.Item>
+            ) : (
+              <>
+                {hasPrevEllipsis && (
+                  <>
+                    <Pagination.Item
+                      active={pageIndex === 0}
+                      onClick={() => setPageIndex(0)}
+                    >
+                      1
+                    </Pagination.Item>
+                    <Pagination.Ellipsis disabled />
+                  </>
+                )}
+                {visiblePaginationItems.map(page => (
+                  <Pagination.Item
+                    key={page}
+                    active={pageIndex === page - 1}
+                    onClick={() => setPageIndex(page - 1)}
+                  >
+                    {page}
+                  </Pagination.Item>
+                ))}
+                {hasNextEllipsis && (
+                  <>
+                    <Pagination.Ellipsis disabled />
+                    <Pagination.Item
+                      active={pageIndex === totalPages - 1}
+                      onClick={() => setPageIndex(totalPages - 1)}
+                    >
+                      {totalPages}
+                    </Pagination.Item>
+                  </>
+                )}
+              </>
+            )}
+            <Pagination.Next
+              disabled={pageIndex >= totalPages - 1}
+              onClick={() => setPageIndex(pageIndex + 1)}
+            >
+              <FontAwesomeIcon icon={faChevronRight} />
+            </Pagination.Next>
+          </Pagination>
+        </Col>
+      )}
+    </Row>
   );
 };
 

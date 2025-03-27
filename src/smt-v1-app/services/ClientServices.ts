@@ -1,15 +1,19 @@
 import { getRequest, postRequest, putRequest } from './ApiCore/GlobalApiCore';
 import { CreateClient, UpdateClientPayload } from '../types/ClientTypes';
 
-/** Client filtreli veya tüm listeyi getirir */
 export const searchByClientList = async (
   term: string,
   pageNo: number,
-  pageSize = 10
+  pageSize: number | 'all' = 10
 ) => {
-  const url = term
-    ? `/client/filter/${pageNo}/${pageSize}?${term}`
-    : `/client/all/${pageNo}/${pageSize}`;
+  let url = '';
+  if (pageSize === 'all') {
+    url = `/client/filter?${term}`;
+  } else {
+    url = term
+      ? `/client/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`
+      : `/client/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
+  }
   return await getRequest(url);
 };
 

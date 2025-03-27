@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from '../AdvanceTable';
-import AdvanceTableFooter from '../AdvanceTableFooter';
+import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
 import Badge from 'components/base/Badge';
 import RevealDropdown, {
   RevealDropdownTrigger
@@ -11,7 +11,6 @@ import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import { searchBySupplierList } from 'smt-v1-app/services/SupplierServices';
 import { SupplierData } from 'smt-v1-app/types/SupplierTypes';
-
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 
 /* ***********************
@@ -87,7 +86,6 @@ export const projectListTableColumns: ColumnDef<SupplierData>[] = [
   },
   {
     id: 'action',
-
     meta: {
       headerProps: { style: { width: '3%' }, className: 'text-end' },
       cellProps: { className: 'text-end' }
@@ -133,7 +131,8 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
     searchColumns[0]
   );
 
-  const [pageSize, setPageSize] = useState<number>(10);
+  // pageSize artık number veya 'all' alabiliyor
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<SupplierData>();
@@ -222,22 +221,21 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
   const debouncedFetchData = useMemo(
     () =>
       debounce((term: string, column: SearchColumn) => {
-        if (term) {
-          if (column.value === 'all') {
-            setGlobalFilter(term || undefined);
-            setColumnFilters([]);
-          } else {
-            setGlobalFilter(undefined);
-            setColumnFilters([{ id: column.value, value: term }]);
-          }
-        } else {
+        const effectiveTerm = term.trim();
+        const searchParam = effectiveTerm
+          ? `${column.value}=${effectiveTerm}`
+          : '';
+        if (pageSize !== 'all') {
           setGlobalFilter(undefined);
+          setColumnFilters([{ id: column.value, value: effectiveTerm }]);
+        } else {
+          setGlobalFilter(effectiveTerm || undefined);
           setColumnFilters([]);
         }
         setPageIndex(0);
         fetchData(term, 0, column);
       }, 300),
-    [setGlobalFilter, setColumnFilters]
+    [setGlobalFilter, setColumnFilters, pageSize]
   );
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
@@ -297,21 +295,23 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
                 id="dropdown-items-per-page"
                 style={{ minWidth: '100px' }}
               >
-                {pageSize} Suppliers
+                {pageSize === 'all' ? 'All Suppliers' : `${pageSize} Suppliers`}
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                {[5, 10, 25, 50, 100].map(size => (
-                  <Dropdown.Item
-                    key={size}
-                    active={pageSize === size}
-                    onClick={() => {
-                      setPageSize(size);
-                      setPageIndex(0);
-                    }}
-                  >
-                    {size} Items
-                  </Dropdown.Item>
-                ))}
+                {([5, 10, 25, 50, 100, 'all'] as (number | 'all')[]).map(
+                  size => (
+                    <Dropdown.Item
+                      key={size.toString()}
+                      active={pageSize === size}
+                      onClick={() => {
+                        setPageSize(size);
+                        setPageIndex(0);
+                      }}
+                    >
+                      {size === 'all' ? 'All Suppliers' : `${size} Suppliers`}
+                    </Dropdown.Item>
+                  )
+                )}
               </Dropdown.Menu>
             </Dropdown>
           </Col>

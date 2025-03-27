@@ -7,7 +7,7 @@ import SupplierList, {
   projectListTableColumns
 } from '../../components/features/SupplierList/SupplierListTable/SupplierListTable';
 import { defaultBreadcrumbItems } from 'data/commonData';
-import useAdvanceTable from '../../components/features/SupplierList/useAdvanceTable';
+import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import { searchBySupplierList } from 'smt-v1-app/services/SupplierServices';
