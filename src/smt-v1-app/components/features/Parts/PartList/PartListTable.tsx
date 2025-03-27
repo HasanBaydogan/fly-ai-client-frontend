@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from './AdvanceTable';
-import AdvanceTableFooter from './AdvanceTableFooter';
+import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
 import { Col, Row, Dropdown } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import ActionDropdownItems from './ActionDropdownItems/ActionDropdownItems';
 import { searchByPartList } from 'smt-v1-app/services/PartServices';
 
 import { PartData } from 'smt-v1-app/types/PartTypes';

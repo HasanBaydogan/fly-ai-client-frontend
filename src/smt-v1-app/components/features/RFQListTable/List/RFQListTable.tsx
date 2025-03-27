@@ -144,14 +144,15 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
 
 type SearchColumn = {
   label: string;
-  value: 'all' | 'quoteNumberId' | 'clientRFQId' | 'clientName';
+  value: 'all' | 'RFQReferenceId' | 'ClientRFQId' | 'Client' | 'CreatedBy';
 };
 
 const searchColumns: SearchColumn[] = [
   // { label: 'No Filter', value: 'all' },
-  { label: 'Quote Number', value: 'quoteNumberId' },
-  { label: 'Client', value: 'clientName' },
-  { label: 'Client RFQ ID', value: 'clientRFQId' }
+  { label: 'RFQ Reference ID', value: 'RFQReferenceId' },
+  { label: 'Client RFQ ID', value: 'ClientRFQId' },
+  { label: 'Client', value: 'Client' },
+  { label: 'Created By', value: 'CreatedBy' }
 ];
 
 interface QuoteListTableProps {

@@ -119,14 +119,14 @@ export const routes: RouteItems[] = [
             icon: 'mail', //----------
             flat: true,
             pages: [
-              /*{
+              {
                 name: '• RFQ List',
                 path: 'rfqs/list',
                 pathName: 'rfq-list',
                 icon: '',
                 active: true,
                 next: false
-              },*/
+              },
               {
                 name: '• Quote List',
                 path: '/quotes/quotelist',

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import PartTopSection from 'smt-v1-app/components/features/Parts/PartList/PartTopSection';
+import PartTopSection from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/ListTopSection';
 import QuoteListTable, {
   QuoteTableColumns
 } from 'smt-v1-app/components/features/QuoteList/List/QuoteListTable';
-import useAdvanceTable from '../../components/features/Client/ClientList/useAdvanceTable';
+import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import { searchByClientList } from 'smt-v1-app/services/ClientServices';
