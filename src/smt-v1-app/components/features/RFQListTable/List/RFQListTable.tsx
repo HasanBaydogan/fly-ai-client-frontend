@@ -6,7 +6,7 @@ import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/
 import { Col, Row, Dropdown, Badge } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import { searchByQuoteList } from 'smt-v1-app/services/QuoteService';
+import { searchByRFQList } from 'smt-v1-app/services/RFQService';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import RevealDropdown, {
   RevealDropdownTrigger
@@ -24,18 +24,19 @@ const quoteStatus: { [key: string]: string } = {
   QUOTE_SENT: 'success'
 };
 
-export interface SupplierData {
-  quoteId: string;
-  quoteNumberId: string;
-  revisionNo: string;
-  clientsResponse: { clientId: string; clientName: string }[];
+export interface RFQData {
+  rfqReferenceId: string;
+  rfqId: string;
+  rfqStatus: any;
   clientRFQId: string;
-  numOfProduct: number;
-  quoteStatus: any;
-  formStatus: any;
-  finalCost: number;
-  lastValidDate: string;
-  client?: string;
+  date: string;
+  numberOfProduct: number;
+  comments: string;
+  rfqParts: { partNumber: string; partId: string }[];
+  createdBy: string;
+  createdAt: string;
+  lastModifiedBy: string;
+  lastModifiedAt: string;
 }
 
 const formatStatus = (status: string): string => {
@@ -45,17 +46,17 @@ const formatStatus = (status: string): string => {
     .join(' ');
 };
 
-export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
+export const RFQTableColumns: ColumnDef<RFQData>[] = [
   {
-    id: 'quoteNumberId',
-    accessorKey: 'quoteNumberId',
-    header: 'Quote Number',
+    id: 'RFReferenceId',
+    accessorKey: 'rfqReferenceId',
+    header: 'RFQ Reference ID',
     cell: ({ row: { original } }) => (
       <Link
-        to={`/quotes/quote?quoteId=${original.quoteId}`}
+        to={`/rfqs/rfq?rfqMailId=${original.rfqId}`}
         style={{ textDecoration: 'none', color: 'secondary' }}
       >
-        {original.quoteNumberId}
+        {original.rfqReferenceId}
       </Link>
     ),
     meta: {
@@ -64,25 +65,39 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
     }
   },
   {
-    header: 'Revision',
-    accessorKey: 'revisionNo',
+    header: 'Client RFQ ID',
+    accessorKey: 'clientRFQId',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '5%' }, className: 'ps-3' }
     }
   },
   {
-    id: 'clientName',
-    header: 'Client',
-    accessorKey: 'client',
+    id: 'date',
+    header: 'Date',
+    accessorKey: 'date',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '15%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'clientRFQId',
-    header: 'Client RFQ ID',
+    id: 'quoteStatus',
+    header: 'Quote Status',
+    cell: ({ row: { original } }) => {
+      const status = original.rfqStatus;
+      if (!status) return null;
+      const badgeColor = quoteStatus[status] || 'warning';
+      return <Badge bg={badgeColor}>{formatStatus(status)}</Badge>;
+    },
+    meta: {
+      cellProps: { className: 'ps-3 py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: 'client',
+    header: 'Client',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -90,51 +105,56 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
   },
   {
     header: 'Number Of Product',
-    accessorKey: 'numOfProduct',
+    accessorKey: 'numberOfProduct',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '5%' }, className: 'ps-3' }
     }
   },
   {
-    id: 'quoteStatus',
-    header: 'Quote Status',
-    cell: ({ row: { original } }) => {
-      const status = original.quoteStatus;
-      if (!status) return null;
-      const badgeColor = quoteStatus[status] || 'warning';
-      return <Badge bg={badgeColor}>{formatStatus(status)}</Badge>;
-    },
+    header: 'Comments',
+    accessorKey: 'comments',
     meta: {
-      cellProps: { className: 'ps-8 py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-8' }
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '5%' }, className: 'ps-3' }
     }
   },
   {
-    id: 'formStatus',
-    header: 'Form Status',
-    cell: ({ row: { original } }) => {
-      const status = original.formStatus;
-      if (!status) return null;
-      const badgeColor = formStatus[status] || 'warning';
-      return <Badge bg={badgeColor}>{formatStatus(status)}</Badge>;
-    },
+    header: 'partNumber',
+    accessorKey: 'partNumber',
     meta: {
-      cellProps: { className: 'ps-8 py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-8' }
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '5%' }, className: 'ps-3' }
     }
   },
+
   {
-    accessorKey: 'finalCost',
-    header: 'Final Cost',
+    accessorKey: 'createdBy',
+    header: 'createdBy',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'lastValidDate',
-    header: 'Validity Date',
+    accessorKey: 'createdAt',
+    header: 'createdAt',
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: 'lastModifiedBy',
+    header: 'lastModifiedBy',
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: 'lastModifiedAt',
+    header: 'lastModifiedAt',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -155,12 +175,12 @@ const searchColumns: SearchColumn[] = [
   { label: 'Created By', value: 'CreatedBy' }
 ];
 
-interface QuoteListTableProps {
+interface RFQListTableProps {
   activeView: string;
 }
 
-const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
-  const [data, setData] = useState<SupplierData[]>([]);
+const RFQListTable: FC<RFQListTableProps> = ({ activeView }) => {
+  const [data, setData] = useState<RFQData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -171,17 +191,17 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { setGlobalFilter, setColumnFilters } =
-    useAdvanceTableContext<SupplierData>();
+    useAdvanceTableContext<RFQData>();
   const fetchData = async (currentPage: number, searchParam: string = '') => {
     setLoading(true);
     try {
-      const response = await searchByQuoteList(
+      const response = await searchByRFQList(
         searchParam,
         currentPage + 1,
         pageSize
       );
-      const quoteList = response?.data?.quotes || [];
-      const mappedData: SupplierData[] = quoteList.map((item: any) => {
+      const rfqList = response?.data?.rfqList || [];
+      const mappedData: RFQData[] = rfqList.map((item: any) => {
         let clientNames = '';
         if (Array.isArray(item.clientsResponse)) {
           clientNames = item.clientsResponse
@@ -193,9 +213,14 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         ) {
           clientNames = item.clientsResponse.clientName;
         }
+        const partNumbers = Array.isArray(item.rfqParts)
+          ? item.rfqParts.map((part: any) => part.partNumber).join(', ')
+          : '';
+
         return {
           ...item,
-          client: clientNames
+          client: clientNames,
+          partNumber: partNumbers
         };
       });
       setData(mappedData);
@@ -326,7 +351,7 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           tableProps={{
             className: 'phoenix-table border-top border-translucent fs-9',
             data: data,
-            columns: QuoteTableColumns
+            columns: RFQTableColumns
           }}
         />
         <AdvanceTableFooter
@@ -343,4 +368,4 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   );
 };
 
-export default QuoteListTable;
+export default RFQListTable;

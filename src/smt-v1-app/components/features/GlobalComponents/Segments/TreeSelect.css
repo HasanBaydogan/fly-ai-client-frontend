@@ -4,7 +4,6 @@
   gap: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  
 }
 
 .selected-segments {
@@ -12,7 +11,7 @@
   /* flex-wrap: wrap; */
   flex-direction: column;
   gap: 8px;
-  height: 300px;
+  height: 500px;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -42,7 +41,7 @@
 }
 
 .tree-select {
-  height: 300px;
+  height: 500px;
   overflow-y: auto;
   border: 1px solid #ddd;
   border-radius: 4px;
