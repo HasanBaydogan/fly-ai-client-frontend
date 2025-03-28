@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { searchByRFQList } from 'smt-v1-app/services/RFQService';
 import { RFQData } from 'smt-v1-app/types/index';
 import { ColumnDef } from '@tanstack/react-table';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const RFQListContainer = () => {
   const [data] = useState<RFQData[]>([]);
@@ -43,7 +44,12 @@ const RFQListContainer = () => {
   });
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        {' '}
+        <LoadingAnimation></LoadingAnimation> Loading...
+      </div>
+    );
   }
 
   return (
@@ -52,7 +58,7 @@ const RFQListContainer = () => {
         <div className="d-flex flex-wrap mb-2 gap-3 gap-sm-6 align-items-center">
           <h2 className="mb-0">
             <span className="me-3">RFQ List</span>{' '}
-            <span className="fw-normal text-body-tertiary"></span>
+            <span className="fw-normal text-body-tertiary text-center"></span>
           </h2>
           {/* <Link className="btn btn-primary px-5" to="/client/new-client">
             <FontAwesomeIcon icon={faPlus} className="me-2" />

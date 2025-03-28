@@ -1,3 +1,4 @@
+import { ex } from '@fullcalendar/core/internal-common';
 import { getRequest, postRequest, putRequest } from './ApiCore/GlobalApiCore';
 import { SaveRFQ } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
 
@@ -42,4 +43,8 @@ export const searchByRFQList = async (
       : `/rfq/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
   }
   return await getRequest(url);
+};
+
+export const getRfqMailId = async (rfqId: string) => {
+  return await getRequest(`/rfq/rfq-mail?rfqId=${rfqId}`);
 };

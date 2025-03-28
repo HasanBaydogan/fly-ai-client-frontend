@@ -15,7 +15,6 @@ interface AdvanceTableFooterProps {
   navBtn?: boolean;
   totalItems: number;
   pageIndex: number;
-  // pageSize artık number veya 'all' alabiliyor:
   pageSize: number | 'all';
   setPageSize: (size: number | 'all') => void;
   setPageIndex: (index: number) => void;
@@ -30,7 +29,6 @@ const AdvanceTableFooter = ({
   setPageIndex,
   pageSize
 }: AdvanceTableFooterProps) => {
-  // Eğer 'all' seçiliyse toplam sayfa 1 olarak ayarlanır.
   const totalPages = pageSize === 'all' ? 1 : Math.ceil(totalItems / pageSize);
   const { hasNextEllipsis, hasPrevEllipsis, visiblePaginationItems } =
     usePagination({

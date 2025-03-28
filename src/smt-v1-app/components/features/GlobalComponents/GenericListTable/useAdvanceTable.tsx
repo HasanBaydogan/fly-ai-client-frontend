@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import IndeterminateCheckbox from 'components/base/IndeterminateCheckbox';
 import { PropsWithChildren } from 'react';
 import {

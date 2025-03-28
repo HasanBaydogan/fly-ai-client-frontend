@@ -1,16 +1,17 @@
 import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
 import { Col, Row, Dropdown, Badge } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import { searchByRFQList } from 'smt-v1-app/services/RFQService';
+import { searchByRFQList, getRfqMailId } from 'smt-v1-app/services/RFQService';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const formStatus: { [key: string]: string } = {
   QUOTE_CREATED: 'warning',
@@ -51,17 +52,41 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
     id: 'RFReferenceId',
     accessorKey: 'rfqReferenceId',
     header: 'RFQ Reference ID',
-    cell: ({ row: { original } }) => (
-      <Link
-        to={`/rfqs/rfq?rfqMailId=${original.rfqId}`}
-        style={{ textDecoration: 'none', color: 'secondary' }}
-      >
-        {original.rfqReferenceId}
-      </Link>
-    ),
+    cell: ({ row: { original } }) => {
+      const navigate = useNavigate();
+
+      const handleClick = async () => {
+        try {
+          const response = await getRfqMailId(original.rfqId);
+
+          if (response.success) {
+            navigate(`/rfqs/rfq?rfqMailId=${response.data.id}`);
+          } else {
+            console.error('API isteğinde hata oluştu:', response.message);
+          }
+        } catch (error) {
+          console.error('API çağrısı sırasında hata:', error);
+        }
+      };
+
+      return (
+        <button
+          onClick={handleClick}
+          style={{
+            textDecoration: 'none',
+            color: 'blue',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          {original.rfqReferenceId}
+        </button>
+      );
+    },
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' } }
+      headerProps: { style: { width: '10%', textAlign: 'center' } }
     }
   },
   {
@@ -69,7 +94,7 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
     accessorKey: 'clientRFQId',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
@@ -108,7 +133,10 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
     accessorKey: 'numberOfProduct',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -116,63 +144,75 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
     accessorKey: 'comments',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
-    header: 'partNumber',
+    header: 'Part Number',
     accessorKey: 'partNumber',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
 
   {
     accessorKey: 'createdBy',
-    header: 'createdBy',
+    header: 'Created By',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
     }
   },
   {
     accessorKey: 'createdAt',
-    header: 'createdAt',
+    header: 'Created At',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
     }
   },
   {
     accessorKey: 'lastModifiedBy',
-    header: 'lastModifiedBy',
+    header: 'Last Modified By',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
     }
   },
   {
     accessorKey: 'lastModifiedAt',
-    header: 'lastModifiedAt',
+    header: 'Last Modified At',
     meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      cellProps: { className: 'ps-3 text-body py-2 ' },
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
     }
   }
 ];
 
 type SearchColumn = {
   label: string;
-  value: 'all' | 'RFQReferenceId' | 'ClientRFQId' | 'Client' | 'CreatedBy';
+  value: 'all' | 'rfqReferenceId' | 'clientRFQId' | 'client' | 'createdBy';
 };
 
 const searchColumns: SearchColumn[] = [
   // { label: 'No Filter', value: 'all' },
-  { label: 'RFQ Reference ID', value: 'RFQReferenceId' },
-  { label: 'Client RFQ ID', value: 'ClientRFQId' },
-  { label: 'Client', value: 'Client' },
-  { label: 'Created By', value: 'CreatedBy' }
+  { label: 'RFQ Reference ID', value: 'rfqReferenceId' },
+  { label: 'Client RFQ ID', value: 'clientRFQId' },
+  { label: 'Client', value: 'client' },
+  { label: 'Created By', value: 'createdBy' }
 ];
 
 interface RFQListTableProps {
@@ -346,7 +386,11 @@ const RFQListTable: FC<RFQListTableProps> = ({ activeView }) => {
       </div>
 
       <div className="border-bottom border-translucent">
-        {loading && <div>Loading...</div>}
+        {loading && (
+          <div>
+            <LoadingAnimation></LoadingAnimation>
+          </div>
+        )}
         <AdvanceTable
           tableProps={{
             className: 'phoenix-table border-top border-translucent fs-9',
