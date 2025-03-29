@@ -319,29 +319,31 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
         </Row>
       </div>
 
-      {/* Alt kısım: Tablo ve sayfalama */}
       <div className="border-bottom border-translucent">
-        {loading && (
+        {loading ? (
           <div>
-            <LoadingAnimation></LoadingAnimation>
+            <LoadingAnimation />
           </div>
+        ) : (
+          <>
+            <AdvanceTable
+              tableProps={{
+                className: 'phoenix-table border-top border-translucent fs-9',
+                data: data,
+                columns: projectListTableColumns
+              }}
+            />
+            <AdvanceTableFooter
+              pagination
+              className="py-1"
+              totalItems={totalItems}
+              pageIndex={pageIndex}
+              setPageIndex={setPageIndex}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+            />
+          </>
         )}
-        <AdvanceTable
-          tableProps={{
-            className: 'phoenix-table border-top border-translucent fs-9',
-            data: data,
-            columns: projectListTableColumns
-          }}
-        />
-        <AdvanceTableFooter
-          pagination
-          className="py-1"
-          totalItems={totalItems}
-          pageIndex={pageIndex}
-          setPageIndex={setPageIndex}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-        />
       </div>
     </div>
   );

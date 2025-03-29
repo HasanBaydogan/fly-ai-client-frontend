@@ -386,27 +386,30 @@ const RFQListTable: FC<RFQListTableProps> = ({ activeView }) => {
       </div>
 
       <div className="border-bottom border-translucent">
-        {loading && (
+        {loading ? (
           <div>
-            <LoadingAnimation></LoadingAnimation>
+            <LoadingAnimation />
           </div>
+        ) : (
+          <>
+            <AdvanceTable
+              tableProps={{
+                className: 'phoenix-table border-top border-translucent fs-9',
+                data: data,
+                columns: RFQTableColumns
+              }}
+            />
+            <AdvanceTableFooter
+              pagination
+              className="py-1"
+              totalItems={totalItems}
+              pageIndex={pageIndex}
+              setPageIndex={setPageIndex}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+            />
+          </>
         )}
-        <AdvanceTable
-          tableProps={{
-            className: 'phoenix-table border-top border-translucent fs-9',
-            data: data,
-            columns: RFQTableColumns
-          }}
-        />
-        <AdvanceTableFooter
-          pagination
-          className="py-1"
-          totalItems={totalItems}
-          pageIndex={pageIndex}
-          setPageIndex={setPageIndex}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-        />
       </div>
     </div>
   );

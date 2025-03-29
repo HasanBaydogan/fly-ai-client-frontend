@@ -249,28 +249,31 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
       </div>
 
       <div className="border-bottom border-translucent">
-        {loading && (
+        {loading ? (
           <div>
-            <LoadingAnimation></LoadingAnimation>
+            <LoadingAnimation />
           </div>
+        ) : (
+          <>
+            <AdvanceTable
+              openPartModal={openPartModal}
+              tableProps={{
+                className: 'phoenix-table border-top border-translucent fs-9',
+                data: data,
+                columns: PartTableColumns
+              }}
+            />
+            <AdvanceTableFooter
+              pagination
+              className="py-1"
+              totalItems={totalItems}
+              pageIndex={pageIndex}
+              setPageIndex={setPageIndex}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+            />
+          </>
         )}
-        <AdvanceTable
-          openPartModal={openPartModal}
-          tableProps={{
-            className: 'phoenix-table border-top border-translucent fs-9',
-            data: data,
-            columns: PartTableColumns
-          }}
-        />
-        <AdvanceTableFooter
-          pagination
-          className="py-1"
-          totalItems={totalItems}
-          pageIndex={pageIndex}
-          setPageIndex={setPageIndex}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-        />
       </div>
     </div>
   );
