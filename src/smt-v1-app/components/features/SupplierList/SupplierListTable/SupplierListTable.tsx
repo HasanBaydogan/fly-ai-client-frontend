@@ -12,6 +12,7 @@ import debounce from 'lodash/debounce';
 import { searchBySupplierList } from 'smt-v1-app/services/SupplierServices';
 import { SupplierData } from 'smt-v1-app/types/SupplierTypes';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 /* ***********************
    TABLO KOLON TANIMLAMALARI
@@ -320,7 +321,11 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
 
       {/* Alt kısım: Tablo ve sayfalama */}
       <div className="border-bottom border-translucent">
-        {loading && <div>Loading...</div>}
+        {loading && (
+          <div>
+            <LoadingAnimation></LoadingAnimation>
+          </div>
+        )}
         <AdvanceTable
           tableProps={{
             className: 'phoenix-table border-top border-translucent fs-9',

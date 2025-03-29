@@ -11,6 +11,7 @@ import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const formStatus: { [key: string]: string } = {
   QUOTE_CREATED: 'warning',
@@ -320,7 +321,11 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
       </div>
 
       <div className="border-bottom border-translucent">
-        {loading && <div>Loading...</div>}
+        {loading && (
+          <div>
+            <LoadingAnimation></LoadingAnimation>
+          </div>
+        )}
         <AdvanceTable
           tableProps={{
             className: 'phoenix-table border-top border-translucent fs-9',

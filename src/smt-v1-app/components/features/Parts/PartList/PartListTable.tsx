@@ -13,6 +13,7 @@ import { searchByPartList } from 'smt-v1-app/services/PartServices';
 import { PartData } from 'smt-v1-app/types/PartTypes';
 
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 export const PartTableColumns: ColumnDef<PartData>[] = [
   {
@@ -248,7 +249,11 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
       </div>
 
       <div className="border-bottom border-translucent">
-        {loading && <div>Loading...</div>}
+        {loading && (
+          <div>
+            <LoadingAnimation></LoadingAnimation>
+          </div>
+        )}
         <AdvanceTable
           openPartModal={openPartModal}
           tableProps={{
