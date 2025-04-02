@@ -66,7 +66,7 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
   const [convertWFSIsLoading, setConvertWFSIsLoading] = useState(false);
   const [convertToQuoteIsLoading, setConvertToQuoteIsLoading] = useState(false);
 
-  // disable durumlarını tanımlıyoruz: Belirtilen durumlarda No Quote ve Spam butonları gizlenecek.
+  // disable durumlarını tanımlıyoruz: Belirtilen durumlarda Not RFQ ve Spam butonları gizlenecek.
   const disableNoQuote =
     statusType === 'FQ' ||
     statusType === 'PQ' ||
@@ -218,7 +218,7 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
               variant="outline-secondary"
               onClick={() => handlePoint('NO_QUOTE')}
             >
-              No Quote
+              Not RFQ
             </Button>
           )}
           {!disableSpam && (
