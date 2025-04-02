@@ -62,10 +62,11 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
           if (response.success) {
             navigate(`/rfqs/rfq?rfqMailId=${response.data.id}`);
           } else {
-            console.error('API isteğinde hata oluştu:', response.message);
+            console.error('API Error:', response.message);
           }
         } catch (error) {
           console.error('API çağrısı sırasında hata:', error);
+          window.location.assign('/404');
         }
       };
 

@@ -46,5 +46,10 @@ export const searchByRFQList = async (
 };
 
 export const getRfqMailId = async (rfqId: string) => {
-  return await getRequest(`/rfq/rfq-mail?rfqId=${rfqId}`);
+  const response = await getRequest(`/rfq/rfq-mail?rfqId=${rfqId}`);
+  if (response?.statusCode === 404) {
+    window.location.assign('/404');
+    return;
+  }
+  return response;
 };

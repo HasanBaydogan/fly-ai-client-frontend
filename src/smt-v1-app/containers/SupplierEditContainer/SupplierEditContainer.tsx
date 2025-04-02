@@ -191,6 +191,8 @@ const SupplierEditContainer = () => {
               }))
             );
           }
+        } else {
+          window.location.assign('/404');
         }
       } catch (error) {
         console.error('Error fetching supplier data:', error);

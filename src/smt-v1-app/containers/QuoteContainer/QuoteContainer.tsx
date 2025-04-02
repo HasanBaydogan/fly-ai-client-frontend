@@ -81,6 +81,8 @@ const QuoteContainer = () => {
         });
 
         setIsLoading(false);
+      } else {
+        window.location.assign('/404');
       }
     };
     fetchQuoteValues();

@@ -221,6 +221,8 @@ const ClientEditContainer = () => {
               }))
             );
           }
+        } else {
+          window.location.assign('/404');
         }
       } catch (error) {
         // console.error('Error fetching client data:', error);
