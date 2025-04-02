@@ -23,12 +23,12 @@ const MailTrackingItemsBody = ({
           <tr>
             <th style={{ width: '2%' }}></th>
             <th style={{ width: '6%' }}>RFQ Id</th>
-            <th style={{ width: '7%' }}></th>
-            <th style={{ width: '35%' }}></th>
+            <th style={{ width: '7%' }}>Actions</th>
+            <th style={{ width: '35%' }}>Mails</th>
             <th style={{ width: '8%' }}>Status</th>
-            <th style={{ width: '7%' }}>Assign To</th>
+            <th style={{ width: '7%' }}>Assignments</th>
             <th style={{ width: '20%' }}>Comments</th>
-            <th style={{ width: '10%' }}></th>
+            <th style={{ width: '10%' }}>Date/Parts</th>
           </tr>
         </thead>
 

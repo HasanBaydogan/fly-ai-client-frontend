@@ -1,9 +1,9 @@
-interface ClientTopSectionProps {
+interface GeneralTopSectionProps {
   activeView: string;
 }
 
-const PartTopSection = ({}: ClientTopSectionProps) => {
+const GeneralTopSection = ({}: GeneralTopSectionProps) => {
   return <div></div>;
 };
 
-export default PartTopSection;
+export default GeneralTopSection;

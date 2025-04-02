@@ -9,6 +9,7 @@ import debounce from 'lodash/debounce';
 import { searchByClientList } from 'smt-v1-app/services/ClientServices';
 import { ClientData } from 'smt-v1-app/types/ClientTypes';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 export const ClientTableColumns: ColumnDef<ClientData>[] = [
   {
@@ -318,23 +319,30 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
 
       {/* Alt kısım: Tablo ve sayfalama */}
       <div className="border-bottom border-translucent">
-        {loading && <div>Loading...</div>}
-        <AdvanceTable
-          tableProps={{
-            className: 'phoenix-table border-top border-translucent fs-9',
-            data: data,
-            columns: ClientTableColumns
-          }}
-        />
-        <AdvanceTableFooter
-          pagination
-          className="py-1 advance-table-footer-client-list"
-          totalItems={totalItems}
-          pageIndex={pageIndex}
-          setPageIndex={setPageIndex}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-        />
+        {loading ? (
+          <div>
+            <LoadingAnimation />
+          </div>
+        ) : (
+          <>
+            <AdvanceTable
+              tableProps={{
+                className: 'phoenix-table border-top border-translucent fs-9',
+                data: data,
+                columns: ClientTableColumns
+              }}
+            />
+            <AdvanceTableFooter
+              pagination
+              className="py-1"
+              totalItems={totalItems}
+              pageIndex={pageIndex}
+              setPageIndex={setPageIndex}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+            />
+          </>
+        )}
       </div>
     </div>
   );

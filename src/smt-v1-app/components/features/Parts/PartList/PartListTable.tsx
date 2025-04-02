@@ -13,6 +13,7 @@ import { searchByPartList } from 'smt-v1-app/services/PartServices';
 import { PartData } from 'smt-v1-app/types/PartTypes';
 
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 export const PartTableColumns: ColumnDef<PartData>[] = [
   {
@@ -248,24 +249,31 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
       </div>
 
       <div className="border-bottom border-translucent">
-        {loading && <div>Loading...</div>}
-        <AdvanceTable
-          openPartModal={openPartModal}
-          tableProps={{
-            className: 'phoenix-table border-top border-translucent fs-9',
-            data: data,
-            columns: PartTableColumns
-          }}
-        />
-        <AdvanceTableFooter
-          pagination
-          className="py-1"
-          totalItems={totalItems}
-          pageIndex={pageIndex}
-          setPageIndex={setPageIndex}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-        />
+        {loading ? (
+          <div>
+            <LoadingAnimation />
+          </div>
+        ) : (
+          <>
+            <AdvanceTable
+              openPartModal={openPartModal}
+              tableProps={{
+                className: 'phoenix-table border-top border-translucent fs-9',
+                data: data,
+                columns: PartTableColumns
+              }}
+            />
+            <AdvanceTableFooter
+              pagination
+              className="py-1"
+              totalItems={totalItems}
+              pageIndex={pageIndex}
+              setPageIndex={setPageIndex}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+            />
+          </>
+        )}
       </div>
     </div>
   );

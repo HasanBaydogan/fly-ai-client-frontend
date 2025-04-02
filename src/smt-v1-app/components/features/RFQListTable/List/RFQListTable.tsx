@@ -1,16 +1,17 @@
 import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
 import { Col, Row, Dropdown, Badge } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import { searchByQuoteList } from 'smt-v1-app/services/QuoteService';
+import { searchByRFQList, getRfqMailId } from 'smt-v1-app/services/RFQService';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const formStatus: { [key: string]: string } = {
   QUOTE_CREATED: 'warning',
@@ -24,18 +25,19 @@ const quoteStatus: { [key: string]: string } = {
   QUOTE_SENT: 'success'
 };
 
-export interface SupplierData {
-  quoteId: string;
-  quoteNumberId: string;
-  revisionNo: string;
-  clientsResponse: { clientId: string; clientName: string }[];
+export interface RFQData {
+  rfqReferenceId: string;
+  rfqId: string;
+  rfqStatus: any;
   clientRFQId: string;
-  numOfProduct: number;
-  quoteStatus: any;
-  formStatus: any;
-  finalCost: number;
-  lastValidDate: string;
-  client?: string;
+  date: string;
+  numberOfProduct: number;
+  comments: string;
+  rfqParts: { partNumber: string; partId: string }[];
+  createdBy: string;
+  createdAt: string;
+  lastModifiedBy: string;
+  lastModifiedAt: string;
 }
 
 const formatStatus = (status: string): string => {
@@ -45,44 +47,83 @@ const formatStatus = (status: string): string => {
     .join(' ');
 };
 
-export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
+export const RFQTableColumns: ColumnDef<RFQData>[] = [
   {
-    id: 'quoteNumberId',
-    accessorKey: 'quoteNumberId',
-    header: 'Quote Number',
-    cell: ({ row: { original } }) => (
-      <Link
-        to={`/quotes/quote?quoteId=${original.quoteId}`}
-        style={{ textDecoration: 'none', color: 'secondary' }}
-      >
-        {original.quoteNumberId}
-      </Link>
-    ),
+    id: 'RFReferenceId',
+    accessorKey: 'rfqReferenceId',
+    header: 'RFQ Reference ID',
+    cell: ({ row: { original } }) => {
+      const navigate = useNavigate();
+
+      const handleClick = async () => {
+        try {
+          const response = await getRfqMailId(original.rfqId);
+
+          if (response.success) {
+            navigate(`/rfqs/rfq?rfqMailId=${response.data.id}`);
+          } else {
+            console.error('API Error:', response.message);
+          }
+        } catch (error) {
+          console.error('API çağrısı sırasında hata:', error);
+          window.location.assign('/404');
+        }
+      };
+
+      return (
+        <button
+          onClick={handleClick}
+          style={{
+            textDecoration: 'none',
+            color: 'blue',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          {original.rfqReferenceId}
+        </button>
+      );
+    },
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' } }
+      headerProps: { style: { width: '10%', textAlign: 'center' } }
     }
   },
   {
-    header: 'Revision',
-    accessorKey: 'revisionNo',
+    header: 'Client RFQ ID',
+    accessorKey: 'clientRFQId',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
-    id: 'clientName',
-    header: 'Client',
-    accessorKey: 'client',
+    id: 'date',
+    header: 'Date',
+    accessorKey: 'date',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '15%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'clientRFQId',
-    header: 'Client RFQ ID',
+    id: 'quoteStatus',
+    header: 'Quote Status',
+    cell: ({ row: { original } }) => {
+      const status = original.rfqStatus;
+      if (!status) return null;
+      const badgeColor = quoteStatus[status] || 'warning';
+      return <Badge bg={badgeColor}>{formatStatus(status)}</Badge>;
+    },
+    meta: {
+      cellProps: { className: 'ps-3 py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: 'client',
+    header: 'Client',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -90,77 +131,97 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
   },
   {
     header: 'Number Of Product',
-    accessorKey: 'numOfProduct',
+    accessorKey: 'numberOfProduct',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
     }
   },
   {
-    id: 'quoteStatus',
-    header: 'Quote Status',
-    cell: ({ row: { original } }) => {
-      const status = original.quoteStatus;
-      if (!status) return null;
-      const badgeColor = quoteStatus[status] || 'warning';
-      return <Badge bg={badgeColor}>{formatStatus(status)}</Badge>;
-    },
+    header: 'Comments',
+    accessorKey: 'comments',
     meta: {
-      cellProps: { className: 'ps-8 py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-8' }
-    }
-  },
-  {
-    id: 'formStatus',
-    header: 'Form Status',
-    cell: ({ row: { original } }) => {
-      const status = original.formStatus;
-      if (!status) return null;
-      const badgeColor = formStatus[status] || 'warning';
-      return <Badge bg={badgeColor}>{formatStatus(status)}</Badge>;
-    },
-    meta: {
-      cellProps: { className: 'ps-8 py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-8' }
-    }
-  },
-  {
-    accessorKey: 'finalCost',
-    header: 'Final Cost',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'lastValidDate',
-    header: 'Validity Date',
+    header: 'Part Number',
+    accessorKey: 'partNumber',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+
+  {
+    accessorKey: 'createdBy',
+    header: 'Created By',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
+    }
+  },
+  {
+    accessorKey: 'createdAt',
+    header: 'Created At',
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2' },
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
+    }
+  },
+  {
+    accessorKey: 'lastModifiedBy',
+    header: 'Last Modified By',
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2' },
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
+    }
+  },
+  {
+    accessorKey: 'lastModifiedAt',
+    header: 'Last Modified At',
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2 ' },
+      headerProps: {
+        style: { width: '5%', textAlign: 'center' },
+        className: 'ps-3'
+      }
     }
   }
 ];
 
 type SearchColumn = {
   label: string;
-  value: 'all' | 'RFQReferenceId' | 'ClientRFQId' | 'Client' | 'CreatedBy';
+  value: 'all' | 'rfqReferenceId' | 'clientRFQId' | 'client' | 'createdBy';
 };
 
 const searchColumns: SearchColumn[] = [
   // { label: 'No Filter', value: 'all' },
-  { label: 'RFQ Reference ID', value: 'RFQReferenceId' },
-  { label: 'Client RFQ ID', value: 'ClientRFQId' },
-  { label: 'Client', value: 'Client' },
-  { label: 'Created By', value: 'CreatedBy' }
+  { label: 'RFQ Reference ID', value: 'rfqReferenceId' },
+  { label: 'Client RFQ ID', value: 'clientRFQId' },
+  { label: 'Client', value: 'client' },
+  { label: 'Created By', value: 'createdBy' }
 ];
 
-interface QuoteListTableProps {
+interface RFQListTableProps {
   activeView: string;
 }
 
-const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
-  const [data, setData] = useState<SupplierData[]>([]);
+const RFQListTable: FC<RFQListTableProps> = ({ activeView }) => {
+  const [data, setData] = useState<RFQData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -171,17 +232,17 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { setGlobalFilter, setColumnFilters } =
-    useAdvanceTableContext<SupplierData>();
+    useAdvanceTableContext<RFQData>();
   const fetchData = async (currentPage: number, searchParam: string = '') => {
     setLoading(true);
     try {
-      const response = await searchByQuoteList(
+      const response = await searchByRFQList(
         searchParam,
         currentPage + 1,
         pageSize
       );
-      const quoteList = response?.data?.quotes || [];
-      const mappedData: SupplierData[] = quoteList.map((item: any) => {
+      const rfqList = response?.data?.rfqList || [];
+      const mappedData: RFQData[] = rfqList.map((item: any) => {
         let clientNames = '';
         if (Array.isArray(item.clientsResponse)) {
           clientNames = item.clientsResponse
@@ -193,9 +254,14 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         ) {
           clientNames = item.clientsResponse.clientName;
         }
+        const partNumbers = Array.isArray(item.rfqParts)
+          ? item.rfqParts.map((part: any) => part.partNumber).join(', ')
+          : '';
+
         return {
           ...item,
-          client: clientNames
+          client: clientNames,
+          partNumber: partNumbers
         };
       });
       setData(mappedData);
@@ -321,26 +387,33 @@ const QuoteListTable: FC<QuoteListTableProps> = ({ activeView }) => {
       </div>
 
       <div className="border-bottom border-translucent">
-        {loading && <div>Loading...</div>}
-        <AdvanceTable
-          tableProps={{
-            className: 'phoenix-table border-top border-translucent fs-9',
-            data: data,
-            columns: QuoteTableColumns
-          }}
-        />
-        <AdvanceTableFooter
-          pagination
-          className="py-1"
-          totalItems={totalItems}
-          pageIndex={pageIndex}
-          setPageIndex={setPageIndex}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-        />
+        {loading ? (
+          <div>
+            <LoadingAnimation />
+          </div>
+        ) : (
+          <>
+            <AdvanceTable
+              tableProps={{
+                className: 'phoenix-table border-top border-translucent fs-9',
+                data: data,
+                columns: RFQTableColumns
+              }}
+            />
+            <AdvanceTableFooter
+              pagination
+              className="py-1"
+              totalItems={totalItems}
+              pageIndex={pageIndex}
+              setPageIndex={setPageIndex}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+            />
+          </>
+        )}
       </div>
     </div>
   );
 };
 
-export default QuoteListTable;
+export default RFQListTable;

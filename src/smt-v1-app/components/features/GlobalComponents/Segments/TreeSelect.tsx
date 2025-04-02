@@ -16,7 +16,7 @@ interface TreeSelectProps {
   setSegments: (segments: TreeNode[]) => void;
 }
 
-/** Sol taraftaki ağaç görünümlü seçici için tek tek item render eden bileşen. */
+/** Her seviyedeki segment için checkbox eklenmiş bileşen */
 const TreeSelectItem = ({
   node,
   level = 0,
@@ -26,42 +26,29 @@ const TreeSelectItem = ({
   node: TreeNode;
   level?: number;
   selectedIds: string[];
-  onToggleSelect: (segmentId: string) => void;
+  onToggleSelect: (node: TreeNode) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const hasChildren = node.subSegments && node.subSegments.length > 0;
   const isSelected = selectedIds.includes(node.segmentId);
 
-  const handleClick = () => {
-    if (hasChildren) {
-      setIsOpen(!isOpen);
-    } else {
-      onToggleSelect(node.segmentId);
-    }
-  };
-
   return (
     <div className="tree-item" style={{ marginLeft: `${level * 20}px` }}>
-      <div
-        className={`tree-item-header ${isSelected ? 'selected' : ''}`}
-        onClick={handleClick}
-      >
-        {hasChildren ? (
-          <span className="tree-icon">
+      <div className={`tree-item-header ${isSelected ? 'selected' : ''}`}>
+        {hasChildren && (
+          <span className="tree-icon" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <FaChevronDown /> : <FaChevronRight />}
           </span>
-        ) : (
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => onToggleSelect(node.segmentId)}
-            onClick={e => e.stopPropagation()}
-          />
         )}
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onToggleSelect(node)}
+          onClick={e => e.stopPropagation()}
+        />
         <span className="tree-label">{node.segmentName}</span>
       </div>
-
-      {isOpen && hasChildren && (
+      {hasChildren && isOpen && (
         <div className="tree-children">
           {node.subSegments.map(child => (
             <TreeSelectItem
@@ -83,7 +70,41 @@ export const TreeSelect = ({
   setSelected,
   setSegments
 }: TreeSelectProps) => {
-  // Başlangıçta seçili olanların ID'lerini bul
+  // Bir node ve tüm alt node'ların ID'lerini döndüren yardımcı fonksiyon
+  const getAllSegmentIds = (node: TreeNode): string[] => {
+    let ids = [node.segmentId];
+    if (node.subSegments && node.subSegments.length > 0) {
+      node.subSegments.forEach(child => {
+        ids = [...ids, ...getAllSegmentIds(child)];
+      });
+    }
+    return ids;
+  };
+
+  // Belirli ID'ler için isSelected değerini güncelleyen yardımcı fonksiyon
+  const updateSelectionInTree = (
+    segments: TreeNode[],
+    idsToUpdate: string[],
+    isSelected: boolean
+  ): TreeNode[] => {
+    return segments.map(segment => ({
+      ...segment,
+      // Eğer segmentin alt segmenti varsa, isSelected değeri null olarak kalır.
+      isSelected:
+        segment.subSegments && segment.subSegments.length > 0
+          ? null
+          : idsToUpdate.includes(segment.segmentId)
+          ? isSelected
+          : segment.isSelected,
+      subSegments: updateSelectionInTree(
+        segment.subSegments,
+        idsToUpdate,
+        isSelected
+      )
+    }));
+  };
+
+  // Başlangıçta seçili olan segmentlerin ID'lerini bulur
   const getInitialSelectedIds = (nodes: TreeNode[]): string[] => {
     return nodes.reduce((acc: string[], node: TreeNode) => {
       if (node.isSelected) {
@@ -100,25 +121,7 @@ export const TreeSelect = ({
     getInitialSelectedIds(data)
   );
 
-  // Bir segmentin isSelected değerini güncelleyip, alt ağaçlara uygular
-  const updateIsSelectedInSegments = (
-    segments: TreeNode[],
-    segmentId: string,
-    isSelected: boolean
-  ): TreeNode[] => {
-    return segments.map(segment => ({
-      ...segment,
-      isSelected:
-        segment.segmentId === segmentId ? isSelected : segment.isSelected,
-      subSegments: updateIsSelectedInSegments(
-        segment.subSegments,
-        segmentId,
-        isSelected
-      )
-    }));
-  };
-
-  // data güncellendiğinde, başlangıç seçili değerleri yeniden yükle
+  // data güncellendiğinde seçili değerleri yeniden yükle
   useEffect(() => {
     const initialSelected = getInitialSelectedIds(data);
     if (initialSelected.length > 0 && selectedIds.length === 0) {
@@ -131,93 +134,76 @@ export const TreeSelect = ({
     setSelected(selectedIds);
   }, [selectedIds, setSelected]);
 
-  // Checkbox veya segment tıklanınca seçimi toggle et
-  const handleToggleSelect = (segmentId: string) => {
-    setSelectedIds(prev => {
-      const isCurrentlySelected = prev.includes(segmentId);
-      const newSelectedIds = isCurrentlySelected
-        ? prev.filter(id => id !== segmentId)
-        : [...prev, segmentId];
-
-      // segment objelerini de güncelle
-      const updatedSegments = updateIsSelectedInSegments(
-        data,
-        segmentId,
-        !isCurrentlySelected
-      );
-      setSegments(updatedSegments);
-
-      return newSelectedIds;
-    });
+  // Checkbox tıklanma işlemi: eğer üst segment seçilirse, altındaki tüm segmentler de seçilsin (ve tersine)
+  const handleToggleSelect = (node: TreeNode) => {
+    const allIds = getAllSegmentIds(node);
+    const isCurrentlySelected = selectedIds.includes(node.segmentId);
+    let newSelectedIds;
+    if (isCurrentlySelected) {
+      newSelectedIds = selectedIds.filter(id => !allIds.includes(id));
+    } else {
+      newSelectedIds = Array.from(new Set([...selectedIds, ...allIds]));
+    }
+    const updatedSegments = updateSelectionInTree(
+      data,
+      allIds,
+      !isCurrentlySelected
+    );
+    setSegments(updatedSegments);
+    setSelectedIds(newSelectedIds);
   };
 
   /**
-   * Sağ tarafta tablo içinde gösterilecek <tr> satırlarını oluşturan fonksiyon.
-   * - Üst düzey (level=0) segmentler: Kalın (bold) metin.
-   * - Alt düzey segmentler:
-   *   - Seçiliyse, `.selected-segment-tag` görünümünde.
-   *   - Seçili değilse, normal yazı.
+   * Sağ tarafta tablo içinde gösterilecek <tr> satırlarını oluşturur.
+   * Üst seviye segmentler kalın, alt segmentler ise seçili ise etiketli (selected-segment-tag), değilse normal yazı şeklinde render edilir.
    */
   const renderSelectedSegmentsAsRows = (
     nodes: TreeNode[],
     level: number = 0
   ): JSX.Element[] => {
     return nodes.flatMap(node => {
-      const isNodeSelected = selectedIds.includes(node.segmentId);
+      const hasChildren = node.subSegments && node.subSegments.length > 0;
       const childrenRows = renderSelectedSegmentsAsRows(
         node.subSegments,
         level + 1
       );
 
-      // Eğer bu node seçili değil VE alt node'ların hepsi null/boş döndüyse, hiçbir şey render etme
-      if (!isNodeSelected && childrenRows.length === 0) {
-        return [];
-      }
-
-      // Kendi satırımızı oluşturuyoruz
-      let row: JSX.Element;
-      if (level === 0) {
-        // Üst düzey
-        row = (
+      if (hasChildren) {
+        // Eğer alt segmentlerden hiçbiri seçili değilse, başlığı göstermiyoruz.
+        if (childrenRows.length === 0) {
+          return [];
+        }
+        // Alt segmenti varsa, her durumda başlık olarak render et (kalın yazı)
+        const row = (
           <tr key={node.segmentId}>
             <td style={{ paddingLeft: `${level * 20}px`, fontWeight: 'bold' }}>
               {node.segmentName}
             </td>
           </tr>
         );
+        return [row, ...childrenRows];
       } else {
-        // Alt düzey
-        if (isNodeSelected) {
-          // Seçili alt segment => Sizin "selected-segment-tag" görünümünüz
-          row = (
-            <tr key={node.segmentId}>
-              <td style={{ paddingLeft: `${level * 20}px` }}>
-                <div className="selected-segment-tag">
-                  <span>{node.segmentName}</span>
-                  <span
-                    className="remove-icon"
-                    onClick={() => handleToggleSelect(node.segmentId)}
-                  >
-                    ×
-                  </span>
-                </div>
-              </td>
-            </tr>
-          );
-        } else {
-          // Seçili değil => normal yazı
-          row = (
-            <tr key={node.segmentId}>
-              <td style={{ paddingLeft: `${level * 20}px` }}>
-                {node.segmentName}
-              </td>
-            </tr>
-          );
+        // Eğer segmentin alt segmenti yoksa, yalnızca seçili ise badge olarak render et
+        if (!selectedIds.includes(node.segmentId)) {
+          return [];
         }
+        const row = (
+          <tr key={node.segmentId}>
+            <td style={{ paddingLeft: `${level * 20}px` }}>
+              <div className="selected-segment-tag">
+                <span>{node.segmentName}</span>
+                <span
+                  className="remove-icon"
+                  onClick={() => handleToggleSelect(node)}
+                >
+                  ×
+                </span>
+              </div>
+            </td>
+          </tr>
+        );
+        return [row];
       }
-
-      // Hem kendi satırımızı hem de childrenRows'u döndürüyoruz
-      return [row, ...childrenRows];
     });
   };
 
@@ -231,7 +217,7 @@ export const TreeSelect = ({
         className="tree-select"
         style={{
           flex: 2,
-          height: '300px',
+          height: '500px',
           overflowY: 'auto',
           border: '1px solid #ddd',
           borderRadius: '4px',
@@ -248,12 +234,12 @@ export const TreeSelect = ({
         ))}
       </div>
 
-      {/* SAĞ: Seçili öğelerin tablosu (scroll edilebilir) */}
+      {/* SAĞ: Seçili öğelerin tablosu */}
       <div className="selected-segments" style={{ flex: 1 }}>
-        <div style={{ height: '300px', overflowY: 'auto' }}>
+        <div style={{ height: '500px', overflowY: 'auto' }}>
           <table className="tables table-sm mb-0">
             <thead>
-              <tr>{/* <th>Segment</th> */}</tr>
+              <tr>{/* Başlık eklemek isterseniz buraya ekleyebilirsiniz */}</tr>
             </thead>
             <tbody>{renderSelectedSegmentsAsRows(data)}</tbody>
           </table>

@@ -12,6 +12,7 @@ import debounce from 'lodash/debounce';
 import { searchBySupplierList } from 'smt-v1-app/services/SupplierServices';
 import { SupplierData } from 'smt-v1-app/types/SupplierTypes';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 /* ***********************
    TABLO KOLON TANIMLAMALARI
@@ -318,25 +319,31 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
         </Row>
       </div>
 
-      {/* Alt kısım: Tablo ve sayfalama */}
       <div className="border-bottom border-translucent">
-        {loading && <div>Loading...</div>}
-        <AdvanceTable
-          tableProps={{
-            className: 'phoenix-table border-top border-translucent fs-9',
-            data: data,
-            columns: projectListTableColumns
-          }}
-        />
-        <AdvanceTableFooter
-          pagination
-          className="py-1"
-          totalItems={totalItems}
-          pageIndex={pageIndex}
-          setPageIndex={setPageIndex}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-        />
+        {loading ? (
+          <div>
+            <LoadingAnimation />
+          </div>
+        ) : (
+          <>
+            <AdvanceTable
+              tableProps={{
+                className: 'phoenix-table border-top border-translucent fs-9',
+                data: data,
+                columns: projectListTableColumns
+              }}
+            />
+            <AdvanceTableFooter
+              pagination
+              className="py-1"
+              totalItems={totalItems}
+              pageIndex={pageIndex}
+              setPageIndex={setPageIndex}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+            />
+          </>
+        )}
       </div>
     </div>
   );

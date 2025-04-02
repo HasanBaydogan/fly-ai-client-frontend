@@ -2,21 +2,22 @@ import { useEffect, useState } from 'react';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PartTopSection from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/ListTopSection';
-import QuoteListTable, {
-  QuoteTableColumns
-} from 'smt-v1-app/components/features/QuoteList/List/QuoteListTable';
+import RFQListTable, {
+  RFQTableColumns
+} from 'smt-v1-app/components/features/RFQListTable/List/RFQListTable';
 import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import { searchByRFQList } from 'smt-v1-app/services/RFQService';
-import { QuoteData } from 'smt-v1-app/types/QuoteTypes';
+import { RFQData } from 'smt-v1-app/types/index';
 import { ColumnDef } from '@tanstack/react-table';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const RFQListContainer = () => {
-  const [data] = useState<QuoteData[]>([]);
+  const [data] = useState<RFQData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [pageIndex] = useState<number>(1);
-  const [rfqtData, setRFQData] = useState<QuoteData[]>([]);
+  const [rfqtData, setRFQData] = useState<RFQData[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,14 +37,19 @@ const RFQListContainer = () => {
 
   const table = useAdvanceTable({
     data: data,
-    columns: QuoteTableColumns as ColumnDef<QuoteData>[],
+    columns: RFQTableColumns as ColumnDef<RFQData>[],
     pageSize: 6,
     pagination: true,
     sortable: true
   });
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        {' '}
+        <LoadingAnimation></LoadingAnimation> Loading...
+      </div>
+    );
   }
 
   return (
@@ -52,7 +58,7 @@ const RFQListContainer = () => {
         <div className="d-flex flex-wrap mb-2 gap-3 gap-sm-6 align-items-center">
           <h2 className="mb-0">
             <span className="me-3">RFQ List</span>{' '}
-            <span className="fw-normal text-body-tertiary"></span>
+            <span className="fw-normal text-body-tertiary text-center"></span>
           </h2>
           {/* <Link className="btn btn-primary px-5" to="/client/new-client">
             <FontAwesomeIcon icon={faPlus} className="me-2" />
@@ -60,7 +66,7 @@ const RFQListContainer = () => {
           </Link> */}
         </div>
         <PartTopSection activeView="list" />
-        <QuoteListTable activeView={''} />
+        <RFQListTable activeView={''} />
       </AdvanceTableProvider>
     </div>
   );
