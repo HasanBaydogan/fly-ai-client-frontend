@@ -17,7 +17,7 @@ export const postSupplierCreate = async (newSupplier: CreateSupplier) => {
 };
 
 export const getBySupplierId = async (supplierId: string) => {
-  return await getRequest(`/supplier/id/${supplierId}22zz`);
+  return await getRequest(`/supplier/id/${supplierId}`);
 };
 
 export const putBySupplierUpdate = async (payload: UpdateSupplierPayload) => {
