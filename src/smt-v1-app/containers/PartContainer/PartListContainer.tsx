@@ -135,11 +135,11 @@ const PartManagementContainer = () => {
                     />
                   </WizardForm>
                 </Tab.Pane>
-                <Tab.Pane eventKey={2}>
+                {/* <Tab.Pane eventKey={2}>
                   <WizardForm step={2}>
                     <PartWizardUserDefFieldsForm />
                   </WizardForm>
-                </Tab.Pane>
+                </Tab.Pane> */}
                 <Tab.Pane eventKey={3}>
                   <WizardForm step={3}>
                     <PartWizardNotesForm partId={partData?.partId} />
