@@ -30,7 +30,7 @@ const DatePicker = ({
           monthSelectorType: 'static',
           onDayCreate: (...[, , , dayElem]) => {
             if (
-              dayElem.dateObj.getDay() === 5 ||
+              dayElem.dateObj.getDay() === 0 ||
               dayElem.dateObj.getDay() === 6
             ) {
               dayElem.className += ' weekend-days';
