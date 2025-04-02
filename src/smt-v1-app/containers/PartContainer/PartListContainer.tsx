@@ -131,7 +131,12 @@ const PartManagementContainer = () => {
                   <WizardForm step={1}>
                     <PartWizardItemFiledsForm
                       partData={partData}
-                      onPartCreated={data => setPartData(data)}
+                      onPartCreated={data => {
+                        setPartData(data);
+                        setTimeout(() => {
+                          setLgShow(false); // 2000ms sonra modal kapansın
+                        }, 2000);
+                      }}
                     />
                   </WizardForm>
                 </Tab.Pane>
