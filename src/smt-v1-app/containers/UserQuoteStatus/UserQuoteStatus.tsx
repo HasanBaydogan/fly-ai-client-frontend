@@ -31,16 +31,17 @@ const UserQuoteStatus = () => {
   const [quoteData, setQuoteData] = useState<DailyQuoteData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Tarih seçimi için state'ler
-  const [selectedYear, setSelectedYear] = useState<number>(
-    new Date().getFullYear()
-  );
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth() + 1
   );
 
-  // Yıl listesi oluştur (örn: mevcut yıl ve önceki 2 yıl)
-  const years = Array.from({ length: 3 }, (_, i) => selectedYear - i);
+  // Yıl listesi oluştur: mevcut yıldan -5 ile +3 yıl arası seçenekler (2020-2028)
+  const years = Array.from(
+    { length: currentYear + 3 - (currentYear - 5) + 1 },
+    (_, i) => currentYear - 5 + i
+  ).reverse();
 
   // Ay listesi
   const months = [
@@ -76,15 +77,14 @@ const UserQuoteStatus = () => {
     fetchQuoteData(selectedMonth, selectedYear);
   }, [selectedMonth, selectedYear]);
 
-  // Renk skalası için yardımcı fonksiyon
   const calculateColumnAverage = (
     columnIndex: number,
     data: DailyQuoteData[]
   ): number => {
     const nonZeroValues = data
-      .filter(row => row.user !== 'TOTAL') // Total satırını hariç tut
+      .filter(row => row.user !== 'TOTAL')
       .map(row => row.dailyQuotes[columnIndex])
-      .filter(value => value > 0); // 0'ları filtrele
+      .filter(value => value > 0);
 
     if (nonZeroValues.length === 0) return 0;
 
