@@ -134,6 +134,14 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
     }
   },
   {
+    accessorKey: 'createdBy',
+    header: 'Created By',
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
     accessorKey: 'lastValidDate',
     header: 'Validity Date',
     meta: {

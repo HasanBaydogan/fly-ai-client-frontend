@@ -1,0 +1,113 @@
+.quote-status-container {
+  padding: 20px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 1px;
+}
+
+.quote-table {
+  min-width: 100%;
+  background-color: white;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.quote-table th {
+  background-color: #f1f5f9;
+  text-align: center;
+  padding: 12px 8px;
+  font-size: 0.9em;
+  white-space: nowrap;
+  border: 1px solid #e2e8f0;
+  font-weight: 600;
+  color: #475569;
+}
+
+.quote-table td {
+  padding: 12px 8px !important;
+  font-size: 0.9em;
+  white-space: nowrap;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.user-column {
+  font-weight: 500;
+  min-width: 150px;
+  color: #1e293b;
+  padding-left: 10px;
+}
+
+.total-column {
+  font-weight: 600;
+  text-align: center;
+  color: #1e293b;
+}
+
+.total-row {
+  font-weight: bold;
+  background-color: #f1f5f9 !important;
+  border: 2px solid #cbd5e1 !important;
+}
+
+.total-row td {
+  border-top: 2px solid #cbd5e1 !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+  font-size: 1em;
+}
+
+.total-row td:first-child {
+  border-left: 2px solid #cbd5e1 !important;
+}
+
+.total-row td:last-child {
+  border-right: 2px solid #cbd5e1 !important;
+}
+
+.quote-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.quote-table tbody tr:not(.total-row):hover td {
+  background-color: #f8fafc;
+}
+
+.date-selector {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.date-selector .form-group {
+  margin-bottom: 0;
+}
+
+.date-selector .form-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #475569;
+}
+
+.date-selector .form-select {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.95em;
+  color: #1e293b;
+}
+
+.date-selector .form-select:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.25);
+} 

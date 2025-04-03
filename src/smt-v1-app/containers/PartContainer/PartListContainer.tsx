@@ -134,7 +134,7 @@ const PartManagementContainer = () => {
                       onPartCreated={data => {
                         setPartData(data);
                         setTimeout(() => {
-                          setLgShow(false); // 2000ms sonra modal kapansın
+                          setLgShow(false);
                         }, 2000);
                       }}
                     />
