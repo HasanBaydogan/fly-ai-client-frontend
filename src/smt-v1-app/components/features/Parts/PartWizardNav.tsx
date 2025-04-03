@@ -25,12 +25,12 @@ const WizardNav: React.FC<WizardNavProps> = ({ disableOtherSteps = false }) => {
         label="Item Fields"
         disabled={false}
       />
-      <WizardNavItem
+      {/* <WizardNavItem
         icon={faUser}
         step={2}
         label="User Defined Fields"
         disabled={disableOtherSteps}
-      />
+      /> */}
       <WizardNavItem
         icon={faNoteSticky}
         step={3}

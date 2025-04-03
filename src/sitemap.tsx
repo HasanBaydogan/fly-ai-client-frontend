@@ -522,7 +522,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• User vs Quote Stats',
-                path: '/',
+                path: '/user-quote-stats',
                 pathName: 'user-quote-stats',
                 icon: '',
                 active: true,

@@ -68,9 +68,9 @@ const handleTokenFailure = () => {
 /** API Generic GET */
 export const getRequest = async (url: string): Promise<any> => {
   try {
-    // console.log('GET Request initiated:', url);
+    console.log('GET Request initiated:', url);
     const response: AxiosResponse = await api.get(url);
-    // console.log('GET Response received:', response.data);
+    console.log('GET Response received:', response.data);
     if (response.data.statusCode === 200) return response.data;
     if (response.data.statusCode === 498) {
       //       console.log('GET request received 498 status, attempting token refresh.');
@@ -81,7 +81,7 @@ export const getRequest = async (url: string): Promise<any> => {
       handleTokenFailure();
     }
   } catch (err) {
-    //  console.error(`GET Error on ${url}:`, err);
+    console.error(`GET Error on ${url}:`, err);
   }
 };
 

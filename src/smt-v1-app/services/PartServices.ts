@@ -42,7 +42,7 @@ export const searchByPartList = async (
 };
 
 export const getByItemFields = async (partNumber: string) => {
-  return await getRequest(`/part/part-number/${partNumber}`);
+  return await getRequest(`/part/part-number?partNumber=${partNumber}`);
 };
 
 export const postPartCreate = async (newPart: createPart) => {

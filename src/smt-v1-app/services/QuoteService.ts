@@ -51,3 +51,9 @@ export const searchByQuoteList = async (
   }
   return await getRequest(url);
 };
+
+export const getUserQuoteStats = async (year: number, month: number) => {
+  return await getRequest(
+    `/quote/user-quote-status?month=${year}&year=${month}`
+  );
+};

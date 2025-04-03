@@ -131,15 +131,20 @@ const PartManagementContainer = () => {
                   <WizardForm step={1}>
                     <PartWizardItemFiledsForm
                       partData={partData}
-                      onPartCreated={data => setPartData(data)}
+                      onPartCreated={data => {
+                        setPartData(data);
+                        setTimeout(() => {
+                          setLgShow(false);
+                        }, 2000);
+                      }}
                     />
                   </WizardForm>
                 </Tab.Pane>
-                <Tab.Pane eventKey={2}>
+                {/* <Tab.Pane eventKey={2}>
                   <WizardForm step={2}>
                     <PartWizardUserDefFieldsForm />
                   </WizardForm>
-                </Tab.Pane>
+                </Tab.Pane> */}
                 <Tab.Pane eventKey={3}>
                   <WizardForm step={3}>
                     <PartWizardNotesForm partId={partData?.partId} />
