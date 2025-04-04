@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from 'assets/img/icons/logoAsparel.jpg';
+import logo from 'assets/img/icons/FlyAI-Logo.png';
 import classNames from 'classnames';
 
 interface LogoProps {
