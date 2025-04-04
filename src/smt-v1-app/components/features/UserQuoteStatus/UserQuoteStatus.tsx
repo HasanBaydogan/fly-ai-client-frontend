@@ -15,6 +15,7 @@ import { getUserQuoteStats } from 'smt-v1-app/services/QuoteService';
 import './UserQuoteStatus.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import UserQuoteChart from './UserQuoteChart';
 
 interface DailyQuoteData {
   user: string;
@@ -264,7 +265,8 @@ const UserQuoteStatus = () => {
           </Col>
         </Row>
       </div>
-      {/* Tablo */}
+
+      {/* Mevcut tablo */}
       <div className="table-container">
         <Table bordered className="quote-table">
           <thead>
@@ -318,6 +320,9 @@ const UserQuoteStatus = () => {
           </tbody>
         </Table>
       </div>
+
+      {/* Grafik bileşenini ekle */}
+      <UserQuoteChart data={quoteData} selectedUsers={selectedUsers} />
     </div>
   );
 };
