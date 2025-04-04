@@ -7,11 +7,14 @@ import {
   Table,
   Form,
   Row,
-  Col
+  Col,
+  Dropdown
 } from 'react-bootstrap';
 import useWizardForm from 'hooks/useWizardForm';
 import { getUserQuoteStats } from 'smt-v1-app/services/QuoteService';
 import './UserQuoteStatus.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
 
 interface DailyQuoteData {
   user: string;
@@ -114,13 +117,86 @@ const UserQuoteStatus = () => {
     return getBackgroundColor(average); // Aynı renk skalasını kullan ama ortalama değer için
   };
 
+  // User filtreleme için yeni state'ler
+  const [allUsers, setAllUsers] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+  // API'den data geldiğinde user listesini güncelle
+  useEffect(() => {
+    if (quoteData.length > 0) {
+      const users = quoteData
+        .filter(data => data.user !== 'TOTAL')
+        .map(data => data.user);
+      setAllUsers(users);
+      setSelectedUsers(users); // Default olarak hepsi seçili
+    }
+  }, [quoteData]);
+
+  // Checkbox değişimini handle et
+  const handleUserToggle = (user: string) => {
+    setSelectedUsers(prev => {
+      if (prev.includes(user)) {
+        return prev.filter(u => u !== user);
+      } else {
+        return [...prev, user];
+      }
+    });
+  };
+
+  // Tüm kullanıcıları seç/kaldır
+  const handleSelectAllUsers = (checked: boolean) => {
+    setSelectedUsers(checked ? [...allUsers] : []);
+  };
+
+  // Filtrelenmiş data
+  const filteredQuoteData = quoteData.filter(
+    row => row.user === 'TOTAL' || selectedUsers.includes(row.user)
+  );
+
+  // Haftasonu kontrolü için yardımcı fonksiyon
+  const isWeekend = (day: number): boolean => {
+    const date = new Date(selectedYear, selectedMonth - 1, day);
+    return date.getDay() === 0 || date.getDay() === 6; // 0: Pazar, 6: Cumartesi
+  };
+
+  // Sütun başlığı için stil belirleme
+  const getHeaderStyle = (day: number): React.CSSProperties => ({
+    backgroundColor: isWeekend(day) ? '#fee2e2' : '#f1f5f9',
+    color: isWeekend(day) ? '#991b1b' : '#475569',
+    fontWeight: isWeekend(day) ? '600' : '500'
+  });
+
+  // Hücre için arka plan rengi belirleme
+  const getCellBackgroundColor = (
+    quote: number,
+    isTotal: boolean,
+    dayIndex: number
+  ): string => {
+    // Temel renk
+    let baseColor = isTotal
+      ? getTotalBackgroundColor(dayIndex, quoteData)
+      : getBackgroundColor(quote);
+
+    // Eğer haftasonuysa ve değer 0 ise hafif kırmızı ton
+    if (isWeekend(dayIndex + 1) && quote === 0) {
+      return '#fef2f2';
+    }
+
+    // Haftasonu için renk tonu ayarlaması
+    if (isWeekend(dayIndex + 1) && baseColor !== 'transparent') {
+      // Mevcut renge hafif kırmızı ton ekle
+      return `${baseColor}99`; // 99 hex alpha değeri
+    }
+
+    return baseColor;
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="quote-status-container">
-      {/* Tarih seçme modülü */}
       <div className="px-3">
         <Row className="date-selector mb-4">
           <Col xs={12} md={6} lg={3}>
@@ -153,6 +229,39 @@ const UserQuoteStatus = () => {
               </Form.Select>
             </Form.Group>
           </Col>
+          <Col xs={12} md={6} lg={3}>
+            <Form.Group>
+              <Form.Label>Filter Users</Form.Label>
+              <Dropdown className="user-filter-dropdown">
+                <Dropdown.Toggle variant="outline-secondary" className="w-100">
+                  <FontAwesomeIcon icon={faFilter} className="me-2" />
+                  Users ({selectedUsers.length}/{allUsers.length})
+                </Dropdown.Toggle>
+                <Dropdown.Menu className="user-filter-menu">
+                  <div className="px-3 py-2">
+                    <Form.Check
+                      type="checkbox"
+                      label="Select All"
+                      checked={selectedUsers.length === allUsers.length}
+                      onChange={e => handleSelectAllUsers(e.target.checked)}
+                      className="select-all-checkbox"
+                    />
+                    <hr className="my-2" />
+                    {allUsers.map(user => (
+                      <Form.Check
+                        key={user}
+                        type="checkbox"
+                        label={user}
+                        checked={selectedUsers.includes(user)}
+                        onChange={() => handleUserToggle(user)}
+                        className="user-checkbox"
+                      />
+                    ))}
+                  </div>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Form.Group>
+          </Col>
         </Row>
       </div>
       {/* Tablo */}
@@ -163,12 +272,18 @@ const UserQuoteStatus = () => {
               <th>User</th>
               <th>Total</th>
               {Array.from({ length: 31 }, (_, i) => (
-                <th key={i + 1}>{i + 1}</th>
+                <th
+                  key={i + 1}
+                  style={getHeaderStyle(i + 1)}
+                  className={isWeekend(i + 1) ? 'weekend-header' : ''}
+                >
+                  {i + 1}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {quoteData.map((row, index) => (
+            {filteredQuoteData.map((row, index) => (
               <tr
                 key={index}
                 className={row.user === 'TOTAL' ? 'total-row' : ''}
@@ -185,6 +300,15 @@ const UserQuoteStatus = () => {
                           : getBackgroundColor(quote),
                       textAlign: 'center'
                     }}
+                    // Haftasonu sütunlarının rengi değişmesi için
+                    // style={{
+                    //   backgroundColor: getCellBackgroundColor(
+                    //     quote,
+                    //     row.user === 'TOTAL',
+                    //     dayIndex
+                    //   ),
+                    //   textAlign: 'center'
+                    // }}
                   >
                     {quote || ''}
                   </td>
