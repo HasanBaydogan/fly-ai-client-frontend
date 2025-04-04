@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   LineChart,
   Line,
@@ -29,36 +29,6 @@ const UserQuoteChart: React.FC<UserQuoteChartProps> = ({
   // Aktif/Pasif kullanıcıları takip etmek için state
   const [hiddenUsers, setHiddenUsers] = useState<string[]>([]);
 
-  // Kullanıcı renk eşleştirmelerini tutmak için state ekleyelim
-  const [userColors, setUserColors] = useState<Record<string, string>>({});
-
-  // Renk paleti
-  const colorPalette = [
-    '#0088FE', // mavi
-    '#00C49F', // turkuaz
-    '#FFBB28', // sarı
-    '#FF8042', // turuncu
-    '#8884d8', // mor
-    '#82ca9d', // yeşil
-    '#38bdf8', // açık mavi
-    '#818cf8', // lavanta
-    '#f472b6', // pembe
-    '#fb923c' // koyu turuncu
-  ];
-
-  // Component mount olduğunda ve data değiştiğinde renkleri ata
-  useEffect(() => {
-    const newUserColors: Record<string, string> = { TOTAL: '#ff6b6b' };
-
-    const users = data.filter(row => row.user !== 'TOTAL').map(row => row.user);
-
-    users.forEach((user, index) => {
-      newUserColors[user] = colorPalette[index % colorPalette.length];
-    });
-
-    setUserColors(newUserColors);
-  }, [data]); // data değiştiğinde renkleri yeniden ata
-
   const transformDataForChart = () => {
     const chartData = Array.from({ length: 31 }, (_, index) => ({
       day: index + 1,
@@ -78,9 +48,22 @@ const UserQuoteChart: React.FC<UserQuoteChartProps> = ({
     return chartData;
   };
 
-  // Renk getirme fonksiyonu
+  // Genişletilmiş renk paleti
   const getLineColor = (user: string): string => {
-    return userColors[user] || '#a3a3a3'; // Renk bulunamazsa gri döndür
+    const colors = {
+      TOTAL: '#ff6b6b',
+      'Kadir Polat': '#00C49F',
+      'Hasan Baydoğan': '#0088FE',
+      'Özgürhan Polat': '#FFBB28',
+      'Yağmur Beygu': '#FF8042',
+      'Ahmet Durmaz': '#8884d8',
+      'Rfq Team': '#82ca9d',
+      'Furkan Maya': '#38bdf8',
+      'Flyai Gm': '#818cf8',
+      'Ahmet Deneme': '#f472b6',
+      default: '#a3a3a3'
+    };
+    return colors[user] || colors.default;
   };
 
   // Legend item'a tıklandığında

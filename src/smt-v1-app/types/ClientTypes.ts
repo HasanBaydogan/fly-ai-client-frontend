@@ -120,6 +120,10 @@ export interface ClientDataDetail {
   lastModifiedBy: string;
   lastModifiedOn: string;
 }
+export type ClientStatus = {
+  label: 'CONTACTED' | 'NOT_CONTACTED' | 'BLACK_LISTED';
+  type: 'success' | 'warning' | 'danger';
+};
 
 export interface ClientData {
   id: string;
@@ -131,7 +135,7 @@ export interface ClientData {
   legalAddress: string;
   email?: string;
   contacts: { email: string }[];
-  clientStatus: SupplierStatus;
+  clientStatus: ClientStatus;
   quoteID: string | null;
   attachmentResponses: {
     attachmentId: string | null;
