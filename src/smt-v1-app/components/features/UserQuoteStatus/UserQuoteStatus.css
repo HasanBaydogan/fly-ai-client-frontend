@@ -110,4 +110,71 @@
 .date-selector .form-select:focus {
   border-color: #93c5fd;
   box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.25);
-} 
+}
+
+.user-filter-dropdown .dropdown-toggle {
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+.user-filter-dropdown .dropdown-toggle::after {
+  margin-left: auto;
+}
+
+.user-filter-menu {
+  max-height: 300px;
+  overflow-y: auto;
+  min-width: 200px;
+  padding: 8px 0;
+}
+
+.select-all-checkbox {
+  font-weight: 500;
+}
+
+.user-checkbox {
+  margin: 8px 0;
+}
+
+.user-checkbox label {
+  cursor: pointer;
+}
+
+.user-filter-menu hr {
+  margin: 8px 0;
+  border-color: #e2e8f0;
+}
+
+.weekend-header {
+  position: relative;
+}
+
+.weekend-header::after {
+  content: '🌅';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 8px;
+}
+
+/* .weekend-cell {
+  position: relative;
+} */
+
+/* .quote-table th.weekend-header {
+  border: 1px solid #fca5a5 !important;
+} */
+
+/* .quote-table td.weekend-cell {
+  border: 1px solid #fca5a5 !important;
+} */
+
+/* .total-row td.weekend-cell {
+  border: 2px solid #fca5a5 !important;
+}  */

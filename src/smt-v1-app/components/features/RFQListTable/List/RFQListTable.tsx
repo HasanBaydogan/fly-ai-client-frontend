@@ -31,6 +31,7 @@ export interface RFQData {
   rfqStatus: any;
   clientRFQId: string;
   date: string;
+  client: string;
   numberOfProduct: number;
   comments: string;
   rfqParts: { partNumber: string; partId: string }[];
@@ -260,7 +261,6 @@ const RFQListTable: FC<RFQListTableProps> = ({ activeView }) => {
 
         return {
           ...item,
-          client: clientNames,
           partNumber: partNumbers
         };
       });

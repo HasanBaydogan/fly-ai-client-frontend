@@ -40,7 +40,7 @@ import NewClientContainer from 'smt-v1-app/containers/Client/NewClientContainer/
 import ClientEditContainer from 'smt-v1-app/containers/Client/ClientEditContainer/ClientEditContainer';
 import PartListContainer from 'smt-v1-app/containers/PartContainer/PartListContainer';
 import PartContainer from 'smt-v1-app/containers/PartContainer/PartContainer';
-import UserQuoteStatus from 'smt-v1-app/containers/UserQuoteStatus/UserQuoteStatus';
+import UserQuoteStatus from 'smt-v1-app/components/features/UserQuoteStatus/UserQuoteStatus';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 

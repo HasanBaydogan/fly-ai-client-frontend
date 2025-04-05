@@ -59,7 +59,7 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
     }
   },
   {
-    id: 'status',
+    id: 'clientStatus',
     header: 'Status',
     accessorFn: ({ clientStatus }) => clientStatus?.label || '',
     cell: ({ row: { original } }) => {
@@ -158,7 +158,12 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
             : [{ email: item.email || '' }],
           clientStatus: {
             label: item.clientStatus || 'NOT_CONTACTED',
-            type: 'warning'
+            type:
+              item.clientStatus === 'CONTACTED'
+                ? 'success'
+                : item.clientStatus === 'BLACK_LISTED'
+                ? 'danger'
+                : 'warning'
           },
           quoteID: null,
           attachmentResponses: Array.isArray(item.attachmentResponses)
