@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.css": "/static/css/main.32d8adc2.css",
-    "main.js": "/static/js/main.807c5af6.js",
-    "static/js/905.992582f4.chunk.js": "/static/js/905.992582f4.chunk.js",
+    "main.css": "/static/css/main.7cdc1302.css",
+    "main.js": "/static/js/main.45f8348d.js",
+    "static/js/905.05cb42e3.chunk.js": "/static/js/905.05cb42e3.chunk.js",
     "static/js/313.c6024fed.chunk.js": "/static/js/313.c6024fed.chunk.js",
     "static/js/249.0a520196.chunk.js": "/static/js/249.0a520196.chunk.js",
     "static/media/travel.mp4": "/static/media/travel.1ac0084f122621360009.mp4",
@@ -10,6 +10,7 @@
     "static/media/42.png": "/static/media/42.9910f34b028ba975d6ec.png",
     "static/media/13.png": "/static/media/13.ebe0c2b113e5d6ae92a7.png",
     "static/media/80.png": "/static/media/80.5ad60488f47a5b8d8a8e.png",
+    "static/media/FlyAI-Logo.png": "/static/media/FlyAI-Logo.d4fb63d8a4e100d13fb9.png",
     "static/media/46.png": "/static/media/46.e5e1cc7148ae22f5ab8a.png",
     "static/media/43.png": "/static/media/43.218c463b339325f76360.png",
     "static/media/41.jpg": "/static/media/41.38a168b18662f8dc0c23.jpg",
@@ -88,7 +89,6 @@
     "static/media/39.png": "/static/media/39.a4d8cd61c7a8cb5b7ff4.png",
     "static/media/15.png": "/static/media/15.8f3a0c03c4aecabcf9d4.png",
     "static/media/83.png": "/static/media/83.b09944af7391a94da24e.png",
-    "static/media/logoAsparel.jpg": "/static/media/logoAsparel.dad8e46fa3d71cecd61c.jpg",
     "static/media/bg99Alternative.jpg": "/static/media/bg99Alternative.03e352cef0f9c865598c.jpg",
     "static/media/71.png": "/static/media/71.05a348ba67696407d218.png",
     "static/media/73.png": "/static/media/73.781adfd2dba72c8320da.png",
@@ -161,7 +161,7 @@
     "static/media/spam_icon.svg": "/static/media/spam_icon.f8a404e2cbf04f7a62411176c2f01044.svg"
   },
   "entrypoints": [
-    "static/css/main.32d8adc2.css",
-    "static/js/main.807c5af6.js"
+    "static/css/main.7cdc1302.css",
+    "static/js/main.45f8348d.js"
   ]
 }
