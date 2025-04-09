@@ -100,6 +100,7 @@ export interface RFQPartRequest {
   rfqPartId: string;
   partNumber: string;
   partName: string;
+  partDescription: string;
   reqQTY: number;
   fndQTY: number;
   reqRFQPartCondition:

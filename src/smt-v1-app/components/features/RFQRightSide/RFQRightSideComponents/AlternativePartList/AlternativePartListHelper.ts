@@ -1,6 +1,7 @@
 export const tableHeaders = [
   'Part Number*',
   'Part Name*',
+  'Part Description',
   'Parent Part Number*',
   'Req. QTY*',
   'Fnd. QTY',

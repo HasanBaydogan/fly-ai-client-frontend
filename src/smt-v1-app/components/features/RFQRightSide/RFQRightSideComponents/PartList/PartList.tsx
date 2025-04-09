@@ -55,6 +55,7 @@ interface PartListProps {
 interface PartSuggestion {
   partNumber: string;
   partName: string | null;
+  partDescription: string | null;
   reqCND: string;
   reqQTY: number;
   fndQTY: number;
@@ -83,6 +84,7 @@ interface PartHistorySuggestionResponse {
   data: {
     partNumber: string;
     partName: string;
+    partDescription: string;
     reqCND: string;
     reqQTY: number;
     fndQTY: number;
@@ -116,6 +118,7 @@ const PartList: React.FC<PartListProps> = ({
   setAlternativeParts,
   partName,
   setPartName,
+  // partDescription,
   partNumber,
   setPartNumber
 }) => {
@@ -130,6 +133,7 @@ const PartList: React.FC<PartListProps> = ({
 
   // RFQPart özellikleri
   const [reqQTY, setReqQTY] = useState<number>(1);
+  const [partDescription, setPartDescription] = useState<string>('');
   const [fndQTY, setFndQTY] = useState<number>(0);
   const [reqCND, setReqCND] = useState<string>('NE');
   const [fndCND, setFndCND] = useState<string>('');
@@ -299,6 +303,7 @@ const PartList: React.FC<PartListProps> = ({
       setIsEditing(true);
       setPartName(foundRFQ.partName);
       setPartNumber(foundRFQ.partNumber);
+      setPartDescription(foundRFQ.partDescription);
       setPartId(foundRFQ.partId);
       setRfqPartId(foundRFQ.rfqPartId);
       setReqQTY(foundRFQ.reqQTY);
@@ -399,6 +404,7 @@ const PartList: React.FC<PartListProps> = ({
       rfqPartId: finalRFQPartId,
       partNumber: partNumber.trim(),
       partName: partName.trim(),
+      partDescription,
       reqQTY,
       fndQTY,
       reqCND,
@@ -445,6 +451,7 @@ const PartList: React.FC<PartListProps> = ({
     setRfqPartId('');
     setPartNumber('');
     setPartName('');
+    setPartDescription('');
     setReqQTY(1);
     setFndQTY(0);
     setReqCND('NE');
@@ -482,6 +489,7 @@ const PartList: React.FC<PartListProps> = ({
         return typedResponse.data.map(item => ({
           partNumber: item.partNumber,
           partName: item.partName,
+          partDescription: item.partDescription,
           reqCND: item.reqCND || '-',
           reqQTY: item.reqQTY || 0,
           dgPackagingCost: item.dgPackagingCost || false,
@@ -528,6 +536,8 @@ const PartList: React.FC<PartListProps> = ({
           setPartNumber={setPartNumber}
           partName={partName}
           setPartName={setPartName}
+          partDescription={partDescription}
+          setPartDescription={setPartDescription}
           reqQTY={reqQTY}
           setReqQTY={setReqQTY}
           fndQTY={fndQTY}
