@@ -1,6 +1,5 @@
 import TwoFA from 'pages/pages/authentication/card/TwoFA';
 import React, { useState } from 'react';
-
 import { useNavigate } from 'react-router-dom';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import Register from 'smt-v1-app/components/features/authentication/Register/Register';
@@ -16,6 +15,7 @@ const RegisterContainer = () => {
   const [messageHeader, setMessageHeader] = useState('');
   const [messageBodyText, setMessageBodyText] = useState('');
   const [email, setEmail] = useState('');
+  const [toastVariant, setToastVariant] = useState('danger');
 
   const navigate = useNavigate();
 
@@ -28,27 +28,37 @@ const RegisterContainer = () => {
     } else if (response.statusCode === 409) {
       setMessageHeader('Already Registered');
       setMessageBodyText('That email is already registered');
+      setToastVariant('danger'); // Hata durumunda kırmızı
       setIsShowToast(true);
     }
     setIsLoading(false);
   };
+
   const handleTwoFA = async (email: string, otp: string) => {
     setIsLoading(true);
     const response = await validateEmailOTP(email, otp);
     if (response.statusCode === 200) {
+      setToastVariant('success');
+      setMessageHeader('Successful');
+      setMessageBodyText(
+        'Verification successful. You are being redirected...'
+      );
+      setIsShowToast(true);
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setIsTwoFactorAuth(false);
       navigate('/');
     } else if (response.statusCode === 498) {
+      setToastVariant('danger');
       setMessageHeader('Expired Email');
       setMessageBodyText('New code is sent to your email');
       setIsShowToast(true);
-      // Expired
     } else if (response.statusCode === 411) {
-      // Otp is invalid
+      setToastVariant('danger');
       setMessageHeader('Invalid Code');
       setMessageBodyText('Please ensure the code');
       setIsShowToast(true);
     } else {
+      setToastVariant('danger');
       setMessageHeader('An Error Occurs');
       setMessageBodyText('An error occurs');
       setIsShowToast(true);
@@ -73,7 +83,7 @@ const RegisterContainer = () => {
         <ToastNotification
           isShow={isShowToast}
           setIsShow={setIsShowToast}
-          variant={'danger'}
+          variant={toastVariant}
           messageHeader={messageHeader}
           messageBodyText={messageBodyText}
         />
