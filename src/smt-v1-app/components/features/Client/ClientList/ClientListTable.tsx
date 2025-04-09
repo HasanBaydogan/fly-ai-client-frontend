@@ -66,7 +66,7 @@ export const ClientTableColumns: ColumnDef<ClientData>[] = [
       const { clientStatus } = original;
       if (!clientStatus) return null;
       return (
-        <Badge variant="phoenix" bg={clientStatus.type || 'warning'}>
+        <Badge bg={clientStatus.type || 'success'}>
           {clientStatus.label || ''}
         </Badge>
       );
@@ -115,7 +115,6 @@ const ClientList: FC<ClientListProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  // pageSize artık number veya 'all' alabiliyor
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const { setGlobalFilter, setColumnFilters } =
