@@ -5,8 +5,8 @@ import './QuoteListAlternativeParts';
 import { AlternativeQuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
 interface QuoteListAlternativePartsProps {
   alternativeParts: AlternativeQuotePart[];
-  selectedAlternativeParts:string[],
-  setSelectedAlternativeParts:React.Dispatch<React.SetStateAction<string[]>>;
+  selectedAlternativeParts: string[];
+  setSelectedAlternativeParts: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
@@ -18,7 +18,9 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedAlternativeParts(alternativeParts.map(part => part.quotePartId));
+      setSelectedAlternativeParts(
+        alternativeParts.map(part => part.quotePartId)
+      );
       setSelectAll(true);
     } else {
       setSelectedAlternativeParts([]);
@@ -26,10 +28,12 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
     }
   };
   useEffect(() => {
-      if (alternativeParts && alternativeParts.length > 0) {
-        setSelectedAlternativeParts(alternativeParts.map(part => part.quotePartId));
-      }
-    }, [alternativeParts]);
+    if (alternativeParts && alternativeParts.length > 0) {
+      setSelectedAlternativeParts(
+        alternativeParts.map(part => part.quotePartId)
+      );
+    }
+  }, [alternativeParts]);
 
   const handleSelectPart = (quotePartId: string) => {
     setSelectedAlternativeParts(prev => {
@@ -67,6 +71,7 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
               </th>
               <th style={{ minWidth: '120px' }}>Part Number</th>
               <th style={{ minWidth: '150px' }}>Part Name</th>
+              <th style={{ minWidth: '150px' }}>Part Description</th>
               <th style={{ minWidth: '150px' }}>Parent Part Number</th>
               <th style={{ minWidth: '100px' }}>Req QTY</th>
               <th style={{ minWidth: '100px' }}>Fnd QTY</th>
@@ -86,13 +91,16 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
                 <td>
                   <Form.Check
                     type="checkbox"
-                    checked={selectedAlternativeParts.includes(part.quotePartId)}
+                    checked={selectedAlternativeParts.includes(
+                      part.quotePartId
+                    )}
                     onChange={() => handleSelectPart(part.quotePartId)}
-                    style={{marginLeft:"10px"}}
+                    style={{ marginLeft: '10px' }}
                   />
                 </td>
                 <td>{part.partNumber}</td>
                 <td>{part.partName}</td>
+                <td>{part.partDescription}</td>
                 <td>{part.parentPartNumber}</td>
                 <td>{part.reqQuantity}</td>
                 <td>{part.fndQuantity}</td>

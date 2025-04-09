@@ -65,6 +65,7 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
               </th>
               <th style={{ minWidth: '120px' }}>Part Number</th>
               <th style={{ minWidth: '150px' }}>Part Name</th>
+              <th style={{ minWidth: '150px' }}>Part Description</th>
               <th style={{ minWidth: '100px' }}>Req QTY</th>
               <th style={{ minWidth: '100px' }}>Fnd QTY</th>
               <th style={{ minWidth: '100px' }}>Req CND</th>
@@ -99,6 +100,7 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
                 </td>
                 <td>{part.partNumber}</td>
                 <td>{part.partName}</td>
+                <td>{part.partDescription}</td>
                 <td>{part.reqQuantity}</td>
                 <td>{part.fndQuantity}</td>
                 <td>{part.reqCondition}</td>
@@ -123,8 +125,6 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
           </tbody>
         </Table>
       </div>
-
-      {/* Part ekleme modalı buraya gelecek */}
     </div>
   );
 };
