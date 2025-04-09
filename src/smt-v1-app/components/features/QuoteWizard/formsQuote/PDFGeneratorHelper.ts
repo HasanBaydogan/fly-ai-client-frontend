@@ -302,7 +302,7 @@ export const downloadPDF = (
       shippingTerms
     );
     if (pdf) {
-      pdf.save('quote-' + quoteNumber + '.pdf');
+      pdf.save(quoteNumber + '.pdf');
     }
   } catch (e) {
     console.log(e);
