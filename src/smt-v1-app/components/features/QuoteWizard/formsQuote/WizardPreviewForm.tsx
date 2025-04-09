@@ -96,7 +96,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             setupOtherProps.shippingTerms
           );
           setBase64Pdf(response);
-          setBase64PdfFileName('quote-' + quoteNumber + '.pdf');
+          setBase64PdfFileName(quoteNumber + '.pdf');
           setTimeout(() => {
             setIsPdfConvertedToBase64(false);
           }, 700);
