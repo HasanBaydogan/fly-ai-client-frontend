@@ -54,7 +54,6 @@ const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
             </td>
             <td>{rfqPart.partName}</td>
             <td>{rfqPart.partDescription}</td>
-
             <td className="text-center">{rfqPart.reqQTY}</td>
             <td className="text-center">{rfqPart.fndQTY}</td>
             <td className="text-center">{rfqPart.reqCND}</td>
