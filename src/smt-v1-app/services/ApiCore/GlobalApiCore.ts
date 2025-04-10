@@ -139,9 +139,9 @@ export const putRequest = async (url: string, data: any = {}): Promise<any> => {
 /** Generic DELETE */
 export const deleteRequest = async (url: string): Promise<any> => {
   try {
-    // console.log('DELETE Request initiated:', url);
+    console.log('DELETE Request initiated:', url);
     const response = await api.delete(url);
-    // console.log('DELETE Response received:', response.data);
+    console.log('DELETE Response received:', response.data);
     if (response.data.statusCode === 200) return response.data;
 
     if (response.data.statusCode === 498) {

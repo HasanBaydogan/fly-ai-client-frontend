@@ -1,4 +1,9 @@
-import { getRequest, postRequest, putRequest } from './ApiCore/GlobalApiCore';
+import {
+  deleteRequest,
+  getRequest,
+  postRequest,
+  putRequest
+} from './ApiCore/GlobalApiCore';
 import {
   CreateSupplier,
   UpdateSupplierPayload
@@ -38,4 +43,8 @@ export const searchBySupplierList = async (
       : `/supplier/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
   }
   return await getRequest(url);
+};
+
+export const deleteSupplier = async (supplierId: string) => {
+  return await deleteRequest(`/supplier?supplierId=${supplierId}`);
 };

@@ -9,7 +9,10 @@ import RevealDropdown, {
 import { Col, Row, Dropdown } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
-import { searchBySupplierList } from 'smt-v1-app/services/SupplierServices';
+import {
+  searchBySupplierList,
+  deleteSupplier
+} from 'smt-v1-app/services/SupplierServices';
 import { SupplierData } from 'smt-v1-app/types/SupplierTypes';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
@@ -250,6 +253,21 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
     debouncedFetchData(searchTerm, column);
   };
 
+  const handleDelete = async (supplierId: string): Promise<boolean> => {
+    try {
+      const response = await deleteSupplier(supplierId);
+      if (response?.success) {
+        // Refresh the table data
+        fetchData(searchTerm, pageIndex, selectedColumn);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error deleting supplier:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     fetchData(searchTerm, pageIndex, selectedColumn);
   }, [pageIndex, pageSize]);
@@ -332,6 +350,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
                 data: data,
                 columns: projectListTableColumns
               }}
+              onDelete={handleDelete}
             />
             <AdvanceTableFooter
               pagination
