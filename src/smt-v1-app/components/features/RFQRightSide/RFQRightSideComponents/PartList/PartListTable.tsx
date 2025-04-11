@@ -736,8 +736,8 @@ const PartListTable: React.FC<PartListTableProps> = ({
                 <option value="RP">RP</option>
                 <option value="IN">IN</option>
                 <option value="TST">TST</option>
-                <option value="MOD">MOD</option>
-                <option value="INS_TST">INS TST</option>
+                <option value="MOD">MODIFIED</option>
+                <option value="INS_TST">INS/TST</option>
               </Form.Select>
             </td>
             {/* FND CND */}
@@ -758,8 +758,8 @@ const PartListTable: React.FC<PartListTableProps> = ({
                 <option value="RP">RP</option>
                 <option value="IN">IN</option>
                 <option value="TST">TST</option>
-                <option value="MOD">MOD</option>
-                <option value="INS_TST">INS TST</option>
+                <option value="MOD">MODIFIED</option>
+                <option value="INS_TST">INS/TST</option>
               </Form.Select>
             </td>
             {/* SUPPLIER LT */}
