@@ -299,7 +299,6 @@ const AdvanceTable = ({
             'Are you sure you want to delete this supplier? This action cannot be undone.'}
           {modalState === 'deleting' && (
             <>
-              <LoadingAnimation />
               <p className="mt-3 mb-0">
                 <LoadingAnimation></LoadingAnimation>
               </p>

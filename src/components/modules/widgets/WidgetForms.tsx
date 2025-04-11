@@ -43,12 +43,12 @@ const WidgetForms = () => {
             isMulti
             placeholder="Add tags"
             styles={{
-              control: baseStyles => ({
+              control: (baseStyles: any) => ({
                 ...baseStyles,
                 height: '128px',
                 alignItems: 'start'
               }),
-              dropdownIndicator: baseStyles => ({
+              dropdownIndicator: (baseStyles: any) => ({
                 ...baseStyles,
                 display: 'none'
               })
