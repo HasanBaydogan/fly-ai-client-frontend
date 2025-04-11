@@ -86,6 +86,7 @@ const AlternativePartList = ({
   const form = useWizardForm({ totalStep: 5 });
 
   const [reqQTY, setReqQTY] = useState<number>(1);
+  const [partDescription, setPartDescription] = useState<string>('');
   const [fndQTY, setFndQTY] = useState<number>(0);
   const [reqCND, setReqCND] = useState<string>('');
   const [fndCND, setFndCND] = useState<string>('');
@@ -402,6 +403,7 @@ const AlternativePartList = ({
       rfqPartId: finalId,
       partNumber: partNumber.trim(),
       partName: partName.trim(),
+      partDescription,
       reqQTY,
       fndQTY,
       reqCND,
@@ -439,6 +441,7 @@ const AlternativePartList = ({
     setRfqPartId(null);
     setPartNumber('');
     setPartName('');
+    setPartDescription;
     setReqQTY(1);
     setFndQTY(0);
     setReqCND('NE');
@@ -574,6 +577,32 @@ const AlternativePartList = ({
 
                 {/* Part Name END*/}
 
+                {/* Part Description START*/}
+                <td>
+                  <Form.Group>
+                    <Form.Control
+                      placeholder="Part Description"
+                      value={partDescription}
+                      onChange={e => {
+                        setPartDescription(e.target.value);
+                        // setIsPartNameEmpty(false);
+                      }}
+                      // onBlur={e => {
+                      //   if (!e.target.value.trim()) {
+                      //     setIsPartNameEmpty(true); // Set error if input is empty
+                      //   }
+                      // }}
+                      style={{
+                        width: '180px',
+                        borderColor: isPartNameEmpty ? 'red' : '' // Apply red border if empty
+                      }}
+                      // required
+                    />
+                  </Form.Group>
+                </td>
+
+                {/* Part Name END*/}
+
                 {/* Parent Part Number START*/}
                 <td>
                   <Form.Group style={{ width: '200px' }}>
@@ -658,6 +687,8 @@ const AlternativePartList = ({
                     <option value="RP">RP</option>
                     <option value="IN">IN</option>
                     <option value="TST">TST</option>
+                    <option value="MOD">MODIFIED</option>
+                    <option value="INS_TST">INS/TST</option>
                   </Form.Select>
                 </td>
                 {/* REQ CND END*/}
@@ -686,6 +717,8 @@ const AlternativePartList = ({
                     <option value="RP">RP</option>
                     <option value="IN">IN</option>
                     <option value="TST">TST</option>
+                    <option value="MOD">MODIFIED</option>
+                    <option value="INS_TST">INS/TST</option>
                   </Form.Select>
                 </td>
                 {/* FND CND START*/}

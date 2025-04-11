@@ -1,6 +1,12 @@
-import { getRequest, postRequest, putRequest } from './ApiCore/GlobalApiCore';
+import {
+  deleteRequest,
+  getRequest,
+  postRequest,
+  putRequest
+} from './ApiCore/GlobalApiCore';
 import {
   CreateSupplier,
+  transformSupplier,
   UpdateSupplierPayload
 } from 'smt-v1-app/types/SupplierTypes';
 
@@ -38,4 +44,18 @@ export const searchBySupplierList = async (
       : `/supplier/all-list?pageNo=${pageNo}&pageSize=${pageSize}`;
   }
   return await getRequest(url);
+};
+
+export const deleteSupplier = async (supplierId: string) => {
+  return await deleteRequest(`/supplier?supplierId=${supplierId}`);
+};
+
+export const transformToSupplier = async (
+  trasnformSupplier: transformSupplier
+) => {
+  return await postRequest('/supplier/transform', trasnformSupplier);
+};
+
+export const getAllSupplier = async () => {
+  return await getRequest('/supplier/all');
 };

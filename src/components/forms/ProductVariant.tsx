@@ -27,12 +27,12 @@ const ProductVariant = ({ className }: { className?: string }) => {
         isMulti
         placeholder=""
         styles={{
-          control: baseStyles => ({
+          control: (baseStyles: any) => ({
             ...baseStyles,
             height: '70px',
             alignItems: 'start'
           }),
-          dropdownIndicator: baseStyles => ({
+          dropdownIndicator: (baseStyles: any) => ({
             ...baseStyles,
             display: 'none'
           })

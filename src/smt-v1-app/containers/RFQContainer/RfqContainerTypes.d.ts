@@ -6,6 +6,7 @@ interface RFQPart {
   rfqPartId: string | null;
   partNumber: string;
   partName: string;
+  partDescription: string;
   reqQTY: number;
   fndQTY: number;
   reqCND: NE | FN | NS | OH | SV | AR | RP | IN | TST | '';
@@ -39,6 +40,7 @@ interface AlternativeRFQPart {
   rfqPartId: string | null;
   partNumber: string;
   partName: string;
+  partDescription: string;
   reqQTY: number;
   fndQTY: number;
   reqCND: NE | FN | NS | OH | SV | AR | RP | IN | TST | '';

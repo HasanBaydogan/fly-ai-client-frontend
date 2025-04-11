@@ -76,3 +76,8 @@ export interface UpdateSupplierPayload {
   supplyCapability: number;
   euDemandParts: number;
 }
+
+export interface transformSupplier {
+  fromId: string;
+  toId: string;
+}

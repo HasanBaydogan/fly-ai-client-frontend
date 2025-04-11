@@ -23,6 +23,13 @@ const PartWizardModal: React.FC<PartWizardModalProps> = ({
   form,
   selectedPart
 }) => {
+  const handlePartCreated = (data: any) => {
+    // Close the modal after 1500ms when part is successfully created/updated
+    setTimeout(() => {
+      onHide();
+    }, 1500);
+  };
+
   return (
     <Modal
       size="xl"
@@ -41,7 +48,7 @@ const PartWizardModal: React.FC<PartWizardModalProps> = ({
                 <WizardForm step={1}>
                   <PartWizardItemFiledsForm
                     partData={selectedPart}
-                    onPartCreated={data => {}}
+                    onPartCreated={handlePartCreated}
                   />
                 </WizardForm>
               </Tab.Pane>

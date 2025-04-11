@@ -296,21 +296,19 @@ const UserQuoteStatus = () => {
                   <td
                     key={dayIndex}
                     style={{
+                      // Eğer row.user 'TOTAL' ise getTotalBackgroundColor,
+                      // değilse haftasonu sütunu için getCellBackgroundColor,
+                      // aksi durumda getBackgroundColor kullanabilirsiniz.
                       backgroundColor:
                         row.user === 'TOTAL'
                           ? getTotalBackgroundColor(dayIndex, quoteData)
-                          : getBackgroundColor(quote),
+                          : getCellBackgroundColor(
+                              quote,
+                              row.user === 'TOTAL',
+                              dayIndex
+                            ),
                       textAlign: 'center'
                     }}
-                    // Haftasonu sütunlarının rengi değişmesi için
-                    // style={{
-                    //   backgroundColor: getCellBackgroundColor(
-                    //     quote,
-                    //     row.user === 'TOTAL',
-                    //     dayIndex
-                    //   ),
-                    //   textAlign: 'center'
-                    // }}
                   >
                     {quote || ''}
                   </td>

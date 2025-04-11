@@ -24,6 +24,7 @@ type Supplier = any;
 export interface PartSuggestion {
   partNumber: string;
   partName: string | null;
+  partDescription: string | null;
   reqCND: string;
   reqQTY: number;
   fndQTY: number;
@@ -55,6 +56,8 @@ interface PartListTableProps {
   setPartNumber: React.Dispatch<React.SetStateAction<string>>;
   partName: string;
   setPartName: React.Dispatch<React.SetStateAction<string>>;
+  partDescription: string;
+  setPartDescription: React.Dispatch<React.SetStateAction<string>>;
   reqQTY: number;
   setReqQTY: React.Dispatch<React.SetStateAction<number>>;
   fndQTY: number;
@@ -139,6 +142,8 @@ const PartListTable: React.FC<PartListTableProps> = ({
   setPartNumber,
   partName,
   setPartName,
+  partDescription,
+  setPartDescription,
   reqQTY,
   setReqQTY,
   fndQTY,
@@ -250,6 +255,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
         rfqPartId: generateTempRFQPartId(),
         partNumber: np.partNumber,
         partName: np.partName,
+        partDescription: '',
         reqQTY: np.reqQty,
         fndQTY: 0,
         reqCND: 'NE',
@@ -303,6 +309,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
   const handleSuggestionSelect = (suggestion: PartSuggestion) => {
     setPartNumber(suggestion.partNumber);
     setPartName(suggestion.partName || '');
+    setPartDescription(suggestion.partDescription || '');
     setReqCND(suggestion.reqCND);
     setReqQTY(suggestion.reqQTY);
     //setFndQTY(suggestion.fndQTY);
@@ -364,19 +371,37 @@ const PartListTable: React.FC<PartListTableProps> = ({
       ) {
         return;
       }
-      setShowSuggestions(false);
+      // setShowSuggestions(false);
     };
 
-    window.addEventListener('scroll', handleGlobalAction);
+    // window.addEventListener('scroll', handleGlobalAction);
     window.addEventListener('click', handleGlobalAction);
-    // window.addEventListener('keydown', handleGlobalAction);
 
     return () => {
-      window.removeEventListener('scroll', handleGlobalAction);
+      // window.removeEventListener('scroll', handleGlobalAction);
       window.removeEventListener('click', handleGlobalAction);
-      // window.removeEventListener('keydown', handleGlobalAction);
     };
   }, []);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (showSuggestions && suggestionRef.current && document.activeElement) {
+        const rect = (
+          document.activeElement as HTMLElement
+        ).getBoundingClientRect();
+        suggestionRef.current.style.top = `${rect.bottom}px`;
+        suggestionRef.current.style.left = `${rect.left}px`;
+      }
+    };
+
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [showSuggestions]);
 
   return (
     <div>
@@ -434,7 +459,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
               </span>
             </td>
             {/* Part Number */}
-            <td style={{ overflow: 'visible', position: 'static' }}>
+            <td style={{ overflow: 'visible', position: 'relative' }}>
               <Form.Group style={{ position: 'relative' }}>
                 <Form.Control
                   placeholder="Part Number"
@@ -459,38 +484,40 @@ const PartListTable: React.FC<PartListTableProps> = ({
                         )?.getBoundingClientRect().left}px`,
                         width: '90vw',
                         maxWidth: '750px',
-                        zIndex: 99999,
+                        zIndex: 999999,
                         backgroundColor: 'white',
                         border: '1px solid #ddd',
                         borderRadius: '4px',
                         boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                        maxHeight: '400px'
+                        maxHeight: '400px',
+                        marginTop: '4px'
                       }}
                     >
                       <div style={{ overflowX: 'auto' }}>
-                        <div style={{ minWidth: '1840px' }}>
+                        <div style={{ minWidth: '2000px' }}>
                           <div
                             style={{
                               display: 'grid',
                               gridTemplateColumns: `
-                                minmax(170px, 170px)
-                                minmax(170px, 170px)
-                                minmax(100px, 100px)
-                                minmax(100px, 100px)
-                                minmax(100px, 100px)
-                                minmax(80px, 80px)
-                                minmax(80px, 80px)
-                                minmax(80px, 80px)
-                                minmax(120px, 120px)
-                                minmax(80px, 80px)
-                                minmax(100px, 100px)
-                                minmax(100px, 100px)
-                                minmax(80px, 80px)
-                                minmax(100px, 100px)
-                                minmax(80px, 80px)
-                                minmax(100px, 100px)
-                                minmax(120px, 120px)
-                              `,
+                                  minmax(170px, 170px)
+                                  minmax(170px, 170px)
+                                  minmax(160px, 160px)
+                                  minmax(100px, 100px)
+                                  minmax(100px, 100px)
+                                  minmax(100px, 100px)
+                                  minmax(80px, 80px)
+                                  minmax(80px, 80px)
+                                  minmax(80px, 80px)
+                                  minmax(120px, 120px)
+                                  minmax(80px, 80px)
+                                  minmax(100px, 100px)
+                                  minmax(100px, 100px)
+                                  minmax(80px, 80px)
+                                  minmax(100px, 100px)
+                                  minmax(80px, 80px)
+                                  minmax(100px, 100px)
+                                  minmax(120px, 120px)
+                                `,
                               gap: '4px',
                               padding: '8px',
                               backgroundColor: '#f8f9fa',
@@ -504,6 +531,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
                           >
                             <div style={headerCellStyle}>Part Number</div>
                             <div style={headerCellStyle}>Part Name</div>
+                            <div style={headerCellStyle}>Part Description</div>
                             <div style={headerCellStyle}>Req/Fnd QTY</div>
                             <div style={headerCellStyle}>Req/Fnd CND</div>
                             <div style={headerCellStyle}>Lead Times</div>
@@ -536,24 +564,25 @@ const PartListTable: React.FC<PartListTableProps> = ({
                                   style={{
                                     display: 'grid',
                                     gridTemplateColumns: `
-                                      minmax(170px, 170px)
-                                      minmax(170px, 170px)
-                                      minmax(100px, 100px)
-                                      minmax(100px, 100px)
-                                      minmax(100px, 100px)
-                                      minmax(80px, 80px)
-                                      minmax(80px, 80px)
-                                      minmax(80px, 80px)
-                                      minmax(120px, 120px)
-                                      minmax(80px, 80px)
-                                      minmax(100px, 100px)
-                                      minmax(100px, 100px)
-                                      minmax(80px, 80px)
-                                      minmax(100px, 100px)
-                                      minmax(80px, 80px)
-                                      minmax(100px, 100px)
-                                      minmax(120px, 120px)
-                                    `,
+                                        minmax(170px, 170px)
+                                        minmax(170px, 170px)
+                                        minmax(160px, 160px)
+                                        minmax(100px, 100px)
+                                        minmax(100px, 100px)
+                                        minmax(100px, 100px)
+                                        minmax(80px, 80px)
+                                        minmax(80px, 80px)
+                                        minmax(80px, 80px)
+                                        minmax(120px, 120px)
+                                        minmax(80px, 80px)
+                                        minmax(100px, 100px)
+                                        minmax(100px, 100px)
+                                        minmax(80px, 80px)
+                                        minmax(100px, 100px)
+                                        minmax(80px, 80px)
+                                        minmax(100px, 100px)
+                                        minmax(120px, 120px)
+                                      `,
                                     gap: '4px',
                                     padding: '8px',
                                     cursor: 'pointer',
@@ -576,6 +605,9 @@ const PartListTable: React.FC<PartListTableProps> = ({
                                   </div>
                                   <div style={cellStyle}>
                                     {suggestion.partName || '-'}
+                                  </div>
+                                  <div style={cellStyle}>
+                                    {suggestion.partDescription || '-'}
                                   </div>
                                   <div style={cellStyle}>
                                     {`${suggestion.reqQTY}/${suggestion.fndQTY}`}
@@ -647,6 +679,20 @@ const PartListTable: React.FC<PartListTableProps> = ({
                 />
               </Form.Group>
             </td>
+            {/* Part Desc */}
+            <td>
+              <Form.Group>
+                <Form.Control
+                  placeholder="Part Description"
+                  value={partDescription}
+                  onChange={e => {
+                    setPartDescription(e.target.value);
+                  }}
+                  style={{ width: '160px' }}
+                  required
+                />
+              </Form.Group>
+            </td>
             {/* Req QTY */}
             <td>
               <Form.Group>
@@ -690,6 +736,8 @@ const PartListTable: React.FC<PartListTableProps> = ({
                 <option value="RP">RP</option>
                 <option value="IN">IN</option>
                 <option value="TST">TST</option>
+                <option value="MOD">MODIFIED</option>
+                <option value="INS_TST">INS/TST</option>
               </Form.Select>
             </td>
             {/* FND CND */}
@@ -710,6 +758,8 @@ const PartListTable: React.FC<PartListTableProps> = ({
                 <option value="RP">RP</option>
                 <option value="IN">IN</option>
                 <option value="TST">TST</option>
+                <option value="MOD">MODIFIED</option>
+                <option value="INS_TST">INS/TST</option>
               </Form.Select>
             </td>
             {/* SUPPLIER LT */}
