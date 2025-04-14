@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Badge, Form } from 'react-bootstrap';
-import POModal from 'smt-v1-app/components/features/PoModal/POModal';
+import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
 
 const Header = ({
   date,
