@@ -1,0 +1,313 @@
+import WizardSetupForm from '../forms/WizardSetupForm';
+import WizardSendMailForm from '../forms/WizardSendMailForm';
+import WizardFormFooter from '../wizard/WizardFormFooter';
+import WizardForm from '../wizard/WizardForm';
+import useWizardForm from 'hooks/useWizardForm';
+import WizardFormProvider from 'providers/WizardFormProvider';
+import { Card, Tab, Tabs } from 'react-bootstrap';
+import classNames from 'classnames';
+import { useState } from 'react';
+import { MailProvider } from '../forms/MailContext';
+import ReviewMail from '../forms/ReviewMail';
+import { defaultMailTemplate } from '../forms/defaultMailTemplate';
+import { QuotePartRow, QuoteWizardData, PIResponseData } from '../PIWizard';
+import WizardPreviewForm from '../forms/WizardPreviewForm';
+import QuoteWizardNav from '../wizard/QuoteWizardNav';
+import { sendQuoteEmail } from 'smt-v1-app/services/QuoteService';
+
+export interface QuotePartRequest {
+  quotePartId: string;
+  quotePartNumber: string;
+  quotePartName: string;
+  reqCnd: string;
+  fndCnd: string;
+  leadTime: number;
+  qty: number;
+  unitPrice: number;
+}
+interface QuoteOtherValue {
+  key: string;
+  value: number;
+}
+
+interface WizardTabsProps {
+  quoteWizardData: QuoteWizardData;
+  currencies: string[];
+  selectedParts: string[];
+  selectedAlternativeParts: string[];
+  quoteComment: string;
+  piResponseData?: PIResponseData;
+}
+
+const WizardTabs: React.FC<WizardTabsProps> = ({
+  quoteWizardData,
+  currencies,
+  selectedParts,
+  selectedAlternativeParts,
+  quoteComment,
+  piResponseData
+}) => {
+  const form = useWizardForm({
+    totalStep: 4
+  });
+
+  const [activeTab, setActiveTab] = useState('setup');
+  const [quotePartRows, setQuotePartRows] = useState<QuotePartRow[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [subTotalValues, setSubTotalValues] = useState<number[]>([]);
+  const [currency, setCurrency] = useState(quoteWizardData.currency);
+  const [checkedStates, setCheckedStates] = useState<boolean[]>([]);
+  const [clientLocation, setClientLocation] = useState('');
+  const [shipTo, setShipTo] = useState('');
+  const [requisitioner, setRequisitioner] = useState('');
+  const [shipVia, setShipVia] = useState('');
+  const [CPT, setCPT] = useState('');
+  const [shippingTerms, setShippingTerms] = useState('');
+
+  const setupOtherProps = {
+    clientLocation,
+    setClientLocation,
+    shipTo,
+    setShipTo,
+    requisitioner,
+    setRequisitioner,
+    shipVia,
+    setShipVia,
+    CPT,
+    setCPT,
+    shippingTerms,
+    setShippingTerms
+  };
+
+  const [base64Pdf, setBase64Pdf] = useState<string>('');
+  const [base64PdfFileName, setBase64PdfFileName] = useState<string>('');
+
+  const [base64Files, setBase64Files] = useState<
+    { name: string; base64: string }[]
+  >([]);
+
+  const [toEmails, setToEmails] = useState<string[]>([]);
+  const [ccEmails, setCcEmails] = useState<string[]>([]);
+  const [bccEmails, setBccEmails] = useState<string[]>([]);
+  const [subject, setSubject] = useState<string>('');
+  const [content, setContent] = useState<string>(defaultMailTemplate);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [inputValue, setInputValue] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [isPdfConvertedToBase64, setIsPdfConvertedToBase64] = useState(true);
+  const [from, setFrom] = useState('');
+
+  const emailProps = {
+    toEmails,
+    setToEmails,
+    ccEmails,
+    setCcEmails,
+    bccEmails,
+    setBccEmails,
+    subject,
+    setSubject,
+    content,
+    setContent,
+    base64Files,
+    setBase64Files,
+    inputValue,
+    setInputValue,
+    error,
+    setError
+  };
+
+  const [isEmailSendLoading, setEmailSendLoading] = useState(false);
+  const [isSendEmailSuccess, setIsSendEmailSuccess] = useState(false);
+
+  const handleSendQuoteEmail = async () => {
+    setEmailSendLoading(true);
+    const attachments: {
+      filename: string;
+      data: string;
+    }[] = base64Files.map(attach => {
+      return { filename: attach.name, data: attach.base64 };
+    });
+    //console.log(quotePartRows);
+    const alreadySavedQuotePart: QuotePartRow[] = quotePartRows.filter(
+      quotePartRow => !quotePartRow.alternativeTo.trim()
+    );
+    const quotePartRequests: QuotePartRequest[] = alreadySavedQuotePart.map(
+      quotePart => {
+        return {
+          quotePartId: quotePart.id,
+          quotePartNumber: quotePart.partNumber,
+          quotePartName: quotePart.description,
+          reqCnd: quotePart.reqCondition,
+          fndCnd: quotePart.fndCondition,
+          leadTime: quotePart.leadTime,
+          qty: quotePart.quantity,
+          unitPrice: quotePart.unitPrice
+        };
+      }
+    );
+
+    const alreadySavedAlternativeQuotePart: QuotePartRow[] =
+      quotePartRows.filter(quotePartRow => quotePartRow.alternativeTo.trim());
+    const quoteAlternativePartRequests: QuotePartRequest[] =
+      alreadySavedAlternativeQuotePart.map(quotePart => {
+        return {
+          quotePartId: quotePart.id,
+          quotePartNumber: quotePart.partNumber,
+          quotePartName: quotePart.description,
+          reqCnd: quotePart.reqCondition,
+          fndCnd: quotePart.fndCondition,
+          leadTime: quotePart.leadTime,
+          qty: quotePart.quantity,
+          unitPrice: quotePart.unitPrice
+        };
+      });
+
+    //console.log(quotePartRequests);
+    //console.log(quoteAlternativePartRequests);
+
+    const payload = {
+      to: toEmails,
+      cc: ccEmails,
+      subject: subject,
+      attachments: attachments,
+      body: content,
+      quoteId: quoteWizardData.quoteId,
+      selectedQuoteParts: quotePartRequests,
+      selectedAlternativeQuoteParts: quoteAlternativePartRequests,
+      clientLocation: clientLocation,
+      shipTo: shipTo,
+      requisitioner: requisitioner,
+      shipVia: shipVia,
+      CPT: CPT,
+      shippingTerms: shippingTerms,
+      quoteOtherValues: [
+        {
+          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[0],
+          value: checkedStates[0] ? subTotalValues[0] : 0
+        },
+        {
+          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[1],
+          value: checkedStates[1] ? subTotalValues[1] : 0
+        },
+        {
+          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[2],
+          value: checkedStates[2] ? subTotalValues[2] : 0
+        },
+        {
+          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[3],
+          value: checkedStates[3] ? subTotalValues[3] : 0
+        }
+      ],
+      comment: quoteComment
+    };
+    console.log(payload);
+
+    const response = await sendQuoteEmail(payload);
+    //console.log(response);
+    if (response && response.statusCode === 200) {
+      setFrom(response.data.from);
+      setIsSendEmailSuccess(true);
+    } else {
+      //console.log(response);
+    }
+
+    setEmailSendLoading(false);
+  };
+
+  return (
+    <MailProvider>
+      <WizardFormProvider {...form}>
+        <Card className="theme-wizard">
+          <Card.Header className="bg-body-highlight pt-3 pb-2 border-bottom-0">
+            <QuoteWizardNav />
+          </Card.Header>
+          <Card.Body>
+            <Tabs
+              activeKey={activeTab}
+              onSelect={k => setActiveTab(k || 'setup')}
+              className="mb-3"
+            >
+              <Tab eventKey="setup" title="Setup">
+                <WizardSetupForm
+                  id="setup"
+                  currencies={currencies}
+                  quoteWizardData={quoteWizardData}
+                  quotePartRows={quotePartRows}
+                  setQuotePartRows={setQuotePartRows}
+                  setSelectedDate={setSelectedDate}
+                  selectedDate={selectedDate}
+                  subTotalValues={subTotalValues}
+                  setSubTotalValues={setSubTotalValues}
+                  setCurrency={setCurrency}
+                  currency={currency}
+                  checkedStates={checkedStates}
+                  setCheckedStates={setCheckedStates}
+                  setupOtherProps={setupOtherProps}
+                  piResponseData={piResponseData}
+                />
+              </Tab>
+              {/* <Tab.Pane eventKey={2} unmountOnExit>
+                <WizardForm step={2}>
+                  {
+                    <WizardPreviewForm
+                      setBase64Pdf={setBase64Pdf}
+                      setIsPdfConvertedToBase64={setIsPdfConvertedToBase64}
+                      setBase64PdfFileName={setBase64PdfFileName}
+                      quotePartRows={quotePartRows}
+                      settings={quoteWizardData.quoteWizardSetting}
+                      quoteNumber={quoteWizardData.quoteNumberId}
+                      subTotalValues={subTotalValues}
+                      currency={currency}
+                      selectedDate={selectedDate}
+                      checkedStates={checkedStates}
+                      setupOtherProps={setupOtherProps}
+                    />
+                  }
+                </WizardForm>
+              </Tab.Pane>
+
+              <Tab.Pane eventKey={3}>
+                <WizardForm step={3}>
+                  {
+                    <WizardSendMailForm
+                      emailProps={emailProps}
+                      isPdfConvertedToBase64={isPdfConvertedToBase64}
+                      base64Pdf={base64Pdf}
+                      base64PdfFileName={base64PdfFileName}
+                      quoteId={quoteWizardData.quoteId}
+                    />
+                  }
+                </WizardForm>
+              </Tab.Pane>
+              <Tab.Pane eventKey={4}>
+                <WizardForm step={4}>
+                  {
+                    <ReviewMail
+                      emailProps={emailProps}
+                      quoteNumberId={quoteWizardData.quoteNumberId}
+                      rfqNumberId={quoteWizardData.rfqNumberId}
+                      isSendEmailSuccess={isSendEmailSuccess}
+                      from={from}
+                      handleSendQuoteEmail={handleSendQuoteEmail}
+                      isEmailSendLoading={isEmailSendLoading}
+                    />
+                  }
+                </WizardForm>
+              </Tab.Pane> */}
+            </Tabs>
+          </Card.Body>
+          <Card.Footer className="border-top-0">
+            <WizardFormFooter
+              className={classNames({ 'd-none': !form.getCanNextPage })}
+              handleSendQuoteEmail={handleSendQuoteEmail}
+              isEmailSendLoading={isEmailSendLoading}
+              setEmailSendLoading={setEmailSendLoading}
+            />
+          </Card.Footer>
+        </Card>
+      </WizardFormProvider>
+    </MailProvider>
+  );
+};
+
+export default WizardTabs;

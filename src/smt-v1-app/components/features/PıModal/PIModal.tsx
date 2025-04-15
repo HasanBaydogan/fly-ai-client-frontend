@@ -1,11 +1,10 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import { Modal, Button, Tab, Nav, Form } from 'react-bootstrap';
 import DatePicker from 'components/base/DatePicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import FileUpload from 'smt-v1-app/components/features/Client/NewClient/NewClientAttachment/FileUpload';
-import PIWizard from './PIWizard/PIWizard';
-
-// Tabloyla ilgili importlar
+import PIWizard from '../PIWizard/PIWizard';
+import { postPi, getAllCompany } from 'smt-v1-app/services/PIServices';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'components/base/AdvanceTable';
 import AdvanceTableFooter from 'components/base/AdvanceTableFooter';
@@ -17,11 +16,13 @@ import useAdvanceTable from 'hooks/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import SearchBox from 'components/common/SearchBox';
+import { QuotePartRow, QuoteWizardData } from '../PIWizard/PIWizard';
 
 interface RFQModalProps {
   show: boolean;
   onHide: () => void;
   rfqNumberId: string;
+  quoteId: string;
 }
 
 // Tablo veri tipi
@@ -71,14 +72,52 @@ const columns: ColumnDef<Data>[] = [
   }
 ];
 
-const RFQModal: React.FC<RFQModalProps> = ({ show, onHide, rfqNumberId }) => {
+interface Company {
+  companyName: string;
+  companyId: string;
+}
+
+// Yardımcı: Tarihi dd.MM.yyyy formatına çeviren fonksiyon
+const formatDate = (date: Date): string => {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear().toString();
+  return `${day}.${month}.${year}`;
+};
+
+const RFQModal: React.FC<RFQModalProps> = ({
+  show,
+  onHide,
+  rfqNumberId,
+  quoteId
+}) => {
   const [activeTab, setActiveTab] = useState<'message' | 'mail'>('message');
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [step, setStep] = useState<'first' | 'second'>('first');
-  const [showPIWizard, setShowPIWizard] = useState(false);
   const [base64Files, setBase64Files] = useState<
     { name: string; base64: string }[]
   >([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
+  const [showPIWizard, setShowPIWizard] = useState<boolean>(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [piResponseData, setPiResponseData] = useState<QuoteWizardData | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await getAllCompany();
+        if (response.success) {
+          setCompanies(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
 
   // FileUpload'dan gelecek base64 dosyalarını burada tutabilirsiniz
   const handleFilesUpload = (files: { name: string; base64: string }[]) => {
@@ -95,7 +134,6 @@ const RFQModal: React.FC<RFQModalProps> = ({ show, onHide, rfqNumberId }) => {
     sortable: true
   });
 
-  // Arama kutusu değişimini yönetmek için
   const handleSearchInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     table.setGlobalFilter(e.target.value || undefined);
   };
@@ -108,9 +146,40 @@ const RFQModal: React.FC<RFQModalProps> = ({ show, onHide, rfqNumberId }) => {
     setStep('first');
   };
 
-  const handlePreparePI = () => {
-    setShowPIWizard(true);
-    onHide();
+  const handlePreparePI = async () => {
+    try {
+      console.log('Preparing PI with data:', {
+        selectedDate,
+        base64Files,
+        activeTab,
+        selectedCompanyId,
+        quoteId
+      });
+
+      const formattedDate = selectedDate ? formatDate(selectedDate) : '';
+      const requestData = {
+        receivedDate: formattedDate,
+        attachments: base64Files.map(file => ({ data: file.base64 })),
+        receivedPOMethod: (activeTab === 'message' ? 'MESSAGE' : 'MAIL') as
+          | 'MESSAGE'
+          | 'MAIL',
+        selectedCompanyId,
+        quoteId
+      };
+
+      console.log('Sending request with data:', requestData);
+      const response = await postPi(requestData);
+      console.log('PI Response:', response);
+
+      if (response.success) {
+        console.log('Setting PI Response Data:', response.data);
+        setPiResponseData(response.data);
+        setShowPIWizard(true);
+        onHide();
+      }
+    } catch (error) {
+      console.error('Error submitting PI:', error);
+    }
   };
 
   const handleClosePIWizard = () => {
@@ -192,7 +261,6 @@ const RFQModal: React.FC<RFQModalProps> = ({ show, onHide, rfqNumberId }) => {
 
                 {/* 2. Sekme: Requested By Mail */}
                 <Tab.Pane eventKey="mail">
-                  {/* Burada tabloyu ekliyoruz */}
                   <div className="mb-3 text-center">
                     <label className="d-block fw-bold mb-2">Mail Date:</label>
                     <div style={{ margin: '0 auto', width: '25%' }}>
@@ -200,7 +268,6 @@ const RFQModal: React.FC<RFQModalProps> = ({ show, onHide, rfqNumberId }) => {
                         placeholder="Select a date"
                         value={selectedDate}
                         onChange={selectedDates => {
-                          // Tek tarih seçimi yaptığınızı varsayarsak:
                           setSelectedDate(selectedDates[0]);
                         }}
                       />
@@ -216,11 +283,16 @@ const RFQModal: React.FC<RFQModalProps> = ({ show, onHide, rfqNumberId }) => {
             <div>
               <Form.Group className="mb-3">
                 <Form.Label>Company</Form.Label>
-                <Form.Select>
-                  <option>Select Company</option>
-                  <option value="1">Company 1</option>
-                  <option value="2">Company 2</option>
-                  <option value="3">Company 3</option>
+                <Form.Select
+                  value={selectedCompanyId}
+                  onChange={e => setSelectedCompanyId(e.target.value)}
+                >
+                  <option value="">Select Company</option>
+                  {companies.map(company => (
+                    <option key={company.companyId} value={company.companyId}>
+                      {company.companyName}
+                    </option>
+                  ))}
                 </Form.Select>
               </Form.Group>
             </div>
@@ -253,28 +325,16 @@ const RFQModal: React.FC<RFQModalProps> = ({ show, onHide, rfqNumberId }) => {
           )}
         </Modal.Footer>
       </Modal>
-      {showPIWizard && (
+      {showPIWizard && piResponseData && (
         <PIWizard
-          onClose={handleClosePIWizard}
-          quoteWizardData={{
-            currency: 'USD',
-            quoteId: '',
-            quoteNumberId: '',
-            rfqNumberId: '',
-            quoteWizardPartResponses: [],
-            quoteWizardSetting: {
-              addressRow1: '',
-              addressRow2: '',
-              commentsSpecialInstruction: '',
-              contactInfo: '',
-              logo: '',
-              mobilePhone: '',
-              otherQuoteValues: [],
-              phone: ''
-            },
-            revisionNumber: 0
-          }}
-          currencies={['USD', 'EUR']}
+          handleOpen={() => {}}
+          handleClose={handleClosePIWizard}
+          showTabs={true}
+          selectedParts={[]}
+          selectedAlternativeParts={[]}
+          quoteId={quoteId}
+          quoteComment=""
+          initialData={piResponseData}
         />
       )}
     </>
