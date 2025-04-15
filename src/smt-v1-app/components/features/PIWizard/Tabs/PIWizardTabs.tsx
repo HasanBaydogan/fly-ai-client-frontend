@@ -10,7 +10,12 @@ import { useState } from 'react';
 import { MailProvider } from '../forms/MailContext';
 import ReviewMail from '../forms/ReviewMail';
 import { defaultMailTemplate } from '../forms/defaultMailTemplate';
-import { QuotePartRow, QuoteWizardData, PIResponseData } from '../PIWizard';
+import {
+  QuotePartRow,
+  QuoteWizardData,
+  PIResponseData,
+  SetupOtherProps
+} from '../PIWizard';
 import WizardPreviewForm from '../forms/WizardPreviewForm';
 import QuoteWizardNav from '../wizard/QuoteWizardNav';
 import { sendQuoteEmail } from 'smt-v1-app/services/QuoteService';
@@ -61,10 +66,13 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   const [shipTo, setShipTo] = useState('');
   const [requisitioner, setRequisitioner] = useState('');
   const [shipVia, setShipVia] = useState('');
-  const [CPT, setCPT] = useState('');
-  const [shippingTerms, setShippingTerms] = useState('');
+  const [CPT, setCPT] = useState<string>('');
+  const [shippingTerms, setShippingTerms] = useState<string>('');
+  const [contractNo, setContractNo] = useState<string>('');
+  const [isInternational, setIsInternational] = useState<boolean>(false);
+  const [validityDay, setValidityDay] = useState<number>(0);
 
-  const setupOtherProps = {
+  const setupOtherProps: SetupOtherProps = {
     clientLocation,
     setClientLocation,
     shipTo,
@@ -76,7 +84,13 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
     CPT,
     setCPT,
     shippingTerms,
-    setShippingTerms
+    setShippingTerms,
+    contractNo,
+    setContractNo,
+    isInternational,
+    setIsInternational,
+    validityDay,
+    setValidityDay
   };
 
   const [base64Pdf, setBase64Pdf] = useState<string>('');
@@ -222,30 +236,28 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
             <QuoteWizardNav />
           </Card.Header>
           <Card.Body>
-            <Tabs
-              activeKey={activeTab}
-              onSelect={k => setActiveTab(k || 'setup')}
-              className="mb-3"
-            >
-              <Tab eventKey="setup" title="Setup">
-                <WizardSetupForm
-                  id="setup"
-                  currencies={currencies}
-                  quoteWizardData={quoteWizardData}
-                  quotePartRows={quotePartRows}
-                  setQuotePartRows={setQuotePartRows}
-                  setSelectedDate={setSelectedDate}
-                  selectedDate={selectedDate}
-                  subTotalValues={subTotalValues}
-                  setSubTotalValues={setSubTotalValues}
-                  setCurrency={setCurrency}
-                  currency={currency}
-                  checkedStates={checkedStates}
-                  setCheckedStates={setCheckedStates}
-                  setupOtherProps={setupOtherProps}
-                  piResponseData={piResponseData}
-                />
-              </Tab>
+            <Tab.Content>
+              <Tab.Pane eventKey={1}>
+                <WizardForm step={1}>
+                  <WizardSetupForm
+                    id="setup"
+                    currencies={currencies}
+                    quoteWizardData={quoteWizardData}
+                    quotePartRows={quotePartRows}
+                    setQuotePartRows={setQuotePartRows}
+                    setSelectedDate={setSelectedDate}
+                    selectedDate={selectedDate}
+                    subTotalValues={subTotalValues}
+                    setSubTotalValues={setSubTotalValues}
+                    setCurrency={setCurrency}
+                    currency={currency}
+                    checkedStates={checkedStates}
+                    setCheckedStates={setCheckedStates}
+                    setupOtherProps={setupOtherProps}
+                    piResponseData={piResponseData}
+                  />
+                </WizardForm>
+              </Tab.Pane>
               {/* <Tab.Pane eventKey={2} unmountOnExit>
                 <WizardForm step={2}>
                   {
@@ -292,9 +304,9 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                       isEmailSendLoading={isEmailSendLoading}
                     />
                   }
-                </WizardForm>
+                </WizardForm>da 
               </Tab.Pane> */}
-            </Tabs>
+            </Tab.Content>
           </Card.Body>
           <Card.Footer className="border-top-0">
             <WizardFormFooter

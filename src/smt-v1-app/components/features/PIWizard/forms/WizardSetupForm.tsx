@@ -32,6 +32,12 @@ interface WizardSetupFormProps {
     setCPT: React.Dispatch<React.SetStateAction<string>>;
     shippingTerms: string;
     setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
+    contractNo?: string;
+    setContractNo: React.Dispatch<React.SetStateAction<string | undefined>>;
+    isInternational: boolean;
+    setIsInternational: React.Dispatch<React.SetStateAction<boolean>>;
+    validityDay?: number;
+    setValidityDay: React.Dispatch<React.SetStateAction<number | undefined>>;
   };
   piResponseData?: PIResponseData;
 }
@@ -68,16 +74,28 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       // Set initial values from PIResponseData
       setupOtherProps.setClientLocation(piResponseData.clientLegalAddress);
       setupOtherProps.setShipTo(piResponseData.clientName);
+      setupOtherProps.setContractNo(piResponseData.contractNo);
+      setupOtherProps.setIsInternational(piResponseData.isInternational);
+      setupOtherProps.setValidityDay(piResponseData.validityDay);
+      setupOtherProps.setCPT(piResponseData.deliveryTerm);
+      setupOtherProps.setShippingTerms(piResponseData.paymentTerm);
 
-      // Set quote part rows from piParts
+      // Set quote part rows from piParts with formatted unit prices
       const formattedParts = piResponseData.piParts.map(part => {
         console.log('Processing part:', part);
+        const { formatted: formattedPrice, numericValue } = formatCurrency(
+          part.unitPrice?.toString() || '0',
+          part.currency || 'USD'
+        );
         return {
           ...part,
           isNew: false,
-          unitPriceString: part.unitPrice?.toString() || '0',
+          unitPrice: numericValue,
+          unitPriceString: formattedPrice,
           tempId: undefined,
-          id: part.quotePartId || `temp-${Date.now()}`,
+          id:
+            part.quotePartId ||
+            `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           alternativeTo: part.alternativeTo || '',
           currency: part.currency || 'USD',
           description: part.description || '',
@@ -120,13 +138,18 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     } else if (quoteWizardData?.quoteWizardPartResponses) {
       console.log('Processing quoteWizardData instead of PIResponseData');
       const formattedData = quoteWizardData.quoteWizardPartResponses.map(
-        item => ({
-          ...item,
-          id: item.quotePartId,
-          unitPriceString: item.unitPrice
-            ? formatNumberWithDecimals(item.unitPrice.toString())
-            : ''
-        })
+        item => {
+          const { formatted: formattedPrice, numericValue } = formatCurrency(
+            item.unitPrice?.toString() || '0',
+            item.currency || currency
+          );
+          return {
+            ...item,
+            id: item.quotePartId,
+            unitPrice: numericValue,
+            unitPriceString: formattedPrice
+          };
+        }
       );
       console.log('Formatted quote data:', formattedData);
       setQuotePartRows(formattedData);
@@ -145,6 +168,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   ]);
 
   const [tempIdCounter, setTempIdCounter] = useState(0);
+  const [selectedBank, setSelectedBank] = useState<any>(null);
 
   // Price Methods Start
 
@@ -152,29 +176,31 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
   const formatRowTotal = (value: string): string => {
-    // Split the input on the decimal point.
-    const [integerPartRaw, fractionalPartRaw] = value.split('.');
+    if (!value) return '0.00';
 
-    // Remove non-digit characters from the integer part.
-    const integerDigits = integerPartRaw.replace(/\D/g, '');
+    const num = parseFloat(value);
+    if (isNaN(num)) return '0.00';
 
-    // Format the integer part with commas.
-    const formattedInteger = integerDigits.replace(
-      /\B(?=(\d{3})+(?!\d))/g,
-      ','
-    );
+    const [integerPart, decimalPart] = num.toFixed(2).split('.');
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    // If there's a fractional part, remove non-digit characters from it as well.
-    if (fractionalPartRaw !== undefined) {
-      const fractionalDigits = fractionalPartRaw.replace(/\D/g, '');
-      // Re-join the formatted integer part and the fractional part.
-      return `${formattedInteger}.${fractionalDigits}`;
-    } else {
-      return formattedInteger;
-    }
+    return `${formattedInteger}.${decimalPart}`;
   };
   const formatNumberWithDecimals = (value: string): string => {
-    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    if (!value) return '0.00';
+
+    // Convert to number and format with exactly 2 decimal places
+    const num = parseFloat(value);
+    if (isNaN(num)) return '0.00';
+
+    // Split into integer and decimal parts
+    const [integerPart, decimalPart] = num.toFixed(2).split('.');
+
+    // Format integer part with commas
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    // Always return with 2 decimal places
+    return `${formattedInteger}.${decimalPart}`;
   };
 
   const formatCurrency = (
@@ -182,62 +208,49 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     currency: string,
     blur: boolean = false
   ): { formatted: string; numericValue: number } => {
-    // Handle empty
-    if (!inputValue) {
+    // Handle empty or invalid input
+    if (!inputValue || inputValue === 'NaN' || inputValue === 'undefined') {
       return { formatted: '', numericValue: 0 };
     }
 
-    let inputVal = inputValue;
-    // Check if the input has a decimal place
-    if (inputVal.indexOf('.') >= 0) {
-      // Split at decimal
-      const decimalPos = inputVal.indexOf('.');
-      let leftSide = inputVal.substring(0, decimalPos);
-      let rightSide = inputVal.substring(decimalPos);
+    let inputVal = inputValue.toString();
 
-      // Format left side
-      leftSide = formatNumber(leftSide);
-      // Format right side
-      rightSide = formatNumber(rightSide);
+    // Remove any existing currency symbol
+    inputVal = inputVal.replace(getPriceCurrencySymbol(currency), '');
 
-      if (blur) {
-        // user left the field, so ensure trailing "00"
-        rightSide += '00';
-      }
-      // Limit decimal to only 2 digits
-      rightSide = rightSide.substring(0, 2);
+    // Remove all non-numeric characters except decimal point
+    inputVal = inputVal.replace(/[^0-9.]/g, '');
 
-      // Join back
-      inputVal = `${getPriceCurrencySymbol(currency)}${leftSide}.${rightSide}`;
-    } else {
-      // no decimal entered
-      inputVal = `${getPriceCurrencySymbol(currency)}${formatNumber(inputVal)}`;
-
-      // If blur, add .00
-      if (blur) {
-        inputVal += '.00';
-      }
+    // Handle decimal places - truncate to 2 digits without rounding
+    const parts = inputVal.split('.');
+    if (parts.length > 1) {
+      inputVal =
+        parts[0] +
+        '.' +
+        (parts[1].length > 2 ? parts[1].substring(0, 2) : parts[1]);
     }
 
-    // Convert the formatted string to a numeric value
-    // 1) remove currency symbol
-    const parts = inputVal.split(getPriceCurrencySymbol(currency));
-    const numericString = parts[1] || '0'; // everything after the symbol
+    const numericValue = parseFloat(inputVal);
 
-    // 2) remove commas
-    const raw = numericString.replace(/,/g, '');
-    // 3) parse float
-    const parsedNumber = parseFloat(raw) || 0;
+    // Format with commas for thousands
+    const [integerPart, decimalPart = '00'] = inputVal.split('.');
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const paddedDecimal = decimalPart.padEnd(2, '0');
+
+    const formatted = `${getPriceCurrencySymbol(
+      currency
+    )}${formattedInteger}.${paddedDecimal}`;
 
     return {
-      formatted: inputVal,
-      numericValue: Math.round(parsedNumber * 100) / 100 // rounding to 2 decimals
+      formatted,
+      numericValue
     };
   };
+
   const handleUnitPriceChange = (newValue: string, rowId: string | number) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row => {
-        if (row.id === rowId) {
+        if (row.id === rowId || row.tempId === rowId) {
           const { formatted, numericValue } = formatCurrency(
             newValue,
             row.currency
@@ -256,9 +269,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const handleUnitPriceBlur = (newValue: string, rowId: string | number) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row => {
-        if (row.tempId === rowId) {
+        if (row.id === rowId || row.tempId === rowId) {
           const { formatted, numericValue } = formatCurrency(
-            row.unitPriceString,
+            newValue,
             row.currency,
             true
           );
@@ -384,10 +397,15 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     setCheckedStates(newCheckedStates);
   };
 
-  const handlePartNumberChange = (value: string, tempId: number) => {
+  const handlePartNumberChange = (
+    value: string,
+    identifier: number | string
+  ) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row =>
-        row.tempId === tempId ? { ...row, partNumber: value } : row
+        (row.tempId != null ? row.tempId === identifier : row.id === identifier)
+          ? { ...row, partNumber: value }
+          : row
       )
     );
   };
@@ -446,6 +464,46 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     );
   };
 
+  // Add function to handle row numbering
+  const getRowNumber = (index: number) => {
+    return index + 1;
+  };
+
+  // Add function to handle row deletion
+  const handleDeleteRow = (index: number) => {
+    const newRows = [...quotePartRows];
+    newRows.splice(index, 1);
+    setQuotePartRows(newRows);
+  };
+
+  // Add function to handle row addition
+  const handleAddRow = () => {
+    const newRow: QuotePartRow = {
+      id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      tempId: Date.now(),
+      partNumber: '',
+      alternativeTo: '',
+      currency: currency,
+      description: '',
+      reqCondition: 'NE',
+      fndCondition: 'NE',
+      quotePartId: null,
+      leadTime: 0,
+      quantity: 1,
+      unitPrice: 0,
+      isNew: true,
+      unitPriceString: '0.00'
+    };
+    setQuotePartRows([...quotePartRows, newRow]);
+  };
+
+  const handleBankChange = (bankName: string) => {
+    const selected = piResponseData?.allBanks.find(
+      bank => bank.bankName === bankName
+    );
+    setSelectedBank(selected);
+  };
+
   return (
     <>
       <div className="uppersection">
@@ -471,13 +529,17 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             <h2 className="text-primary">PROFORMA INVOICE</h2>
             <Form>
               <Form.Group className="mb-3">
-                <DatePicker
-                  placeholder="Select a date"
-                  value={selectedDate}
-                  onChange={selectedDates => {
-                    setSelectedDate(selectedDates[0]);
-                  }}
-                />
+                <div className="d-flex justify-content-end">
+                  <div style={{ maxWidth: '180px' }}>
+                    <DatePicker
+                      placeholder="Select a date"
+                      value={selectedDate}
+                      onChange={selectedDates => {
+                        setSelectedDate(selectedDates[0]);
+                      }}
+                    />
+                  </div>
+                </div>
               </Form.Group>
             </Form>
             <p className="mt-2 small mt-3">
@@ -541,14 +603,19 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         <Table bordered hover size="sm" responsive>
           <thead>
             <tr className="bg-primary text-white text-center">
-              <td className="text-white align-middle">NO</td>
-              <td className="text-white align-middle">PN/MODEL</td>
+              <td className="text-white align-middle" style={{ width: '50px' }}>
+                NO
+              </td>
+              <td
+                className="text-white align-middle"
+                style={{ width: '150px' }}
+              >
+                PN/MODEL
+              </td>
               <td className="text-white align-middle">DESCRIPTION</td>
               <td className="text-white align-middle">QTY</td>
               <td className="text-white align-middle">LEAD TIME</td>
               <td className="text-white align-middle">UNIT PRICE</td>
-              {/* <td className="text-white align-middle">FND CND</td>
-              <td className="text-white align-middle">QTY</td> */}
               <td
                 className="text-white align-middle"
                 style={{ minWidth: '100px' }}
@@ -560,37 +627,29 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           </thead>
           <tbody>
             {quotePartRows.map((row, index) => (
-              <tr key={row.tempId} className="text-center align-middle">
+              <tr
+                key={`${row.id}-${index}`}
+                className="text-center align-middle"
+              >
+                <td className="align-middle">{getRowNumber(index)}</td>
                 <td>
-                  {row.isNew ? (
-                    <Form.Control
-                      type="text"
-                      value={row.partNumber}
-                      onChange={e =>
-                        handlePartNumberChange(e.target.value, row.tempId)
-                      }
-                    />
-                  ) : (
-                    row.partNumber
-                  )}
-                </td>
-                <td>
-                  {row.isNew ? (
-                    <Form.Control
-                      type="text"
-                      value={row.alternativeTo}
-                      onChange={e =>
-                        handleAlternativePartChange(e.target.value, row.tempId)
-                      }
-                    />
-                  ) : (
-                    row.alternativeTo || ''
-                  )}
+                  <Form.Control
+                    as="textarea"
+                    rows={1}
+                    value={row.partNumber}
+                    onChange={e =>
+                      handlePartNumberChange(
+                        e.target.value,
+                        row.tempId != null ? row.tempId : row.id
+                      )
+                    }
+                    style={{ width: '100%', resize: 'vertical' }}
+                  />
                 </td>
                 <td>
                   <Form.Control
                     as="textarea"
-                    rows={3} // Başlangıç satır sayısı
+                    rows={2}
                     value={row.description}
                     onChange={e =>
                       handleDescriptionChange(
@@ -600,47 +659,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     }
                     style={{ width: '100%', resize: 'vertical' }}
                   />
-                </td>
-
-                <td>
-                  {row.isNew ? (
-                    <Form.Select
-                      value={row.reqCondition}
-                      onChange={e => handleReqCondition(e.target.value, row.id)}
-                    >
-                      <option value="NE">NE</option>
-                      <option value="FN">FN</option>
-                      <option value="NS">NS</option>
-                      <option value="OH">OH</option>
-                      <option value="SV">SV</option>
-                      <option value="AR">AR</option>
-                      <option value="RP">RP</option>
-                      <option value="IN">IN</option>
-                      <option value="TST">TST</option>
-                    </Form.Select>
-                  ) : (
-                    row.reqCondition
-                  )}
-                </td>
-                <td>
-                  {row.isNew ? (
-                    <Form.Select
-                      value={row.fndCondition}
-                      onChange={e => handleFndCondition(e.target.value, row.id)}
-                    >
-                      <option value="NE">NE</option>
-                      <option value="FN">FN</option>
-                      <option value="NS">NS</option>
-                      <option value="OH">OH</option>
-                      <option value="SV">SV</option>
-                      <option value="AR">AR</option>
-                      <option value="RP">RP</option>
-                      <option value="IN">IN</option>
-                      <option value="TST">TST</option>
-                    </Form.Select>
-                  ) : (
-                    row.fndCondition
-                  )}
                 </td>
                 <td style={{ width: '75px' }}>
                   <div className="d-flex align-items-center">
@@ -658,7 +676,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     />
                   </div>
                 </td>
-
                 <td style={{ width: '75px' }}>
                   <Form.Control
                     type="number"
@@ -667,11 +684,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       handleQuantityChange(parseInt(e.target.value, 10), row.id)
                     }
                     min={1}
-                    style={{ width: '75px' }} // Input genişliğini de ayarlıyoruz
+                    style={{ width: '75px' }}
                   />
                 </td>
-
-                <td>
+                <td style={{ width: '205px' }}>
                   <Form.Control
                     type="text"
                     value={row.unitPriceString}
@@ -698,14 +714,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       variant="success"
                       size="sm"
                       className="me-1"
-                      onClick={() => addRow()}
+                      onClick={handleAddRow}
                     >
                       +
                     </Button>
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => deleteRow(row.tempId, row.quotePartId)}
+                      onClick={() => handleDeleteRow(index)}
                     >
                       -
                     </Button>
@@ -718,18 +734,75 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       </div>
       <div className="footer-section mt-5">
         <Row className="g-3">
-          <Table striped bordered hover className="mb-3 text-center">
-            <tbody>
-              <tr>
-                <td className="p-2">
-                  {quoteWizardData?.quoteWizardSetting?.contactInfo || ''}
-                  <br />
-                  {quoteWizardData?.quoteWizardSetting?.phone || ''}
-                  <br />
-                </td>
-              </tr>
-            </tbody>
-          </Table>{' '}
+          <Col md={8}>
+            <div className="mb-4">
+              <Table bordered hover size="sm">
+                <tbody>
+                  <tr>
+                    <td style={{ width: '120px' }}>Contract No :</td>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        <Form.Control
+                          type="text"
+                          placeholder="Contract No"
+                          value={setupOtherProps.contractNo || ''}
+                          onChange={e =>
+                            setupOtherProps.setContractNo(e.target.value)
+                          }
+                        />
+                        <Form.Check
+                          type="checkbox"
+                          label="International"
+                          className="ms-3"
+                          checked={setupOtherProps.isInternational}
+                          onChange={e =>
+                            setupOtherProps.setIsInternational(e.target.checked)
+                          }
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Payment Term :</td>
+                    <td>
+                      <Form.Control
+                        type="text"
+                        value={setupOtherProps.shippingTerms}
+                        onChange={e =>
+                          setupOtherProps.setShippingTerms(e.target.value)
+                        }
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Delivery Term :</td>
+                    <td>
+                      <Form.Control
+                        type="text"
+                        value={setupOtherProps.CPT}
+                        onChange={e => setupOtherProps.setCPT(e.target.value)}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Validity Day :</td>
+                    <td>
+                      <Form.Control
+                        type="number"
+                        min="0"
+                        value={setupOtherProps.validityDay || 0}
+                        onChange={e =>
+                          setupOtherProps.setValidityDay(
+                            parseInt(e.target.value)
+                          )
+                        }
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </Table>
+            </div>
+          </Col>
           <Col md={4}>
             <div className="d-flex flex-column text-center">
               <Table bordered hover size="sm" className="mb-4">
@@ -742,13 +815,13 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <h5>
                           <span className="text-primary ms-2">
                             {formatNumberWithDecimals(
-                              (
-                                quotePartRows?.reduce(
+                              quotePartRows
+                                .reduce(
                                   (acc, row) =>
                                     acc + row.quantity * row.unitPrice,
                                   0
-                                ) || 0
-                              ).toString()
+                                )
+                                .toString()
                             )}{' '}
                             {getPriceCurrencySymbol(currency)}
                           </span>
@@ -758,67 +831,247 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {quoteWizardData?.quoteWizardSetting?.otherQuoteValues?.map(
-                    (value, index) => (
-                      <tr key={index}>
-                        <td>{value}</td>
-                        <td>
-                          <Form.Check
-                            type="checkbox"
-                            defaultChecked
-                            checked={checkedStates[index]}
-                            onChange={e =>
-                              handleCheckboxChange(index, e.target.checked)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <Form.Control
-                            type="text"
-                            value={
-                              getPriceCurrencySymbol(currency) +
-                              (displayValues[index] ||
-                                formatNumberInput(
-                                  subTotalValues[index].toString()
-                                ))
-                            }
-                            onChange={e => {
-                              const value = e.target.value.replace(
-                                getPriceCurrencySymbol(currency),
-                                ''
-                              );
-                              handleSubTotalChange(index, value);
-                            }}
-                            onBlur={e => {
-                              const numericValue =
-                                parseFloat(
-                                  e.target.value.replace(/[^0-9.]/g, '')
-                                ) || 0;
+                  {quoteWizardData && (
+                    <tr>
+                      <td>
+                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[0]}
+                      </td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          defaultChecked
+                          checked={checkedStates[0]}
+                          onChange={e =>
+                            handleCheckboxChange(0, e.target.checked)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="text"
+                          value={
+                            getPriceCurrencySymbol(currency) +
+                            (displayValues[0] ||
+                              formatNumberInput(subTotalValues[0].toString()))
+                          }
+                          onChange={e => {
+                            const value = e.target.value.replace(
+                              getPriceCurrencySymbol(currency),
+                              ''
+                            );
+                            handleSubTotalChange(0, value);
+                          }}
+                          onBlur={e => {
+                            const numericValue =
+                              parseFloat(
+                                e.target.value.replace(/[^0-9.]/g, '')
+                              ) || 0;
 
-                              const formattedNumber = numericValue.toFixed(2);
-                              const formattedValue =
-                                formatNumberInput(formattedNumber);
+                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
+                            const formattedNumber = numericValue.toFixed(2);
+                            const formattedValue =
+                              formatNumberInput(formattedNumber);
 
-                              const newDisplayValues = [...displayValues];
-                              newDisplayValues[index] = formattedValue;
-                              setDisplayValues(newDisplayValues);
-                            }}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                e.currentTarget.blur();
-                              }
-                            }}
-                            onWheel={e => e.currentTarget.blur()}
-                            placeholder="0.00"
-                            style={{
-                              width: '110px',
-                              paddingRight: '4px',
-                              paddingLeft: '8px'
-                            }}
-                          />
-                        </td>
-                      </tr>
-                    )
+                            const newDisplayValues = [...displayValues];
+                            newDisplayValues[0] = formattedValue;
+                            setDisplayValues(newDisplayValues);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onWheel={e => e.currentTarget.blur()}
+                          placeholder="0.00"
+                          style={{
+                            width: '110px',
+                            paddingRight: '4px',
+                            paddingLeft: '8px'
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  {quoteWizardData && (
+                    <tr>
+                      <td>
+                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[1]}
+                      </td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          defaultChecked
+                          checked={checkedStates[1]}
+                          onChange={e =>
+                            handleCheckboxChange(1, e.target.checked)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="text"
+                          value={
+                            getPriceCurrencySymbol(currency) +
+                            (displayValues[1] ||
+                              formatNumberInput(subTotalValues[1].toString()))
+                          }
+                          onChange={e => {
+                            const value = e.target.value.replace(
+                              getPriceCurrencySymbol(currency),
+                              ''
+                            );
+                            handleSubTotalChange(1, value);
+                          }}
+                          onBlur={e => {
+                            const numericValue =
+                              parseFloat(
+                                e.target.value.replace(/[^0-9.]/g, '')
+                              ) || 0;
+
+                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
+                            const formattedNumber = numericValue.toFixed(2);
+                            const formattedValue =
+                              formatNumberInput(formattedNumber);
+
+                            const newDisplayValues = [...displayValues];
+                            newDisplayValues[1] = formattedValue;
+                            setDisplayValues(newDisplayValues);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onWheel={e => e.currentTarget.blur()}
+                          placeholder="0.00"
+                          style={{
+                            width: '110px',
+                            paddingRight: '4px',
+                            paddingLeft: '8px'
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  {quoteWizardData && (
+                    <tr>
+                      <td>
+                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[2]}
+                      </td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          checked={checkedStates[2]}
+                          onChange={e =>
+                            handleCheckboxChange(2, e.target.checked)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="text"
+                          value={
+                            getPriceCurrencySymbol(currency) +
+                            (displayValues[2] ||
+                              formatNumberInput(subTotalValues[2].toString()))
+                          }
+                          onChange={e => {
+                            const value = e.target.value.replace(
+                              getPriceCurrencySymbol(currency),
+                              ''
+                            );
+                            handleSubTotalChange(2, value);
+                          }}
+                          onBlur={e => {
+                            const numericValue =
+                              parseFloat(
+                                e.target.value.replace(/[^0-9.]/g, '')
+                              ) || 0;
+
+                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
+                            const formattedNumber = numericValue.toFixed(2);
+                            const formattedValue =
+                              formatNumberInput(formattedNumber);
+
+                            const newDisplayValues = [...displayValues];
+                            newDisplayValues[2] = formattedValue;
+                            setDisplayValues(newDisplayValues);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onWheel={e => e.currentTarget.blur()}
+                          placeholder="0.00"
+                          style={{
+                            width: '110px',
+                            paddingRight: '4px',
+                            paddingLeft: '8px'
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  {quoteWizardData && (
+                    <tr>
+                      <td>
+                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[3]}
+                      </td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          checked={checkedStates[3]}
+                          onChange={e =>
+                            handleCheckboxChange(3, e.target.checked)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="text"
+                          value={
+                            getPriceCurrencySymbol(currency) +
+                            (displayValues[3] ||
+                              formatNumberInput(subTotalValues[3].toString()))
+                          }
+                          onChange={e => {
+                            const value = e.target.value.replace(
+                              getPriceCurrencySymbol(currency),
+                              ''
+                            );
+                            handleSubTotalChange(3, value);
+                          }}
+                          onBlur={e => {
+                            const numericValue =
+                              parseFloat(
+                                e.target.value.replace(/[^0-9.]/g, '')
+                              ) || 0;
+
+                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
+                            const formattedNumber = numericValue.toFixed(2);
+                            const formattedValue =
+                              formatNumberInput(formattedNumber);
+
+                            const newDisplayValues = [...displayValues];
+                            newDisplayValues[3] = formattedValue;
+                            setDisplayValues(newDisplayValues);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onWheel={e => e.currentTarget.blur()}
+                          placeholder="0.00"
+                          style={{
+                            width: '110px',
+                            paddingRight: '4px',
+                            paddingLeft: '8px'
+                          }}
+                        />
+                      </td>
+                    </tr>
                   )}
                   <tr>
                     <td colSpan={2}>Total:</td>
@@ -826,10 +1079,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <strong>
                         {formatNumberWithDecimals(
                           (
-                            (quotePartRows?.reduce(
+                            quotePartRows.reduce(
                               (acc, row) => acc + row.quantity * row.unitPrice,
                               0
-                            ) || 0) +
+                            ) +
                             subTotalValues.reduce(
                               (sum, val, index) =>
                                 sum + (checkedStates[index] ? val : 0),
@@ -845,6 +1098,38 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               </Table>
             </div>
           </Col>
+          <Table bordered hover size="sm" id="client-info-form1">
+            <thead>
+              <tr className="bg-primary text-white text-center align-middle">
+                <td className="text-white">Bank Name</td>
+                <td className="text-white">Branch Name</td>
+                <td className="text-white">Branch Code</td>
+                <td className="text-white">Swift Code</td>
+                <td className="text-white">IBAN NO</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="text-center align-middle">
+                <td>
+                  <Form.Select
+                    value={selectedBank?.bankName || ''}
+                    onChange={e => handleBankChange(e.target.value)}
+                  >
+                    <option value="">Select Bank</option>
+                    {piResponseData?.allBanks.map((bank, index) => (
+                      <option key={index} value={bank.bankName}>
+                        {bank.bankName}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </td>
+                <td>{selectedBank?.branchName || ''}</td>
+                <td>{selectedBank?.branchCode || ''}</td>
+                <td>{selectedBank?.swiftCode || ''}</td>
+                <td>{selectedBank?.ibanNo || ''}</td>
+              </tr>
+            </tbody>
+          </Table>
         </Row>
       </div>
     </>

@@ -67,6 +67,27 @@ export interface PIResponseData {
   validityDay: number;
 }
 
+export interface SetupOtherProps {
+  clientLocation: string;
+  setClientLocation: React.Dispatch<React.SetStateAction<string>>;
+  shipTo: string;
+  setShipTo: React.Dispatch<React.SetStateAction<string>>;
+  requisitioner: string;
+  setRequisitioner: React.Dispatch<React.SetStateAction<string>>;
+  shipVia: string;
+  setShipVia: React.Dispatch<React.SetStateAction<string>>;
+  CPT: string;
+  setCPT: React.Dispatch<React.SetStateAction<string>>;
+  shippingTerms: string;
+  setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
+  contractNo: string;
+  setContractNo: React.Dispatch<React.SetStateAction<string>>;
+  isInternational: boolean;
+  setIsInternational: React.Dispatch<React.SetStateAction<boolean>>;
+  validityDay: number;
+  setValidityDay: React.Dispatch<React.SetStateAction<number>>;
+}
+
 // Create a union type for the data we'll use
 type WizardData = PIResponseData | QuoteWizardData;
 
