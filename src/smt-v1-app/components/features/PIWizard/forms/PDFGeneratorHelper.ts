@@ -1,22 +1,27 @@
 import autoTable from 'jspdf-autotable';
 import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 import { QuotePartRow, QuoteWizardSetting } from '../PIWizard';
 
-export const generatePDF = (
+export const generatePDF = async (
   settings: QuoteWizardSetting,
-  selectedDate: Date,
+  selectedDate: Date | null,
   quoteNumber: string,
   currency: string,
   quotePartRows: QuotePartRow[],
-  subTotalValues,
-  checkedStates,
+  subTotalValues: number[],
+  checkedStates: boolean[],
   clientLocation: string,
   shipTo: string,
   requisitioner: string,
   shipVia: string,
   CPT: string,
-  shippingTerms: string
-): jsPDF | void => {
+  shippingTerms: string,
+  contractNo: string,
+  isInternational: boolean,
+  validityDay: number,
+  selectedBank: any
+): Promise<jsPDF | void> => {
   try {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.width;
@@ -25,25 +30,6 @@ export const generatePDF = (
     pdf.addImage(settings.logo, 'JPEG', 10, 10, 60, 30);
 
     pdf.setFontSize(10);
-
-    // Address (split into rows)
-    const maxWidth = 60;
-    const row1Lines = pdf.splitTextToSize(settings.addressRow1, maxWidth);
-    const row2Lines = pdf.splitTextToSize(settings.addressRow2, maxWidth);
-    const row3Lines = pdf.splitTextToSize(settings.mobilePhone, maxWidth);
-    let currentY = 45;
-    row1Lines.forEach(line => {
-      pdf.text(line, 10, currentY);
-      currentY += 5;
-    });
-    row2Lines.forEach(line => {
-      pdf.text(line, 10, currentY);
-      currentY += 5;
-    });
-    row3Lines.forEach(line => {
-      pdf.text(line, 10, currentY);
-      currentY += 5;
-    });
 
     // Quote header and details
     pdf.setFontSize(25);
@@ -59,45 +45,26 @@ export const generatePDF = (
 
     // Client info table
     autoTable(pdf, {
-      startY: 65,
-      head: [['CLIENT LOCATION', 'SHIP TO']],
-      body: [[clientLocation, shipTo]],
+      startY: 40,
+      head: [['SHIP TO', 'CLIENT LOCATION']],
+      body: [[shipTo, clientLocation]],
       theme: 'grid',
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
       styles: { halign: 'center', valign: 'middle' },
       columnStyles: {
-        0: { cellWidth: 143 },
-        1: { cellWidth: 53 }
-      },
-      margin: { left: 7 }
-    });
-
-    // Shipping details table
-    autoTable(pdf, {
-      startY: (pdf as any).lastAutoTable?.finalY + 5 || 70,
-      head: [['REQUISITIONER', 'SHIP VIA', 'CPT', 'SHIPPING TERMS']],
-      body: [[requisitioner, shipVia, CPT, shippingTerms]],
-      theme: 'grid',
-      headStyles: { fillColor: [51, 102, 204], textColor: 255 },
-      styles: { halign: 'center', valign: 'middle' },
-      columnStyles: {
-        0: { cellWidth: 48.5 },
-        1: { cellWidth: 48.5 },
-        2: { cellWidth: 49.5 },
-        3: { cellWidth: 49.5 }
+        0: { cellWidth: 53 },
+        1: { cellWidth: 143 }
       },
       margin: { left: 7 }
     });
 
     // Main product table
     const tableBody = quotePartRows.map(row => [
+      row.no,
       row.partNumber,
-      row.alternativeTo || '-',
       row.description,
-      row.reqCondition,
-      row.fndCondition,
-      `${row.leadTime} Days`,
       row.quantity,
+      `${row.leadTime} Days`,
       row.unitPrice.toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
@@ -108,16 +75,14 @@ export const generatePDF = (
       })
     ]);
     autoTable(pdf, {
-      startY: (pdf as any).lastAutoTable?.finalY + 5 || 70,
+      startY: (pdf as any).lastAutoTable?.finalY + 5 || 40,
       head: [
         [
-          'PART NUMBER',
-          'ALTERNATIVE TO',
+          'NO',
+          'PN/MODEL',
           'DESCRIPTION',
-          'REQ CND',
-          'FND CND',
-          'LEAD TIME',
           'QTY',
+          'LEAD TIME',
           'UNIT PRICE',
           'TOTAL'
         ]
@@ -127,15 +92,13 @@ export const generatePDF = (
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
       styles: { halign: 'center', valign: 'middle' },
       columnStyles: {
-        0: { cellWidth: 29 },
-        1: { cellWidth: 28 },
-        2: { cellWidth: 35 },
-        3: { cellWidth: 11 },
-        4: { cellWidth: 11 },
-        5: { cellWidth: 20 },
-        6: { cellWidth: 12 },
-        7: { cellWidth: 24 },
-        8: { cellWidth: 26 }
+        0: { cellWidth: 15 },
+        1: { cellWidth: 31 },
+        2: { cellWidth: 50 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 30 },
+        6: { cellWidth: 30 }
       },
       margin: { left: 7 }
     });
@@ -156,7 +119,7 @@ export const generatePDF = (
       );
 
     // Use the Y position after the main product table
-    const startYPosition = (pdf as any).lastAutoTable?.finalY + 5 || 70;
+    const startYPosition = (pdf as any).lastAutoTable?.finalY + 5 || 40;
 
     // --- Revised Layout ---
 
@@ -180,7 +143,7 @@ export const generatePDF = (
           }
         ],
         [
-          settings.otherQuoteValues[0],
+          'Tax',
           checkedStates[0] ? 'Yes' : 'No',
           subTotalValues[0]?.toLocaleString('en-US', {
             style: 'currency',
@@ -188,7 +151,7 @@ export const generatePDF = (
           })
         ],
         [
-          settings.otherQuoteValues[1],
+          'Aircargo to X',
           checkedStates[1] ? 'Yes' : 'No',
           subTotalValues[1]?.toLocaleString('en-US', {
             style: 'currency',
@@ -196,7 +159,7 @@ export const generatePDF = (
           })
         ],
         [
-          settings.otherQuoteValues[2],
+          'Sealine to X',
           checkedStates[2] ? 'Yes' : 'No',
           subTotalValues[2]?.toLocaleString('en-US', {
             style: 'currency',
@@ -204,7 +167,7 @@ export const generatePDF = (
           })
         ],
         [
-          settings.otherQuoteValues[3],
+          'Truck Carriage to X',
           checkedStates[3] ? 'Yes' : 'No',
           subTotalValues[3]?.toLocaleString('en-US', {
             style: 'currency',
@@ -233,36 +196,109 @@ export const generatePDF = (
       }
     });
 
-    // 2. Comments section (full width, placed below the Sub-total block)
-    autoTable(pdf, {
-      startY: (pdf as any).lastAutoTable?.finalY + 5,
-      margin: { left: 7 },
-      body: [
-        [
-          {
-            content: 'Comments or Special Instructions',
-            styles: { halign: 'center', fontStyle: 'bold' }
-          }
+    // Add Bank Information
+    if (selectedBank) {
+      const bankTable = {
+        head: [
+          [
+            'Currency',
+            'Bank Name',
+            'Branch Name',
+            'Branch Code',
+            'Swift Code',
+            'IBAN NO'
+          ]
         ],
-        [settings.commentsSpecialInstruction]
-      ],
-      theme: 'grid',
-      styles: { halign: 'left', valign: 'middle' },
-      // Make sure the table uses the full available width (pageWidth minus left/right margins)
-      columnStyles: { 0: { cellWidth: pageWidth - 15 } }
-    });
+        body: [
+          [
+            selectedBank.currency || '',
+            selectedBank.bankName || '',
+            selectedBank.branchName || '',
+            selectedBank.branchCode || '',
+            selectedBank.swiftCode || '',
+            selectedBank.ibanNo || ''
+          ]
+        ]
+      };
 
-    // (Optional) Additional sections such as centered contact info can follow…
-    const tableWidth = 195;
-    const leftMargin = (pageWidth - tableWidth) / 2;
-    autoTable(pdf, {
-      startY: (pdf as any).lastAutoTable?.finalY + 5,
-      body: [[settings.contactInfo + '\n' + settings.phone]],
-      theme: 'grid',
-      styles: { halign: 'center', valign: 'middle' },
-      columnStyles: { 0: { cellWidth: tableWidth } },
-      margin: { left: leftMargin }
-    });
+      autoTable(pdf, {
+        startY: (pdf as any).lastAutoTable?.finalY + 10,
+        head: bankTable.head,
+        body: bankTable.body,
+        theme: 'grid',
+        headStyles: { fillColor: [51, 102, 204], textColor: 255 },
+        styles: { halign: 'center', valign: 'middle' },
+        margin: { left: 7, right: 7 }
+      });
+
+      // Add QR code if IBAN exists
+      if (selectedBank.ibanNo) {
+        try {
+          // Generate QR code as data URL
+          const qrCodeDataUrl = await QRCode.toDataURL(selectedBank.ibanNo, {
+            width: 100,
+            margin: 0,
+            errorCorrectionLevel: 'H'
+          });
+
+          // Position QR code to the right of the bank table
+          const qrX = pdf.internal.pageSize.getWidth() - 47;
+          const qrY = (pdf as any).lastAutoTable.finalY + 7;
+          pdf.addImage(qrCodeDataUrl, 'PNG', qrX, qrY, 30, 30);
+        } catch (error) {
+          console.error('QR code generation error:', error);
+        }
+      }
+
+      // Add company address information
+      // Örnek: Görseldeki adres bilgisine benzer formatta yazdırma
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
+
+      // Sayfa genişliğinin yarısı (orta nokta)
+      const centerX = pdf.internal.pageSize.getWidth() / 2;
+
+      // Sayfa yüksekliğini al ve alttan 30mm boşluk bırak
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const addressY = pageHeight - 25; // Sayfanın altından 30mm yukarıda başla
+
+      // 1) Adres satırlarını ayırma
+      const addressLines: string[] = [];
+      if (settings.companyAddress) {
+        const splittedAddress = settings.companyAddress.split('\n');
+        splittedAddress.forEach(line => {
+          const trimmed = line.trim();
+          if (trimmed) {
+            addressLines.push(trimmed);
+          }
+        });
+      }
+
+      // Her satırı ortalayarak yazdırma (alttan yukarı doğru)
+      addressLines.forEach((line, index) => {
+        const fontSize = pdf.internal.getFontSize();
+        const lineWidth =
+          (pdf.getStringUnitWidth(line) * fontSize) / pdf.internal.scaleFactor;
+        const lineX = centerX - lineWidth / 2;
+
+        // Satırları alttan yukarı doğru yerleştir (her satır için 6mm yukarı)
+        const reversedIndex = addressLines.length - 1 - index; // Dizinin sonundan başla
+        pdf.text(line, lineX, addressY - reversedIndex * 6);
+      });
+
+      // Telefon numarasını adresin altına ekle
+      if (settings.phone) {
+        const fontSize = pdf.internal.getFontSize();
+        const phoneText = `Tel: ${settings.phone}`;
+        const phoneWidth =
+          (pdf.getStringUnitWidth(phoneText) * fontSize) /
+          pdf.internal.scaleFactor;
+        const phoneX = centerX - phoneWidth / 2;
+        pdf.text(phoneText, phoneX, addressY + 6); // Adresin 6mm altına
+      }
+    }
+
     // Save the PDF
     return pdf;
   } catch (error) {
@@ -270,23 +306,27 @@ export const generatePDF = (
   }
 };
 
-export const downloadPDF = (
+export const downloadPDF = async (
   settings: QuoteWizardSetting,
-  selectedDate: Date,
+  selectedDate: Date | null,
   quoteNumber: string,
   currency: string,
   quotePartRows: QuotePartRow[],
-  subTotalValues,
-  checkedStates,
+  subTotalValues: number[],
+  checkedStates: boolean[],
   clientLocation: string,
   shipTo: string,
   requisitioner: string,
   shipVia: string,
   CPT: string,
-  shippingTerms: string
+  shippingTerms: string,
+  contractNo: string,
+  isInternational: boolean,
+  validityDay: number,
+  selectedBank: any
 ) => {
   try {
-    const pdf = generatePDF(
+    const pdf = await generatePDF(
       settings,
       selectedDate,
       quoteNumber,
@@ -299,33 +339,41 @@ export const downloadPDF = (
       requisitioner,
       shipVia,
       CPT,
-      shippingTerms
+      shippingTerms,
+      contractNo,
+      isInternational,
+      validityDay,
+      selectedBank
     );
     if (pdf) {
       pdf.save('quote-' + quoteNumber + '.pdf');
     }
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.error('PDF oluşturma sırasında bir hata oluştu:', error);
   }
 };
 
 export const returnPdfAsBase64String = async (
   settings: QuoteWizardSetting,
-  selectedDate: Date,
+  selectedDate: Date | null,
   quoteNumber: string,
   currency: string,
   quotePartRows: QuotePartRow[],
-  subTotalValues,
-  checkedStates,
+  subTotalValues: number[],
+  checkedStates: boolean[],
   clientLocation: string,
   shipTo: string,
   requisitioner: string,
   shipVia: string,
   CPT: string,
-  shippingTerms: string
+  shippingTerms: string,
+  contractNo: string,
+  isInternational: boolean,
+  validityDay: number,
+  selectedBank: any
 ): Promise<string | undefined> => {
   try {
-    const pdf = generatePDF(
+    const pdf = await generatePDF(
       settings,
       selectedDate,
       quoteNumber,
@@ -338,7 +386,11 @@ export const returnPdfAsBase64String = async (
       requisitioner,
       shipVia,
       CPT,
-      shippingTerms
+      shippingTerms,
+      contractNo,
+      isInternational,
+      validityDay,
+      selectedBank
     );
     if (pdf) {
       const pdfBlob = pdf.output('blob');

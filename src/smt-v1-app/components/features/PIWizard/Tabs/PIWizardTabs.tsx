@@ -71,6 +71,9 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   const [contractNo, setContractNo] = useState<string>('');
   const [isInternational, setIsInternational] = useState<boolean>(false);
   const [validityDay, setValidityDay] = useState<number>(0);
+  const [selectedBank, setSelectedBank] = useState<
+    PIResponseData['allBanks'][0] | null
+  >(null);
 
   const setupOtherProps: SetupOtherProps = {
     clientLocation,
@@ -90,7 +93,9 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
     isInternational,
     setIsInternational,
     validityDay,
-    setValidityDay
+    setValidityDay,
+    selectedBank,
+    setSelectedBank
   };
 
   const [base64Pdf, setBase64Pdf] = useState<string>('');
@@ -258,26 +263,27 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                   />
                 </WizardForm>
               </Tab.Pane>
-              {/* <Tab.Pane eventKey={2} unmountOnExit>
+              <Tab.Pane eventKey={2} unmountOnExit>
                 <WizardForm step={2}>
                   {
                     <WizardPreviewForm
                       setBase64Pdf={setBase64Pdf}
                       setIsPdfConvertedToBase64={setIsPdfConvertedToBase64}
                       setBase64PdfFileName={setBase64PdfFileName}
-                      quotePartRows={quotePartRows}
                       settings={quoteWizardData.quoteWizardSetting}
-                      quoteNumber={quoteWizardData.quoteNumberId}
+                      quotePartRows={quotePartRows}
                       subTotalValues={subTotalValues}
-                      currency={currency}
                       selectedDate={selectedDate}
                       checkedStates={checkedStates}
+                      quoteNumber={quoteWizardData.quoteNumberId}
+                      currency={currency}
                       setupOtherProps={setupOtherProps}
+                      piResponseData={piResponseData}
                     />
                   }
                 </WizardForm>
               </Tab.Pane>
-
+              {/*
               <Tab.Pane eventKey={3}>
                 <WizardForm step={3}>
                   {

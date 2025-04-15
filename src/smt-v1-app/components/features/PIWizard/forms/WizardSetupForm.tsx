@@ -38,6 +38,8 @@ interface WizardSetupFormProps {
     setIsInternational: React.Dispatch<React.SetStateAction<boolean>>;
     validityDay?: number;
     setValidityDay: React.Dispatch<React.SetStateAction<number | undefined>>;
+    selectedBank: any;
+    setSelectedBank: React.Dispatch<React.SetStateAction<any>>;
   };
   piResponseData?: PIResponseData;
 }
@@ -168,7 +170,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   ]);
 
   const [tempIdCounter, setTempIdCounter] = useState(0);
-  const [selectedBank, setSelectedBank] = useState<any>(null);
 
   // Price Methods Start
 
@@ -338,6 +339,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       description: '',
       reqCondition: 'NE',
       fndCondition: 'NE',
+      no: 0,
       quotePartId: null,
       leadTime: 0,
       quantity: 1,
@@ -479,6 +481,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   // Add function to handle row addition
   const handleAddRow = () => {
     const newRow: QuotePartRow = {
+      no: 0,
       id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       tempId: Date.now(),
       partNumber: '',
@@ -501,7 +504,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     const selected = piResponseData?.allBanks.find(
       bank => bank.bankName === bankName
     );
-    setSelectedBank(selected);
+    setupOtherProps.setSelectedBank(selected || null);
   };
 
   return (
@@ -833,9 +836,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <tbody>
                   {quoteWizardData && (
                     <tr>
-                      <td>
-                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[0]}
-                      </td>
+                      <td>Tax</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -894,9 +895,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   )}
                   {quoteWizardData && (
                     <tr>
-                      <td>
-                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[1]}
-                      </td>
+                      <td>Aircargo to X</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -955,9 +954,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   )}
                   {quoteWizardData && (
                     <tr>
-                      <td>
-                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[2]}
-                      </td>
+                      <td>Sealine to X</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -1015,9 +1012,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   )}
                   {quoteWizardData && (
                     <tr>
-                      <td>
-                        {quoteWizardData.quoteWizardSetting.otherQuoteValues[3]}
-                      </td>
+                      <td>Truck Carriage to X</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -1112,7 +1107,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <tr className="text-center align-middle">
                 <td>
                   <Form.Select
-                    value={selectedBank?.bankName || ''}
+                    value={setupOtherProps.selectedBank?.bankName || ''}
                     onChange={e => handleBankChange(e.target.value)}
                   >
                     <option value="">Select Bank</option>
@@ -1123,10 +1118,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     ))}
                   </Form.Select>
                 </td>
-                <td>{selectedBank?.branchName || ''}</td>
-                <td>{selectedBank?.branchCode || ''}</td>
-                <td>{selectedBank?.swiftCode || ''}</td>
-                <td>{selectedBank?.ibanNo || ''}</td>
+                <td>{setupOtherProps.selectedBank?.branchName || ''}</td>
+                <td>{setupOtherProps.selectedBank?.branchCode || ''}</td>
+                <td>{setupOtherProps.selectedBank?.swiftCode || ''}</td>
+                <td>{setupOtherProps.selectedBank?.ibanNo || ''}</td>
               </tr>
             </tbody>
           </Table>

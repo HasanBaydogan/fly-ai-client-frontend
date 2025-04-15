@@ -12,6 +12,7 @@ import {
   generatePDF,
   returnPdfAsBase64String
 } from './PDFGeneratorHelper';
+import QRCode from 'react-qr-code';
 
 interface WizardPersonalFormProps {
   settings: QuoteWizardSetting;
@@ -37,7 +38,15 @@ interface WizardPersonalFormProps {
     setCPT: React.Dispatch<React.SetStateAction<string>>;
     shippingTerms: string;
     setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
+    selectedBank: any;
+    contractNo: string;
+    setContractNo: React.Dispatch<React.SetStateAction<string>>;
+    isInternational: boolean;
+    setIsInternational: React.Dispatch<React.SetStateAction<boolean>>;
+    validityDay: number;
+    setValidityDay: React.Dispatch<React.SetStateAction<number>>;
   };
+  piResponseData: any; // Assuming piResponseData is of type any
 }
 
 const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
@@ -51,11 +60,12 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
   quoteNumber, // Add this new prop,
   currency,
   setIsPdfConvertedToBase64,
-  setupOtherProps
+  setupOtherProps,
+  piResponseData
 }) => {
-  const handleGeneratePDF = () => {
+  const handleGeneratePDF = async () => {
     try {
-      downloadPDF(
+      await downloadPDF(
         settings,
         selectedDate,
         quoteNumber,
@@ -68,7 +78,11 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         setupOtherProps.requisitioner,
         setupOtherProps.shipVia,
         setupOtherProps.CPT,
-        setupOtherProps.shippingTerms
+        setupOtherProps.shippingTerms,
+        setupOtherProps.contractNo,
+        setupOtherProps.isInternational,
+        setupOtherProps.validityDay,
+        setupOtherProps.selectedBank
       );
     } catch (error) {
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
@@ -93,7 +107,11 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             setupOtherProps.requisitioner,
             setupOtherProps.shipVia,
             setupOtherProps.CPT,
-            setupOtherProps.shippingTerms
+            setupOtherProps.shippingTerms,
+            setupOtherProps.contractNo,
+            setupOtherProps.isInternational,
+            setupOtherProps.validityDay,
+            setupOtherProps.selectedBank
           );
           setBase64Pdf(response);
           setBase64PdfFileName('quote-' + quoteNumber + '.pdf');
@@ -114,13 +132,13 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
           <div className="upperleftsection">
             <Card style={{ width: '12rem' }} className="border-0 mb-5">
               <Card.Img variant="top" src={settings.logo} />
-              <Card.Body className="p-0 px-1 fs-9">
+              {/* <Card.Body className="p-0 px-1 fs-9">
                 <Card.Text className="mb-2 pt-2">
                   {settings.addressRow1}
                 </Card.Text>
                 <Card.Text className="mb-2">{settings.addressRow2}</Card.Text>
                 <Card.Text>{settings.mobilePhone}</Card.Text>
-              </Card.Body>
+              </Card.Body> */}
             </Card>
           </div>
 
@@ -135,7 +153,6 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   <FontAwesomeIcon icon={faFileLines} /> Preview PDF File{' '}
                 </Button>
               </div>
-              <h2 className="text-primary mb-3">QUOTE</h2>
 
               <p>
                 <strong>Date:</strong>{' '}
@@ -148,26 +165,27 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
               </p>
             </div>
           </div>
-        </div>
+        </div>{' '}
+        <h2 className="text-primary mb-3 text-center">PROFORMA INVOICE</h2>
         <Table bordered hover size="sm" id="client-info-form1">
           <thead>
             <tr className="bg-primary text-white text-center align-middle">
+              <td className="text-white">CLIENT LOCATION</td>
               <td colSpan={3} className="text-white">
-                CLIENT LOCATION
+                SHIP TO
               </td>
-              <td className="text-white">SHIP TO</td>
             </tr>
           </thead>
           <tbody>
             <tr className="text-center">
-              <td colSpan={3}>
+              <td>
                 {setupOtherProps.clientLocation.trim() === '' ? (
                   <span>&nbsp;</span>
                 ) : (
                   setupOtherProps.clientLocation
                 )}
               </td>
-              <td>
+              <td colSpan={3}>
                 {setupOtherProps.shipTo.trim() === '' ? (
                   <span>&nbsp;</span>
                 ) : (
@@ -175,76 +193,42 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 )}
               </td>
             </tr>
-            <tr className="bg-primary text-white text-center align-middle">
-              <td className="text-white" style={{ width: '25%' }}>
-                REQUISITIONER
-              </td>
-              <td className="text-white" style={{ width: '25%' }}>
-                SHIP VIA
-              </td>
-              <td className="text-white" style={{ width: '25%' }}>
-                CPT
-              </td>
-              <td className="text-white" style={{ width: '25%' }}>
-                SHIPPING TERMS
-              </td>
-            </tr>
-            <tr className="text-center">
-              <td style={{ width: '25%' }}>
-                {setupOtherProps.requisitioner.trim() === '' ? (
-                  <span>&nbsp;</span>
-                ) : (
-                  setupOtherProps.requisitioner
-                )}
-              </td>
-              <td style={{ width: '25%' }}>
-                {setupOtherProps.shipVia.trim() === '' ? (
-                  <span>&nbsp;</span>
-                ) : (
-                  setupOtherProps.shipVia
-                )}
-              </td>
-              <td style={{ width: '25%' }}>
-                {setupOtherProps.CPT.trim() === '' ? (
-                  <span>&nbsp;</span>
-                ) : (
-                  setupOtherProps.CPT
-                )}
-              </td>
-              <td style={{ width: '25%' }}>
-                {setupOtherProps.shippingTerms.trim() === '' ? (
-                  <span>&nbsp;</span>
-                ) : (
-                  setupOtherProps.shippingTerms
-                )}
-              </td>
-            </tr>
           </tbody>
         </Table>
-
         <div>
           <Table bordered hover size="sm" responsive>
             <thead>
               <tr className="bg-primary text-white text-center">
-                <td className="text-white align-middle">PART NUMBER (PN)</td>
-                <td className="text-white align-middle">ALTERNATIVE TO</td>
+                <td
+                  className="text-white align-middle"
+                  style={{ width: '50px' }}
+                >
+                  NO
+                </td>
+                <td
+                  className="text-white align-middle"
+                  style={{ width: '150px' }}
+                >
+                  PN/MODEL
+                </td>
                 <td className="text-white align-middle">DESCRIPTION</td>
-                <td className="text-white align-middle">REQ CND</td>
-                <td className="text-white align-middle">FND CND</td>
-                <td className="text-white align-middle">LEAD TIME (DAYS)</td>
                 <td className="text-white align-middle">QTY</td>
+                <td className="text-white align-middle">LEAD TIME</td>
                 <td className="text-white align-middle">UNIT PRICE</td>
-                <td className="text-white align-middle">TOTAL</td>
+                <td
+                  className="text-white align-middle"
+                  style={{ minWidth: '100px' }}
+                >
+                  TOTAL
+                </td>
               </tr>
             </thead>
             <tbody>
               {quotePartRows.map((row, index) => (
                 <tr key={index} className="text-center align-middle">
+                  <td></td>
                   <td>{row.partNumber}</td>
-                  <td>{row.alternativeTo || '-'}</td>
                   <td>{row.description}</td>
-                  <td>{row.reqCondition}</td>
-                  <td>{row.fndCondition}</td>
                   <td>{row.leadTime} Days</td>
                   <td>{row.quantity}</td>
                   <td>
@@ -267,22 +251,43 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         <div className="footer-section mt-5">
           <Row className="g-3">
             <Col md={8}>
-              <Table striped bordered hover className="mb-3">
-                <thead>
-                  <tr>
-                    <th className="text-center">
-                      Comments or Special Instructions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="p-2">
-                      {settings.commentsSpecialInstruction}
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
+              <div className="mb-4">
+                <Table bordered hover size="sm">
+                  <tbody>
+                    <tr>
+                      <td style={{ width: '120px' }}>Contract No :</td>
+                      <td>
+                        <div className="d-flex align-items-center justify-content-end">
+                          {setupOtherProps.contractNo || ''}
+                          <Form.Check
+                            type="checkbox"
+                            label="International"
+                            className="ms-3"
+                            checked={setupOtherProps.isInternational}
+                            onChange={e =>
+                              setupOtherProps.setIsInternational(
+                                e.target.checked
+                              )
+                            }
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Payment Term :</td>
+                      <td>{setupOtherProps.shippingTerms}</td>
+                    </tr>
+                    <tr>
+                      <td>Delivery Term :</td>
+                      <td>{setupOtherProps.CPT}</td>
+                    </tr>
+                    <tr>
+                      <td>Validity Day :</td>
+                      <td>{setupOtherProps.validityDay || 0}</td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </div>
             </Col>
             <Col md={4}>
               <div className="d-flex flex-column text-center">
@@ -318,9 +323,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="text-sm-md">
-                        {settings.otherQuoteValues[0]}
-                      </td>
+                      <td className="text-sm-md">Tax</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -336,9 +339,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       </td>
                     </tr>
                     <tr>
-                      <td className="text-sm-md">
-                        {settings.otherQuoteValues[1]}
-                      </td>
+                      <td className="text-sm-md">Aircargo to X</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -354,9 +355,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       </td>
                     </tr>
                     <tr>
-                      <td className="text-sm-md">
-                        {settings.otherQuoteValues[2]}
-                      </td>
+                      <td className="text-sm-md">Sealine to X</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -372,9 +371,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       </td>
                     </tr>
                     <tr>
-                      <td className="text-sm-md">
-                        {settings.otherQuoteValues[3]}
-                      </td>
+                      <td className="text-sm-md">Truck Carriage to X</td>
                       <td>
                         <Form.Check
                           type="checkbox"
@@ -416,32 +413,91 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 </Table>
               </div>
             </Col>
-            <Table striped bordered hover className="mb-3 text-center">
+            <Table bordered hover size="sm" id="client-info-form1" responsive>
               <thead>
-                <tr>
-                  <th className="text-center">
-                    Comments or Special Instructions
-                  </th>
+                <tr className="bg-primary text-white text-center align-middle">
+                  <td className="text-white" style={{ width: '8%' }}>
+                    Currency
+                  </td>
+                  <td className="text-white" style={{ width: '13%' }}>
+                    Bank Name
+                  </td>
+                  <td className="text-white" style={{ width: '13%' }}>
+                    Branch Name
+                  </td>
+                  <td className="text-white" style={{ width: '13%' }}>
+                    Branch Code
+                  </td>
+                  <td className="text-white" style={{ width: '13%' }}>
+                    Swift Code
+                  </td>
+                  <td className="text-white" style={{ width: '40%' }}>
+                    IBAN NO
+                  </td>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="p-2">
-                    {
-                      'Delivery: Destination - Custom and related TAX and costs shall be paid by Client.'
-                    }
+                <tr className="text-center align-middle">
+                  <td style={{ wordBreak: 'break-word' }}>
+                    {setupOtherProps.selectedBank?.currency || ''}
+                  </td>
+                  <td style={{ wordBreak: 'break-word' }}>
+                    {setupOtherProps.selectedBank?.bankName || ''}
+                  </td>
+                  <td style={{ wordBreak: 'break-word' }}>
+                    {setupOtherProps.selectedBank?.branchName || ''}
+                  </td>
+                  <td style={{ wordBreak: 'break-word' }}>
+                    {setupOtherProps.selectedBank?.branchCode || ''}
+                  </td>
+                  <td style={{ wordBreak: 'break-word' }}>
+                    {setupOtherProps.selectedBank?.swiftCode || ''}
+                  </td>
+                  <td
+                    style={{
+                      wordBreak: 'break-word',
+                      textAlign: 'center',
+                      paddingLeft: '10px',
+                      position: 'relative'
+                    }}
+                  >
+                    <div className="d-flex flex-column align-items-center justify-content-center gap-3">
+                      <span>{setupOtherProps.selectedBank?.ibanNo || ''}</span>
+                      {setupOtherProps.selectedBank?.ibanNo && (
+                        <div
+                          style={{
+                            width: '100px',
+                            height: '100px',
+                            backgroundColor: 'white'
+                          }}
+                        >
+                          <QRCode
+                            value={setupOtherProps.selectedBank.ibanNo}
+                            size={100}
+                            level="H"
+                            style={{
+                              height: 'auto',
+                              maxWidth: '100%',
+                              width: '100%'
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </Table>
-            <Table striped bordered hover className="mb-3 text-center">
+            <Table striped bordered hover className="mb-3">
               <tbody>
                 <tr>
-                  <td className="p-2">
-                    {settings.contactInfo}
+                  <td
+                    className="p-2 text-center"
+                    style={{ fontSize: '14px', padding: '15px' }}
+                  >
+                    {settings.companyAddress}
                     <br />
                     {settings.phone}
-                    <br />
                   </td>
                 </tr>
               </tbody>

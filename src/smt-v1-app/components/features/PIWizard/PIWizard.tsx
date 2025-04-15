@@ -6,6 +6,7 @@ import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/Load
 import { getAllCurrenciesFromDB } from 'smt-v1-app/services/RFQService';
 
 export interface QuotePartRow {
+  no: number;
   alternativeTo: string;
   currency: string;
   description: string;
@@ -27,6 +28,8 @@ export interface QuoteWizardSetting {
   addressRow2: string;
   commentsSpecialInstruction: string;
   contactInfo: string;
+  companyAddress: string;
+  companyTelephone: string;
   logo: string;
   mobilePhone: string;
   otherQuoteValues: string[];
@@ -45,7 +48,14 @@ export interface QuoteWizardData {
 
 export interface PIResponseData {
   airCargoToX: { airCargoToX: number; included: boolean };
-  allBanks: any[];
+  allBanks: Array<{
+    bankName: string;
+    branchName: string;
+    branchCode: string;
+    swiftCode: string;
+    ibanNo: string;
+    currency: string | null;
+  }>;
   clientLegalAddress: string;
   clientName: string;
   companyAddress: string;
@@ -86,6 +96,10 @@ export interface SetupOtherProps {
   setIsInternational: React.Dispatch<React.SetStateAction<boolean>>;
   validityDay: number;
   setValidityDay: React.Dispatch<React.SetStateAction<number>>;
+  selectedBank: PIResponseData['allBanks'][0] | null;
+  setSelectedBank: React.Dispatch<
+    React.SetStateAction<PIResponseData['allBanks'][0] | null>
+  >;
 }
 
 // Create a union type for the data we'll use
@@ -127,6 +141,32 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
     useState<QuoteWizardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currencies, setCurrencies] = useState([]);
+  const [selectedBank, setSelectedBank] = useState<
+    PIResponseData['allBanks'][0] | null
+  >(null);
+
+  const setupOtherProps: SetupOtherProps = {
+    clientLocation: '',
+    setClientLocation: () => {},
+    shipTo: '',
+    setShipTo: () => {},
+    requisitioner: '',
+    setRequisitioner: () => {},
+    shipVia: '',
+    setShipVia: () => {},
+    CPT: '',
+    setCPT: () => {},
+    shippingTerms: '',
+    setShippingTerms: () => {},
+    contractNo: '',
+    setContractNo: () => {},
+    isInternational: false,
+    setIsInternational: () => {},
+    validityDay: 0,
+    setValidityDay: () => {},
+    selectedBank,
+    setSelectedBank
+  };
 
   useEffect(() => {
     const getSelectedQuoteParts = async () => {
@@ -156,6 +196,12 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
                   }))
                 : dataToUse.quoteWizardPartResponses,
             quoteWizardSetting: {
+              companyTelephone:
+                'companyTelephone' in dataToUse
+                  ? dataToUse.companyTelephone
+                  : '',
+              companyAddress:
+                'companyAddress' in dataToUse ? dataToUse.companyAddress : '',
               addressRow1:
                 'companyAddress' in dataToUse
                   ? dataToUse.companyAddress.split('\n')[0] || ''
