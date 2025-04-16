@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Badge, Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import DatePicker from 'components/base/DatePicker';
-// import './WizardTabs.css';
+import './WizardTabs.css';
 import { QuotePartRow, QuoteWizardData, PIResponseData } from '../PIWizard';
 import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
 
@@ -170,6 +170,32 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   ]);
 
   const [tempIdCounter, setTempIdCounter] = useState(0);
+  const [percentageValue, setPercentageValue] = useState(0);
+  const [taxAmount, setTaxAmount] = useState(0);
+  const [lastEdited, setLastEdited] = useState<'percentage' | 'tax'>(
+    'percentage'
+  );
+
+  // Calculate sub-total
+  const calculateSubTotal = () => {
+    return quotePartRows.reduce(
+      (acc, row) => acc + row.quantity * row.unitPrice,
+      0
+    );
+  };
+
+  // Calculate tax amount based on percentage
+  const calculateTaxAmount = (percentage: number) => {
+    const subTotal = calculateSubTotal();
+    const tax = (subTotal * percentage) / 100;
+    setTaxAmount(tax);
+    return tax;
+  };
+
+  // Update tax amount when percentage changes
+  useEffect(() => {
+    calculateTaxAmount(percentageValue);
+  }, [percentageValue, quotePartRows]);
 
   // Price Methods Start
 
@@ -177,31 +203,36 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
   const formatRowTotal = (value: string): string => {
-    if (!value) return '0.00';
+    // Split the input on the decimal point.
+    const [integerPartRaw, fractionalPartRaw] = value.split('.');
 
-    const num = parseFloat(value);
-    if (isNaN(num)) return '0.00';
+    // Remove non-digit characters from the integer part.
+    const integerDigits = integerPartRaw.replace(/\D/g, '');
 
-    const [integerPart, decimalPart] = num.toFixed(2).split('.');
-    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    // Format the integer part with commas.
+    const formattedInteger = integerDigits.replace(
+      /\B(?=(\d{3})+(?!\d))/g,
+      ','
+    );
 
-    return `${formattedInteger}.${decimalPart}`;
+    // If there's a fractional part, remove non-digit characters from it as well.
+    if (fractionalPartRaw !== undefined) {
+      const fractionalDigits = fractionalPartRaw.replace(/\D/g, '');
+      // Re-join the formatted integer part and the fractional part.
+      return `${formattedInteger}.${fractionalDigits}`;
+    } else {
+      return formattedInteger;
+    }
   };
   const formatNumberWithDecimals = (value: string): string => {
-    if (!value) return '0.00';
-
-    // Convert to number and format with exactly 2 decimal places
-    const num = parseFloat(value);
-    if (isNaN(num)) return '0.00';
-
-    // Split into integer and decimal parts
-    const [integerPart, decimalPart] = num.toFixed(2).split('.');
-
-    // Format integer part with commas
+    // Split on the decimal point.
+    const [integerPart, decimalPart] = value.split('.');
+    // Format the integer part.
     const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-
-    // Always return with 2 decimal places
-    return `${formattedInteger}.${decimalPart}`;
+    // Return with the decimal part (if it exists)
+    return decimalPart !== undefined
+      ? `${formattedInteger}.${decimalPart}`
+      : formattedInteger;
   };
 
   const formatCurrency = (
@@ -209,49 +240,63 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     currency: string,
     blur: boolean = false
   ): { formatted: string; numericValue: number } => {
-    // Handle empty or invalid input
-    if (!inputValue || inputValue === 'NaN' || inputValue === 'undefined') {
+    // Handle empty
+    if (!inputValue) {
       return { formatted: '', numericValue: 0 };
     }
 
-    let inputVal = inputValue.toString();
+    let inputVal = inputValue;
+    // Check if the input has a decimal place
+    if (inputVal.indexOf('.') >= 0) {
+      // Split at decimal
+      const decimalPos = inputVal.indexOf('.');
+      let leftSide = inputVal.substring(0, decimalPos);
+      let rightSide = inputVal.substring(decimalPos);
 
-    // Remove any existing currency symbol
-    inputVal = inputVal.replace(getPriceCurrencySymbol(currency), '');
+      // Format left side
+      leftSide = formatNumber(leftSide);
+      // Format right side
+      rightSide = formatNumber(rightSide);
 
-    // Remove all non-numeric characters except decimal point
-    inputVal = inputVal.replace(/[^0-9.]/g, '');
+      if (blur) {
+        // user left the field, so ensure trailing "00"
+        rightSide += '00';
+      }
+      // Limit decimal to only 2 digits
+      rightSide = rightSide.substring(0, 2);
 
-    // Handle decimal places - truncate to 2 digits without rounding
-    const parts = inputVal.split('.');
-    if (parts.length > 1) {
-      inputVal =
-        parts[0] +
-        '.' +
-        (parts[1].length > 2 ? parts[1].substring(0, 2) : parts[1]);
+      // Join back
+      inputVal = `${getPriceCurrencySymbol(currency)}${leftSide}.${rightSide}`;
+    } else {
+      // no decimal entered
+      inputVal = `${getPriceCurrencySymbol(currency)}${formatNumber(inputVal)}`;
+
+      // If blur, add .00
+      if (blur) {
+        inputVal += '.00';
+      }
     }
 
-    const numericValue = parseFloat(inputVal);
+    // Convert the formatted string to a numeric value
+    // 1) remove currency symbol
+    const parts = inputVal.split(getPriceCurrencySymbol(currency));
+    const numericString = parts[1] || '0'; // everything after the symbol
 
-    // Format with commas for thousands
-    const [integerPart, decimalPart = '00'] = inputVal.split('.');
-    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    const paddedDecimal = decimalPart.padEnd(2, '0');
-
-    const formatted = `${getPriceCurrencySymbol(
-      currency
-    )}${formattedInteger}.${paddedDecimal}`;
+    // 2) remove commas
+    const raw = numericString.replace(/,/g, '');
+    // 3) parse float
+    const parsedNumber = parseFloat(raw) || 0;
 
     return {
-      formatted,
-      numericValue
+      formatted: inputVal,
+      numericValue: Math.round(parsedNumber * 100) / 100 // rounding to 2 decimals
     };
   };
 
   const handleUnitPriceChange = (newValue: string, rowId: string | number) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row => {
-        if (row.id === rowId || row.tempId === rowId) {
+        if (row.id === rowId) {
           const { formatted, numericValue } = formatCurrency(
             newValue,
             row.currency
@@ -270,9 +315,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const handleUnitPriceBlur = (newValue: string, rowId: string | number) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row => {
-        if (row.id === rowId || row.tempId === rowId) {
+        if (row.tempId === rowId) {
           const { formatted, numericValue } = formatCurrency(
-            newValue,
+            row.unitPriceString,
             row.currency,
             true
           );
@@ -511,11 +556,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     <>
       <div className="uppersection">
         <div className="upperleftsection">
-          <Card style={{ width: '18rem' }} className="border-0 mb-5">
+          <Card style={{ width: '18rem', top: '30px' }} className="border-0 ">
             {piResponseData?.logo ? (
               <Card.Img variant="top" src={piResponseData.logo} />
             ) : null}
-            <Card.Body className="p-0 px-1 fs-9 w-100">
+            {/* <Card.Body className="p-0 px-1 fs-9 w-100">
               <Card.Text className="mb-2 pt-2">
                 {piResponseData?.companyAddress?.split('\n')[0] || ''}
               </Card.Text>
@@ -523,13 +568,12 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 {piResponseData?.companyAddress?.split('\n')[1] || ''}
               </Card.Text>
               <Card.Text>{piResponseData?.companyTelephone || ''}</Card.Text>
-            </Card.Body>
+            </Card.Body> */}
           </Card>
         </div>
 
         <div className="upperrightsection">
           <div className="quote-section mb-4 mt-6">
-            <h2 className="text-primary">PROFORMA INVOICE</h2>
             <Form>
               <Form.Group className="mb-3">
                 <div className="d-flex justify-content-end">
@@ -560,6 +604,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           </div>
         </div>
       </div>
+      <h2 className="text-primary mb-3 text-center">PROFORMA INVOICE</h2>
       <Table bordered hover size="sm" id="client-info-form1">
         <thead>
           <tr className="bg-primary text-white text-center align-middle">
@@ -744,7 +789,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   <tr>
                     <td style={{ width: '120px' }}>Contract No :</td>
                     <td>
-                      <div className="d-flex align-items-center">
+                      <div className="d-flex align-items-center ">
                         <Form.Control
                           type="text"
                           placeholder="Contract No"
@@ -756,7 +801,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <Form.Check
                           type="checkbox"
                           label="International"
-                          className="ms-3"
+                          className="ms-3 mx-2"
                           checked={setupOtherProps.isInternational}
                           onChange={e =>
                             setupOtherProps.setIsInternational(e.target.checked)
@@ -818,13 +863,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         <h5>
                           <span className="text-primary ms-2">
                             {formatNumberWithDecimals(
-                              quotePartRows
-                                .reduce(
-                                  (acc, row) =>
-                                    acc + row.quantity * row.unitPrice,
-                                  0
-                                )
-                                .toString()
+                              calculateSubTotal().toString()
                             )}{' '}
                             {getPriceCurrencySymbol(currency)}
                           </span>
@@ -840,7 +879,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Check
                           type="checkbox"
-                          defaultChecked
                           checked={checkedStates[0]}
                           onChange={e =>
                             handleCheckboxChange(0, e.target.checked)
@@ -848,48 +886,79 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         />
                       </td>
                       <td>
-                        <Form.Control
-                          type="text"
-                          value={
-                            getPriceCurrencySymbol(currency) +
-                            (displayValues[0] ||
-                              formatNumberInput(subTotalValues[0].toString()))
-                          }
-                          onChange={e => {
-                            const value = e.target.value.replace(
-                              getPriceCurrencySymbol(currency),
-                              ''
-                            );
-                            handleSubTotalChange(0, value);
-                          }}
-                          onBlur={e => {
-                            const numericValue =
-                              parseFloat(
-                                e.target.value.replace(/[^0-9.]/g, '')
-                              ) || 0;
-
-                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
-                            const formattedNumber = numericValue.toFixed(2);
-                            const formattedValue =
-                              formatNumberInput(formattedNumber);
-
-                            const newDisplayValues = [...displayValues];
-                            newDisplayValues[0] = formattedValue;
-                            setDisplayValues(newDisplayValues);
-                          }}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') {
-                              e.currentTarget.blur();
-                            }
-                          }}
-                          onWheel={e => e.currentTarget.blur()}
-                          placeholder="0.00"
+                        <div
                           style={{
-                            width: '110px',
-                            paddingRight: '4px',
-                            paddingLeft: '8px'
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
                           }}
-                        />
+                        >
+                          {/* Yüzde inputu: Ondalık kabul etmez (step="1") */}
+                          <div style={{ position: 'relative' }}>
+                            <span
+                              style={{
+                                position: 'absolute',
+                                left: '5px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: '#6c757d'
+                              }}
+                            >
+                              %
+                            </span>
+                            <Form.Control
+                              className="formControlNumberInputWizardSetup"
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="1"
+                              value={percentageValue}
+                              onChange={e => {
+                                const val = parseInt(e.target.value, 10);
+                                if (!isNaN(val)) {
+                                  setLastEdited('percentage');
+                                  setPercentageValue(val);
+                                  const subTotal = calculateSubTotal();
+                                  const computedTax = (subTotal * val) / 100;
+                                  setTaxAmount(computedTax);
+                                }
+                              }}
+                              style={{
+                                width: '60px',
+                                textAlign: 'right',
+                                fontSize: '0.875rem',
+                                paddingLeft: '15px'
+                              }}
+                              placeholder="0"
+                            />
+                          </div>
+
+                          {/* Vergi tutarı inputu: Değer girildiğinde yüzde değeri otomatik hesaplanır */}
+                          <Form.Control
+                            type="number"
+                            value={taxAmount}
+                            step="0.01"
+                            onChange={e => {
+                              const val = parseFloat(e.target.value);
+                              if (!isNaN(val)) {
+                                setLastEdited('tax');
+                                setTaxAmount(val);
+                                const subTotal = calculateSubTotal();
+                                const computedPercentage =
+                                  subTotal !== 0
+                                    ? Math.round((val / subTotal) * 100)
+                                    : 0;
+                                setPercentageValue(computedPercentage);
+                              }
+                            }}
+                            style={{
+                              width: '85px',
+                              paddingRight: '4px',
+                              paddingLeft: '8px',
+                              fontSize: '0.875rem'
+                            }}
+                          />
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -899,7 +968,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <td>
                         <Form.Check
                           type="checkbox"
-                          defaultChecked
                           checked={checkedStates[1]}
                           onChange={e =>
                             handleCheckboxChange(1, e.target.checked)
@@ -944,7 +1012,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           onWheel={e => e.currentTarget.blur()}
                           placeholder="0.00"
                           style={{
-                            width: '110px',
+                            width: '150px',
                             paddingRight: '4px',
                             paddingLeft: '8px'
                           }}
@@ -1002,7 +1070,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           onWheel={e => e.currentTarget.blur()}
                           placeholder="0.00"
                           style={{
-                            width: '110px',
+                            width: '150px',
                             paddingRight: '4px',
                             paddingLeft: '8px'
                           }}
@@ -1060,7 +1128,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           onWheel={e => e.currentTarget.blur()}
                           placeholder="0.00"
                           style={{
-                            width: '110px',
+                            width: '150px',
                             paddingRight: '4px',
                             paddingLeft: '8px'
                           }}
@@ -1074,15 +1142,15 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <strong>
                         {formatNumberWithDecimals(
                           (
-                            quotePartRows.reduce(
-                              (acc, row) => acc + row.quantity * row.unitPrice,
-                              0
-                            ) +
-                            subTotalValues.reduce(
-                              (sum, val, index) =>
-                                sum + (checkedStates[index] ? val : 0),
-                              0
-                            )
+                            calculateSubTotal() +
+                            (checkedStates[0] ? taxAmount : 0) +
+                            subTotalValues
+                              .slice(1)
+                              .reduce(
+                                (sum, val, index) =>
+                                  sum + (checkedStates[index + 1] ? val : 0),
+                                0
+                              )
                           ).toString()
                         )}{' '}
                         {getPriceCurrencySymbol(currency)}

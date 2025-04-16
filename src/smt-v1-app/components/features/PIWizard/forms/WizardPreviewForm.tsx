@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import './WizardTabs.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -63,6 +63,14 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
   setupOtherProps,
   piResponseData
 }) => {
+  const [balanceValues] = useState({
+    before: 4634.71,
+    payment: 4634.71,
+    after: 4634.71
+  });
+
+  const [percentageValue] = useState(0);
+
   const handleGeneratePDF = async () => {
     try {
       await downloadPDF(
@@ -130,7 +138,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
       <div className="p-3" id="pdf-content">
         <div className="uppersection">
           <div className="upperleftsection">
-            <Card style={{ width: '12rem' }} className="border-0 mb-5">
+            <Card
+              style={{ width: '18rem', top: '30px' }}
+              className="border-0 mb-5"
+            >
               <Card.Img variant="top" src={settings.logo} />
               {/* <Card.Body className="p-0 px-1 fs-9">
                 <Card.Text className="mb-2 pt-2">
@@ -170,26 +181,26 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         <Table bordered hover size="sm" id="client-info-form1">
           <thead>
             <tr className="bg-primary text-white text-center align-middle">
-              <td className="text-white">CLIENT LOCATION</td>
+              <td className="text-white">Company Name</td>
               <td colSpan={3} className="text-white">
-                SHIP TO
+                Address
               </td>
             </tr>
           </thead>
           <tbody>
             <tr className="text-center">
               <td>
-                {setupOtherProps.clientLocation.trim() === '' ? (
-                  <span>&nbsp;</span>
-                ) : (
-                  setupOtherProps.clientLocation
-                )}
-              </td>
-              <td colSpan={3}>
                 {setupOtherProps.shipTo.trim() === '' ? (
                   <span>&nbsp;</span>
                 ) : (
                   setupOtherProps.shipTo
+                )}
+              </td>
+              <td colSpan={3}>
+                {setupOtherProps.clientLocation.trim() === '' ? (
+                  <span>&nbsp;</span>
+                ) : (
+                  setupOtherProps.clientLocation
                 )}
               </td>
             </tr>
@@ -226,7 +237,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             <tbody>
               {quotePartRows.map((row, index) => (
                 <tr key={index} className="text-center align-middle">
-                  <td></td>
+                  <td>{index + 1}</td>
                   <td>{row.partNumber}</td>
                   <td>{row.description}</td>
                   <td>{row.leadTime} Days</td>
@@ -262,7 +273,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                           <Form.Check
                             type="checkbox"
                             label="International"
-                            className="ms-3"
+                            className="ms-3 px-2"
                             checked={setupOtherProps.isInternational}
                             onChange={e =>
                               setupOtherProps.setIsInternational(
@@ -332,10 +343,23 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                         />
                       </td>
                       <td>
-                        {subTotalValues[0]?.toLocaleString('en-US', {
-                          style: 'currency',
-                          currency: currency.replace(/[^A-Z]/g, '')
-                        })}
+                        <div className="d-flex justify-content-end align-items-center gap-2">
+                          <span style={{ fontSize: '0.9rem' }}>
+                            {percentageValue || 0}%
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '0.9rem',
+                              minWidth: '70px',
+                              textAlign: 'left'
+                            }}
+                          >
+                            {subTotalValues[0]?.toLocaleString('en-US', {
+                              style: 'currency',
+                              currency: currency.replace(/[^A-Z]/g, '')
+                            })}
+                          </span>
+                        </div>
                       </td>
                     </tr>
                     <tr>
@@ -411,6 +435,67 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     </tr>
                   </tbody>
                 </Table>
+              </div>
+              {/* Balance Information Section */}
+              <div
+                className="d-flex justify-content-end mb-3"
+                style={{ gap: '20px' }}
+              >
+                <div style={{ width: '330px' }}>
+                  <div className="mb-2 d-flex justify-content-between align-items-center">
+                    <span
+                      className="text-success"
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      Balance Before Payment:
+                    </span>
+                    <span
+                      className="text-end"
+                      style={{ width: '120px', fontSize: '0.875rem' }}
+                    >
+                      {balanceValues.before.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}
+                    </span>
+                  </div>
+
+                  <div className="mb-2 d-flex justify-content-between align-items-center">
+                    <span
+                      className="text-success"
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      Payment Amount via Balance:
+                    </span>
+                    <span
+                      className="text-end"
+                      style={{ width: '120px', fontSize: '0.875rem' }}
+                    >
+                      {balanceValues.payment.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}
+                    </span>
+                  </div>
+
+                  <div className="d-flex justify-content-between align-items-center">
+                    <span
+                      className="text-success"
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      Balance After Payment:
+                    </span>
+                    <span
+                      className="text-end"
+                      style={{ width: '120px', fontSize: '0.875rem' }}
+                    >
+                      {balanceValues.after.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}
+                    </span>
+                  </div>
+                </div>
               </div>
             </Col>
             <Table bordered hover size="sm" id="client-info-form1" responsive>

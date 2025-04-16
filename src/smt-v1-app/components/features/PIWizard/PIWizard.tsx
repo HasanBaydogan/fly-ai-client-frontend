@@ -264,7 +264,7 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
   return (
     <Modal show={showTabs} onHide={handleClose} size="xl" centered>
       <Modal.Header closeButton>
-        <Modal.Title>Quote Wizard</Modal.Title>
+        <Modal.Title>Proforma Wizard</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {isLoading ? (

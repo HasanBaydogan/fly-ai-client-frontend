@@ -100,3 +100,8 @@
   min-height: 32.84px;
   padding: 0.5rem; /* optional */
 }
+
+.formControlNumberInputWizardSetup.form-control{
+  padding: .5rem 0;
+}
+

@@ -25,6 +25,25 @@ export const generatePDF = async (
   try {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.width;
+    const pageHeight = pdf.internal.pageSize.height;
+    const footerHeight = 30; // Footer için ayrılan yükseklik
+
+    // Her tablo için sayfa sonu kontrolü yapacak fonksiyon
+    const tableSettings = {
+      didDrawCell: function (data) {
+        // Tablonun mevcut Y pozisyonu footer alanına yaklaşıyorsa
+        if (data.cursor.y > pageHeight - footerHeight - data.row.height) {
+          pdf.addPage();
+          data.cursor.y = 10;
+        }
+      },
+      willDrawCell: function (data) {
+        // Yeni sayfada çizilecek hücrelerin Y pozisyonunu kontrol et
+        if (data.cursor.y > pageHeight - footerHeight) {
+          data.cursor.y = 10;
+        }
+      }
+    };
 
     // Logo
     pdf.addImage(settings.logo, 'JPEG', 10, 10, 60, 30);
@@ -32,20 +51,21 @@ export const generatePDF = async (
     pdf.setFontSize(10);
 
     // Quote header and details
-    pdf.setFontSize(25);
+    pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(51, 102, 204);
-    pdf.text('QUOTE', pageWidth - 60, 20);
+    pdf.text('PROFORMA INVOICE', pageWidth - 140, 45);
 
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(0, 0, 0);
     pdf.setFontSize(10);
-    pdf.text(`Date: ${selectedDate?.toLocaleDateString()}`, pageWidth - 60, 30);
-    pdf.text(`Quote Number: ${quoteNumber}`, pageWidth - 60, 35);
+    pdf.text(`Date: ${selectedDate?.toLocaleDateString()}`, pageWidth - 50, 20);
+    pdf.text(`Quote Number: ${quoteNumber}`, pageWidth - 50, 25);
 
     // Client info table
     autoTable(pdf, {
-      startY: 40,
+      ...tableSettings,
+      startY: 50,
       head: [['SHIP TO', 'CLIENT LOCATION']],
       body: [[shipTo, clientLocation]],
       theme: 'grid',
@@ -59,8 +79,8 @@ export const generatePDF = async (
     });
 
     // Main product table
-    const tableBody = quotePartRows.map(row => [
-      row.no,
+    const tableBody = quotePartRows.map((row, index) => [
+      (index + 1).toString(),
       row.partNumber,
       row.description,
       row.quantity,
@@ -75,6 +95,7 @@ export const generatePDF = async (
       })
     ]);
     autoTable(pdf, {
+      ...tableSettings,
       startY: (pdf as any).lastAutoTable?.finalY + 5 || 40,
       head: [
         [
@@ -121,19 +142,60 @@ export const generatePDF = async (
     // Use the Y position after the main product table
     const startYPosition = (pdf as any).lastAutoTable?.finalY + 5 || 40;
 
-    // --- Revised Layout ---
-
-    // 1. Sub-total section (occupies 40% of the page width, aligned to the right)
-    const subTotalWidth = pageWidth * 0.4; // Sub-total table width (40% of the page)
-    const leftMarginForSubTotal = pageWidth - subTotalWidth - 10; // 40% of page width
+    // ***********************
+    // CONTRACT DETAILS TABLE
+    // ***********************
+    const contractTableDefaultWidth = 105; // mm cinsinden default genişlik
     autoTable(pdf, {
+      ...tableSettings,
       startY: startYPosition,
-      // Set the left margin so that the table occupies the right 40%
+      head: [],
+      body: [
+        [
+          { content: 'Contract No :', styles: { fontStyle: 'bold' } },
+          contractNo + (isInternational ? ' (International)' : '')
+        ],
+        [
+          { content: 'Payment Term :', styles: { fontStyle: 'bold' } },
+          shippingTerms
+        ],
+        [
+          { content: 'Delivery Term :', styles: { fontStyle: 'bold' } },
+          CPT
+        ],
+        [
+          { content: 'Validity Day :', styles: { fontStyle: 'bold' } },
+          validityDay?.toString() || '0'
+        ]
+      ],
+      theme: 'grid',
+      styles: {
+        fontSize: 9,
+        cellPadding: 2,
+        halign: 'left'
+      },
+      columnStyles: {
+        0: { cellWidth: contractTableDefaultWidth * 0.3 },
+        1: { cellWidth: contractTableDefaultWidth * 0.7 }
+      },
+      margin: { left: 7, right: 7 }
+    });
+
+    // Bu noktada contract tablosunun çizimi tamamlandı
+    const contractTableFinalY = (pdf as any).lastAutoTable.finalY;
+    // **************************
+    // SUB-TOTAL SECTION (Sağ taraf)
+    // **************************
+    const subTotalWidth = pageWidth * 0.4;
+    const leftMarginForSubTotal = pageWidth - subTotalWidth - 10;
+    autoTable(pdf, {
+      ...tableSettings,
+      startY: startYPosition,
       margin: { left: leftMarginForSubTotal },
       body: [
         [
-          'Sub-Total',
-          'Include',
+          { content: 'Sub-Total', styles: { fontStyle: 'bold' } },
+          { content: 'Include', styles: { fontStyle: 'bold' } },
           {
             content: subTotal.toLocaleString('en-US', {
               style: 'currency',
@@ -143,15 +205,20 @@ export const generatePDF = async (
           }
         ],
         [
-          'Tax',
+          { content: 'Tax', styles: { fontStyle: 'bold' } },
           checkedStates[0] ? 'Yes' : 'No',
-          subTotalValues[0]?.toLocaleString('en-US', {
-            style: 'currency',
-            currency: currency.replace(/[^A-Z]/g, '')
-          })
+          checkedStates[0] ? 
+            `${subTotalValues[0]?.toLocaleString('en-US', {
+              style: 'currency',
+              currency: currency.replace(/[^A-Z]/g, '')
+            })} (18%)` : 
+            subTotalValues[0]?.toLocaleString('en-US', {
+              style: 'currency',
+              currency: currency.replace(/[^A-Z]/g, '')
+            })
         ],
         [
-          'Aircargo to X',
+          { content: 'Aircargo to X', styles: { fontStyle: 'bold' } },
           checkedStates[1] ? 'Yes' : 'No',
           subTotalValues[1]?.toLocaleString('en-US', {
             style: 'currency',
@@ -159,7 +226,7 @@ export const generatePDF = async (
           })
         ],
         [
-          'Sealine to X',
+          { content: 'Sealine to X', styles: { fontStyle: 'bold' } },
           checkedStates[2] ? 'Yes' : 'No',
           subTotalValues[2]?.toLocaleString('en-US', {
             style: 'currency',
@@ -167,7 +234,7 @@ export const generatePDF = async (
           })
         ],
         [
-          'Truck Carriage to X',
+          { content: 'Truck Carriage to X', styles: { fontStyle: 'bold' } },
           checkedStates[3] ? 'Yes' : 'No',
           subTotalValues[3]?.toLocaleString('en-US', {
             style: 'currency',
@@ -175,7 +242,7 @@ export const generatePDF = async (
           })
         ],
         [
-          'Total',
+          { content: 'Total', styles: { fontStyle: 'bold' } },
           '',
           {
             content: total.toLocaleString('en-US', {
@@ -188,7 +255,6 @@ export const generatePDF = async (
       ],
       theme: 'grid',
       styles: { halign: 'center', valign: 'middle', fontSize: 9 },
-      // Adjust the column widths to fill the sub-total area
       columnStyles: {
         0: { cellWidth: subTotalWidth * 0.51 },
         1: { cellWidth: subTotalWidth * 0.17 },
@@ -196,8 +262,60 @@ export const generatePDF = async (
       }
     });
 
-    // Add Bank Information
+    // // Payment Balance Section - Subtotal'ın altında
+    // const balanceY = (pdf as any).lastAutoTable?.finalY + 10;
+    // const balanceValues = {
+    //   before: 4634.71,
+    //   payment: 4634.71,
+    //   after: 4634.71
+    // };
+
+    // // Balance bilgilerini yazdır
+    // autoTable(pdf, {
+    //   startY: balanceY,
+    //   margin: { left: leftMarginForSubTotal },
+    //   body: [
+    //     ['Balance Before Payment:', balanceValues.before.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })],
+    //     ['Payment Amount via Balance:', balanceValues.payment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })],
+    //     ['Balance After Payment:', balanceValues.after.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })]
+    //   ],
+    //   theme: 'plain',
+    //   styles: {
+    //     fontSize: 9,
+    //     textColor: [40, 167, 69], // success color
+    //     cellPadding: 2
+    //   },
+    //   columnStyles: {
+    //     0: { cellWidth: subTotalWidth * 0.65 },
+    //     1: { cellWidth: subTotalWidth * 0.35, halign: 'right' }
+    //   }
+    // });
+
+    // // Banka tablosunu ekle
+    // pdf.setFontSize(9);
+    // pdf.setTextColor(0, 0, 0);
+
+    // // Reset text color for bank table
+    // pdf.setTextColor(0, 0, 0);
+
+    // *****************************
+    // BANK INFORMATION TABLE (Banka Tablosu)
+    // *****************************
     if (selectedBank) {
+      // QR kodu önce oluştur
+      let qrCodeImage = '';
+      if (selectedBank.ibanNo) {
+        try {
+          qrCodeImage = await QRCode.toDataURL(selectedBank.ibanNo, {
+            width: 100,
+            margin: 0,
+            errorCorrectionLevel: 'H'
+          });
+        } catch (error) {
+          console.error('QR code generation error:', error);
+        }
+      }
+
       const bankTable = {
         head: [
           [
@@ -211,95 +329,159 @@ export const generatePDF = async (
         ],
         body: [
           [
-            selectedBank.currency || '',
-            selectedBank.bankName || '',
-            selectedBank.branchName || '',
-            selectedBank.branchCode || '',
-            selectedBank.swiftCode || '',
-            selectedBank.ibanNo || ''
+            {
+              content: selectedBank.currency || '',
+              styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
+            },
+            {
+              content: selectedBank.bankName || '',
+              styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
+            },
+            {
+              content: selectedBank.branchName || '',
+              styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
+            },
+            {
+              content: selectedBank.branchCode || '',
+              styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
+            },
+            {
+              content: selectedBank.swiftCode || '',
+              styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
+            },
+            {
+              content: '',
+              styles: {
+                cellPadding: 4,
+                minCellHeight: 35,
+                fontSize: 8
+              }
+            }
           ]
         ]
       };
 
+      // Banka tablosu için başlangıç Y pozisyonu
+      let bankTableStartY = contractTableFinalY + 18;
+
+      // Footer alanı için güvenli mesafe kontrolü
+      const safeFooterDistance = footerHeight + 15;
+
+      // Eğer footer alanına yakınsa yeni sayfada başlat
+      if (bankTableStartY > pageHeight - safeFooterDistance - 40) {
+        pdf.addPage();
+        bankTableStartY = 10;
+      }
+
       autoTable(pdf, {
-        startY: (pdf as any).lastAutoTable?.finalY + 10,
+        ...tableSettings,
+        startY: bankTableStartY,
         head: bankTable.head,
         body: bankTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [51, 102, 204], textColor: 255 },
-        styles: { halign: 'center', valign: 'middle' },
-        margin: { left: 7, right: 7 }
-      });
+        headStyles: {
+          fillColor: [51, 102, 204],
+          textColor: 255,
+          fontSize: 8,
+          cellPadding: 4,
+          fontStyle: 'bold' // Header hücreleri bold olacak
+        },
+        styles: {
+          halign: 'center',
+          fontSize: 8,
+          overflow: 'linebreak',
+          cellWidth: 'wrap'
+        },
+        columnStyles: {
+          0: { cellWidth: 20 }, // Currency
+          1: { cellWidth: 30 }, // Bank Name
+          2: { cellWidth: 30 }, // Branch Name
+          3: { cellWidth: 31 }, // Branch Code
+          4: { cellWidth: 25 }, // Swift Code
+          5: { cellWidth: 60 } // IBAN + QR
+        },
+        margin: { left: 7, right: 7 },
+        pageBreak: 'avoid',
+        didDrawCell: function (data) {
+          // IBAN hücresine QR kodu ekle
+          if (
+            data.section === 'body' &&
+            data.column.index === 5 && // IBAN sütunu
+            data.row.index === 0 && // İlk satır
+            qrCodeImage &&
+            selectedBank?.ibanNo
+          ) {
+            const cell = data.cell;
+            const qrSize = 20; // QR kod boyutunu küçülttük
+            const padding = 2;
 
-      // Add QR code if IBAN exists
-      if (selectedBank.ibanNo) {
-        try {
-          // Generate QR code as data URL
-          const qrCodeDataUrl = await QRCode.toDataURL(selectedBank.ibanNo, {
-            width: 100,
-            margin: 0,
-            errorCorrectionLevel: 'H'
-          });
+            // IBAN metnini hücrenin üst kısmına yerleştir
+            pdf.setFontSize(8);
+            pdf.text(
+              selectedBank.ibanNo,
+              cell.x + cell.width / 2,
+              cell.y + padding + 4,
+              { align: 'center' }
+            );
 
-          // Position QR code to the right of the bank table
-          const qrX = pdf.internal.pageSize.getWidth() - 47;
-          const qrY = (pdf as any).lastAutoTable.finalY + 7;
-          pdf.addImage(qrCodeDataUrl, 'PNG', qrX, qrY, 30, 30);
-        } catch (error) {
-          console.error('QR code generation error:', error);
-        }
-      }
+            // QR kodu IBAN'ın altına ortala
+            const qrX = cell.x + (cell.width - qrSize) / 2;
+            const qrY = cell.y + padding + 10;
 
-      // Add company address information
-      // Örnek: Görseldeki adres bilgisine benzer formatta yazdırma
-      pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(0, 0, 0);
-
-      // Sayfa genişliğinin yarısı (orta nokta)
-      const centerX = pdf.internal.pageSize.getWidth() / 2;
-
-      // Sayfa yüksekliğini al ve alttan 30mm boşluk bırak
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const addressY = pageHeight - 25; // Sayfanın altından 30mm yukarıda başla
-
-      // 1) Adres satırlarını ayırma
-      const addressLines: string[] = [];
-      if (settings.companyAddress) {
-        const splittedAddress = settings.companyAddress.split('\n');
-        splittedAddress.forEach(line => {
-          const trimmed = line.trim();
-          if (trimmed) {
-            addressLines.push(trimmed);
+            pdf.addImage(qrCodeImage, 'PNG', qrX, qrY, qrSize, qrSize);
           }
-        });
-      }
-
-      // Her satırı ortalayarak yazdırma (alttan yukarı doğru)
-      addressLines.forEach((line, index) => {
-        const fontSize = pdf.internal.getFontSize();
-        const lineWidth =
-          (pdf.getStringUnitWidth(line) * fontSize) / pdf.internal.scaleFactor;
-        const lineX = centerX - lineWidth / 2;
-
-        // Satırları alttan yukarı doğru yerleştir (her satır için 6mm yukarı)
-        const reversedIndex = addressLines.length - 1 - index; // Dizinin sonundan başla
-        pdf.text(line, lineX, addressY - reversedIndex * 6);
+        }
       });
 
-      // Telefon numarasını adresin altına ekle
-      if (settings.phone) {
-        const fontSize = pdf.internal.getFontSize();
-        const phoneText = `Tel: ${settings.phone}`;
-        const phoneWidth =
-          (pdf.getStringUnitWidth(phoneText) * fontSize) /
-          pdf.internal.scaleFactor;
-        const phoneX = centerX - phoneWidth / 2;
-        pdf.text(phoneText, phoneX, addressY + 6); // Adresin 6mm altına
+      // Footer'ın başlangıç Y pozisyonunu kontrol et
+      const currentY = (pdf as any).lastAutoTable.finalY;
+      if (currentY > pageHeight - safeFooterDistance) {
+        pdf.addPage();
       }
     }
 
-    // Save the PDF
+    // Add company address information
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(0, 0, 0);
+
+    const centerX = pageWidth / 2;
+    const addressY = pageHeight - 25;
+
+    // Adres satırlarını ayırma
+    const addressLines: string[] = [];
+    if (settings.companyAddress) {
+      const splittedAddress = settings.companyAddress.split('\n');
+      splittedAddress.forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed) {
+          addressLines.push(trimmed);
+        }
+      });
+    }
+
+    // Her satırı ortalayarak yazdırma (alttan yukarı doğru)
+    addressLines.forEach((line, index) => {
+      const fontSize = pdf.internal.getFontSize();
+      const lineWidth =
+        (pdf.getStringUnitWidth(line) * fontSize) / pdf.internal.scaleFactor;
+      const lineX = centerX - lineWidth / 2;
+
+      const reversedIndex = addressLines.length - 1 - index;
+      pdf.text(line, lineX, addressY - reversedIndex * 6);
+    });
+
+    // Telefon numarasını adresin altına ekle
+    if (settings.phone) {
+      const fontSize = pdf.internal.getFontSize();
+      const phoneText = `Tel: ${settings.phone}`;
+      const phoneWidth =
+        (pdf.getStringUnitWidth(phoneText) * fontSize) /
+        pdf.internal.scaleFactor;
+      const phoneX = centerX - phoneWidth / 2;
+      pdf.text(phoneText, phoneX, addressY + 6);
+    }
+
     return pdf;
   } catch (error) {
     console.error('PDF oluşturma sırasında bir hata oluştu:', error);
