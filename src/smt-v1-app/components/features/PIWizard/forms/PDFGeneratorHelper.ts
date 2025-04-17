@@ -20,7 +20,9 @@ export const generatePDF = async (
   contractNo: string,
   isInternational: boolean,
   validityDay: number,
-  selectedBank: any
+  selectedBank: any,
+  taxAmount: number,
+  percentageValue: number
 ): Promise<jsPDF | void> => {
   try {
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -130,14 +132,14 @@ export const generatePDF = async (
       0
     );
     const total =
-      quotePartRows.reduce(
-        (acc, row) => acc + row.quantity * row.unitPrice,
-        0
-      ) +
-      subTotalValues.reduce(
-        (sum, val, index) => sum + (checkedStates[index] ? val : 0),
-        0
-      );
+      subTotal +
+      (checkedStates[0] ? taxAmount : 0) +
+      subTotalValues
+        .slice(1)
+        .reduce(
+          (sum, val, index) => sum + (checkedStates[index + 1] ? val : 0),
+          0
+        );
 
     // Use the Y position after the main product table
     const startYPosition = (pdf as any).lastAutoTable?.finalY + 5 || 40;
@@ -203,17 +205,18 @@ export const generatePDF = async (
         ],
         [
           { content: 'Tax', styles: { fontStyle: 'bold' } },
-          checkedStates[0] ? 'Yes' : 'No',
-          checkedStates[0]
-            ? `${subTotalValues[0]?.toLocaleString('en-US', {
-                style: 'currency',
-                currency: currency.replace(/[^A-Z]/g, '')
-              })} (18%)`
-            : subTotalValues[0]?.toLocaleString('en-US', {
-                style: 'currency',
-                currency: currency.replace(/[^A-Z]/g, '')
-              })
+          {
+            content: checkedStates[0] ? 'Yes' : 'No',
+            styles: { halign: 'center' }
+          },
+          {
+            content: `${percentageValue}% ${taxAmount.toLocaleString('en-US', {
+              style: 'currency',
+              currency: currency.replace(/[^A-Z]/g, '')
+            })}`
+          }
         ],
+
         [
           { content: 'Aircargo to X', styles: { fontStyle: 'bold' } },
           checkedStates[1] ? 'Yes' : 'No',
@@ -502,7 +505,9 @@ export const downloadPDF = async (
   contractNo: string,
   isInternational: boolean,
   validityDay: number,
-  selectedBank: any
+  selectedBank: any,
+  taxAmount: number,
+  percentageValue: number
 ) => {
   try {
     const pdf = await generatePDF(
@@ -522,10 +527,12 @@ export const downloadPDF = async (
       contractNo,
       isInternational,
       validityDay,
-      selectedBank
+      selectedBank,
+      taxAmount,
+      percentageValue
     );
     if (pdf) {
-      pdf.save('quote-' + quoteNumber + '.pdf');
+      pdf.save(`quote-${quoteNumber}.pdf`);
     }
   } catch (error) {
     console.error('PDF oluşturma sırasında bir hata oluştu:', error);
@@ -549,7 +556,9 @@ export const returnPdfAsBase64String = async (
   contractNo: string,
   isInternational: boolean,
   validityDay: number,
-  selectedBank: any
+  selectedBank: any,
+  taxAmount: number,
+  percentageValue: number
 ): Promise<string | undefined> => {
   try {
     const pdf = await generatePDF(
@@ -569,12 +578,12 @@ export const returnPdfAsBase64String = async (
       contractNo,
       isInternational,
       validityDay,
-      selectedBank
+      selectedBank,
+      taxAmount,
+      percentageValue
     );
     if (pdf) {
-      const pdfBlob = pdf.output('blob');
-      const base64String = await convertBlobToBase64(pdfBlob);
-      return base64String as string;
+      return pdf.output('datauristring').split(',')[1];
     }
   } catch (e) {
     console.error(e);

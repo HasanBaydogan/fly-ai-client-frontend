@@ -22,6 +22,8 @@ interface WizardPersonalFormProps {
   checkedStates: boolean[];
   quoteNumber: string; // Add this new prop
   currency: string;
+  percentageValue: number; // Add percentageValue prop
+  taxAmount: number; // Add taxAmount prop
   setBase64PdfFileName: React.Dispatch<React.SetStateAction<string>>;
   setBase64Pdf: React.Dispatch<React.SetStateAction<string>>;
   setIsPdfConvertedToBase64: React.Dispatch<React.SetStateAction<boolean>>;
@@ -57,8 +59,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
   setBase64Pdf,
   setBase64PdfFileName,
   quotePartRows,
-  quoteNumber, // Add this new prop,
+  quoteNumber,
   currency,
+  percentageValue,
+  taxAmount,
   setIsPdfConvertedToBase64,
   setupOtherProps,
   piResponseData
@@ -68,8 +72,6 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
     payment: 4634.71,
     after: 4634.71
   });
-
-  const [percentageValue] = useState(0);
 
   const handleGeneratePDF = async () => {
     try {
@@ -90,7 +92,9 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         setupOtherProps.contractNo,
         setupOtherProps.isInternational,
         setupOtherProps.validityDay,
-        setupOtherProps.selectedBank
+        setupOtherProps.selectedBank,
+        taxAmount,
+        percentageValue
       );
     } catch (error) {
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
@@ -119,7 +123,9 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             setupOtherProps.contractNo,
             setupOtherProps.isInternational,
             setupOtherProps.validityDay,
-            setupOtherProps.selectedBank
+            setupOtherProps.selectedBank,
+            taxAmount,
+            percentageValue
           );
           setBase64Pdf(response);
           setBase64PdfFileName('quote-' + quoteNumber + '.pdf');
@@ -268,8 +274,12 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     <tr>
                       <td style={{ width: '120px' }}>Contract No :</td>
                       <td>
-                        <div className="d-flex align-items-center justify-content-end">
+                        <div
+                          className="d-flex align-items-center justify-content-space-between"
+                          style={{ justifyContent: 'space-between' }}
+                        >
                           {setupOtherProps.contractNo || ''}
+
                           <Form.Check
                             type="checkbox"
                             label="International"
@@ -344,20 +354,21 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       </td>
                       <td>
                         <div className="d-flex justify-content-end align-items-center gap-2">
-                          <span style={{ fontSize: '0.9rem' }}>
-                            {percentageValue || 0}%
-                          </span>
                           <span
                             style={{
                               fontSize: '0.9rem',
                               minWidth: '70px',
-                              textAlign: 'left'
+                              textAlign: 'left',
+                              marginRight: '20px'
                             }}
                           >
-                            {subTotalValues[0]?.toLocaleString('en-US', {
-                              style: 'currency',
-                              currency: currency.replace(/[^A-Z]/g, '')
-                            })}
+                            {`${percentageValue}% ${taxAmount.toLocaleString(
+                              'en-US',
+                              {
+                                style: 'currency',
+                                currency: currency.replace(/[^A-Z]/g, '')
+                              }
+                            )}`}
                           </span>
                         </div>
                       </td>
@@ -421,11 +432,14 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                               (acc, row) => acc + row.quantity * row.unitPrice,
                               0
                             ) +
-                            subTotalValues.reduce(
-                              (sum, val, index) =>
-                                sum + (checkedStates[index] ? val : 0), // Update total calculation
-                              0
-                            )
+                            (checkedStates[0] ? taxAmount : 0) +
+                            subTotalValues
+                              .slice(1)
+                              .reduce(
+                                (sum, val, index) =>
+                                  sum + (checkedStates[index + 1] ? val : 0),
+                                0
+                              )
                           ).toLocaleString('en-US', {
                             style: 'currency',
                             currency: currency.replace(/[^A-Z]/g, '')

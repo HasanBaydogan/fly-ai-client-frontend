@@ -92,7 +92,9 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   };
 
   useEffect(() => {
-    calculateTaxAmount(percentageValue);
+    if (percentageValue > 0) {
+      calculateTaxAmount(percentageValue);
+    }
   }, [percentageValue, quotePartRows]);
 
   const setupOtherProps: SetupOtherProps = {
@@ -290,6 +292,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                     setCheckedStates={setCheckedStates}
                     percentageValue={percentageValue}
                     setPercentageValue={setPercentageValue}
+                    taxAmount={taxAmount}
+                    setTaxAmount={setTaxAmount}
                     setupOtherProps={setupOtherProps}
                     piResponseData={piResponseData}
                   />
@@ -309,6 +313,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                       checkedStates={checkedStates}
                       quoteNumber={quoteWizardData.quoteNumberId}
                       currency={currency}
+                      percentageValue={percentageValue}
+                      taxAmount={taxAmount}
                       setupOtherProps={setupOtherProps}
                       piResponseData={piResponseData}
                     />

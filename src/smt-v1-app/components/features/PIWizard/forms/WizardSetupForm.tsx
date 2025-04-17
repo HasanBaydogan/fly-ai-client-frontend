@@ -21,6 +21,8 @@ interface WizardSetupFormProps {
   setCheckedStates: React.Dispatch<React.SetStateAction<boolean[]>>;
   percentageValue: number;
   setPercentageValue: React.Dispatch<React.SetStateAction<number>>;
+  taxAmount: number;
+  setTaxAmount: React.Dispatch<React.SetStateAction<number>>;
   setupOtherProps: {
     clientLocation: string;
     setClientLocation: React.Dispatch<React.SetStateAction<string>>;
@@ -62,6 +64,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   setCheckedStates,
   percentageValue,
   setPercentageValue,
+  taxAmount,
+  setTaxAmount,
   setupOtherProps,
   piResponseData
 }) => {
@@ -89,6 +93,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       setupOtherProps.setValidityDay(piResponseData.validityDay);
       setupOtherProps.setCPT(piResponseData.deliveryTerm);
       setupOtherProps.setShippingTerms(piResponseData.paymentTerm);
+
+      // Set tax rate from PIResponseData
+      if (piResponseData.tax?.taxRate) {
+        setPercentageValue(piResponseData.tax.taxRate);
+      }
 
       // Set quote part rows from piParts with formatted unit prices
       const formattedParts = piResponseData.piParts.map(part => {
@@ -178,7 +187,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   ]);
 
   const [tempIdCounter, setTempIdCounter] = useState(0);
-  const [taxAmount, setTaxAmount] = useState(0);
   const [lastEdited, setLastEdited] = useState<'percentage' | 'tax'>(
     'percentage'
   );
@@ -723,9 +731,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       type="number"
                       value={row.quantity}
                       onChange={e =>
-                        handleLeadTimeChange(
-                          Number(e.target.value),
-                          row.tempId != null ? row.tempId : row.id
+                        handleQuantityChange(
+                          parseInt(e.target.value, 10),
+                          row.id
                         )
                       }
                       style={{ width: '75px' }}
@@ -738,7 +746,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     type="number"
                     value={row.leadTime}
                     onChange={e =>
-                      handleQuantityChange(parseInt(e.target.value, 10), row.id)
+                      handleLeadTimeChange(
+                        Number(e.target.value),
+                        row.tempId != null ? row.tempId : row.id
+                      )
                     }
                     min={1}
                     style={{ width: '75px' }}
@@ -995,7 +1006,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           type="text"
                           value={
                             getPriceCurrencySymbol(currency) +
-                            formatNumberInput(subTotalValues[1].toString())
+                            formatNumberInput(
+                              (subTotalValues[1] || 0).toString()
+                            )
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
@@ -1049,7 +1062,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           type="text"
                           value={
                             getPriceCurrencySymbol(currency) +
-                            formatNumberInput(subTotalValues[2].toString())
+                            formatNumberInput(
+                              (subTotalValues[2] || 0).toString()
+                            )
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
@@ -1103,7 +1118,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           type="text"
                           value={
                             getPriceCurrencySymbol(currency) +
-                            formatNumberInput(subTotalValues[3].toString())
+                            formatNumberInput(
+                              (subTotalValues[3] || 0).toString()
+                            )
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
