@@ -6,23 +6,23 @@ import useWizardForm from 'hooks/useWizardForm';
 import WizardFormProvider from 'providers/WizardFormProvider';
 import { Card, Tab, Tabs } from 'react-bootstrap';
 import classNames from 'classnames';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MailProvider } from '../forms/MailContext';
 import ReviewMail from '../forms/ReviewMail';
 import { defaultMailTemplate } from '../forms/defaultMailTemplate';
 import {
-  QuotePartRow,
+  partRow,
   QuoteWizardData,
   PIResponseData,
   SetupOtherProps
 } from '../PIWizard';
 import WizardPreviewForm from '../forms/WizardPreviewForm';
 import QuoteWizardNav from '../wizard/QuoteWizardNav';
-import { sendQuoteEmail } from 'smt-v1-app/services/QuoteService';
+import { sendQuoteEmail } from 'smt-v1-app/services/PIServices';
 
-export interface QuotePartRequest {
-  quotePartId: string;
-  quotePartNumber: string;
+export interface partRequest {
+  partId: string;
+  partNumber: string;
   quotePartName: string;
   reqCnd: string;
   fndCnd: string;
@@ -57,7 +57,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   });
 
   const [activeTab, setActiveTab] = useState('setup');
-  const [quotePartRows, setQuotePartRows] = useState<QuotePartRow[]>([]);
+  const [quotePartRows, setQuotePartRows] = useState<partRow[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [subTotalValues, setSubTotalValues] = useState<number[]>([]);
   const [currency, setCurrency] = useState(quoteWizardData.currency);
@@ -74,6 +74,26 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   const [selectedBank, setSelectedBank] = useState<
     PIResponseData['allBanks'][0] | null
   >(null);
+  const [percentageValue, setPercentageValue] = useState<number>(0);
+  const [taxAmount, setTaxAmount] = useState<number>(0);
+
+  const calculateSubTotal = () => {
+    return quotePartRows.reduce(
+      (acc, row) => acc + row.quantity * row.unitPrice,
+      0
+    );
+  };
+
+  const calculateTaxAmount = (percentage: number) => {
+    const subTotal = calculateSubTotal();
+    const tax = (subTotal * percentage) / 100;
+    setTaxAmount(tax);
+    return tax;
+  };
+
+  useEffect(() => {
+    calculateTaxAmount(percentageValue);
+  }, [percentageValue, quotePartRows]);
 
   const setupOtherProps: SetupOtherProps = {
     clientLocation,
@@ -147,31 +167,30 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
       return { filename: attach.name, data: attach.base64 };
     });
     //console.log(quotePartRows);
-    const alreadySavedQuotePart: QuotePartRow[] = quotePartRows.filter(
-      quotePartRow => !quotePartRow.alternativeTo.trim()
+    const alreadySavedPart: partRow[] = quotePartRows.filter(
+      partRow => !partRow.alternativeTo.trim()
     );
-    const quotePartRequests: QuotePartRequest[] = alreadySavedQuotePart.map(
-      quotePart => {
-        return {
-          quotePartId: quotePart.id,
-          quotePartNumber: quotePart.partNumber,
-          quotePartName: quotePart.description,
-          reqCnd: quotePart.reqCondition,
-          fndCnd: quotePart.fndCondition,
-          leadTime: quotePart.leadTime,
-          qty: quotePart.quantity,
-          unitPrice: quotePart.unitPrice
-        };
-      }
-    );
+    const partRequests: partRequest[] = alreadySavedPart.map(quotePart => {
+      return {
+        partId: quotePart.id,
+        partNumber: quotePart.partNumber,
+        quotePartName: quotePart.description,
+        reqCnd: quotePart.reqCondition,
+        fndCnd: quotePart.fndCondition,
+        leadTime: quotePart.leadTime,
+        qty: quotePart.quantity,
+        unitPrice: quotePart.unitPrice
+      };
+    });
 
-    const alreadySavedAlternativeQuotePart: QuotePartRow[] =
-      quotePartRows.filter(quotePartRow => quotePartRow.alternativeTo.trim());
-    const quoteAlternativePartRequests: QuotePartRequest[] =
+    const alreadySavedAlternativeQuotePart: partRow[] = quotePartRows.filter(
+      partRow => partRow.alternativeTo.trim()
+    );
+    const quoteAlternativePartRequests: partRequest[] =
       alreadySavedAlternativeQuotePart.map(quotePart => {
         return {
-          quotePartId: quotePart.id,
-          quotePartNumber: quotePart.partNumber,
+          partId: quotePart.id,
+          partNumber: quotePart.partNumber,
           quotePartName: quotePart.description,
           reqCnd: quotePart.reqCondition,
           fndCnd: quotePart.fndCondition,
@@ -181,53 +200,64 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
         };
       });
 
-    //console.log(quotePartRequests);
+    //console.log(partRequests);
     //console.log(quoteAlternativePartRequests);
-
+    // console.log('xxx', piResponseData);
     const payload = {
       to: toEmails,
       cc: ccEmails,
       subject: subject,
       attachments: attachments,
       body: content,
-      quoteId: quoteWizardData.quoteId,
-      selectedQuoteParts: quotePartRequests,
-      selectedAlternativeQuoteParts: quoteAlternativePartRequests,
-      clientLocation: clientLocation,
-      shipTo: shipTo,
-      requisitioner: requisitioner,
-      shipVia: shipVia,
-      CPT: CPT,
-      shippingTerms: shippingTerms,
-      quoteOtherValues: [
-        {
-          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[0],
-          value: checkedStates[0] ? subTotalValues[0] : 0
-        },
-        {
-          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[1],
-          value: checkedStates[1] ? subTotalValues[1] : 0
-        },
-        {
-          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[2],
-          value: checkedStates[2] ? subTotalValues[2] : 0
-        },
-        {
-          key: quoteWizardData.quoteWizardSetting.otherQuoteValues[3],
-          value: checkedStates[3] ? subTotalValues[3] : 0
-        }
-      ],
-      comment: quoteComment
+      PIId: piResponseData.piId,
+      selectedPIParts: partRequests.map(part => ({
+        piPartId: part.partId,
+        partNumber: part.partNumber,
+        description: part.quotePartName,
+        qty: part.qty,
+        leadTime: part.leadTime,
+        unitPrice: part.unitPrice
+      })),
+      clientLegalAddress: setupOtherProps.clientLocation,
+      contractNo: contractNo,
+      isInternational: isInternational,
+      paymentTerm: shippingTerms,
+      deliveryTerm: CPT,
+      validityDay: validityDay,
+      bankDetail: {
+        bankName: piResponseData.allBanks[0].bankName,
+        branchName: piResponseData.allBanks[0].branchName,
+        branchCode: piResponseData.allBanks[0].branchCode,
+        swiftCode: piResponseData.allBanks[0].swiftCode,
+        ibanNo: piResponseData.allBanks[0].ibanNo,
+        currency: piResponseData.allBanks[0].currency
+      },
+      piTax: {
+        taxRate: percentageValue
+      },
+      airCargoToX: {
+        airCargoToX: subTotalValues[1],
+        isIncluded: checkedStates[1] || false
+      },
+      sealineToX: {
+        sealineToX: subTotalValues[2],
+        isIncluded: checkedStates[2] || false
+      },
+      truckCarriageToX: {
+        truckCarriageToX: subTotalValues[3],
+        isIncluded: checkedStates[3] || false
+      }
     };
-    console.log(payload);
+
+    console.log('Sending payload:', payload);
 
     const response = await sendQuoteEmail(payload);
-    //console.log(response);
+    console.log('sendQuoteEmail', response);
     if (response && response.statusCode === 200) {
       setFrom(response.data.from);
       setIsSendEmailSuccess(true);
     } else {
-      //console.log(response);
+      console.log(response);
     }
 
     setEmailSendLoading(false);
@@ -258,6 +288,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                     currency={currency}
                     checkedStates={checkedStates}
                     setCheckedStates={setCheckedStates}
+                    percentageValue={percentageValue}
+                    setPercentageValue={setPercentageValue}
                     setupOtherProps={setupOtherProps}
                     piResponseData={piResponseData}
                   />
@@ -283,7 +315,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                   }
                 </WizardForm>
               </Tab.Pane>
-              {/*
+
               <Tab.Pane eventKey={3}>
                 <WizardForm step={3}>
                   {
@@ -292,11 +324,12 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                       isPdfConvertedToBase64={isPdfConvertedToBase64}
                       base64Pdf={base64Pdf}
                       base64PdfFileName={base64PdfFileName}
-                      quoteId={quoteWizardData.quoteId}
+                      piId={piResponseData.piId}
                     />
                   }
                 </WizardForm>
               </Tab.Pane>
+
               <Tab.Pane eventKey={4}>
                 <WizardForm step={4}>
                   {
@@ -310,8 +343,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                       isEmailSendLoading={isEmailSendLoading}
                     />
                   }
-                </WizardForm>da 
-              </Tab.Pane> */}
+                </WizardForm>
+              </Tab.Pane>
             </Tab.Content>
           </Card.Body>
           <Card.Footer className="border-top-0">

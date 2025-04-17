@@ -5,7 +5,7 @@ import { quoteWizardIntro } from 'smt-v1-app/services/QuoteService';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getAllCurrenciesFromDB } from 'smt-v1-app/services/RFQService';
 
-export interface QuotePartRow {
+export interface partRow {
   no: number;
   alternativeTo: string;
   currency: string;
@@ -41,7 +41,7 @@ export interface QuoteWizardData {
   quoteId: string;
   quoteNumberId: string;
   rfqNumberId: string;
-  quoteWizardPartResponses: QuotePartRow[];
+  quoteWizardPartResponses: partRow[];
   quoteWizardSetting: QuoteWizardSetting;
   revisionNumber: number;
 }
@@ -68,12 +68,13 @@ export interface PIResponseData {
   piId: string;
   piNumberId: string;
   piParts: any[];
+
   revisionNumber: number;
-  sealineToX: { sealineToX: number; included: boolean };
+  sealineToX: { sealineToX: number; isIncluded: boolean };
   subTotal: number;
   tax: { tax: number; taxRate: number };
   total: number;
-  truckCarriageToX: { truckCarriageToX: number; included: boolean };
+  truckCarriageToX: { truckCarriageToX: number; isIncluded: boolean };
   validityDay: number;
 }
 
@@ -129,13 +130,13 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
   piResponseData
 }) => {
   // Add console.log to check incoming props
-  console.log('PIWizard Props:', {
-    piResponseData,
-    initialData,
-    quoteId,
-    selectedParts,
-    selectedAlternativeParts
-  });
+  // console.log('PIWizard Props:', {
+  //   piResponseData,
+  //   initialData,
+  //   quoteId,
+  //   selectedParts,
+  //   selectedAlternativeParts
+  // });
 
   const [quoteWizardData, setQuoteWizardData] =
     useState<QuoteWizardData | null>(null);
@@ -176,7 +177,7 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
         const dataToUse = initialData || piResponseData;
 
         if (dataToUse) {
-          console.log('Converting data to QuoteWizardData:', dataToUse);
+          // console.log('Converting data to QuoteWizardData:', dataToUse);
           // Convert data to QuoteWizardData format
           const convertedData: QuoteWizardData = {
             currency: 'USD', // Default currency, can be updated based on your needs
@@ -228,17 +229,17 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
             },
             revisionNumber: dataToUse.revisionNumber
           };
-          console.log('Converted Data:', convertedData);
+          // console.log('Converted Data:', convertedData);
           setQuoteWizardData(convertedData);
         } else {
-          console.log('Fetching data from quoteWizardIntro');
+          // console.log('Fetching data from quoteWizardIntro');
           const response = await quoteWizardIntro(
             quoteId,
             selectedParts,
             selectedAlternativeParts
           );
           if (response.statusCode === 200) {
-            console.log('QuoteWizardIntro Response:', response.data);
+            // console.log('QuoteWizardIntro Response:', response.data);
             setQuoteWizardData(response.data);
           }
         }

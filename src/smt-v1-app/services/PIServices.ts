@@ -1,8 +1,10 @@
+import { SendEmailProps } from 'smt-v1-app/components/features/PIWizard/forms/WizardSendMailForm';
 import {
   getRequest,
   postRequest,
   putRequest,
-  deleteRequest
+  deleteRequest,
+  patchRequest
 } from './ApiCore/GlobalApiCore';
 
 interface PIAttachment {
@@ -23,4 +25,12 @@ export const postPi = async (data: PIRequest) => {
 
 export const getAllCompany = async () => {
   return await getRequest(`/company/all`);
+};
+
+export const getPreEmailSendingParameters = async (piId: string) => {
+  return await getRequest(`/pi/pre-email-sending?piId=${piId}`);
+};
+
+export const sendQuoteEmail = async (sendEmailProps: SendEmailProps) => {
+  return await postRequest(`/pi/send-email`, sendEmailProps);
 };

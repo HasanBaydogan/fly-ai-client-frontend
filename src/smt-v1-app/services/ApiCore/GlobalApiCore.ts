@@ -107,6 +107,28 @@ export const postRequest = async (url: string, data: any): Promise<any> => {
   }
 };
 
+/** API Generic PATCH */
+export const patchRequest = async (url: string, data: any): Promise<any> => {
+  try {
+    console.log('PATCH Request initiated:', url, data);
+    const response: AxiosResponse = await api.patch(url, data);
+    console.log('PATCH Response received:', response.data);
+    if (response.data.statusCode === 200) return response.data;
+    if (response.data.statusCode === 498) {
+      //   console.log(
+      //     'PATCH request received 498 status, attempting token refresh.'
+      //   );
+      return (await tryRefresh(() => api.patch(url, data)))?.data;
+    }
+    if (response.data.statusCode === 401) {
+      //  console.log('PATCH request unauthorized (401).');
+      handleTokenFailure();
+    }
+  } catch (err) {
+    console.error(`PATCH Error on ${url}:`, err);
+  }
+};
+
 /** API Generic PUT */
 export const putRequest = async (url: string, data: any = {}): Promise<any> => {
   try {

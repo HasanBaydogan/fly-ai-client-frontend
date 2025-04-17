@@ -16,7 +16,7 @@ import useAdvanceTable from 'hooks/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import SearchBox from 'components/common/SearchBox';
-import { QuotePartRow, QuoteWizardData } from '../PIWizard/PIWizard';
+import { partRow, QuoteWizardData } from '../PIWizard/PIWizard';
 
 interface RFQModalProps {
   show: boolean;
@@ -148,14 +148,6 @@ const RFQModal: React.FC<RFQModalProps> = ({
 
   const handlePreparePI = async () => {
     try {
-      console.log('Preparing PI with data:', {
-        selectedDate,
-        base64Files,
-        activeTab,
-        selectedCompanyId,
-        quoteId
-      });
-
       const formattedDate = selectedDate ? formatDate(selectedDate) : '';
       const requestData = {
         receivedDate: formattedDate,
@@ -167,12 +159,8 @@ const RFQModal: React.FC<RFQModalProps> = ({
         quoteId
       };
 
-      console.log('Sending request with data:', requestData);
       const response = await postPi(requestData);
-      console.log('PI Response:', response);
-
       if (response.success) {
-        console.log('Setting PI Response Data:', response.data);
         setPiResponseData(response.data);
         setShowPIWizard(true);
         onHide();
@@ -248,7 +236,6 @@ const RFQModal: React.FC<RFQModalProps> = ({
                         placeholder="Select a date"
                         value={selectedDate}
                         onChange={selectedDates => {
-                          // Tek tarih seçimi yaptığınızı varsayarsak:
                           setSelectedDate(selectedDates[0]);
                         }}
                       />

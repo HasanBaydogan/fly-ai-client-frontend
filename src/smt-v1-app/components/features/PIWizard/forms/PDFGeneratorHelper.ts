@@ -1,14 +1,14 @@
 import autoTable from 'jspdf-autotable';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
-import { QuotePartRow, QuoteWizardSetting } from '../PIWizard';
+import { partRow, QuoteWizardSetting } from '../PIWizard';
 
 export const generatePDF = async (
   settings: QuoteWizardSetting,
   selectedDate: Date | null,
   quoteNumber: string,
   currency: string,
-  quotePartRows: QuotePartRow[],
+  quotePartRows: partRow[],
   subTotalValues: number[],
   checkedStates: boolean[],
   clientLocation: string,
@@ -159,10 +159,7 @@ export const generatePDF = async (
           { content: 'Payment Term :', styles: { fontStyle: 'bold' } },
           shippingTerms
         ],
-        [
-          { content: 'Delivery Term :', styles: { fontStyle: 'bold' } },
-          CPT
-        ],
+        [{ content: 'Delivery Term :', styles: { fontStyle: 'bold' } }, CPT],
         [
           { content: 'Validity Day :', styles: { fontStyle: 'bold' } },
           validityDay?.toString() || '0'
@@ -207,15 +204,15 @@ export const generatePDF = async (
         [
           { content: 'Tax', styles: { fontStyle: 'bold' } },
           checkedStates[0] ? 'Yes' : 'No',
-          checkedStates[0] ? 
-            `${subTotalValues[0]?.toLocaleString('en-US', {
-              style: 'currency',
-              currency: currency.replace(/[^A-Z]/g, '')
-            })} (18%)` : 
-            subTotalValues[0]?.toLocaleString('en-US', {
-              style: 'currency',
-              currency: currency.replace(/[^A-Z]/g, '')
-            })
+          checkedStates[0]
+            ? `${subTotalValues[0]?.toLocaleString('en-US', {
+                style: 'currency',
+                currency: currency.replace(/[^A-Z]/g, '')
+              })} (18%)`
+            : subTotalValues[0]?.toLocaleString('en-US', {
+                style: 'currency',
+                currency: currency.replace(/[^A-Z]/g, '')
+              })
         ],
         [
           { content: 'Aircargo to X', styles: { fontStyle: 'bold' } },
@@ -493,7 +490,7 @@ export const downloadPDF = async (
   selectedDate: Date | null,
   quoteNumber: string,
   currency: string,
-  quotePartRows: QuotePartRow[],
+  quotePartRows: partRow[],
   subTotalValues: number[],
   checkedStates: boolean[],
   clientLocation: string,
@@ -540,7 +537,7 @@ export const returnPdfAsBase64String = async (
   selectedDate: Date | null,
   quoteNumber: string,
   currency: string,
-  quotePartRows: QuotePartRow[],
+  quotePartRows: partRow[],
   subTotalValues: number[],
   checkedStates: boolean[],
   clientLocation: string,

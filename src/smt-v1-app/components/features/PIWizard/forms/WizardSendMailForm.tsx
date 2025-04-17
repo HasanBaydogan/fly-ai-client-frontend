@@ -4,7 +4,7 @@ import TinymceEditor from 'components/base/TinymceEditor';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 
-import { getPreEmailSendingParameters } from 'smt-v1-app/services/QuoteService';
+import { getPreEmailSendingParameters } from 'smt-v1-app/services/PIServices';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import DropzoneQuoteWizard from './DropzoneQuoteWizard';
 
@@ -57,7 +57,7 @@ interface TypeaheadOption {
 interface WizardSendMailFormProps {
   onNext?: () => void;
   emailProps: EmailProps;
-  quoteId: string;
+  piId: string;
   base64Pdf: string;
   base64PdfFileName: string;
   isPdfConvertedToBase64: boolean;
@@ -66,7 +66,7 @@ interface WizardSendMailFormProps {
 const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
   onNext,
   emailProps,
-  quoteId,
+  piId,
   base64Pdf,
   base64PdfFileName,
   isPdfConvertedToBase64
@@ -152,7 +152,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
   useEffect(() => {
     const getPreEmailParams = async () => {
       setIsLoading(true);
-      const response = await getPreEmailSendingParameters(quoteId);
+      const response = await getPreEmailSendingParameters(piId);
       // Assuming response.data has the structure: { body, ccEmails, subject, toEmails }
       setToEmails(response.data.toEmails);
       setCcEmails(response.data.ccEmails);
@@ -161,7 +161,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
       setIsLoading(false);
     };
     getPreEmailParams();
-  }, [quoteId, setToEmails, setCcEmails, setSubject, setContent]);
+  }, [piId, setToEmails, setCcEmails, setSubject, setContent]);
 
   // Update the file state when base64Pdf changes.
   useEffect(() => {

@@ -6,7 +6,7 @@ import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
-import { QuotePartRow, QuoteWizardSetting } from '../PIWizard';
+import { partRow, QuoteWizardSetting } from '../PIWizard';
 import {
   downloadPDF,
   generatePDF,
@@ -16,7 +16,7 @@ import QRCode from 'react-qr-code';
 
 interface WizardPersonalFormProps {
   settings: QuoteWizardSetting;
-  quotePartRows: QuotePartRow[];
+  quotePartRows: partRow[];
   subTotalValues: number[]; // Sub-total değerleri
   selectedDate: Date | null; // Seçilen tarih
   checkedStates: boolean[];
@@ -240,8 +240,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   <td>{index + 1}</td>
                   <td>{row.partNumber}</td>
                   <td>{row.description}</td>
-                  <td>{row.leadTime} Days</td>
                   <td>{row.quantity}</td>
+                  <td>{row.leadTime} Days</td>
                   <td>
                     {row.unitPrice.toLocaleString('en-US', {
                       style: 'currency',

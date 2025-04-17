@@ -2,15 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Badge, Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import DatePicker from 'components/base/DatePicker';
 import './WizardTabs.css';
-import { QuotePartRow, QuoteWizardData, PIResponseData } from '../PIWizard';
+import { partRow, QuoteWizardData, PIResponseData } from '../PIWizard';
 import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
 
 interface WizardSetupFormProps {
   id: string;
   currencies: string[];
   quoteWizardData: QuoteWizardData;
-  quotePartRows: QuotePartRow[];
-  setQuotePartRows: React.Dispatch<React.SetStateAction<QuotePartRow[]>>;
+  quotePartRows: partRow[];
+  setQuotePartRows: React.Dispatch<React.SetStateAction<partRow[]>>;
   setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
   selectedDate: Date;
   subTotalValues: number[];
@@ -19,6 +19,8 @@ interface WizardSetupFormProps {
   currency: string;
   checkedStates: boolean[];
   setCheckedStates: React.Dispatch<React.SetStateAction<boolean[]>>;
+  percentageValue: number;
+  setPercentageValue: React.Dispatch<React.SetStateAction<number>>;
   setupOtherProps: {
     clientLocation: string;
     setClientLocation: React.Dispatch<React.SetStateAction<string>>;
@@ -58,33 +60,39 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   currency,
   checkedStates,
   setCheckedStates,
+  percentageValue,
+  setPercentageValue,
   setupOtherProps,
   piResponseData
 }) => {
   // Add console.log to check PIResponseData
   console.log('PIResponseData received:', piResponseData);
-  console.log('PIResponseData parts:', piResponseData?.piParts);
-  console.log('PIResponseData company info:', {
-    logo: piResponseData?.logo,
-    companyAddress: piResponseData?.companyAddress,
-    companyTelephone: piResponseData?.companyTelephone
-  });
+  // console.log('PIResponseData parts:', piResponseData?.piParts);
+  // console.log('PIResponseData company info:', {
+  //   logo: piResponseData?.logo,
+  //   companyAddress: piResponseData?.companyAddress,
+  //   companyTelephone: piResponseData?.companyTelephone
+  // });
 
   useEffect(() => {
     if (piResponseData) {
-      console.log('Processing PIResponseData in useEffect');
+      console.log(
+        'Setting isInternational from piResponseData:',
+        piResponseData.isInternational
+      );
+      setupOtherProps.setIsInternational(piResponseData.isInternational);
+      // console.log('Processing PIResponseData in useEffect');
       // Set initial values from PIResponseData
       setupOtherProps.setClientLocation(piResponseData.clientLegalAddress);
       setupOtherProps.setShipTo(piResponseData.clientName);
       setupOtherProps.setContractNo(piResponseData.contractNo);
-      setupOtherProps.setIsInternational(piResponseData.isInternational);
       setupOtherProps.setValidityDay(piResponseData.validityDay);
       setupOtherProps.setCPT(piResponseData.deliveryTerm);
       setupOtherProps.setShippingTerms(piResponseData.paymentTerm);
 
       // Set quote part rows from piParts with formatted unit prices
       const formattedParts = piResponseData.piParts.map(part => {
-        console.log('Processing part:', part);
+        // console.log('Processing part:', part);
         const { formatted: formattedPrice, numericValue } = formatCurrency(
           part.unitPrice?.toString() || '0',
           part.currency || 'USD'
@@ -96,7 +104,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           unitPriceString: formattedPrice,
           tempId: undefined,
           id:
-            part.quotePartId ||
+            part.piPartId ||
             `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           alternativeTo: part.alternativeTo || '',
           currency: part.currency || 'USD',
@@ -108,7 +116,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           reqCondition: part.reqCondition || 'NE'
         };
       });
-      console.log('Formatted parts:', formattedParts);
+      // console.log('Formatted parts:', formattedParts);
       setQuotePartRows(formattedParts);
 
       // Set subTotalValues and checkedStates based on shipping options
@@ -121,24 +129,24 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       console.log('New subTotalValues:', newSubTotalValues);
       setSubTotalValues(newSubTotalValues);
 
-      const newCheckedStates = [
-        piResponseData.airCargoToX.included,
-        piResponseData.sealineToX.included,
-        piResponseData.truckCarriageToX.included,
-        false // Additional value if needed
-      ];
-      console.log('New checkedStates:', newCheckedStates);
-      setCheckedStates(newCheckedStates);
+      // const newCheckedStates = [
+      //   piResponseData.airCargoToX.isIncluded,
+      //   piResponseData.sealineToX.isIncluded,
+      //   piResponseData.truckCarriageToX.isIncluded,
+      //   false // Additional value if needed
+      // ];
+      // console.log('New checkedStates:', newCheckedStates);
+      // setCheckedStates(newCheckedStates);
 
       // Set other values
       setupOtherProps.setCPT(piResponseData.deliveryTerm || '');
       setupOtherProps.setShippingTerms(piResponseData.paymentTerm || '');
-      console.log('Set other values:', {
-        deliveryTerm: piResponseData.deliveryTerm,
-        paymentTerm: piResponseData.paymentTerm
-      });
+      // console.log('Set other values:', {
+      //   deliveryTerm: piResponseData.deliveryTerm,
+      //   paymentTerm: piResponseData.paymentTerm
+      // });
     } else if (quoteWizardData?.quoteWizardPartResponses) {
-      console.log('Processing quoteWizardData instead of PIResponseData');
+      // console.log('Processing quoteWizardData instead of PIResponseData');
       const formattedData = quoteWizardData.quoteWizardPartResponses.map(
         item => {
           const { formatted: formattedPrice, numericValue } = formatCurrency(
@@ -153,7 +161,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           };
         }
       );
-      console.log('Formatted quote data:', formattedData);
+      // console.log('Formatted quote data:', formattedData);
       setQuotePartRows(formattedData);
     }
   }, [quoteWizardData, piResponseData]);
@@ -170,7 +178,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   ]);
 
   const [tempIdCounter, setTempIdCounter] = useState(0);
-  const [percentageValue, setPercentageValue] = useState(0);
   const [taxAmount, setTaxAmount] = useState(0);
   const [lastEdited, setLastEdited] = useState<'percentage' | 'tax'>(
     'percentage'
@@ -375,7 +382,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   const addRow = () => {
     // ***
-    const newRow: QuotePartRow = {
+    const newRow: partRow = {
       id: `temp-${tempIdCounter}`,
       tempId: tempIdCounter,
       partNumber: '',
@@ -395,7 +402,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
     const updatedData = [...quotePartRows, newRow];
     setTempIdCounter(tempIdCounter + 1);
-    console.log(updatedData);
+    // console.log(updatedData);
     setQuotePartRows(updatedData);
   };
 
@@ -442,6 +449,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     const newCheckedStates = [...checkedStates];
     newCheckedStates[index] = checked;
     setCheckedStates(newCheckedStates);
+    console.log('cargo', newCheckedStates);
   };
 
   const handlePartNumberChange = (
@@ -525,7 +533,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   // Add function to handle row addition
   const handleAddRow = () => {
-    const newRow: QuotePartRow = {
+    const newRow: partRow = {
       no: 0,
       id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       tempId: Date.now(),
@@ -590,7 +598,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               </Form.Group>
             </Form>
             <p className="mt-2 small mt-3">
-              <strong>Quote Number:</strong>{' '}
+              <strong>PI Number:</strong>{' '}
               {piResponseData?.piNumberId ||
                 quoteWizardData?.quoteNumberId ||
                 ''}
@@ -623,6 +631,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   <Form.Control
                     type="text"
                     value={setupOtherProps.shipTo}
+                    disabled
                     onChange={e => setupOtherProps.setShipTo(e.target.value)}
                     style={{ width: '85%' }}
                   />
@@ -712,7 +721,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   <div className="d-flex align-items-center">
                     <Form.Control
                       type="number"
-                      value={row.leadTime}
+                      value={row.quantity}
                       onChange={e =>
                         handleLeadTimeChange(
                           Number(e.target.value),
@@ -727,7 +736,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td style={{ width: '75px' }}>
                   <Form.Control
                     type="number"
-                    value={row.quantity}
+                    value={row.leadTime}
                     onChange={e =>
                       handleQuantityChange(parseInt(e.target.value, 10), row.id)
                     }
@@ -932,14 +941,21 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               placeholder="0"
                             />
                           </div>
-
-                          {/* Vergi tutarı inputu: Değer girildiğinde yüzde değeri otomatik hesaplanır */}
                           <Form.Control
-                            type="number"
-                            value={taxAmount}
-                            step="0.01"
+                            type="text"
+                            value={
+                              getPriceCurrencySymbol(currency) +
+                              formatNumberInput(taxAmount.toString())
+                            }
+                            disabled
                             onChange={e => {
-                              const val = parseFloat(e.target.value);
+                              const value = e.target.value.replace(
+                                getPriceCurrencySymbol(currency),
+                                ''
+                              );
+                              const val = parseFloat(
+                                value.replace(/[^0-9.]/g, '')
+                              );
                               if (!isNaN(val)) {
                                 setLastEdited('tax');
                                 setTaxAmount(val);
@@ -979,8 +995,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           type="text"
                           value={
                             getPriceCurrencySymbol(currency) +
-                            (displayValues[1] ||
-                              formatNumberInput(subTotalValues[1].toString()))
+                            formatNumberInput(subTotalValues[1].toString())
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
@@ -994,12 +1009,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               parseFloat(
                                 e.target.value.replace(/[^0-9.]/g, '')
                               ) || 0;
-
-                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
-                            const formattedNumber = numericValue.toFixed(2);
-                            const formattedValue =
-                              formatNumberInput(formattedNumber);
-
+                            const formattedValue = formatNumberInput(
+                              numericValue.toString()
+                            );
                             const newDisplayValues = [...displayValues];
                             newDisplayValues[1] = formattedValue;
                             setDisplayValues(newDisplayValues);
@@ -1037,8 +1049,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           type="text"
                           value={
                             getPriceCurrencySymbol(currency) +
-                            (displayValues[2] ||
-                              formatNumberInput(subTotalValues[2].toString()))
+                            formatNumberInput(subTotalValues[2].toString())
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
@@ -1052,12 +1063,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               parseFloat(
                                 e.target.value.replace(/[^0-9.]/g, '')
                               ) || 0;
-
-                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
-                            const formattedNumber = numericValue.toFixed(2);
-                            const formattedValue =
-                              formatNumberInput(formattedNumber);
-
+                            const formattedValue = formatNumberInput(
+                              numericValue.toString()
+                            );
                             const newDisplayValues = [...displayValues];
                             newDisplayValues[2] = formattedValue;
                             setDisplayValues(newDisplayValues);
@@ -1095,8 +1103,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           type="text"
                           value={
                             getPriceCurrencySymbol(currency) +
-                            (displayValues[3] ||
-                              formatNumberInput(subTotalValues[3].toString()))
+                            formatNumberInput(subTotalValues[3].toString())
                           }
                           onChange={e => {
                             const value = e.target.value.replace(
@@ -1110,12 +1117,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               parseFloat(
                                 e.target.value.replace(/[^0-9.]/g, '')
                               ) || 0;
-
-                            // Sayıyı iki ondalık basamaklı formata çeviriyoruz
-                            const formattedNumber = numericValue.toFixed(2);
-                            const formattedValue =
-                              formatNumberInput(formattedNumber);
-
+                            const formattedValue = formatNumberInput(
+                              numericValue.toString()
+                            );
                             const newDisplayValues = [...displayValues];
                             newDisplayValues[3] = formattedValue;
                             setDisplayValues(newDisplayValues);
