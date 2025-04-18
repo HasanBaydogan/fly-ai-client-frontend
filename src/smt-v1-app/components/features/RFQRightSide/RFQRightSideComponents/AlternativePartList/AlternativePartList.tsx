@@ -577,11 +577,11 @@ const AlternativePartList = ({
 
                 {/* Part Name END*/}
 
-                {/* Part Description START*/}
+                {/* Additional Info START*/}
                 <td>
                   <Form.Group>
                     <Form.Control
-                      placeholder="Part Description"
+                      placeholder="Additional Info"
                       value={partDescription}
                       onChange={e => {
                         setPartDescription(e.target.value);

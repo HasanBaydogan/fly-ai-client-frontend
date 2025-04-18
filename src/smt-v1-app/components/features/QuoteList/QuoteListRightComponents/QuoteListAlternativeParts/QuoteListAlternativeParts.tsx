@@ -71,7 +71,7 @@ const QuoteListAlternativeParts: React.FC<QuoteListAlternativePartsProps> = ({
               </th>
               <th style={{ minWidth: '120px' }}>Part Number</th>
               <th style={{ minWidth: '150px' }}>Part Name</th>
-              <th style={{ minWidth: '150px' }}>Part Description</th>
+              <th style={{ minWidth: '150px' }}>Additional Info</th>
               <th style={{ minWidth: '150px' }}>Parent Part Number</th>
               <th style={{ minWidth: '100px' }}>Req QTY</th>
               <th style={{ minWidth: '100px' }}>Fnd QTY</th>
