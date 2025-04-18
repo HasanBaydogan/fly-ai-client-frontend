@@ -44,9 +44,9 @@ export const routes: RouteItems[] = [
             flat: true,
             pages: [
               {
-                name: '• Incoming Mail View',
+                name: '• Mail Tracking',
                 path: '/',
-                pathName: 'mail-incoming-mail-view',
+                pathName: 'mail-tracking',
                 icon: '',
                 active: true,
                 next: false
@@ -577,6 +577,14 @@ export const routes: RouteItems[] = [
                 next: false
               }
             ]
+          },
+          {
+            name: '• User Registration Stats',
+            path: '/',
+            pathName: 'user-registration-stats',
+            icon: '',
+            active: true,
+            next: false
           }
         ]
       },
