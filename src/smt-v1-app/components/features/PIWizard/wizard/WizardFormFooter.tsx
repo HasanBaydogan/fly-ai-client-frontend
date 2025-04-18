@@ -16,7 +16,8 @@ const WizardFormFooter = ({
   handleSubmit,
   handleSendQuoteEmail,
   isEmailSendLoading,
-  setEmailSendLoading
+  setEmailSendLoading,
+  onClose
 }: {
   className?: string;
   nextBtnLabel?: string;
@@ -25,6 +26,7 @@ const WizardFormFooter = ({
   handleSendQuoteEmail: () => void;
   isEmailSendLoading: boolean;
   setEmailSendLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  onClose?: () => void;
 }) => {
   const { selectedStep, goToStep, getCanNextPage, getCanPreviousPage } =
     useWizardFormContext();
@@ -36,10 +38,16 @@ const WizardFormFooter = ({
       <Button
         variant="link"
         className={classNames('p-0', {
-          'd-none': hidePrevBtn || !getCanPreviousPage
+          'd-none': hidePrevBtn
         })}
         startIcon={<FontAwesomeIcon icon={faChevronLeft} className="fs-10" />}
-        onClick={() => goToStep(selectedStep - 1)}
+        onClick={() => {
+          if (selectedStep === 1 && onClose) {
+            onClose();
+          } else {
+            goToStep(selectedStep - 1);
+          }
+        }}
         disabled={isEmailSendLoading}
       >
         Previous

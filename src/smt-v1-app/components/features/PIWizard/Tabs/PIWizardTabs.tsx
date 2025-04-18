@@ -42,6 +42,7 @@ interface WizardTabsProps {
   selectedAlternativeParts: string[];
   quoteComment: string;
   piResponseData?: PIResponseData;
+  onClose?: () => void;
 }
 
 const WizardTabs: React.FC<WizardTabsProps> = ({
@@ -50,7 +51,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   selectedParts,
   selectedAlternativeParts,
   quoteComment,
-  piResponseData
+  piResponseData,
+  onClose
 }) => {
   const form = useWizardForm({
     totalStep: 4
@@ -355,10 +357,10 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
           </Card.Body>
           <Card.Footer className="border-top-0">
             <WizardFormFooter
-              className={classNames({ 'd-none': !form.getCanNextPage })}
               handleSendQuoteEmail={handleSendQuoteEmail}
               isEmailSendLoading={isEmailSendLoading}
               setEmailSendLoading={setEmailSendLoading}
+              onClose={onClose}
             />
           </Card.Footer>
         </Card>

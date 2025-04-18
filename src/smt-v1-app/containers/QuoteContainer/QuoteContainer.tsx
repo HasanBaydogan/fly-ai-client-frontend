@@ -29,8 +29,20 @@ import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
 
 const QuoteContainer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const closeModal = () => setIsModalOpen(false);
-  const openModal = () => setIsModalOpen(true);
+  const [openModalOnSecondPage, setOpenModalOnSecondPage] = useState(false);
+
+  const closeModal = (shouldHide = true, openOnSecondPage = false) => {
+    if (shouldHide) {
+      setIsModalOpen(false);
+    } else {
+      setOpenModalOnSecondPage(openOnSecondPage);
+      setIsModalOpen(true);
+    }
+  };
+  const openModal = () => {
+    setOpenModalOnSecondPage(false);
+    setIsModalOpen(true);
+  };
 
   const [searchParams] = useSearchParams();
   const quoteId = searchParams.get('quoteId');
@@ -245,6 +257,7 @@ const QuoteContainer = () => {
             onHide={closeModal}
             rfqNumberId={quoteData?.rfqNumberId}
             quoteId={quoteData?.quoteId}
+            openOnSecondPage={openModalOnSecondPage}
           />
 
           {showQuoteWizardTabs ? (

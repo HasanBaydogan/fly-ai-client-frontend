@@ -20,9 +20,10 @@ import { partRow, QuoteWizardData } from '../PIWizard/PIWizard';
 
 interface RFQModalProps {
   show: boolean;
-  onHide: () => void;
+  onHide: (shouldHide?: boolean, openOnSecondPage?: boolean) => void;
   rfqNumberId: string;
   quoteId: string;
+  openOnSecondPage?: boolean;
 }
 
 // Tablo veri tipi
@@ -89,7 +90,8 @@ const RFQModal: React.FC<RFQModalProps> = ({
   show,
   onHide,
   rfqNumberId,
-  quoteId
+  quoteId,
+  openOnSecondPage = false
 }) => {
   const [activeTab, setActiveTab] = useState<'message' | 'mail'>('message');
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
@@ -118,6 +120,12 @@ const RFQModal: React.FC<RFQModalProps> = ({
 
     fetchCompanies();
   }, []);
+
+  useEffect(() => {
+    if (show) {
+      setStep(openOnSecondPage ? 'second' : 'first');
+    }
+  }, [show, openOnSecondPage]);
 
   // FileUpload'dan gelecek base64 dosyalarını burada tutabilirsiniz
   const handleFilesUpload = (files: { name: string; base64: string }[]) => {
@@ -164,11 +172,18 @@ const RFQModal: React.FC<RFQModalProps> = ({
       if (response.success) {
         setPiResponseData(response.data);
         setShowPIWizard(true);
-        onHide();
+        onHide(true); // Close the PIModal without second page parameter
       }
     } catch (error) {
       console.error('Error submitting PI:', error);
     }
+  };
+
+  // Function to show the PIModal when called from PIWizard
+  const handleOpenPIModal = () => {
+    // We call onHide with false to tell the parent we want to show the modal again
+    // Pass true as the second parameter to indicate opening on the second page
+    onHide(false, true);
   };
 
   const handleClosePIWizard = () => {
@@ -290,7 +305,7 @@ const RFQModal: React.FC<RFQModalProps> = ({
         <Modal.Footer className="d-flex justify-content-between">
           {step === 'first' ? (
             <>
-              <Button variant="secondary" onClick={onHide}>
+              <Button variant="secondary" onClick={() => onHide(true)}>
                 Cancel
               </Button>
               <Button variant="primary" onClick={handleNext}>
@@ -315,7 +330,7 @@ const RFQModal: React.FC<RFQModalProps> = ({
       </Modal>
       {showPIWizard && piResponseData && (
         <PIWizard
-          handleOpen={() => {}}
+          handleOpen={handleOpenPIModal}
           handleClose={handleClosePIWizard}
           showTabs={true}
           selectedParts={[]}

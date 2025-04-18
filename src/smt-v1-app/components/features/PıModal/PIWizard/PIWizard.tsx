@@ -157,6 +157,7 @@ const ProgressTabExample = ({
           <Card.Footer className="border-top-0">
             <WizardFormFooter
               className={classNames({ 'd-none': !form.getCanNextPage })}
+              onClose={onClose}
             />
           </Card.Footer>
         </Card>

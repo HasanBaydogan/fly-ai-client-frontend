@@ -146,6 +146,12 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
     PIResponseData['allBanks'][0] | null
   >(null);
 
+  // Function to handle the wizard close and trigger opening the PIModal
+  const handleBackToPIModal = () => {
+    handleClose(); // Close the PIWizard
+    handleOpen(); // Open the PIModal
+  };
+
   const setupOtherProps: SetupOtherProps = {
     clientLocation: '',
     setClientLocation: () => {},
@@ -278,6 +284,7 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
             selectedAlternativeParts={selectedAlternativeParts}
             quoteComment={quoteComment}
             piResponseData={(initialData as PIResponseData) || piResponseData}
+            onClose={handleBackToPIModal}
           />
         ) : (
           <div className="text-center p-4">

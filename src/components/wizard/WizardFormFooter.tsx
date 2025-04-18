@@ -11,12 +11,14 @@ const WizardFormFooter = ({
   className,
   nextBtnLabel = 'Next',
   hidePrevBtn,
-  handleSubmit
+  handleSubmit,
+  onClose
 }: {
   className?: string;
   nextBtnLabel?: string;
   hidePrevBtn?: boolean;
   handleSubmit?: () => void;
+  onClose?: () => void;
 }) => {
   const { selectedStep, goToStep, getCanNextPage, getCanPreviousPage } =
     useWizardFormContext();
@@ -31,7 +33,13 @@ const WizardFormFooter = ({
           'd-none': hidePrevBtn || !getCanPreviousPage
         })}
         startIcon={<FontAwesomeIcon icon={faChevronLeft} className="fs-10" />}
-        onClick={() => goToStep(selectedStep - 1)}
+        onClick={() => {
+          if (selectedStep === 1 && onClose) {
+            onClose();
+          } else {
+            goToStep(selectedStep - 1);
+          }
+        }}
       >
         Previous
       </Button>
