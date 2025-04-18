@@ -27,6 +27,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({
   date,
+  quoteId,
   rfqNumberId,
   quoteId: initialQuoteId,
   clientName,
@@ -74,8 +75,7 @@ const Header: React.FC<HeaderProps> = ({
         >
           <div className="flex-column" style={{ gap: '50px' }}>
             <h4 className="mb-3 ">
-              Quote Id:{' '}
-              <span className="valueRFQ-id">{' ' + currentQuoteId}</span>
+              Quote Id: <span className="valueRFQ-id">{' ' + quoteId}</span>
             </h4>
             <h4>
               Revision:{' '}
@@ -84,21 +84,7 @@ const Header: React.FC<HeaderProps> = ({
               </Badge>
             </h4>
             <h4 className="mb-3">
-              RFQ Id:{' '}
-              <button
-                className="valueRFQ-id"
-                onClick={openModal}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  color: 'blue',
-                  textDecoration: 'underline',
-                  cursor: 'pointer'
-                }}
-              >
-                {rfqNumberId}
-              </button>
+              RFQ Id: <span className="valueRFQ-id"> {' ' + rfqNumberId}</span>
             </h4>
             <h4 className="mb-4">
               ClientRFQ Id:{' '}
@@ -136,12 +122,12 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
         </div>
-        <POModal
+        {/* <POModal
           show={isModalOpen}
           onHide={closeModal}
           rfqNumberId={rfqNumberId}
           quoteId={currentQuoteId}
-        />
+        /> */}
       </div>
     </>
   );
