@@ -34,7 +34,7 @@ interface RFQActionButtonsProps {
     >
   >;
   handleStatusColor: (rfqMailStatus: string) => void;
-  onCancel: () => void; // Cancel butonu için
+  onCancel: () => void;
 }
 
 const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
@@ -66,7 +66,6 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
   const [convertWFSIsLoading, setConvertWFSIsLoading] = useState(false);
   const [convertToQuoteIsLoading, setConvertToQuoteIsLoading] = useState(false);
 
-  // disable durumlarını tanımlıyoruz: Belirtilen durumlarda Not RFQ ve Spam butonları gizlenecek.
   const disableNoQuote =
     statusType === 'FQ' ||
     statusType === 'PQ' ||
@@ -101,9 +100,6 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
     setIsLoading(true);
     setConvertWFSIsLoading(true);
     const resp = await convertOpenToWFS(rfqMailId);
-    // console.log('Resp', resp);
-    // console.log('rfqMailId', rfqMailId);
-    // debugger;
     if (resp && resp.statusCode === 200) {
       setStatusType('WFS');
       setRfqMailRowStatus('WFS');
@@ -237,6 +233,15 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
             <Button
               variant="outline-primary"
               onClick={openRFQMail}
+              onAuxClick={e => {
+                if (e.button === 1) {
+                  window.open(
+                    `/rfqs/rfq?rfqMailId=${rfqMailId}`,
+                    '_blank',
+                    'noopener'
+                  );
+                }
+              }}
               disabled={isLoading}
             >
               {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
@@ -247,6 +252,15 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
               <Button
                 variant="outline-primary"
                 onClick={openRFQMail}
+                onAuxClick={e => {
+                  if (e.button === 1) {
+                    window.open(
+                      `/rfqs/rfq?rfqMailId=${rfqMailId}`,
+                      '_blank',
+                      'noopener'
+                    );
+                  }
+                }}
                 disabled={isLoading}
               >
                 {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
@@ -267,6 +281,15 @@ const RFQActionButtons: React.FC<RFQActionButtonsProps> = ({
               <Button
                 variant="outline-primary"
                 onClick={openRFQMail}
+                onAuxClick={e => {
+                  if (e.button === 1) {
+                    window.open(
+                      `/rfqs/rfq?rfqMailId=${rfqMailId}`,
+                      '_blank',
+                      'noopener'
+                    );
+                  }
+                }}
                 disabled={isLoading}
               >
                 {openIsLoading ? <LoadingAnimation /> : 'Open RFQ Mail'}
