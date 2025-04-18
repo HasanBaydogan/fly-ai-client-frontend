@@ -97,6 +97,15 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
 
                     // Construct the data URL using the determined MIME type.
                     const dataUrl = file.base64;
+                    const binary = atob(file.base64);
+                    const len = binary.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                      bytes[i] = binary.charCodeAt(i);
+                    }
+                    // Blob oluşturup geçici bir URL alıyoruz
+                    const blob = new Blob([bytes], { type: mimeType });
+                    const url = URL.createObjectURL(blob);
 
                     return (
                       <li key={index}>
@@ -112,11 +121,7 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
                             />
                           </div>
                         )}
-                        <a
-                          href={dataUrl}
-                          download={file.name}
-                          className="text-primary hover:underline"
-                        >
+                        <a href={url} download={file.name}>
                           {file.name}
                         </a>
                       </li>
