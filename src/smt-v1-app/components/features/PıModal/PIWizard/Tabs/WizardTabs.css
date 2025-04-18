@@ -1,0 +1,102 @@
+.dropdown-menu {
+  --phoenix-dropdown-min-width: 5.5rem;
+}
+
+.action-buttons {
+  position: absolute;
+  right: -15px;
+}
+
+/* #client-info-form1{
+    max-width: 90%;
+  } */
+.button-cell {
+  position: relative;
+  width: 100px; /* Buton hücresine sabit genişlik veriyoruz */
+}
+
+.action-buttons {
+  position: absolute;
+  right: 0; /* Butonları hücrenin sağına hizalar */
+  top: 50%; /* Butonları dikey olarak ortalar */
+  transform: translateY(-50%); /* Dikey ortalama için */
+  display: flex;
+  justify-content: flex-end; /* Butonları sağa hizalar */
+  gap: 0.5rem; /* Butonlar arasına boşluk ekler */
+}
+/* Küçük ekranlar için responsive düzen */
+@media (max-width: 576px) {
+  .action-buttons {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .button-cell {
+    min-width: auto;
+  }
+}
+/* Buton hücresi */
+.button-cell {
+  position: relative;
+  min-width: 100px;
+}
+
+.uppersection {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.upperrightsection {
+  display: flex;
+  align-items: center;
+}
+/* small ile medium arasında özel bir yazı boyutu */
+.text-sm-md {
+  font-size: 0.9rem; /* Boyut small'dan büyük, normalden küçük */
+}
+.uppersection {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+/* 992px altında düzenleme */
+@media (max-width: 992px) {
+  .uppersection {
+    flex-direction: column; /* Yataydan dikeye geçiş */
+    align-items: center; /* İçeriği yatayda ortala */
+    justify-content: space-between; /* Dikeydeki boşluğu koru */
+  }
+}
+
+@media (max-width: 992px) {
+  .responsive-card {
+    text-align: center; /* Tüm içerik ortalanır */
+  }
+}
+
+/* Varsayılan görünüm */
+.upperrightsection .quote-section {
+  text-align: end; /* Varsayılan olarak sağa hizalanır */
+}
+
+/* 992px ve altında */
+@media (max-width: 992px) {
+  .upperrightsection .quote-section {
+    text-align: center; /* 992px altında merkeze hizalanır */
+  }
+}
+#client-info-form1 {
+  table-layout: fixed;
+  width: 100%;
+}
+
+#client-info-form1 td {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  vertical-align: top;
+  min-height: 32.84px;
+  padding: 0.5rem; /* optional */
+}

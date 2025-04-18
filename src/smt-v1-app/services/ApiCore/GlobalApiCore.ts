@@ -88,9 +88,9 @@ export const getRequest = async (url: string): Promise<any> => {
 /** API Generic POST */
 export const postRequest = async (url: string, data: any): Promise<any> => {
   try {
-    // console.log('POST Request initiated:', url, data);
+    console.log('POST Request initiated:', url, data);
     const response: AxiosResponse = await api.post(url, data);
-    // console.log('POST Response received:', response.data);
+    console.log('POST Response received:', response.data);
     if (response.data.statusCode === 200) return response.data;
     if (response.data.statusCode === 498) {
       //   console.log(
@@ -104,6 +104,28 @@ export const postRequest = async (url: string, data: any): Promise<any> => {
     }
   } catch (err) {
     //  console.error(`POST Error on ${url}:`, err);
+  }
+};
+
+/** API Generic PATCH */
+export const patchRequest = async (url: string, data: any): Promise<any> => {
+  try {
+    console.log('PATCH Request initiated:', url, data);
+    const response: AxiosResponse = await api.patch(url, data);
+    console.log('PATCH Response received:', response.data);
+    if (response.data.statusCode === 200) return response.data;
+    if (response.data.statusCode === 498) {
+      //   console.log(
+      //     'PATCH request received 498 status, attempting token refresh.'
+      //   );
+      return (await tryRefresh(() => api.patch(url, data)))?.data;
+    }
+    if (response.data.statusCode === 401) {
+      //  console.log('PATCH request unauthorized (401).');
+      handleTokenFailure();
+    }
+  } catch (err) {
+    console.error(`PATCH Error on ${url}:`, err);
   }
 };
 
@@ -139,9 +161,9 @@ export const putRequest = async (url: string, data: any = {}): Promise<any> => {
 /** Generic DELETE */
 export const deleteRequest = async (url: string): Promise<any> => {
   try {
-    console.log('DELETE Request initiated:', url);
+    // console.log('DELETE Request initiated:', url);
     const response = await api.delete(url);
-    console.log('DELETE Response received:', response.data);
+    // console.log('DELETE Response received:', response.data);
     if (response.data.statusCode === 200) return response.data;
 
     if (response.data.statusCode === 498) {

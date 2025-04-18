@@ -25,8 +25,25 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowHelper';
+import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
 
 const QuoteContainer = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openModalOnSecondPage, setOpenModalOnSecondPage] = useState(false);
+
+  const closeModal = (shouldHide = true, openOnSecondPage = false) => {
+    if (shouldHide) {
+      setIsModalOpen(false);
+    } else {
+      setOpenModalOnSecondPage(openOnSecondPage);
+      setIsModalOpen(true);
+    }
+  };
+  const openModal = () => {
+    setOpenModalOnSecondPage(false);
+    setIsModalOpen(true);
+  };
+
   const [searchParams] = useSearchParams();
   const quoteId = searchParams.get('quoteId');
 
@@ -197,6 +214,17 @@ const QuoteContainer = () => {
                 >
                   Cancel
                 </CustomButton>
+
+                <div className="mt-3">
+                  <CustomButton
+                    variant="info"
+                    onClick={() => {
+                      openModal();
+                    }}
+                  >
+                    PI Wizard
+                  </CustomButton>
+                </div>
               </div>
               <div>
                 <div>
@@ -223,6 +251,14 @@ const QuoteContainer = () => {
               </div>
             </div>
           </div>
+
+          <POModal
+            show={isModalOpen}
+            onHide={closeModal}
+            rfqNumberId={quoteData?.rfqNumberId}
+            quoteId={quoteData?.quoteId}
+            openOnSecondPage={openModalOnSecondPage}
+          />
 
           {showQuoteWizardTabs ? (
             <QuoteWizard

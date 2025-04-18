@@ -1,20 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge, Form } from 'react-bootstrap';
-import POModal from 'smt-v1-app/components/features/PoModal/POModal';
+import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
+import { Link, useLocation } from 'react-router-dom';
 
-const Header = ({
-  date,
-  rfqNumberId,
-  revisionNumber,
-  clientRFQId,
-  status,
-  quoteId,
-  bgColor,
-  clientName,
-  textColor,
-  quoteComment,
-  setQuoteComment
-}: {
+interface HeaderProps {
   date: string;
   rfqNumberId: string;
   quoteId: string;
@@ -34,11 +23,43 @@ const Header = ({
     | 'SPAM';
   bgColor: string;
   textColor: string;
-}) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+}
 
+const Header: React.FC<HeaderProps> = ({
+  date,
+  quoteId,
+  rfqNumberId,
+  quoteId: initialQuoteId,
+  clientName,
+  clientRFQId,
+  revisionNumber,
+  quoteComment,
+  setQuoteComment,
+  status,
+  bgColor,
+  textColor
+}) => {
+  // useLocation ile URL'e erişip query parametrelerini alıyoruz.
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const urlQuoteId = queryParams.get('quoteId');
+
+  // Eğer URL'den quoteId varsa onu state'e atıyoruz, yoksa parent'dan gelen değeri kullanıyoruz.
+  const [currentQuoteId, setCurrentQuoteId] = useState<string>(
+    urlQuoteId ?? initialQuoteId
+  );
+
+  // Eğer URL değişirse state güncellensin.
+  useEffect(() => {
+    if (urlQuoteId && urlQuoteId !== currentQuoteId) {
+      setCurrentQuoteId(urlQuoteId);
+    }
+  }, [urlQuoteId, currentQuoteId]);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
   return (
     <>
       <div>
@@ -63,21 +84,7 @@ const Header = ({
               </Badge>
             </h4>
             <h4 className="mb-3">
-              RFQ Id:{' '}
-              <button
-                className="valueRFQ-id"
-                onClick={openModal}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  color: 'blue',
-                  textDecoration: 'underline',
-                  cursor: 'pointer'
-                }}
-              >
-                {rfqNumberId}
-              </button>
+              RFQ Id: <span className="valueRFQ-id"> {' ' + rfqNumberId}</span>
             </h4>
             <h4 className="mb-4">
               ClientRFQ Id:{' '}
@@ -115,11 +122,12 @@ const Header = ({
             </div>
           </div>
         </div>
-        <POModal
+        {/* <POModal
           show={isModalOpen}
           onHide={closeModal}
           rfqNumberId={rfqNumberId}
-        />
+          quoteId={currentQuoteId}
+        /> */}
       </div>
     </>
   );
