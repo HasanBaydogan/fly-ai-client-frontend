@@ -210,7 +210,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• PI List',
-                path: '/',
+                path: '/pi/list',
                 pathName: 'pi-list',
                 icon: '',
                 active: true,

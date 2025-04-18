@@ -19,6 +19,20 @@ interface PIRequest {
   quoteId: string;
 }
 
+export const searchByPiList = async (
+  term: string,
+  pageNo: number,
+  pageSize: number | 'all' = 10
+) => {
+  let url = '';
+  if (pageSize === 'all') {
+    url = `/pi/filter?${term}`;
+  } else {
+    url = `/pi/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`;
+  }
+  return await getRequest(url);
+};
+
 export const postPi = async (data: PIRequest) => {
   return await postRequest('/pi/wizard', data);
 };
