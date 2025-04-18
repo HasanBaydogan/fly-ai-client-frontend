@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
 import Button from 'components/base/Button';
 import { useWizardFormContext } from 'providers/WizardFormProvider';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 const WizardFormFooter = ({
@@ -30,6 +30,49 @@ const WizardFormFooter = ({
 }) => {
   const { selectedStep, goToStep, getCanNextPage, getCanPreviousPage } =
     useWizardFormContext();
+
+  // Add state to track bank validation
+  const [isValidationPassed, setIsValidationPassed] = useState(true);
+
+  // Set up event listeners for validation results
+  useEffect(() => {
+    const handleValidationResult = (event: CustomEvent) => {
+      setIsValidationPassed(event.detail.isValid);
+
+      // If validation passed, proceed to next step
+      if (event.detail.isValid && selectedStep === 1) {
+        goToStep(selectedStep + 1);
+      }
+    };
+
+    // TypeScript requires this casting
+    const typedListener = handleValidationResult as EventListener;
+    document.addEventListener('bankValidationResult', typedListener);
+
+    return () => {
+      document.removeEventListener('bankValidationResult', typedListener);
+    };
+  }, [selectedStep, goToStep]);
+
+  // Function to handle clicking Next
+  const handleNextClick = async () => {
+    if (getCanNextPage) {
+      if (selectedStep === 1) {
+        // Trigger bank validation on first step
+        document.dispatchEvent(new Event('validateBankSelection'));
+        // The actual navigation happens in the validation result event handler
+      } else if (selectedStep === 3) {
+        await handleSendQuoteEmail();
+        goToStep(selectedStep + 1);
+      } else {
+        goToStep(selectedStep + 1);
+      }
+    } else {
+      if (handleSubmit) {
+        handleSubmit();
+      }
+    }
+  };
 
   return (
     <div
@@ -58,20 +101,7 @@ const WizardFormFooter = ({
           'ms-auto': !hidePrevBtn
         })}
         endIcon={<FontAwesomeIcon icon={faChevronRight} className="fs-10" />}
-        onClick={async () => {
-          if (getCanNextPage) {
-            if (selectedStep === 3) {
-              await handleSendQuoteEmail();
-              goToStep(selectedStep + 1);
-            } else {
-              goToStep(selectedStep + 1);
-            }
-          } else {
-            if (handleSubmit) {
-              handleSubmit();
-            }
-          }
-        }}
+        onClick={handleNextClick}
         disabled={isEmailSendLoading}
       >
         {isEmailSendLoading ? (

@@ -78,6 +78,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   //   companyTelephone: piResponseData?.companyTelephone
   // });
 
+  // Add state for bank validation
+  const [bankError, setBankError] = useState<boolean>(false);
+
   useEffect(() => {
     if (piResponseData) {
       console.log(
@@ -562,11 +565,47 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   };
 
   const handleBankChange = (bankName: string) => {
-    const selected = piResponseData?.allBanks.find(
+    if (bankName) {
+      setBankError(false);
+    }
+
+    const selectedBank = piResponseData?.allBanks.find(
       bank => bank.bankName === bankName
     );
-    setupOtherProps.setSelectedBank(selected || null);
+    setupOtherProps.setSelectedBank(selectedBank || null);
   };
+
+  // Add validation check function to be used by the WizardFormProvider
+  useEffect(() => {
+    const validateBank = () => {
+      if (!setupOtherProps.selectedBank) {
+        setBankError(true);
+        return false;
+      }
+      return true;
+    };
+
+    // We'll use a custom event to validate before proceeding
+    const handleValidateEvent = () => {
+      const isValid = validateBank();
+
+      // Dispatch a custom event with validation result
+      const validationEvent = new CustomEvent('bankValidationResult', {
+        detail: { isValid }
+      });
+      document.dispatchEvent(validationEvent);
+    };
+
+    // Add and remove event listener
+    document.addEventListener('validateBankSelection', handleValidateEvent);
+
+    return () => {
+      document.removeEventListener(
+        'validateBankSelection',
+        handleValidateEvent
+      );
+    };
+  }, [setupOtherProps.selectedBank]);
 
   return (
     <>
@@ -807,10 +846,13 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <Table bordered hover size="sm">
                 <tbody>
                   <tr>
-                    <td style={{ width: '120px' }}>Contract No :</td>
-                    <td>
+                    <td className="p-2" style={{ width: '140px' }}>
+                      Contract No :
+                    </td>
+                    <td className="p-2">
                       <div className="d-flex align-items-center ">
                         <Form.Control
+                          className="p-2"
                           type="text"
                           placeholder="Contract No"
                           value={setupOtherProps.contractNo || ''}
@@ -831,8 +873,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     </td>
                   </tr>
                   <tr>
-                    <td>Payment Term :</td>
-                    <td>
+                    <td className="p-2">Payment Term :</td>
+                    <td className="p-2">
                       <Form.Control
                         type="text"
                         value={setupOtherProps.shippingTerms}
@@ -843,8 +885,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     </td>
                   </tr>
                   <tr>
-                    <td>Delivery Term :</td>
-                    <td>
+                    <td className="p-2">Delivery Term :</td>
+                    <td className="p-2">
                       <Form.Control
                         type="text"
                         value={setupOtherProps.CPT}
@@ -853,8 +895,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     </td>
                   </tr>
                   <tr>
-                    <td>Validity Day :</td>
-                    <td>
+                    <td className="p-2">Validity Day :</td>
+                    <td className="p-2">
                       <Form.Control
                         type="number"
                         min="0"
@@ -1198,6 +1240,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   <Form.Select
                     value={setupOtherProps.selectedBank?.bankName || ''}
                     onChange={e => handleBankChange(e.target.value)}
+                    isInvalid={bankError}
+                    className={bankError ? 'border border-danger' : ''}
                   >
                     <option value="">Select Bank</option>
                     {piResponseData?.allBanks.map((bank, index) => (
@@ -1206,6 +1250,11 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       </option>
                     ))}
                   </Form.Select>
+                  {bankError && (
+                    <div className="text-danger mt-1 small">
+                      Please select a bank
+                    </div>
+                  )}
                 </td>
                 <td>{setupOtherProps.selectedBank?.branchName || ''}</td>
                 <td>{setupOtherProps.selectedBank?.branchCode || ''}</td>

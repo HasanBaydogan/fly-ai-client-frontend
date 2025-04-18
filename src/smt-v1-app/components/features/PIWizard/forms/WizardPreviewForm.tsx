@@ -128,7 +128,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             percentageValue
           );
           setBase64Pdf(response);
-          setBase64PdfFileName('quote-' + quoteNumber + '.pdf');
+          setBase64PdfFileName(quoteNumber + '.pdf');
           setTimeout(() => {
             setIsPdfConvertedToBase64(false);
           }, 700);
@@ -178,7 +178,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   : new Date().toLocaleDateString()}
               </p>
               <p className=" mt-3">
-                <strong>Quote Number:</strong> {quoteNumber}
+                <strong>PI Number:</strong> {quoteNumber}
               </p>
             </div>
           </div>
@@ -284,6 +284,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                             type="checkbox"
                             label="International"
                             className="ms-3 px-2"
+                            disabled
                             checked={setupOtherProps.isInternational}
                             onChange={e =>
                               setupOtherProps.setIsInternational(

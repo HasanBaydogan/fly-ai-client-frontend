@@ -62,7 +62,7 @@ export const generatePDF = async (
     pdf.setTextColor(0, 0, 0);
     pdf.setFontSize(10);
     pdf.text(`Date: ${selectedDate?.toLocaleDateString()}`, pageWidth - 50, 20);
-    pdf.text(`Quote Number: ${quoteNumber}`, pageWidth - 50, 25);
+    pdf.text(`PI Number: ${quoteNumber}`, pageWidth - 50, 25);
 
     // Client info table
     autoTable(pdf, {
@@ -155,7 +155,8 @@ export const generatePDF = async (
       body: [
         [
           { content: 'Contract No :', styles: { fontStyle: 'bold' } },
-          contractNo + (isInternational ? ' (International)' : '')
+          contractNo
+          //+ (isInternational ? ' (International)' : '')
         ],
         [
           { content: 'Payment Term :', styles: { fontStyle: 'bold' } },
@@ -204,13 +205,16 @@ export const generatePDF = async (
           }
         ],
         [
-          { content: 'Tax', styles: { fontStyle: 'bold' } },
+          {
+            content: `Tax (${percentageValue}%)`,
+            styles: { fontStyle: 'bold' }
+          },
           {
             content: checkedStates[0] ? 'Yes' : 'No',
             styles: { halign: 'center' }
           },
           {
-            content: `${percentageValue}% ${taxAmount.toLocaleString('en-US', {
+            content: `${taxAmount.toLocaleString('en-US', {
               style: 'currency',
               currency: currency.replace(/[^A-Z]/g, '')
             })}`
@@ -532,7 +536,7 @@ export const downloadPDF = async (
       percentageValue
     );
     if (pdf) {
-      pdf.save(`quote-${quoteNumber}.pdf`);
+      pdf.save(`${quoteNumber}.pdf`);
     }
   } catch (error) {
     console.error('PDF oluşturma sırasında bir hata oluştu:', error);

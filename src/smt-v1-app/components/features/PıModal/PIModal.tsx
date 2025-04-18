@@ -322,7 +322,7 @@ const RFQModal: React.FC<RFQModalProps> = ({
                 style={{ backgroundColor: '#0000FF' }}
                 onClick={handlePreparePI}
               >
-                Prepare PI Form
+                Create & Prepare PI Form
               </Button>
             </>
           )}
