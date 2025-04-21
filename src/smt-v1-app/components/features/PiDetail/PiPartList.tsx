@@ -1,0 +1,131 @@
+import React, { useEffect, useState } from 'react';
+import { Form, Table } from 'react-bootstrap';
+import { PiParts } from 'smt-v1-app/containers/PiDetailContainer/QuoteContainerTypes';
+
+interface PiPartListProps {
+  parts: PiParts[];
+  setSelectedParts: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedParts: string[];
+}
+
+const PiPartList: React.FC<PiPartListProps> = ({
+  parts,
+  setSelectedParts,
+  selectedParts
+}) => {
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  useEffect(() => {
+    if (parts && parts.length > 0) {
+      setSelectedParts(parts.map(part => part.piPartId));
+    }
+  }, [parts]);
+
+  const allSelected = selectedParts.length === parts.length;
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedParts(parts.map(part => part.piPartId));
+    } else {
+      setSelectedParts([]);
+    }
+  };
+
+  const handleSelectPart = (piPartId: string) => {
+    setSelectedParts(prev => {
+      return prev.includes(piPartId)
+        ? prev.filter(id => id !== piPartId)
+        : [...prev, piPartId];
+    });
+  };
+
+  return (
+    <div>
+      <h3 className="mt-3">Parts</h3>
+      <hr className="custom-line m-0" />
+
+      <div className="mx-2" style={{ minHeight: '150px', overflowY: 'auto' }}>
+        <Table responsive style={{ marginBottom: '0' }}>
+          <thead
+            style={{
+              position: 'sticky',
+              top: 0,
+              background: 'white',
+              zIndex: 1
+            }}
+          >
+            <tr>
+              <th style={{ minWidth: '50px' }}>
+                <Form.Check
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={handleSelectAll}
+                />
+              </th>
+              <th style={{ minWidth: '120px' }}>Part Number</th>
+              <th style={{ minWidth: '150px' }}>Part Name</th>
+              <th style={{ minWidth: '150px' }}>Additional Info</th>
+              <th style={{ minWidth: '100px' }}>Req QTY</th>
+              <th style={{ minWidth: '100px' }}>Fnd QTY</th>
+              <th style={{ minWidth: '100px' }}>Req CND</th>
+              <th style={{ minWidth: '100px' }}>Fnd CND</th>
+              <th style={{ minWidth: '120px' }}>Supplier LT</th>
+              <th style={{ minWidth: '120px' }}>Client LT</th>
+              <th style={{ minWidth: '120px' }}>Unit Price</th>
+              <th style={{ minWidth: '100px' }}>Currency</th>
+              <th style={{ minWidth: '150px' }}>Supplier</th>
+              <th style={{ minWidth: '150px' }}>Comment</th>
+              <th style={{ minWidth: '150px' }}>DG Packaging Cost</th>
+              <th style={{ minWidth: '120px' }}>Tag Date</th>
+              <th style={{ minWidth: '120px' }}>Cert Type</th>
+              <th style={{ minWidth: '100px' }}>MSN</th>
+              <th style={{ minWidth: '120px' }}>Warehouse</th>
+              <th style={{ minWidth: '100px' }}>Stock</th>
+              <th style={{ minWidth: '150px' }}>Stock Location</th>
+              <th style={{ minWidth: '150px' }}>Airline Company</th>
+              <th style={{ minWidth: '100px' }}>MSDS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {parts.map(part => (
+              <tr key={part.piPartId}>
+                <td>
+                  <Form.Check
+                    type="checkbox"
+                    checked={selectedParts.includes(part.piPartId)}
+                    onChange={() => handleSelectPart(part.piPartId)}
+                    style={{ marginLeft: '10px' }}
+                  />
+                </td>
+                <td>{part.partNumber}</td>
+                <td>{part.partName}</td>
+                <td>{part.partDescription}</td>
+                <td>{part.reqQuantity}</td>
+                <td>{part.fndQuantity}</td>
+                <td>{part.reqCondition}</td>
+                <td>{part.fndCondition}</td>
+                <td>{part.supplierLT}</td>
+                <td>{part.clientLT}</td>
+                <td>{part.price}</td>
+                <td>{part.currency}</td>
+                <td>{String(part.supplier)}</td>
+                <td>{part.comment}</td>
+                <td>{part.DGPackagingCost ? 'Yes' : 'No'}</td>
+                <td>{part.tagDate}</td>
+                <td>{part.certificateType}</td>
+                <td>{part.MSN}</td>
+                <td>{part.wareHouse}</td>
+                <td>{part.stock}</td>
+                <td>{part.stockLocation}</td>
+                <td>{part.airlineCompany}</td>
+                <td>{part.MSDS}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
+    </div>
+  );
+};
+
+export default PiPartList;

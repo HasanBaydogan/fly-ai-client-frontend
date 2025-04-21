@@ -61,7 +61,7 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
     header: 'PID',
     cell: ({ row: { original } }) => (
       <Link
-        to={`/quotes/quote?quoteId=${original.piId}`}
+        to={`/pi/detail?piId=${original.piId}`}
         style={{ textDecoration: 'none', color: 'secondary' }}
       >
         {original.quoteNumberId}

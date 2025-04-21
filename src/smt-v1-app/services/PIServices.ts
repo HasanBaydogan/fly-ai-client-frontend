@@ -33,10 +33,6 @@ export const searchByPiList = async (
   return await getRequest(url);
 };
 
-export const postPi = async (data: PIRequest) => {
-  return await postRequest('/pi/wizard', data);
-};
-
 export const getAllCompany = async () => {
   return await getRequest(`/company/all`);
 };
@@ -45,6 +41,14 @@ export const getPreEmailSendingParameters = async (piId: string) => {
   return await getRequest(`/pi/pre-email-sending?piId=${piId}`);
 };
 
+export const getPiDetails = async (piId: string) => {
+  return await getRequest(`/pi/pi-detail?piId=68063fd6412ee873b4d558ee`);
+};
+
 export const sendQuoteEmail = async (sendEmailProps: SendEmailProps) => {
   return await postRequest(`/pi/send-email`, sendEmailProps);
+};
+
+export const postPi = async (data: PIRequest) => {
+  return await postRequest('/pi/wizard', data);
 };
