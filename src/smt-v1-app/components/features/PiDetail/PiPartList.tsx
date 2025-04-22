@@ -59,6 +59,7 @@ const PiPartList: React.FC<PiPartListProps> = ({
                 <Form.Check
                   type="checkbox"
                   checked={allSelected}
+                  disabled
                   onChange={handleSelectAll}
                 />
               </th>
@@ -92,6 +93,7 @@ const PiPartList: React.FC<PiPartListProps> = ({
                 <td>
                   <Form.Check
                     type="checkbox"
+                    disabled
                     checked={selectedParts.includes(part.piPartId)}
                     onChange={() => handleSelectPart(part.piPartId)}
                     style={{ marginLeft: '10px' }}

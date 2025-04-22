@@ -19,6 +19,18 @@ interface PIRequest {
   quoteId: string;
 }
 
+interface PICommentUpdate {
+  id: string;
+  comment: string;
+  severity: string;
+}
+
+interface PICommentNew {
+  piId: string;
+  comment: string;
+  severity: string;
+}
+
 export const searchByPiList = async (
   term: string,
   pageNo: number,
@@ -51,4 +63,18 @@ export const sendQuoteEmail = async (sendEmailProps: SendEmailProps) => {
 
 export const postPi = async (data: PIRequest) => {
   return await postRequest('/pi/wizard', data);
+};
+
+export const postPiUserCommentUpdate = async (
+  CommentUpdate: PICommentUpdate
+) => {
+  return await postRequest('/pi-user-comment/update', CommentUpdate);
+};
+
+export const postPiUserCommentNew = async (NewComment: PICommentNew) => {
+  return await postRequest('/pi-user-comment/new', NewComment);
+};
+
+export const deletePiUserComment = async (CommentId: string) => {
+  return await deleteRequest(`/pi-user-comment/delete${CommentId}`);
 };

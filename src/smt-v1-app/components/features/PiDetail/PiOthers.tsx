@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Form, Row, Col, Table } from 'react-bootstrap';
 import './PiOthers.css';
 import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
@@ -8,48 +8,43 @@ interface PiOthersProps {
 }
 
 const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
-  const [moneyTransfer, setMoneyTransfer] = useState(
-    piData?.moneyTransferType || 'International'
-  );
-  const [waybill, setWaybill] = useState(piData?.waybill || '');
-  const [contractNo, setContractNo] = useState(piData?.contractNo || '');
-  const [validityDay, setValidityDay] = useState(
-    piData?.validityDay?.toString() || '0'
-  );
+  // Add reference to track if initial data is loaded
+  const isInitialized = useRef(false);
+  const piIdRef = useRef<string | null>(null);
+
+  // Initialize states with default values instead of using piData directly
+  const [moneyTransfer, setMoneyTransfer] = useState('International');
+  const [waybill, setWaybill] = useState('');
+  const [contractNo, setContractNo] = useState('');
+  const [validityDay, setValidityDay] = useState('0');
 
   // Checkbox states
-  const [taxChecked, setTaxChecked] = useState(piData?.tax?.taxRate > 0);
-  const [aircargoChecked, setAircargoChecked] = useState(
-    piData?.airCargoToX?.isIncluded || false
-  );
-  const [sealineChecked, setSealineChecked] = useState(
-    piData?.sealineToX?.isIncluded || false
-  );
-  const [truckCarriageChecked, setTruckCarriageChecked] = useState(
-    piData?.truckCarriageToX?.isIncluded || false
-  );
+  const [taxChecked, setTaxChecked] = useState(true);
+  const [aircargoChecked, setAircargoChecked] = useState(false);
+  const [sealineChecked, setSealineChecked] = useState(false);
+  const [truckCarriageChecked, setTruckCarriageChecked] = useState(false);
 
   // Values
-  const [subtotalValue, setSubtotalValue] = useState(piData?.subTotal || 1000);
-  const [percentageValue, setPercentageValue] = useState(
-    piData?.tax?.taxRate || 18
-  );
-  const [taxAmount, setTaxAmount] = useState(piData?.tax?.tax || 180);
-  const [aircargoValue, setAircargoValue] = useState(
-    piData?.airCargoToX?.airCargoToX || 50
-  );
-  const [sealineValue, setSealineValue] = useState(
-    piData?.sealineToX?.sealineToX || 100
-  );
-  const [truckCarriageValue, setTruckCarriageValue] = useState(
-    piData?.truckCarriageToX?.truckCarriageToX || 150
-  );
-  const [totalValue, setTotalValue] = useState(piData?.total || 0);
-  const [currency, setCurrency] = useState(piData?.companyCurrency || 'USD');
+  const [subtotalValue, setSubtotalValue] = useState(1000);
+  const [percentageValue, setPercentageValue] = useState(18);
+  const [taxAmount, setTaxAmount] = useState(180);
+  const [aircargoValue, setAircargoValue] = useState(50);
+  const [sealineValue, setSealineValue] = useState(100);
+  const [truckCarriageValue, setTruckCarriageValue] = useState(150);
+  const [totalValue, setTotalValue] = useState(0);
+  const [currency, setCurrency] = useState('USD');
 
-  // Effect to update state when piData changes
+  // Effect to update state when piData changes - only run when necessary
   useEffect(() => {
-    if (piData) {
+    // Only update state if piData is available and either:
+    // 1. It's the first load (isInitialized is false)
+    // 2. The piId has changed (different PI is loaded)
+    if (piData && (!isInitialized.current || piIdRef.current !== piData.piId)) {
+      // Update refs
+      isInitialized.current = true;
+      piIdRef.current = piData.piId || null;
+
+      // Now set all the states from piData
       setMoneyTransfer(piData.moneyTransferType || 'International');
       setWaybill(piData.waybill || '');
       setContractNo(piData.contractNo || '');
@@ -156,27 +151,22 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                 <Form.Label>Money Transfer</Form.Label>
                 <Form.Select
                   value={moneyTransfer}
+                  disabled
                   onChange={e => setMoneyTransfer(e.target.value)}
                 >
-                  <option value="International">International</option>
-                  <option value="Domestic">Domestic</option>
+                  <option value="INTERNATİONAL">International</option>
+                  <option value="LOCAL">Domestic</option>
                 </Form.Select>
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label>Validity Day:</Form.Label>
-                <Form.Select
+                <Form.Control
                   value={validityDay}
+                  disabled
                   onChange={e => setValidityDay(e.target.value)}
-                >
-                  <option value="0">0</option>
-                  <option value="10">10</option>
-                  <option value="15">15</option>
-                  <option value="30">30</option>
-                  <option value="45">45</option>
-                  <option value="60">60</option>
-                </Form.Select>
+                />
               </Form.Group>
             </Col>
           </Row>
@@ -188,6 +178,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                 <Form.Control
                   type="text"
                   value={waybill}
+                  disabled
                   onChange={e => setWaybill(e.target.value)}
                 />
               </Form.Group>
@@ -198,6 +189,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                 <Form.Control
                   type="text"
                   value={contractNo}
+                  disabled
                   onChange={e => setContractNo(e.target.value)}
                 />
               </Form.Group>
@@ -223,7 +215,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                 <td className="balance-label px-2 py-3">
                   Balance Before Payment:
                 </td>
-                <td className="balance-value text-end">
+                <td className="balance-value text-center">
                   {balanceValue} {getPriceCurrencySymbol(currency)}
                 </td>
               </tr>
@@ -231,7 +223,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                 <td className="balance-label px-2 py-3">
                   Payment Amount via Balance:
                 </td>
-                <td className="balance-value text-end">
+                <td className="balance-value text-center">
                   {balanceValue} {getPriceCurrencySymbol(currency)}
                 </td>
               </tr>
@@ -239,7 +231,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                 <td className="balance-label px-2 py-3">
                   Balance After Payment:
                 </td>
-                <td className="balance-value text-end">
+                <td className="balance-value text-center">
                   {balanceValue} {getPriceCurrencySymbol(currency)}
                 </td>
               </tr>
@@ -273,6 +265,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                     type="checkbox"
                     checked={taxChecked}
                     onChange={e => setTaxChecked(e.target.checked)}
+                    disabled
                   />
                 </td>
                 <td>
@@ -317,6 +310,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                           paddingLeft: '15px'
                         }}
                         placeholder="0"
+                        disabled
                       />
                     </div>
                     <Form.Control
@@ -343,6 +337,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                     type="checkbox"
                     checked={aircargoChecked}
                     onChange={e => setAircargoChecked(e.target.checked)}
+                    disabled
                   />
                 </td>
                 <td>
@@ -367,6 +362,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                       paddingRight: '4px',
                       paddingLeft: '8px'
                     }}
+                    disabled
                   />
                 </td>
               </tr>
@@ -377,6 +373,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                     type="checkbox"
                     checked={sealineChecked}
                     onChange={e => setSealineChecked(e.target.checked)}
+                    disabled
                   />
                 </td>
                 <td>
@@ -401,6 +398,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                       paddingRight: '4px',
                       paddingLeft: '8px'
                     }}
+                    disabled
                   />
                 </td>
               </tr>
@@ -411,6 +409,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                     type="checkbox"
                     checked={truckCarriageChecked}
                     onChange={e => setTruckCarriageChecked(e.target.checked)}
+                    disabled
                   />
                 </td>
                 <td>
@@ -435,6 +434,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                       paddingRight: '4px',
                       paddingLeft: '8px'
                     }}
+                    disabled
                   />
                 </td>
               </tr>

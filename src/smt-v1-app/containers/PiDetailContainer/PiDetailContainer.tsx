@@ -5,6 +5,7 @@ import RFQAttachments from '../../components/features/RFQLeftSide/RFQLeftSideCom
 
 import Header from '../../components/features/PiDetail/PiDetailHeader';
 import PiOthers from '../../components/features/PiDetail/PiOthers';
+import PiComments from '../../components/features/PiDetail/PiComments';
 
 import {
   MailItemMoreDetail,
@@ -59,10 +60,10 @@ const QuoteContainer = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
 
   const [userComments, setUserComments] = useState('');
-  console.log('Pi Data', piData);
 
   const [showQuoteWizardTabs, setShowQuoteWizardTabs] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasUnsavedComments, setHasUnsavedComments] = useState(false);
   // const [statusColors, setStatusColors] = useState<{
   //   bgColor: string;
   //   textColor: string;
@@ -114,6 +115,17 @@ const QuoteContainer = () => {
   };
 
   const handleGoToRFQMail = async () => {
+    // Check for unsaved comments
+    if (hasUnsavedComments) {
+      if (
+        !window.confirm(
+          'You have unsaved comments. Do you want to leave without saving?'
+        )
+      ) {
+        return;
+      }
+    }
+
     const response = await getRFQMailIdToGoToRFQMail(piId);
     if (response && response.statusCode === 200) {
       window.location.assign('/rfqs/rfq?rfqMailId=' + response.data.rfqMailId);
@@ -123,6 +135,17 @@ const QuoteContainer = () => {
   };
 
   const handleCancel = () => {
+    // Check for unsaved comments
+    if (hasUnsavedComments) {
+      if (
+        !window.confirm(
+          'You have unsaved comments. Do you want to leave without saving?'
+        )
+      ) {
+        return;
+      }
+    }
+
     window.location.assign('/mail-tracking');
   };
 
@@ -210,6 +233,31 @@ const QuoteContainer = () => {
               <hr className="custom-line w-100 m-0" />
             </div>
 
+            <div>
+              <PiComments
+                piData={piData}
+                onCommentsChange={updatedComments => {
+                  // Use functional state update to avoid dependency on current piData
+                  if (piData) {
+                    // Check if there are any unsaved comments
+                    const hasUnsaved = updatedComments.some(
+                      comment => comment.isNew || comment.isEdited
+                    );
+                    setHasUnsavedComments(hasUnsaved);
+
+                    // Update piData with the new comments - use functional update
+                    setpiData(prevPiData => {
+                      if (!prevPiData) return prevPiData;
+                      return {
+                        ...prevPiData,
+                        userComments: updatedComments
+                      };
+                    });
+                  }
+                }}
+              />
+            </div>
+
             <div
               className="d-flex mt-3 mb-3"
               style={{
@@ -226,8 +274,22 @@ const QuoteContainer = () => {
                 >
                   Cancel
                 </CustomButton>
+              </div>
+              <div>
+                <div>
+                  <CustomButton
+                    variant="secondary"
+                    onClick={() => {
+                      // PO Wizard is currently inactive
+                      console.log(
+                        'PO Wizard functionality is not available yet'
+                      );
+                    }}
+                    style={{ marginRight: '10px' }}
+                  >
+                    PO Wizard
+                  </CustomButton>
 
-                <div className="mt-3">
                   <CustomButton
                     variant="info"
                     onClick={() => {
@@ -238,41 +300,18 @@ const QuoteContainer = () => {
                   </CustomButton>
                 </div>
               </div>
-              <div>
-                <div>
-                  <CustomButton
-                    variant="secondary"
-                    onClick={() => {
-                      // Handle Go to RFQ Mail click
-                      handleGoToRFQMail();
-                    }}
-                  >
-                    Go to RFQ Mail
-                  </CustomButton>
-                </div>
-                <div className="mt-3">
-                  <CustomButton
-                    variant="success"
-                    onClick={() => {
-                      handleQuoteWizardTabs();
-                    }}
-                  >
-                    Quote Wizard
-                  </CustomButton>
-                </div>
-              </div>
             </div>
           </div>
 
-          {/* <POModal
+          <POModal
             show={isModalOpen}
             onHide={closeModal}
-            rfqNumberId={quoteData?.rfqNumberId}
-            quoteId={quoteData?.quoteId}
+            rfqNumberId={piData?.piNumberId}
+            quoteId={piData?.quoteId || piId}
             openOnSecondPage={openModalOnSecondPage}
           />
 
-          {showQuoteWizardTabs ? (
+          {/* {showQuoteWizardTabs ? (
             <QuoteWizard
               selectedParts={selectedParts}
               selectedAlternativeParts={selectedAlternativeParts}

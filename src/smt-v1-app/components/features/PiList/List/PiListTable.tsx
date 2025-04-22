@@ -58,13 +58,13 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     id: 'piNumberId',
     accessorKey: 'piNumberId',
-    header: 'PID',
+    header: 'piNumberId',
     cell: ({ row: { original } }) => (
       <Link
         to={`/pi/detail?piId=${original.piId}`}
         style={{ textDecoration: 'none', color: 'secondary' }}
       >
-        {original.quoteNumberId}
+        {original.piNumberId}
       </Link>
     ),
     meta: {

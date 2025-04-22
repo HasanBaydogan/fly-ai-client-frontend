@@ -59,6 +59,7 @@ const PiListAlternativeParts: React.FC<PiListAlternativePartsProps> = ({
             <tr>
               <th style={{ minWidth: '50px' }}>
                 <Form.Check
+                  disabled
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
@@ -86,6 +87,7 @@ const PiListAlternativeParts: React.FC<PiListAlternativePartsProps> = ({
                 <td>
                   <Form.Check
                     type="checkbox"
+                    disabled
                     checked={selectedAlternativeParts.includes(part.piPartId)}
                     onChange={() => handleSelectPart(part.piPartId)}
                     style={{ marginLeft: '10px' }}

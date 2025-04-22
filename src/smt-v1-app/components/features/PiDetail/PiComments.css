@@ -1,0 +1,78 @@
+.pi-comments-container {
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+.comment-form {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+/* Severity badges */
+.severity-badge {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Default severity style */
+.severity-badge {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* Specific severity levels - case insensitive matching via CSS lowercase transformation */
+tr[class*="severity-low"] .severity-badge,
+.severity-badge[class*="severity-low"] {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+tr[class*="severity-medium"] .severity-badge,
+.severity-badge[class*="severity-medium"] {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+tr[class*="severity-high"] .severity-badge,
+.severity-badge[class*="severity-high"] {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Row highlighting based on severity - using attribute selectors for case insensitivity */
+tr[class*="severity-low"] {
+  background-color: rgba(212, 237, 218, 0.2);
+}
+
+tr[class*="severity-medium"] {
+  background-color: rgba(255, 243, 205, 0.2);
+}
+
+tr[class*="severity-high"] {
+  background-color: rgba(248, 215, 218, 0.2);
+}
+
+/* Make the checkboxes and their labels align better */
+.form-check {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pi-comments-container {
+    padding: 10px;
+  }
+  
+  .comment-form {
+    padding: 10px;
+  }
+} 

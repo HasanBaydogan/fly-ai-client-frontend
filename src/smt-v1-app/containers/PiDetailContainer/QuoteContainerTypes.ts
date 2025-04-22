@@ -119,6 +119,7 @@ export interface Pi {
   revisionNumber: number;
   piNumberId: string;
   poRequestedDate: string;
+  userComments?: any[];
   rfqMailStatus:
     | 'UNREAD'
     | 'OPEN'
