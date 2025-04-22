@@ -55,7 +55,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         base64: file.base64
       }));
       setBase64Files(formattedUploadFiles);
-      console.log(formattedUploadFiles);
+      // console.log(formattedUploadFiles);
 
       // Create preview objects.
       const previewFiles: FileAttachment[] = alreadyUploadedFiles.map(file => {
@@ -67,7 +67,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           format: '' // e.g., "application/pdf"
         };
       });
-      console.log(previewFiles);
+      // console.log(previewFiles);
       setUploadedFiles(previewFiles);
     }
   }, []);

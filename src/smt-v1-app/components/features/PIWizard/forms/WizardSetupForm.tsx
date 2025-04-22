@@ -70,7 +70,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   piResponseData
 }) => {
   // Add console.log to check PIResponseData
-  console.log('PIResponseData received:', piResponseData);
+  // console.log('PIResponseData received:', piResponseData);
   // console.log('PIResponseData parts:', piResponseData?.piParts);
   // console.log('PIResponseData company info:', {
   //   logo: piResponseData?.logo,
@@ -83,10 +83,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   useEffect(() => {
     if (piResponseData) {
-      console.log(
-        'Setting isInternational from piResponseData:',
-        piResponseData.isInternational
-      );
+      // console.log(
+      //   'Setting isInternational from piResponseData:',
+      //   piResponseData.isInternational
+      // );
       setupOtherProps.setIsInternational(piResponseData.isInternational);
       // console.log('Processing PIResponseData in useEffect');
       // Set initial values from PIResponseData
@@ -138,7 +138,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         piResponseData.truckCarriageToX.truckCarriageToX,
         0 // Additional value if needed
       ];
-      console.log('New subTotalValues:', newSubTotalValues);
+      // console.log('New subTotalValues:', newSubTotalValues);
       setSubTotalValues(newSubTotalValues);
 
       // const newCheckedStates = [
@@ -427,7 +427,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         quote => quote.quotePartId !== quotePartId
       );
     } else {
-      console.log('there is a bug in deleteRow');
+      // console.log('there is a bug in deleteRow');
     }
     setQuotePartRows(updatedData);
   };
@@ -460,7 +460,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     const newCheckedStates = [...checkedStates];
     newCheckedStates[index] = checked;
     setCheckedStates(newCheckedStates);
-    console.log('cargo', newCheckedStates);
+    // console.log('cargo', newCheckedStates);
   };
 
   const handlePartNumberChange = (

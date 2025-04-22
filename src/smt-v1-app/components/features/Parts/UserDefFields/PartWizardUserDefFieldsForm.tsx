@@ -117,7 +117,7 @@ const PartWizardUserDefFieldsForm = () => {
     };
 
     try {
-      console.log('Posting UDF data:', payload);
+      // console.log('Posting UDF data:', payload);
       await postUDFCreate(payload);
       alert('Field saved successfully!');
       resetForm();

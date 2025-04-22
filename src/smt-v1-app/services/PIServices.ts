@@ -53,8 +53,8 @@ export const getPreEmailSendingParameters = async (piId: string) => {
   return await getRequest(`/pi/pre-email-sending?piId=${piId}`);
 };
 
-export const getPiDetails = async (piId: string) => {
-  return await getRequest(`/pi/pi-detail?piId=68063fd6412ee873b4d558ee`);
+export const getPiDetails = async (piNumberId: string) => {
+  return await getRequest(`/pi/pi-detail?piId=${piNumberId}`);
 };
 
 export const sendQuoteEmail = async (sendEmailProps: SendEmailProps) => {

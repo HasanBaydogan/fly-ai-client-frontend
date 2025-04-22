@@ -157,7 +157,6 @@ const RFQModal: React.FC<RFQModalProps> = ({
   const handlePreparePI = async () => {
     try {
       const formattedDate = selectedDate ? formatDate(selectedDate) : '';
-      console.log;
       const requestData = {
         receivedDate: formattedDate,
         attachments: base64Files.map(file => ({ data: file.base64 })),

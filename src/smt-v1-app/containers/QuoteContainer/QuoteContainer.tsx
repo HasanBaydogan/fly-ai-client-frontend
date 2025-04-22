@@ -114,7 +114,7 @@ const QuoteContainer = () => {
     if (response && response.statusCode === 200) {
       window.location.assign('/rfqs/rfq?rfqMailId=' + response.data.rfqMailId);
     } else {
-      console.log('An error occurs when Go To RFQ Mail');
+      // console.log('An error occurs when Go To RFQ Mail');
     }
   };
 

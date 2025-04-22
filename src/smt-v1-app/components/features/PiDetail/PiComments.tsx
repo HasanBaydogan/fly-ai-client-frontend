@@ -146,7 +146,7 @@ const PiComments: React.FC<PiCommentsProps> = ({
           if (response && response.statusCode === 200) {
             // Successfully deleted from backend
             setComments(comments.filter(comment => comment.id !== commentId));
-            console.log('Comment deleted successfully');
+            // console.log('Comment deleted successfully');
           } else {
             throw new Error('Failed to delete comment');
           }
@@ -271,7 +271,7 @@ const PiComments: React.FC<PiCommentsProps> = ({
     });
 
     if (response && response.statusCode === 200) {
-      console.log('New comment saved successfully:', response.data);
+      // console.log('New comment saved successfully:', response.data);
       return response.data; // This contains the real ID assigned by the backend
     } else {
       throw new Error('Failed to save new comment');
@@ -297,7 +297,7 @@ const PiComments: React.FC<PiCommentsProps> = ({
     });
 
     if (response && response.statusCode === 200) {
-      console.log('Comment updated successfully:', response.data);
+      // console.log('Comment updated successfully:', response.data);
       return response.data;
     } else {
       throw new Error('Failed to update comment');

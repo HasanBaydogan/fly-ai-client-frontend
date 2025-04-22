@@ -60,7 +60,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           : ''
       };
     });
-    console.log(formattedData);
+    // console.log(formattedData);
     setQuotePartRows(formattedData);
   }, []);
 
@@ -273,7 +273,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
     const updatedData = [...quotePartRows, newRow];
     setTempIdCounter(tempIdCounter + 1);
-    console.log(updatedData);
+    // console.log(updatedData);
     setQuotePartRows(updatedData);
   };
 
@@ -287,7 +287,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         quote => quote.quotePartId !== quotePartId
       );
     } else {
-      console.log('there is a bug in deleteRow');
+      // console.log('there is a bug in deleteRow');
     }
     setQuotePartRows(updatedData);
   };
