@@ -180,7 +180,7 @@ const WizardTabs = ({
       ],
       comment: quoteComment
     };
-    console.log(payload);
+    // console.log(payload);
 
     const response = await sendQuoteEmail(payload);
     //console.log(response);

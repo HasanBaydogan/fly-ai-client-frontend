@@ -253,15 +253,15 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
       }
     };
 
-    console.log('Sending payload:', payload);
+    // console.log('Sending payload:', payload);
 
     const response = await sendQuoteEmail(payload);
-    console.log('sendQuoteEmail', response);
+    // console.log('sendQuoteEmail', response);
     if (response && response.statusCode === 200) {
       setFrom(response.data.from);
       setIsSendEmailSuccess(true);
     } else {
-      console.log(response);
+      // console.log(response);
     }
 
     setEmailSendLoading(false);

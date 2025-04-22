@@ -41,6 +41,8 @@ import ClientEditContainer from 'smt-v1-app/containers/Client/ClientEditContaine
 import PartListContainer from 'smt-v1-app/containers/PartContainer/PartListContainer';
 import PartContainer from 'smt-v1-app/containers/PartContainer/PartContainer';
 import UserQuoteStatus from 'smt-v1-app/components/features/UserQuoteStatus/UserQuoteStatus';
+import PiListContainer from 'smt-v1-app/containers/PiListContainer/PiListContainer';
+import PiDetailContainer from 'smt-v1-app/containers/PiDetailContainer/PiDetailContainer';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
@@ -95,6 +97,19 @@ const routes: RouteObject[] = [
               {
                 path: 'quotelist',
                 element: <QuoteListContainer />
+              }
+            ]
+          },
+          {
+            path: 'pi',
+            children: [
+              {
+                path: 'list',
+                element: <PiListContainer />
+              },
+              {
+                path: 'detail',
+                element: <PiDetailContainer />
               }
             ]
           },

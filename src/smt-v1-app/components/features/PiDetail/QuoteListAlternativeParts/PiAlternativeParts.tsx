@@ -1,51 +1,52 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
-
-import { QuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
-
-interface QuotePartListProps {
-  parts: QuotePart[];
-  setSelectedParts: React.Dispatch<React.SetStateAction<string[]>>;
-  selectedParts: string[];
+import './PiAlternativeParts';
+import { AlternativePiPart } from 'smt-v1-app/containers/PiDetailContainer/QuoteContainerTypes';
+interface PiListAlternativePartsProps {
+  alternativeParts: AlternativePiPart[];
+  selectedAlternativeParts: string[];
+  setSelectedAlternativeParts: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const QuotePartList: React.FC<QuotePartListProps> = ({
-  parts,
-  setSelectedParts,
-  selectedParts
+const PiListAlternativeParts: React.FC<PiListAlternativePartsProps> = ({
+  alternativeParts,
+  selectedAlternativeParts,
+  setSelectedAlternativeParts
 }) => {
-  const [showAddModal, setShowAddModal] = useState(false);
-
-  useEffect(() => {
-    if (parts && parts.length > 0) {
-      setSelectedParts(parts.map(part => part.quotePartId));
-    }
-  }, [parts]);
-
-  const allSelected = selectedParts.length === parts.length;
+  const [selectAll, setSelectAll] = useState(true);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedParts(parts.map(part => part.quotePartId));
+      setSelectedAlternativeParts(alternativeParts.map(part => part.piPartId));
+      setSelectAll(true);
     } else {
-      setSelectedParts([]);
+      setSelectedAlternativeParts([]);
+      setSelectAll(false);
     }
   };
+  useEffect(() => {
+    if (alternativeParts && alternativeParts.length > 0) {
+      setSelectedAlternativeParts(alternativeParts.map(part => part.piPartId));
+    }
+  }, [alternativeParts]);
 
-  const handleSelectPart = (quotePartId: string) => {
-    setSelectedParts(prev => {
-      return prev.includes(quotePartId)
-        ? prev.filter(id => id !== quotePartId)
-        : [...prev, quotePartId];
+  const handleSelectPart = (piPartId: string) => {
+    setSelectedAlternativeParts(prev => {
+      const newSelection = prev.includes(piPartId)
+        ? prev.filter(num => num !== piPartId)
+        : [...prev, piPartId];
+
+      setSelectAll(newSelection.length === alternativeParts.length);
+      return newSelection;
     });
   };
 
   return (
     <div>
-      <h3 className="mt-3">Parts</h3>
+      <h3 className="mt-3">Alternative Parts</h3>
       <hr className="custom-line m-0" />
 
-      <div className="mx-2" style={{ minHeight: '150px', overflowY: 'auto' }}>
+      <div className="mx-2" style={{ minHeight: '170px', overflowY: 'auto' }}>
         <Table responsive style={{ marginBottom: '0' }}>
           <thead
             style={{
@@ -58,14 +59,16 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
             <tr>
               <th style={{ minWidth: '50px' }}>
                 <Form.Check
+                  disabled
                   type="checkbox"
-                  checked={allSelected}
+                  checked={selectAll}
                   onChange={handleSelectAll}
                 />
               </th>
               <th style={{ minWidth: '120px' }}>Part Number</th>
               <th style={{ minWidth: '150px' }}>Part Name</th>
               <th style={{ minWidth: '150px' }}>Additional Info</th>
+              <th style={{ minWidth: '150px' }}>Parent Part Number</th>
               <th style={{ minWidth: '100px' }}>Req QTY</th>
               <th style={{ minWidth: '100px' }}>Fnd QTY</th>
               <th style={{ minWidth: '100px' }}>Req CND</th>
@@ -76,31 +79,24 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
               <th style={{ minWidth: '100px' }}>Currency</th>
               <th style={{ minWidth: '150px' }}>Supplier</th>
               <th style={{ minWidth: '150px' }}>Comment</th>
-              <th style={{ minWidth: '150px' }}>DG Packaging Cost</th>
-              <th style={{ minWidth: '120px' }}>Tag Date</th>
-              <th style={{ minWidth: '120px' }}>Cert Type</th>
-              <th style={{ minWidth: '100px' }}>MSN</th>
-              <th style={{ minWidth: '120px' }}>Warehouse</th>
-              <th style={{ minWidth: '100px' }}>Stock</th>
-              <th style={{ minWidth: '150px' }}>Stock Location</th>
-              <th style={{ minWidth: '150px' }}>Airline Company</th>
-              <th style={{ minWidth: '100px' }}>MSDS</th>
             </tr>
           </thead>
           <tbody>
-            {parts.map(part => (
-              <tr key={part.quotePartId}>
+            {alternativeParts.map(part => (
+              <tr key={part.piPartId}>
                 <td>
                   <Form.Check
                     type="checkbox"
-                    checked={selectedParts.includes(part.quotePartId)}
-                    onChange={() => handleSelectPart(part.quotePartId)}
+                    disabled
+                    checked={selectedAlternativeParts.includes(part.piPartId)}
+                    onChange={() => handleSelectPart(part.piPartId)}
                     style={{ marginLeft: '10px' }}
                   />
                 </td>
                 <td>{part.partNumber}</td>
                 <td>{part.partName}</td>
                 <td>{part.partDescription}</td>
+                <td>{part.parentPartNumber}</td>
                 <td>{part.reqQuantity}</td>
                 <td>{part.fndQuantity}</td>
                 <td>{part.reqCondition}</td>
@@ -111,15 +107,6 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
                 <td>{part.currency}</td>
                 <td>{String(part.supplier)}</td>
                 <td>{part.comment}</td>
-                <td>{part.DGPackagingCost ? 'Yes' : 'No'}</td>
-                <td>{part.tagDate}</td>
-                <td>{part.certificateType}</td>
-                <td>{part.MSN}</td>
-                <td>{part.wareHouse}</td>
-                <td>{part.stock}</td>
-                <td>{part.stockLocation}</td>
-                <td>{part.airlineCompany}</td>
-                <td>{part.MSDS}</td>
               </tr>
             ))}
           </tbody>
@@ -129,4 +116,4 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
   );
 };
 
-export default QuotePartList;
+export default PiListAlternativeParts;

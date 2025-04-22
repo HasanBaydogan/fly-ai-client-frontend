@@ -531,7 +531,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
                           >
                             <div style={headerCellStyle}>Part Number</div>
                             <div style={headerCellStyle}>Part Name</div>
-                            <div style={headerCellStyle}>Part Description</div>
+                            <div style={headerCellStyle}>Additional Info</div>
                             <div style={headerCellStyle}>Req/Fnd QTY</div>
                             <div style={headerCellStyle}>Req/Fnd CND</div>
                             <div style={headerCellStyle}>Lead Times</div>
@@ -683,7 +683,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
             <td>
               <Form.Group>
                 <Form.Control
-                  placeholder="Part Description"
+                  placeholder="Additional Info"
                   value={partDescription}
                   onChange={e => {
                     setPartDescription(e.target.value);

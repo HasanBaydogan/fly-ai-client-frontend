@@ -305,7 +305,7 @@ export const downloadPDF = (
       pdf.save(quoteNumber + '.pdf');
     }
   } catch (e) {
-    console.log(e);
+    // console.log(e);
   }
 };
 

@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
+import { PiParts } from 'smt-v1-app/containers/PiDetailContainer/QuoteContainerTypes';
 
-import { QuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
-
-interface QuotePartListProps {
-  parts: QuotePart[];
+interface PiPartListProps {
+  parts: PiParts[];
   setSelectedParts: React.Dispatch<React.SetStateAction<string[]>>;
   selectedParts: string[];
 }
 
-const QuotePartList: React.FC<QuotePartListProps> = ({
+const PiPartList: React.FC<PiPartListProps> = ({
   parts,
   setSelectedParts,
   selectedParts
@@ -18,7 +17,7 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
 
   useEffect(() => {
     if (parts && parts.length > 0) {
-      setSelectedParts(parts.map(part => part.quotePartId));
+      setSelectedParts(parts.map(part => part.piPartId));
     }
   }, [parts]);
 
@@ -26,17 +25,17 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedParts(parts.map(part => part.quotePartId));
+      setSelectedParts(parts.map(part => part.piPartId));
     } else {
       setSelectedParts([]);
     }
   };
 
-  const handleSelectPart = (quotePartId: string) => {
+  const handleSelectPart = (piPartId: string) => {
     setSelectedParts(prev => {
-      return prev.includes(quotePartId)
-        ? prev.filter(id => id !== quotePartId)
-        : [...prev, quotePartId];
+      return prev.includes(piPartId)
+        ? prev.filter(id => id !== piPartId)
+        : [...prev, piPartId];
     });
   };
 
@@ -60,6 +59,7 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
                 <Form.Check
                   type="checkbox"
                   checked={allSelected}
+                  disabled
                   onChange={handleSelectAll}
                 />
               </th>
@@ -89,12 +89,13 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
           </thead>
           <tbody>
             {parts.map(part => (
-              <tr key={part.quotePartId}>
+              <tr key={part.piPartId}>
                 <td>
                   <Form.Check
                     type="checkbox"
-                    checked={selectedParts.includes(part.quotePartId)}
-                    onChange={() => handleSelectPart(part.quotePartId)}
+                    disabled
+                    checked={selectedParts.includes(part.piPartId)}
+                    onChange={() => handleSelectPart(part.piPartId)}
                     style={{ marginLeft: '10px' }}
                   />
                 </td>
@@ -129,4 +130,4 @@ const QuotePartList: React.FC<QuotePartListProps> = ({
   );
 };
 
-export default QuotePartList;
+export default PiPartList;
