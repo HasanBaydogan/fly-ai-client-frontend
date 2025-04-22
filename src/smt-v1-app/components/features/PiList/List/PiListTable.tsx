@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
-import { Col, Row, Dropdown, Badge } from 'react-bootstrap';
+import { Col, Row, Dropdown, Badge, Button } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
@@ -13,6 +13,18 @@ import RevealDropdown, {
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 // import { PiData } from 'smt-v1-app/types/PiTypes';
 import { searchByPiList } from 'smt-v1-app/services/PIServices';
+
+// Add type declaration for Bootstrap
+declare global {
+  interface Window {
+    bootstrap?: {
+      Tooltip: {
+        new (element: Element): { dispose: () => void };
+        getInstance: (element: Element) => { dispose: () => void } | null;
+      };
+    };
+  }
+}
 
 const piStatus: { [key: string]: string } = {
   NONE: 'dark',
@@ -56,17 +68,46 @@ const formatStatus = (status: string): string => {
 
 export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row: { original } }) => (
+      <div className="d-flex gap-2">
+        <Link
+          to={`/pi/detail?piId=${original.piId}`}
+          style={{ textDecoration: 'none' }}
+        >
+          <Button
+            variant="outline-primary"
+            size="sm"
+            title="PI Detail"
+            className="d-flex align-items-center justify-content-center"
+            style={{ width: '32px', height: '32px', padding: '0' }}
+          >
+            <i className="fas fa-info-circle"></i>
+          </Button>
+        </Link>
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          title="PI Trace"
+          disabled
+          className="d-flex align-items-center justify-content-center"
+          style={{ width: '32px', height: '32px', padding: '0' }}
+        >
+          <i className="fas fa-project-diagram"></i>
+        </Button>
+      </div>
+    ),
+    meta: {
+      cellProps: { className: 'text-center py-2' },
+      headerProps: { style: { width: '8%' }, className: 'text-center' }
+    }
+  },
+  {
     id: 'piNumberId',
     accessorKey: 'piNumberId',
     header: 'piNumberId',
-    cell: ({ row: { original } }) => (
-      <Link
-        to={`/pi/detail?piId=${original.piId}`}
-        style={{ textDecoration: 'none', color: 'secondary' }}
-      >
-        {original.piNumberId}
-      </Link>
-    ),
+    cell: ({ row: { original } }) => <span>{original.piNumberId}</span>,
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' } }
@@ -132,6 +173,43 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     accessorKey: 'piParts',
     header: 'Part Numbers',
+    cell: ({ row: { original } }) => {
+      if (
+        !original.piParts ||
+        !Array.isArray(original.piParts) ||
+        original.piParts.length < 1
+      ) {
+        return '-';
+      }
+
+      const parts = original.piParts;
+      const hasMoreItems = parts.length > 3;
+      const displayParts = hasMoreItems ? parts.slice(0, 2) : parts;
+
+      return (
+        <div style={{ whiteSpace: 'nowrap' }}>
+          {displayParts.map((part: string, index: number) => (
+            <div key={index} className="my-1">
+              <span className="me-1">•</span>
+              {part}
+            </div>
+          ))}
+          {hasMoreItems && (
+            <div className="position-relative">
+              <span
+                className="text-primary"
+                style={{ cursor: 'pointer' }}
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title={parts.slice(2).join('\n• ')}
+              >
+                ...
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -304,6 +382,41 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         : `${selectedColumn.value}=${searchTerm}`;
     fetchData(pageIndex, searchParam);
   }, [pageIndex, pageSize]);
+
+  // Initialize tooltips after rendering
+  useEffect(() => {
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]'
+    );
+    // Check if tooltips exist and bootstrap is available
+    if (
+      typeof window !== 'undefined' &&
+      window.bootstrap &&
+      tooltipTriggerList &&
+      Number(tooltipTriggerList.length) > 0
+    ) {
+      Array.from(tooltipTriggerList).forEach(tooltipTriggerEl => {
+        new window.bootstrap!.Tooltip(tooltipTriggerEl);
+      });
+    }
+
+    // Cleanup tooltips when component unmounts
+    return () => {
+      if (
+        typeof window !== 'undefined' &&
+        window.bootstrap &&
+        tooltipTriggerList
+      ) {
+        Array.from(tooltipTriggerList).forEach(tooltipTriggerEl => {
+          const tooltip =
+            window.bootstrap!.Tooltip.getInstance(tooltipTriggerEl);
+          if (tooltip) {
+            tooltip.dispose();
+          }
+        });
+      }
+    };
+  }, [data]);
 
   return (
     <div>
