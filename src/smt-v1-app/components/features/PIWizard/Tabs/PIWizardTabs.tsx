@@ -80,10 +80,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   const [taxAmount, setTaxAmount] = useState<number>(0);
 
   const calculateSubTotal = () => {
-    return quotePartRows.reduce(
-      (acc, row) => acc + row.quantity * row.unitPrice,
-      0
-    );
+    return quotePartRows.reduce((acc, row) => acc + row.qty * row.unitPrice, 0);
   };
 
   const calculateTaxAmount = (percentage: number) => {
@@ -182,7 +179,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
         reqCnd: quotePart.reqCondition,
         fndCnd: quotePart.fndCondition,
         leadTime: quotePart.leadTime,
-        qty: quotePart.quantity,
+        qty: quotePart.qty,
         unitPrice: quotePart.unitPrice
       };
     });
@@ -199,7 +196,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
           reqCnd: quotePart.reqCondition,
           fndCnd: quotePart.fndCondition,
           leadTime: quotePart.leadTime,
-          qty: quotePart.quantity,
+          qty: quotePart.qty,
           unitPrice: quotePart.unitPrice
         };
       });

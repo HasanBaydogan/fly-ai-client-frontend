@@ -246,7 +246,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   <td>{index + 1}</td>
                   <td>{row.partNumber}</td>
                   <td>{row.description}</td>
-                  <td>{row.quantity}</td>
+                  <td>{row.qty}</td>
                   <td>{row.leadTime} Days</td>
                   <td>
                     {row.unitPrice.toLocaleString('en-US', {
@@ -255,7 +255,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     })}
                   </td>
                   <td>
-                    {(row.quantity * row.unitPrice).toLocaleString('en-US', {
+                    {(row.qty * row.unitPrice).toLocaleString('en-US', {
                       style: 'currency',
                       currency: currency.replace(/[^A-Z]/g, '')
                     })}
@@ -329,8 +329,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                             <span className="text-primary ms-2">
                               {quotePartRows
                                 .reduce(
-                                  (acc, row) =>
-                                    acc + row.quantity * row.unitPrice,
+                                  (acc, row) => acc + row.qty * row.unitPrice,
                                   0
                                 )
                                 .toLocaleString('en-US', {
@@ -430,7 +429,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                         <strong>
                           {(
                             quotePartRows.reduce(
-                              (acc, row) => acc + row.quantity * row.unitPrice,
+                              (acc, row) => acc + row.qty * row.unitPrice,
                               0
                             ) +
                             (checkedStates[0] ? taxAmount : 0) +

@@ -85,13 +85,13 @@ export const generatePDF = async (
       (index + 1).toString(),
       row.partNumber,
       row.description,
-      row.quantity,
+      row.qty,
       `${row.leadTime} Days`,
       row.unitPrice.toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
       }),
-      (row.quantity * row.unitPrice).toLocaleString('en-US', {
+      (row.qty * row.unitPrice).toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
       })
@@ -128,7 +128,7 @@ export const generatePDF = async (
 
     // Calculate totals
     const subTotal = quotePartRows.reduce(
-      (acc, row) => acc + row.quantity * row.unitPrice,
+      (acc, row) => acc + row.qty * row.unitPrice,
       0
     );
     const total =
@@ -214,10 +214,15 @@ export const generatePDF = async (
             styles: { halign: 'center' }
           },
           {
-            content: `${taxAmount.toLocaleString('en-US', {
-              style: 'currency',
-              currency: currency.replace(/[^A-Z]/g, '')
-            })}`
+            content: checkedStates[0]
+              ? `${taxAmount.toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: currency.replace(/[^A-Z]/g, '')
+                })}`
+              : `${(0).toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: currency.replace(/[^A-Z]/g, '')
+                })}`
           }
         ],
 

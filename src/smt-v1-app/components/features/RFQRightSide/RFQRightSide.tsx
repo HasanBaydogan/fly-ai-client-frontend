@@ -621,7 +621,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
           >
             Cancel
           </Button>
-          <Button
+          {/* <Button
             variant="primary"
             onClick={async () => {
               setShowUnsavedWarning(false);
@@ -630,7 +630,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
             }}
           >
             Save First
-          </Button>
+          </Button> */}
           <Button variant="danger" onClick={executePendingAction}>
             Continue Without Saving
           </Button>
