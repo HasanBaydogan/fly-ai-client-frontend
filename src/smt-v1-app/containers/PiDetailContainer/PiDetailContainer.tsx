@@ -24,15 +24,21 @@ import {
   getQuoteDetailsById,
   getRFQMailIdToGoToRFQMail
 } from 'smt-v1-app/services/QuoteService';
-import { getPiDetails } from 'smt-v1-app/services/PIServices';
+import { getPiDetails, getPiWizard } from 'smt-v1-app/services/PIServices';
 import { useSearchParams } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowHelper';
 import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
+import PIWizard from 'smt-v1-app/components/features/PIWizard/PIWizard';
 
 const QuoteContainer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openModalOnSecondPage, setOpenModalOnSecondPage] = useState(false);
+
+  // State for PIWizard
+  const [showPIWizard, setShowPIWizard] = useState(false);
+  const [piWizardData, setPiWizardData] = useState(null);
+  const [isPIWizardLoading, setIsPIWizardLoading] = useState(false);
 
   const closeModal = (shouldHide = true, openOnSecondPage = false) => {
     if (shouldHide) {
@@ -74,6 +80,9 @@ const QuoteContainer = () => {
     string[]
   >([]);
 
+  const handleOpenPIWizard = () => setShowPIWizard(true);
+  const handleClosePIWizard = () => setShowPIWizard(false);
+
   const handleOpen = () => setShowQuoteWizardTabs(true);
   const handleClose = () => setShowQuoteWizardTabs(false);
 
@@ -83,6 +92,24 @@ const QuoteContainer = () => {
 
   const handleDeleteContact = (contactId: string) => {
     setContacts(prev => prev.filter(contact => contact.id !== contactId));
+  };
+
+  // Function to fetch PI Wizard data and open the wizard
+  const fetchPIWizardData = async () => {
+    setIsPIWizardLoading(true);
+    try {
+      const response = await getPiWizard(piId);
+      if (response && response.statusCode === 200) {
+        setPiWizardData(response.data);
+        handleOpenPIWizard();
+      } else {
+        console.error('Failed to fetch PI Wizard data');
+      }
+    } catch (error) {
+      console.error('Error fetching PI Wizard data:', error);
+    } finally {
+      setIsPIWizardLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -293,7 +320,7 @@ const QuoteContainer = () => {
                   <CustomButton
                     variant="info"
                     onClick={() => {
-                      openModal();
+                      fetchPIWizardData();
                     }}
                   >
                     PI Wizard
@@ -303,13 +330,28 @@ const QuoteContainer = () => {
             </div>
           </div>
 
-          <POModal
-            show={isModalOpen}
-            onHide={closeModal}
-            rfqNumberId={piData?.piNumberId}
-            quoteId={piData?.quoteId || piId}
-            openOnSecondPage={openModalOnSecondPage}
-          />
+          {/* Show PI Wizard when data is loaded */}
+          {showPIWizard && piWizardData && (
+            <PIWizard
+              handleOpen={handleOpenPIWizard}
+              handleClose={handleClosePIWizard}
+              showTabs={showPIWizard}
+              selectedParts={selectedParts}
+              selectedAlternativeParts={selectedAlternativeParts}
+              quoteId={piData?.quoteId || piId}
+              quoteComment=""
+              piResponseData={piWizardData}
+            />
+          )}
+
+          {isPIWizardLoading && (
+            <div
+              className="position-fixed top-0 left-0 d-flex justify-content-center align-items-center w-100 h-100 bg-white bg-opacity-75"
+              style={{ zIndex: 1050 }}
+            >
+              <LoadingAnimation />
+            </div>
+          )}
 
           {/* {showQuoteWizardTabs ? (
             <QuoteWizard

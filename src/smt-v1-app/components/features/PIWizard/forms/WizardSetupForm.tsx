@@ -1046,7 +1046,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[1] || 0).toString()
+                              (subTotalValues[0] || 0).toString()
                             )
                           }
                           onChange={e => {
@@ -1102,7 +1102,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[2] || 0).toString()
+                              (subTotalValues[1] || 0).toString()
                             )
                           }
                           onChange={e => {
@@ -1158,7 +1158,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[3] || 0).toString()
+                              (subTotalValues[2] || 0).toString()
                             )
                           }
                           onChange={e => {

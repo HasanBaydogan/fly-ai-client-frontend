@@ -19,7 +19,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
   const [validityDay, setValidityDay] = useState('0');
 
   // Checkbox states
-  const [taxChecked, setTaxChecked] = useState(true);
+  const [taxChecked, setTaxChecked] = useState(false);
   const [aircargoChecked, setAircargoChecked] = useState(false);
   const [sealineChecked, setSealineChecked] = useState(false);
   const [truckCarriageChecked, setTruckCarriageChecked] = useState(false);
@@ -55,12 +55,12 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
       setSealineChecked(piData.sealineToX?.isIncluded || false);
       setTruckCarriageChecked(piData.truckCarriageToX?.isIncluded || false);
 
-      setSubtotalValue(piData.subTotal || 1000);
-      setPercentageValue(piData.tax?.taxRate || 18);
-      setTaxAmount(piData.tax?.tax || 180);
-      setAircargoValue(piData.airCargoToX?.airCargoToX || 50);
-      setSealineValue(piData.sealineToX?.sealineToX || 100);
-      setTruckCarriageValue(piData.truckCarriageToX?.truckCarriageToX || 150);
+      setSubtotalValue(piData.subTotal || 0);
+      setPercentageValue(piData.tax?.taxRate || 0);
+      setTaxAmount(piData.tax?.tax || 0);
+      setAircargoValue(piData.airCargoToX?.airCargoToX || 0);
+      setSealineValue(piData.sealineToX?.sealineToX || 0);
+      setTruckCarriageValue(piData.truckCarriageToX?.truckCarriageToX || 0);
       setTotalValue(piData.total || 0);
       setCurrency(piData.companyCurrency || 'USD');
     }
