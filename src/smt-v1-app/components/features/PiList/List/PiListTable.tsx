@@ -13,6 +13,8 @@ import RevealDropdown, {
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 // import { PiData } from 'smt-v1-app/types/PiTypes';
 import { searchByPiList } from 'smt-v1-app/services/PIServices';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileInvoice, faSitemap } from '@fortawesome/free-solid-svg-icons';
 
 // Add type declaration for Bootstrap
 declare global {
@@ -71,7 +73,7 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
     id: 'actions',
     header: 'Actions',
     cell: ({ row: { original } }) => (
-      <div className="d-flex gap-2">
+      <div className="d-flex gap-2 px-2">
         <Link
           to={`/pi/detail?piId=${original.piId}`}
           style={{ textDecoration: 'none' }}
@@ -83,7 +85,7 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
             className="d-flex align-items-center justify-content-center"
             style={{ width: '32px', height: '32px', padding: '0' }}
           >
-            <i className="fas fa-info-circle"></i>
+            <FontAwesomeIcon icon={faFileInvoice} />
           </Button>
         </Link>
         <Button
@@ -94,13 +96,13 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
           className="d-flex align-items-center justify-content-center"
           style={{ width: '32px', height: '32px', padding: '0' }}
         >
-          <i className="fas fa-project-diagram"></i>
+          <FontAwesomeIcon icon={faSitemap} />
         </Button>
       </div>
     ),
     meta: {
       cellProps: { className: 'text-center py-2' },
-      headerProps: { style: { width: '8%' }, className: 'text-center' }
+      headerProps: { style: { width: '5%' }, className: 'text-center' }
     }
   },
   {
@@ -113,31 +115,31 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
       headerProps: { style: { width: '10%' } }
     }
   },
-  {
-    header: 'Revision',
-    accessorKey: 'revisionNumber',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
-    }
-  },
-  {
-    id: 'quoteNumberId',
-    header: 'QuoteID',
-    accessorKey: 'quoteNumberId',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'contractNo',
-    header: 'Contract NO',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
+  // {
+  //   header: 'Revision',
+  //   accessorKey: 'revisionNumber',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+  //     headerProps: { style: { width: '5%' }, className: 'ps-3' }
+  //   }
+  // },
+  // {
+  //   id: 'quoteNumberId',
+  //   header: 'QuoteID',
+  //   accessorKey: 'quoteNumberId',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+  //     headerProps: { style: { width: '15%' }, className: 'ps-3' }
+  //   }
+  // },
+  // {
+  //   accessorKey: 'contractNo',
+  //   header: 'Contract NO',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
+  //   }
+  // },
   {
     header: 'Company',
     accessorKey: 'company',

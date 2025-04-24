@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getColorStyles } from '../RfqMailRowItem/RfqMailRowHelper';
 import Client from './RFQRightSideComponents/Client/Client';
 import PartList from './RFQRightSideComponents/PartList/PartList';
@@ -30,6 +30,7 @@ import {
   convertRFQToQuote,
   getQuoteIdwithMailId
 } from 'smt-v1-app/services/QuoteService';
+import { Modal, Button } from 'react-bootstrap';
 
 const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [bgColor, setBgColor] = useState('');
@@ -49,6 +50,19 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [toastMessageBody, setToastMessageBody] = useState('');
   const [toastVariant, setToastVariant] = useState('danger');
 
+  // Unsaved changes tracking
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const [refreshRequested, setRefreshRequested] = useState(false);
+
+  // Store initial values for comparison
+  const initialPartsRef = useRef<string>('');
+  const initialAlternativePartsRef = useRef<string>('');
+  const initialClientRef = useRef<Client | null>(null);
+  const initialRfqDeadlineRef = useRef<string>('');
+  const initialClientRFQIdRef = useRef<string>('');
+
   const [foundClient, setFoundClient] = useState<Client | null>(
     rfq.clientResponse
   );
@@ -60,6 +74,127 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [alternativeParts, setAlternativeParts] = useState(
     rfq.alternativeRFQPartResponses
   );
+
+  // Initialize the reference values when the component mounts
+  useEffect(() => {
+    initialPartsRef.current = JSON.stringify(rfq.savedRFQItems || []);
+    initialAlternativePartsRef.current = JSON.stringify(
+      rfq.alternativeRFQPartResponses || []
+    );
+    initialClientRef.current = rfq.clientResponse;
+    initialRfqDeadlineRef.current = rfq.rfqDeadline || '';
+    initialClientRFQIdRef.current = rfq.clientRFQNumberId || '';
+  }, []);
+
+  // Track changes to check if there are unsaved changes
+  useEffect(() => {
+    const currentParts = JSON.stringify(parts);
+    const currentAlternativeParts = JSON.stringify(alternativeParts);
+    const currentRfqDeadline = rfqDeadline
+      ? formatDateToString(rfqDeadline)
+      : '';
+
+    // Check if any of the tracked values have changed
+    const havePartsChanged = currentParts !== initialPartsRef.current;
+    const haveAlternativePartsChanged =
+      currentAlternativeParts !== initialAlternativePartsRef.current;
+
+    // For client comparison, use client ID since the object reference might change
+    const initialClientId = initialClientRef.current?.clientId;
+    const currentClientId = foundClient?.clientId;
+    const hasClientChanged = initialClientId !== currentClientId;
+
+    const hasRfqDeadlineChanged =
+      currentRfqDeadline !== initialRfqDeadlineRef.current;
+    const hasClientRFQIdChanged = clientRFQId !== initialClientRFQIdRef.current;
+
+    // For debugging purposes, you can log these values:
+    // console.log('Initial Parts:', initialPartsRef.current);
+    // console.log('Current Parts:', currentParts);
+    // console.log('Changes detected:', {
+    //   havePartsChanged,
+    //   haveAlternativePartsChanged,
+    //   hasClientChanged,
+    //   hasRfqDeadlineChanged,
+    //   hasClientRFQIdChanged
+    // });
+
+    // Set the unsaved changes flag based on whether any tracked value has changed
+    setHasUnsavedChanges(
+      havePartsChanged ||
+        haveAlternativePartsChanged ||
+        hasClientChanged ||
+        hasRfqDeadlineChanged ||
+        hasClientRFQIdChanged
+    );
+  }, [parts, alternativeParts, foundClient, rfqDeadline, clientRFQId]);
+
+  // Handle F5 key press and page navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F5 key
+      if (e.key === 'F5' || e.keyCode === 116) {
+        if (hasUnsavedChanges) {
+          e.preventDefault();
+          setRefreshRequested(true);
+          setPendingAction(() => handleConfirmedRefresh);
+          setShowUnsavedWarning(true);
+        }
+      }
+    };
+
+    // For other unload events - instead of showing browser dialog,
+    // we'll just let the page unload with our custom handling
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        setShowUnsavedWarning(true);
+        // Modern browsers require returnValue to be set
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  // Perform page refresh after confirmation
+  const handleConfirmedRefresh = () => {
+    window.location.reload();
+  };
+
+  // Wrapper for actions that should check for unsaved changes
+  const checkUnsavedChangesBeforeAction = (action: () => void) => {
+    if (hasUnsavedChanges) {
+      setPendingAction(() => action);
+      setShowUnsavedWarning(true);
+    } else {
+      action();
+    }
+  };
+
+  // Execute pending action after confirmation
+  const executePendingAction = () => {
+    setShowUnsavedWarning(false);
+
+    if (refreshRequested) {
+      handleConfirmedRefresh();
+      setRefreshRequested(false);
+      setPendingAction(null);
+      return;
+    }
+
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
 
   const handleAddPart = (rfqPart: RFQPart) => {
     setParts(prev => [...prev, rfqPart]);
@@ -109,19 +244,35 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     setIsShowToast(true);
   }
 
-  // Eğer herhangi bir butona tıklanırsa, tüm butonlar disable olacak (isLoading = true)
   const handleCancel = async () => {
-    setIsLoading(true);
-    const response = await cancelRFQMail(rfq.rfqMailId);
-    if (response && response.statusCode === 200) {
-      toastSuccess('Success Cancel', 'RFQ Mail is canceled successfully');
-      setTimeout(() => {
-        navigation('/mail-tracking');
-        // İşlem başarılı, yönlendirme yapıldığından butonları tekrar aktif etmiyoruz.
-      }, 1500);
+    if (!hasUnsavedChanges) {
+      // If no changes, proceed directly
+      setIsLoading(true);
+      const response = await cancelRFQMail(rfq.rfqMailId);
+      if (response && response.statusCode === 200) {
+        toastSuccess('Success Cancel', 'RFQ Mail is canceled successfully');
+        setTimeout(() => {
+          navigation('/mail-tracking');
+        }, 1500);
+      } else {
+        toastError('An error', 'An error occurs');
+        setIsLoading(false);
+      }
     } else {
-      toastError('An error', 'An error occurs');
-      setIsLoading(false);
+      // If there are changes, show unsaved changes warning
+      checkUnsavedChangesBeforeAction(async () => {
+        setIsLoading(true);
+        const response = await cancelRFQMail(rfq.rfqMailId);
+        if (response && response.statusCode === 200) {
+          toastSuccess('Success Cancel', 'RFQ Mail is canceled successfully');
+          setTimeout(() => {
+            navigation('/mail-tracking');
+          }, 1500);
+        } else {
+          toastError('An error', 'An error occurs');
+          setIsLoading(false);
+        }
+      });
     }
   };
 
@@ -244,13 +395,24 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
 
       const resp = await saveRFQToDB(savedRFQ);
       if (resp && resp.statusCode === 200) {
+        // Update reference values after a successful save
+        initialPartsRef.current = JSON.stringify(parts);
+        initialAlternativePartsRef.current = JSON.stringify(alternativeParts);
+        initialClientRef.current = foundClient;
+        initialRfqDeadlineRef.current = rfqDeadline
+          ? formatDateToString(rfqDeadline)
+          : '';
+        initialClientRFQIdRef.current = clientRFQId || '';
+
+        // Reset unsaved changes flag after successful save
+        setHasUnsavedChanges(false);
+
         toastSuccess(
           'Saving Success',
           'RFQ is saved successfully, directed...'
         );
         setTimeout(() => {
           navigation('/mail-tracking');
-          // Başarılı yönlendirme durumunda isLoading değeri değiştirilmeden bırakılıyor.
         }, 1500);
       } else {
         toastError(
@@ -262,9 +424,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     }
   };
 
-  // convertToWFS API çağrısı
   const convertToWFS = async () => {
-    // İşlem sırasında global isLoading true olduğu için tüm butonlar disable kalacaktır.
     setIsLoading(true);
     const resp = await convertOpenToWFS(rfq.rfqMailId);
     if (resp && resp.statusCode === 200) {
@@ -278,44 +438,95 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     }
   };
 
-  // Convert To Quote işlemi
   const handleConvertToQuote = async () => {
-    setIsLoading(true);
-    // Adım 1: Save/Update işlemi
-    await handleSaveUpdate();
-    // Adım 2: Eğer mail statüsü "OPEN" ise Convert To WFS işlemini gerçekleştir
-    if (rfq.rfqMailStatus === 'OPEN') {
-      await convertToWFS();
-    }
-    // Adım 3: Quote oluşturma API çağrısı
-    const response = await convertRFQToQuote(rfq.rfqMailId);
-    if (response && response.statusCode === 200) {
-      toastSuccess('Successful Quote', 'Converted to Quote');
-      setTimeout(() => {
-        navigation('/quotes/quote?quoteId=' + response.data.quoteId);
-        // Yönlendirme gerçekleştiğinde isLoading değeri değiştirilmez.
-      }, 1500);
+    if (!hasUnsavedChanges) {
+      // If no changes, proceed directly
+      setIsLoading(true);
+      await handleSaveUpdate();
+      if (rfq.rfqMailStatus === 'OPEN') {
+        await convertToWFS();
+      }
+      const response = await convertRFQToQuote(rfq.rfqMailId);
+      if (response && response.statusCode === 200) {
+        toastSuccess('Successful Quote', 'Converted to Quote');
+        setTimeout(() => {
+          navigation('/quotes/quote?quoteId=' + response.data.quoteId);
+        }, 1500);
+      } else {
+        toastError('Unknown Error', 'There is an unknown error');
+        setIsLoading(false);
+      }
     } else {
-      toastError('Unknown Error', 'There is an unknown error');
-      setIsLoading(false);
+      // If there are changes, show unsaved changes warning
+      checkUnsavedChangesBeforeAction(async () => {
+        setIsLoading(true);
+        await handleSaveUpdate();
+        if (rfq.rfqMailStatus === 'OPEN') {
+          await convertToWFS();
+        }
+        const response = await convertRFQToQuote(rfq.rfqMailId);
+        if (response && response.statusCode === 200) {
+          toastSuccess('Successful Quote', 'Converted to Quote');
+          setTimeout(() => {
+            navigation('/quotes/quote?quoteId=' + response.data.quoteId);
+          }, 1500);
+        } else {
+          toastError('Unknown Error', 'There is an unknown error');
+          setIsLoading(false);
+        }
+      });
     }
   };
 
-  // Go To Quote işlemi
   const handleGoToQuote = async () => {
-    setIsLoading(true);
-    try {
-      const response = await getQuoteIdwithMailId(rfq.rfqMailId);
-      if (response && response.statusCode === 200 && response.data?.quoteId) {
-        navigation(`/quotes/quote?quoteId=${response.data.quoteId}`);
-        // Yönlendirme sonrası isLoading değeri değiştirilmez.
-      } else {
-        toastError('Quote Error', 'Quote id could not be retrieved');
+    if (!hasUnsavedChanges) {
+      // If no changes, proceed directly
+      setIsLoading(true);
+      try {
+        const response = await getQuoteIdwithMailId(rfq.rfqMailId);
+        if (response && response.statusCode === 200 && response.data?.quoteId) {
+          navigation(`/quotes/quote?quoteId=${response.data.quoteId}`);
+        } else {
+          toastError('Quote Error', 'Quote id could not be retrieved');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        toastError('Error', 'An error occurred while retrieving quote id');
         setIsLoading(false);
       }
-    } catch (error) {
-      toastError('Error', 'An error occurred while retrieving quote id');
-      setIsLoading(false);
+    } else {
+      // If there are changes, show unsaved changes warning
+      checkUnsavedChangesBeforeAction(async () => {
+        setIsLoading(true);
+        try {
+          const response = await getQuoteIdwithMailId(rfq.rfqMailId);
+          if (
+            response &&
+            response.statusCode === 200 &&
+            response.data?.quoteId
+          ) {
+            navigation(`/quotes/quote?quoteId=${response.data.quoteId}`);
+          } else {
+            toastError('Quote Error', 'Quote id could not be retrieved');
+            setIsLoading(false);
+          }
+        } catch (error) {
+          toastError('Error', 'An error occurred while retrieving quote id');
+          setIsLoading(false);
+        }
+      });
+    }
+  };
+
+  const customNavigate = (path: string) => {
+    if (!hasUnsavedChanges) {
+      // If no changes, navigate directly
+      navigation(path);
+    } else {
+      // If there are changes, show warning
+      checkUnsavedChangesBeforeAction(() => {
+        navigation(path);
+      });
     }
   };
 
@@ -382,6 +593,49 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
         messageBodyText={toastMessageBody}
         position="bottom-end"
       />
+
+      {/* Unsaved changes warning modal */}
+      <Modal
+        show={showUnsavedWarning}
+        onHide={() => setShowUnsavedWarning(false)}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {refreshRequested ? 'Page Refresh' : 'Unsaved Changes'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          You have unsaved changes. If you continue, these changes will be lost.
+          Would you like to save your changes?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setRefreshRequested(false);
+              setShowUnsavedWarning(false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={async () => {
+              setShowUnsavedWarning(false);
+              await handleSaveUpdate();
+              if (pendingAction) executePendingAction();
+            }}
+          >
+            Save First
+          </Button>
+          <Button variant="danger" onClick={executePendingAction}>
+            Continue Without Saving
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
