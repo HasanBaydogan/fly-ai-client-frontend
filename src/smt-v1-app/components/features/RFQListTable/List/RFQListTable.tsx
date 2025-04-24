@@ -13,6 +13,18 @@ import RevealDropdown, {
 } from 'components/base/RevealDropdown';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
+// Add type declaration for Bootstrap
+declare global {
+  interface Window {
+    bootstrap?: {
+      Tooltip: {
+        new (element: Element): { dispose: () => void };
+        getInstance: (element: Element) => { dispose: () => void } | null;
+      };
+    };
+  }
+}
+
 const formStatus: { [key: string]: string } = {
   QUOTE_CREATED: 'warning',
   PO_WAITING_FROM_CLIENT: 'info',
@@ -152,12 +164,48 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
   {
     header: 'Part Number',
     accessorKey: 'partNumber',
+    cell: ({ row: { original } }) => {
+      if (
+        !original.rfqParts ||
+        !Array.isArray(original.rfqParts) ||
+        original.rfqParts.length < 1
+      ) {
+        return '-';
+      }
+
+      const parts = original.rfqParts.map((part: any) => part.partNumber);
+      const hasMoreItems = parts.length > 3;
+      const displayParts = hasMoreItems ? parts.slice(0, 2) : parts;
+
+      return (
+        <div style={{ whiteSpace: 'nowrap' }}>
+          {displayParts.map((part: string, index: number) => (
+            <div key={index} className="my-1">
+              <span className="me-1">•</span>
+              {part}
+            </div>
+          ))}
+          {hasMoreItems && (
+            <div className="position-relative">
+              <span
+                className="text-primary"
+                style={{ cursor: 'pointer' }}
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title={parts.slice(2).join('\n• ')}
+              >
+                ...
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    },
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      cellProps: { className: 'ps-3 fs-9 text-body py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
-
   {
     accessorKey: 'createdBy',
     header: 'Created By',
@@ -255,13 +303,9 @@ const RFQListTable: FC<RFQListTableProps> = ({ activeView }) => {
         ) {
           clientNames = item.clientsResponse.clientName;
         }
-        const partNumbers = Array.isArray(item.rfqParts)
-          ? item.rfqParts.map((part: any) => part.partNumber).join(', ')
-          : '';
 
         return {
-          ...item,
-          partNumber: partNumbers
+          ...item
         };
       });
       setData(mappedData);
@@ -320,6 +364,41 @@ const RFQListTable: FC<RFQListTableProps> = ({ activeView }) => {
         : `${selectedColumn.value}=${searchTerm}`;
     fetchData(pageIndex, searchParam);
   }, [pageIndex, pageSize]);
+
+  // Initialize tooltips after rendering
+  useEffect(() => {
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]'
+    );
+    // Check if tooltips exist and bootstrap is available
+    if (
+      typeof window !== 'undefined' &&
+      window.bootstrap &&
+      tooltipTriggerList &&
+      Number(tooltipTriggerList.length) > 0
+    ) {
+      Array.from(tooltipTriggerList).forEach(tooltipTriggerEl => {
+        new window.bootstrap!.Tooltip(tooltipTriggerEl);
+      });
+    }
+
+    // Cleanup tooltips when component unmounts
+    return () => {
+      if (
+        typeof window !== 'undefined' &&
+        window.bootstrap &&
+        tooltipTriggerList
+      ) {
+        Array.from(tooltipTriggerList).forEach(tooltipTriggerEl => {
+          const tooltip =
+            window.bootstrap!.Tooltip.getInstance(tooltipTriggerEl);
+          if (tooltip) {
+            tooltip.dispose();
+          }
+        });
+      }
+    };
+  }, [data]);
 
   return (
     <div>
