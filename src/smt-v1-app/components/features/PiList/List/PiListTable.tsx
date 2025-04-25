@@ -17,9 +17,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFileInvoice,
   faSitemap,
-  faQuestionCircle as faQuestionCircleSolid
+  faQuestionCircle as faQuestionCircleSolid,
+  faUpload
 } from '@fortawesome/free-solid-svg-icons';
 import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
+import PIListFileUpload from 'smt-v1-app/components/features/PiList/PIListFileUpload';
 
 // Add type declaration for Bootstrap
 declare global {
@@ -77,34 +79,46 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     id: 'actions',
     header: 'Buttons',
-    cell: ({ row: { original } }) => (
-      <div className="d-flex gap-2 px-2">
-        <Link
-          to={`/pi/detail?piId=${original.piId}`}
-          style={{ textDecoration: 'none' }}
-        >
+    cell: ({ row: { original } }) => {
+      const [showFileUploadModal, setShowFileUploadModal] = useState(false);
+
+      return (
+        <div className="d-flex gap-2 px-2">
+          <Link
+            to={`/pi/detail?piId=${original.piId}`}
+            style={{ textDecoration: 'none' }}
+          >
+            <Button
+              variant="outline-primary"
+              size="sm"
+              title="PI Detail"
+              className="d-flex align-items-center justify-content-center"
+              style={{ width: '32px', height: '32px' }}
+            >
+              <FontAwesomeIcon icon={faFileInvoice} />
+            </Button>
+          </Link>
           <Button
-            variant="outline-primary"
+            variant="outline-secondary"
             size="sm"
-            title="PI Detail"
+            title="PI File Upload"
             className="d-flex align-items-center justify-content-center"
             style={{ width: '32px', height: '32px' }}
+            onClick={() => setShowFileUploadModal(true)}
           >
-            <FontAwesomeIcon icon={faFileInvoice} />
+            <FontAwesomeIcon icon={faUpload} />
           </Button>
-        </Link>
-        <Button
-          variant="outline-secondary"
-          size="sm"
-          title="PI Trace"
-          disabled
-          className="d-flex align-items-center justify-content-center"
-          style={{ width: '32px', height: '32px' }}
-        >
-          <FontAwesomeIcon icon={faSitemap} />
-        </Button>
-      </div>
-    ),
+
+          {showFileUploadModal && (
+            <PIListFileUpload
+              show={showFileUploadModal}
+              onHide={() => setShowFileUploadModal(false)}
+              piId={original.piId}
+            />
+          )}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'text-center py-2' },
       headerProps: { style: { width: '5%' }, className: 'text-center' }
