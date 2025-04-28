@@ -62,6 +62,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const initialClientRef = useRef<Client | null>(null);
   const initialRfqDeadlineRef = useRef<string>('');
   const initialClientRFQIdRef = useRef<string>('');
+  const initialValuesSet = useRef<boolean>(false);
 
   const [foundClient, setFoundClient] = useState<Client | null>(
     rfq.clientResponse
@@ -75,8 +76,9 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     rfq.alternativeRFQPartResponses
   );
 
-  // Initialize the reference values when the component mounts
+  // Initialize the reference values when the component mounts or rfq changes
   useEffect(() => {
+    // Only set the initial values if they haven't been set yet or if rfq has changed
     initialPartsRef.current = JSON.stringify(rfq.savedRFQItems || []);
     initialAlternativePartsRef.current = JSON.stringify(
       rfq.alternativeRFQPartResponses || []
@@ -84,10 +86,24 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     initialClientRef.current = rfq.clientResponse;
     initialRfqDeadlineRef.current = rfq.rfqDeadline || '';
     initialClientRFQIdRef.current = rfq.clientRFQNumberId || '';
-  }, []);
+    initialValuesSet.current = true;
+
+    // Also reset current state to match the rfq props
+    setParts(rfq.savedRFQItems);
+    setAlternativeParts(rfq.alternativeRFQPartResponses);
+    setFoundClient(rfq.clientResponse);
+    setRFQDeadline(rfq.rfqDeadline ? parseDeadline(rfq.rfqDeadline) : null);
+    setClientRFQId(rfq.clientRFQNumberId);
+
+    // Reset unsaved changes flag when initializing with new rfq data
+    setHasUnsavedChanges(false);
+  }, [rfq]);
 
   // Track changes to check if there are unsaved changes
   useEffect(() => {
+    // Only check for changes if initial values have been set
+    if (!initialValuesSet.current) return;
+
     const currentParts = JSON.stringify(parts);
     const currentAlternativeParts = JSON.stringify(alternativeParts);
     const currentRfqDeadline = rfqDeadline
@@ -107,17 +123,6 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     const hasRfqDeadlineChanged =
       currentRfqDeadline !== initialRfqDeadlineRef.current;
     const hasClientRFQIdChanged = clientRFQId !== initialClientRFQIdRef.current;
-
-    // For debugging purposes, you can log these values:
-    // console.log('Initial Parts:', initialPartsRef.current);
-    // console.log('Current Parts:', currentParts);
-    // console.log('Changes detected:', {
-    //   havePartsChanged,
-    //   haveAlternativePartsChanged,
-    //   hasClientChanged,
-    //   hasRfqDeadlineChanged,
-    //   hasClientRFQIdChanged
-    // });
 
     // Set the unsaved changes flag based on whether any tracked value has changed
     setHasUnsavedChanges(
@@ -148,19 +153,30 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
         e.preventDefault();
-        setShowUnsavedWarning(true);
         // Modern browsers require returnValue to be set
         e.returnValue = '';
         return '';
       }
     };
 
+    const handleHistoryChange = () => {
+      if (hasUnsavedChanges) {
+        // Prevent default navigation behavior
+        // Show our custom warning modal instead
+        setShowUnsavedWarning(true);
+        // This won't actually block navigation - we need to handle that in navigation functions
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('beforeunload', handleBeforeUnload);
+    // Listen for history changes (backward/forward navigation)
+    window.addEventListener('popstate', handleHistoryChange);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handleHistoryChange);
     };
   }, [hasUnsavedChanges]);
 
@@ -609,7 +625,7 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
         </Modal.Header>
         <Modal.Body>
           You have unsaved changes. If you continue, these changes will be lost.
-          Would you like to save your changes?
+          Would you like to continue without saving?
         </Modal.Body>
         <Modal.Footer>
           <Button
