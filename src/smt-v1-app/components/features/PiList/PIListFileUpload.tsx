@@ -1,5 +1,13 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { Modal, Button, ListGroup, Form } from 'react-bootstrap';
+import {
+  Modal,
+  Button,
+  ListGroup,
+  Form,
+  Row,
+  Col,
+  Card
+} from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFile,
@@ -17,6 +25,7 @@ import {
   faChevronDown,
   faFolder
 } from '@fortawesome/free-solid-svg-icons';
+import './PIListFileUpload.css';
 
 interface FileItem {
   id: string;
@@ -215,13 +224,19 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
   piId
 }) => {
   const [data, setData] = useState<MainCategory[]>(mockData);
+  const [selectedCategory, setSelectedCategory] = useState<{
+    mainId: string | null;
+    categoryId: string | null;
+    subCategoryId: string | null;
+  }>({
+    mainId: null,
+    categoryId: null,
+    subCategoryId: null
+  });
   const [editModes, setEditModes] = useState<{ [key: string]: boolean }>({});
   const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File[] }>(
     {}
   );
-  const [expandedNodes, setExpandedNodes] = useState<{
-    [key: string]: boolean;
-  }>({});
 
   // This function would fetch real data from API
   const fetchFileStructure = async () => {
@@ -269,108 +284,76 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
         });
       });
       setSelectedFiles(initialSelectedFiles);
-
-      // Initialize expanded nodes - expand all levels with files by default
-      const initialExpandedNodes: { [key: string]: boolean } = {};
-
-      // Expand main categories by default
-      mockData.forEach(main => {
-        initialExpandedNodes[main.id] = true;
-
-        main.categories.forEach(category => {
-          // Check if this category has any subcategories with files
-          const hasFilesInSubcategories =
-            category.subCategories &&
-            category.subCategories.some(
-              subCategory => subCategory.files && subCategory.files.length > 0
-            );
-
-          // Check if this category has files itself (for categories without subcategories)
-          const hasCategoryFiles = category.files && category.files.length > 0;
-
-          // Expand category if it has subcategories with files or has files itself
-          initialExpandedNodes[category.id] =
-            hasFilesInSubcategories || hasCategoryFiles;
-
-          // Expand all subcategories that have files
-          if (category.subCategories && category.subCategories.length > 0) {
-            category.subCategories.forEach(subCategory => {
-              const hasFiles =
-                subCategory.files && subCategory.files.length > 0;
-              initialExpandedNodes[subCategory.id] = hasFiles;
-            });
-          }
-        });
-      });
-
-      setExpandedNodes(initialExpandedNodes);
     }
   }, [show, piId]);
 
-  const toggleNode = (nodeId: string) => {
-    setExpandedNodes(prev => ({
-      ...prev,
-      [nodeId]: !prev[nodeId]
-    }));
-  };
-
-  const toggleEditMode = (subCategoryId: string) => {
-    if (editModes[subCategoryId]) {
+  const toggleEditMode = (nodeId: string) => {
+    if (editModes[nodeId]) {
       // Save changes to backend
       // This would be implemented later
       console.log(
         'Saving changes for',
-        subCategoryId,
+        nodeId,
         'with files:',
-        selectedFiles[subCategoryId]
+        selectedFiles[nodeId]
       );
     }
 
     setEditModes(prev => ({
       ...prev,
-      [subCategoryId]: !prev[subCategoryId]
+      [nodeId]: !prev[nodeId]
     }));
   };
 
   const handleFileUpload = (
     e: ChangeEvent<HTMLInputElement>,
-    subCategoryId: string
+    nodeId: string
   ) => {
     const files = e.target.files;
     if (files) {
       const newFiles = Array.from(files);
       setSelectedFiles(prev => ({
         ...prev,
-        [subCategoryId]: [...(prev[subCategoryId] || []), ...newFiles]
+        [nodeId]: [...(prev[nodeId] || []), ...newFiles]
       }));
     }
   };
 
   const handleDeleteFile = (
     fileId: string,
-    subCategoryId: string,
-    categoryId: string,
-    mainCategoryId: string
+    nodeId: string,
+    parentNodeType: 'category' | 'subcategory'
   ) => {
     // This implementation would be replaced with actual API calls
     setData(prevData => {
       return prevData.map(mainCategory => {
-        if (mainCategory.id !== mainCategoryId) return mainCategory;
-
         return {
           ...mainCategory,
           categories: mainCategory.categories.map(category => {
-            if (category.id !== categoryId) return category;
+            if (parentNodeType === 'category' && category.id === nodeId) {
+              // File is directly under a category
+              return {
+                ...category,
+                files: category.files
+                  ? category.files.filter(file => file.id !== fileId)
+                  : []
+              };
+            }
 
             return {
               ...category,
               subCategories: category.subCategories.map(subCategory => {
-                if (subCategory.id !== subCategoryId) return subCategory;
-
-                return {
-                  ...subCategory,
-                  files: subCategory.files.filter(file => file.id !== fileId)
-                };
+                if (
+                  parentNodeType === 'subcategory' &&
+                  subCategory.id === nodeId
+                ) {
+                  // File is under a subcategory
+                  return {
+                    ...subCategory,
+                    files: subCategory.files.filter(file => file.id !== fileId)
+                  };
+                }
+                return subCategory;
               })
             };
           })
@@ -379,381 +362,837 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
     });
   };
 
-  const handleRemoveSelectedFile = (subCategoryId: string, index: number) => {
+  const handleRemoveSelectedFile = (nodeId: string, index: number) => {
     setSelectedFiles(prev => {
-      const newFiles = [...prev[subCategoryId]];
+      const newFiles = [...prev[nodeId]];
       newFiles.splice(index, 1);
       return {
         ...prev,
-        [subCategoryId]: newFiles
+        [nodeId]: newFiles
       };
     });
   };
 
-  const renderFileNode = (
-    file: FileItem,
-    level: number,
-    subCategoryId: string,
+  // Find main category by ID
+  const getMainCategoryById = (id: string): MainCategory | undefined => {
+    return data.find(main => main.id === id);
+  };
+
+  // Find category by ID within a main category
+  const getCategoryById = (
+    mainCategoryId: string,
+    categoryId: string
+  ): CategoryItem | undefined => {
+    const mainCategory = getMainCategoryById(mainCategoryId);
+    if (!mainCategory) return undefined;
+    return mainCategory.categories.find(category => category.id === categoryId);
+  };
+
+  // Find subcategory by ID within a category
+  const getSubCategoryById = (
+    mainCategoryId: string,
     categoryId: string,
-    mainCategoryId: string
-  ) => {
-    return (
-      <ListGroup.Item
-        key={file.id}
-        className="d-flex align-items-center border-0 py-1"
-        style={{ paddingLeft: `${level * 20}px` }}
-      >
-        <FontAwesomeIcon icon={getFileIcon(file.type)} className="me-2" />
-        <span>{file.name}</span>
-        {editModes[subCategoryId] && (
-          <Button
-            variant="link"
-            size="sm"
-            className="ms-auto text-danger p-0"
-            onClick={() =>
-              handleDeleteFile(
-                file.id,
-                subCategoryId,
-                categoryId,
-                mainCategoryId
-              )
-            }
-          >
-            <FontAwesomeIcon icon={faTrash} />
-          </Button>
-        )}
-      </ListGroup.Item>
+    subCategoryId: string
+  ): SubCategoryItem | undefined => {
+    const category = getCategoryById(mainCategoryId, categoryId);
+    if (!category) return undefined;
+    return category.subCategories.find(
+      subCategory => subCategory.id === subCategoryId
     );
   };
 
-  const renderSubCategoryNode = (
-    subCategory: SubCategoryItem,
-    level: number,
-    categoryId: string,
-    mainCategoryId: string
+  const handleSelectNode = (
+    mainId: string,
+    categoryId?: string,
+    subCategoryId?: string
   ) => {
-    const isExpanded = expandedNodes[subCategory.id] || false;
-    const selectedFilesForSubCategory = selectedFiles[subCategory.id] || [];
-    const hasSelectedFiles =
-      selectedFilesForSubCategory.length > 0 && editModes[subCategory.id];
+    setSelectedCategory({
+      mainId,
+      categoryId: categoryId || null,
+      subCategoryId: subCategoryId || null
+    });
+  };
 
-    return (
-      <div key={subCategory.id}>
-        <div
-          className="d-flex align-items-center py-2"
-          style={{
-            paddingLeft: `${level * 20}px`,
-            cursor: 'pointer',
-            backgroundColor: '#f8f9fa',
-            borderBottom: '1px solid #dee2e6'
-          }}
-          onClick={() => toggleNode(subCategory.id)}
-        >
-          <FontAwesomeIcon
-            icon={isExpanded ? faChevronDown : faChevronRight}
-            className="me-2"
-            style={{ width: '10px' }}
-          />
-          <FontAwesomeIcon
-            icon={isExpanded ? faFolderOpen : faFolder}
-            className="me-2"
-            style={{ color: '#ffc107' }}
-          />
-          <span style={{ fontWeight: '500' }}>{subCategory.name}</span>
+  // Render files for a specific node
+  const renderFilesForNode = (
+    nodeId: string,
+    parentNodeType: 'category' | 'subcategory'
+  ) => {
+    let files: FileItem[] = [];
+    let isEditing = false;
 
-          <div className="ms-auto" onClick={e => e.stopPropagation()}>
-            {editModes[subCategory.id] && (
-              <Form.Group
-                controlId={`fileUpload-${subCategory.id}`}
-                className="d-inline-block me-2"
-              >
-                <Form.Label className="btn btn-outline-primary mb-0 btn-sm">
-                  <FontAwesomeIcon icon={faFileUpload} className="me-2" />
-                  Upload
-                  <Form.Control
-                    type="file"
-                    multiple
-                    onChange={e => {
-                      if (e.target instanceof HTMLInputElement) {
-                        handleFileUpload(
-                          e as ChangeEvent<HTMLInputElement>,
-                          subCategory.id
-                        );
-                      }
-                    }}
-                    style={{ display: 'none' }}
-                  />
-                </Form.Label>
-              </Form.Group>
-            )}
-            <Button
-              variant={editModes[subCategory.id] ? 'success' : 'primary'}
-              size="sm"
-              onClick={e => {
-                e.stopPropagation();
-                toggleEditMode(subCategory.id);
-              }}
-            >
-              <FontAwesomeIcon
-                icon={editModes[subCategory.id] ? faSave : faEdit}
-                className="me-2"
-              />
-              {editModes[subCategory.id] ? 'Save' : 'Edit'}
-            </Button>
-          </div>
+    // Find the files for this specific node
+    data.forEach(main => {
+      main.categories.forEach(category => {
+        if (
+          parentNodeType === 'category' &&
+          category.id === nodeId &&
+          category.files
+        ) {
+          files = category.files;
+          isEditing = editModes[category.id] || false;
+        }
+
+        category.subCategories?.forEach(subCategory => {
+          if (parentNodeType === 'subcategory' && subCategory.id === nodeId) {
+            files = subCategory.files;
+            isEditing = editModes[subCategory.id] || false;
+          }
+        });
+      });
+    });
+
+    const selectedFilesArray = selectedFiles[nodeId] || [];
+    const hasSelectedFiles = selectedFilesArray.length > 0 && isEditing;
+
+    if (files.length === 0 && !hasSelectedFiles) {
+      return (
+        <div className="text-muted px-2 py-1">
+          <small>No files available</small>
         </div>
-
-        {isExpanded && (
-          <>
-            {hasSelectedFiles && (
-              <div
-                style={{ paddingLeft: `${(level + 1) * 20}px` }}
-                className="mb-2 mt-2 bg-light p-2 rounded"
-              >
-                <h6 className="mb-2">Files to Upload:</h6>
-                <ListGroup>
-                  {selectedFilesForSubCategory.map((file, idx) => (
-                    <ListGroup.Item
-                      key={idx}
-                      className="d-flex align-items-center py-1 border-0"
-                    >
-                      <FontAwesomeIcon
-                        icon={getFileIcon(file.name.split('.').pop() || '')}
-                        className="me-2"
-                      />
-                      <span>{file.name}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="ms-auto text-danger p-0"
-                        onClick={() =>
-                          handleRemoveSelectedFile(subCategory.id, idx)
-                        }
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </Button>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              </div>
-            )}
-
-            {subCategory.files.length > 0 ? (
-              subCategory.files.map(file =>
-                renderFileNode(
-                  file,
-                  level + 1,
-                  subCategory.id,
-                  categoryId,
-                  mainCategoryId
-                )
-              )
-            ) : (
-              <div
-                style={{ paddingLeft: `${(level + 1) * 20}px` }}
-                className="text-muted py-2"
-              >
-                No files available
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    );
-  };
-
-  const renderCategoryNode = (
-    category: CategoryItem,
-    level: number,
-    mainCategoryId: string
-  ) => {
-    const isExpanded = expandedNodes[category.id] || false;
-    const hasSubcategories =
-      category.subCategories && category.subCategories.length > 0;
-    const selectedFilesForCategory = selectedFiles[category.id] || [];
-    const hasSelectedFiles =
-      selectedFilesForCategory.length > 0 && editModes[category.id];
+      );
+    }
 
     return (
-      <div key={category.id}>
-        <div
-          className="d-flex align-items-center py-2"
-          style={{
-            paddingLeft: `${level * 20}px`,
-            cursor: 'pointer',
-            backgroundColor: !hasSubcategories ? '#f8f9fa' : 'transparent',
-            borderBottom: !hasSubcategories ? '1px solid #dee2e6' : 'none'
-          }}
-          onClick={() => toggleNode(category.id)}
-        >
-          <FontAwesomeIcon
-            icon={isExpanded ? faChevronDown : faChevronRight}
-            className="me-2"
-            style={{ width: '10px' }}
-          />
-          <FontAwesomeIcon
-            icon={isExpanded ? faFolderOpen : faFolder}
-            className="me-2"
-            style={{ color: '#ffc107' }}
-          />
-          <span style={{ fontWeight: '500' }}>{category.name}</span>
-
-          {/* Add Edit button for categories that don't have subcategories */}
-          {!hasSubcategories && (
-            <div className="ms-auto" onClick={e => e.stopPropagation()}>
-              {editModes[category.id] && (
-                <Form.Group
-                  controlId={`fileUpload-${category.id}`}
-                  className="d-inline-block me-2"
-                >
-                  <Form.Label className="btn btn-outline-primary mb-0 btn-sm">
-                    <FontAwesomeIcon icon={faFileUpload} className="me-2" />
-                    Upload
-                    <Form.Control
-                      type="file"
-                      multiple
-                      onChange={e => {
-                        if (e.target instanceof HTMLInputElement) {
-                          handleFileUpload(
-                            e as ChangeEvent<HTMLInputElement>,
-                            category.id
-                          );
-                        }
-                      }}
-                      style={{ display: 'none' }}
+      <div className="files-container px-2">
+        {hasSelectedFiles && (
+          <div className="selected-files mb-2">
+            <div className="d-flex flex-wrap gap-2">
+              {selectedFilesArray.map((file, idx) => (
+                <div key={idx} className="file-item">
+                  <div className="d-flex align-items-center border rounded p-1 bg-light">
+                    <FontAwesomeIcon
+                      icon={getFileIcon(file.name.split('.').pop() || '')}
+                      className="me-1 text-secondary"
+                      size="sm"
                     />
-                  </Form.Label>
-                </Form.Group>
-              )}
-              <Button
-                variant={editModes[category.id] ? 'success' : 'primary'}
-                size="sm"
-                onClick={e => {
-                  e.stopPropagation();
-                  toggleEditMode(category.id);
-                }}
-              >
-                <FontAwesomeIcon
-                  icon={editModes[category.id] ? faSave : faEdit}
-                  className="me-2"
-                />
-                {editModes[category.id] ? 'Save' : 'Edit'}
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {isExpanded && (
-          <>
-            {hasSelectedFiles && (
-              <div
-                style={{ paddingLeft: `${(level + 1) * 20}px` }}
-                className="mb-2 mt-2 bg-light p-2 rounded"
-              >
-                <h6 className="mb-2">Files to Upload:</h6>
-                <ListGroup>
-                  {selectedFilesForCategory.map((file, idx) => (
-                    <ListGroup.Item
-                      key={idx}
-                      className="d-flex align-items-center py-1 border-0"
+                    <small>{file.name}</small>
+                    <Button
+                      variant="link"
+                      className="ms-1 text-danger p-1"
+                      onClick={() => handleRemoveSelectedFile(nodeId, idx)}
                     >
-                      <FontAwesomeIcon
-                        icon={getFileIcon(file.name.split('.').pop() || '')}
-                        className="me-2"
-                      />
-                      <span>{file.name}</span>
+                      <FontAwesomeIcon icon={faTrash} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {files.length > 0 && (
+          <div className="existing-files">
+            <div className="d-flex flex-wrap gap-2">
+              {files.map(file => (
+                <div key={file.id} className="file-item">
+                  <div className="d-flex align-items-center border rounded p-1">
+                    <FontAwesomeIcon
+                      icon={getFileIcon(file.type)}
+                      className="me-1 text-secondary"
+                      size="sm"
+                    />
+                    <small>{file.name}</small>
+                    {isEditing && (
                       <Button
                         variant="link"
-                        size="sm"
-                        className="ms-auto text-danger p-0"
+                        className="ms-1 text-danger p-1"
                         onClick={() =>
-                          handleRemoveSelectedFile(category.id, idx)
+                          handleDeleteFile(file.id, nodeId, parentNodeType)
                         }
                       >
                         <FontAwesomeIcon icon={faTrash} />
                       </Button>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              </div>
-            )}
-
-            {hasSubcategories ? (
-              category.subCategories.map(subCategory =>
-                renderSubCategoryNode(
-                  subCategory,
-                  level + 1,
-                  category.id,
-                  mainCategoryId
-                )
-              )
-            ) : (
-              <>
-                {category.files && category.files.length > 0 ? (
-                  category.files.map(file =>
-                    renderFileNode(
-                      file,
-                      level + 1,
-                      category.id,
-                      category.id,
-                      mainCategoryId
-                    )
-                  )
-                ) : (
-                  <div
-                    style={{ paddingLeft: `${(level + 1) * 20}px` }}
-                    className="text-muted py-2"
-                  >
-                    No files available
+                    )}
                   </div>
-                )}
-              </>
-            )}
-          </>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     );
   };
 
-  const renderMainCategoryNode = (
-    mainCategory: MainCategory,
-    level: number
-  ) => {
-    const isExpanded = expandedNodes[mainCategory.id] || false;
-
+  // Render file management content in rows
+  const renderVerticalFileManager = () => {
     return (
-      <div key={mainCategory.id}>
-        <div
-          className="d-flex align-items-center py-3"
-          style={{
-            paddingLeft: `${level * 20}px`,
-            cursor: 'pointer',
-            borderBottom: '1px solid #e9ecef'
-          }}
-          onClick={() => toggleNode(mainCategory.id)}
-        >
-          <FontAwesomeIcon
-            icon={isExpanded ? faChevronDown : faChevronRight}
-            className="me-2"
-            style={{ width: '10px' }}
-          />
-          <FontAwesomeIcon
-            icon={isExpanded ? faFolderOpen : faFolder}
-            className="me-2"
-            style={{ color: '#6c757d', fontSize: '1.2rem' }}
-          />
-          <span style={{ fontWeight: '500', fontSize: '1.1rem' }}>
-            {mainCategory.name}
-          </span>
-        </div>
+      <div className="vertical-file-manager">
+        {/* Row 1: Client Documents */}
+        <Row className="mb-3">
+          <Col>
+            <Card>
+              <Card.Header className="bg-light">
+                <FontAwesomeIcon
+                  icon={faFolderOpen}
+                  className="me-2"
+                  style={{ color: '#f8d775' }}
+                />
+                Docs with Client
+              </Card.Header>
+              <Card.Body className="p-2">
+                <Row>
+                  <Col md={6}>
+                    <Card className="mb-2">
+                      <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
+                        <FontAwesomeIcon
+                          icon={faFolderOpen}
+                          className="me-2"
+                          size="sm"
+                          style={{ color: '#f8d775' }}
+                        />
+                        <span className="fs-6">Received</span>
+                      </Card.Header>
+                      <ListGroup variant="flush">
+                        <ListGroup.Item
+                          className="py-1 px-2"
+                          action
+                          onClick={() =>
+                            handleSelectNode(
+                              'docs-client',
+                              'received',
+                              'clients-po'
+                            )
+                          }
+                          active={
+                            selectedCategory.mainId === 'docs-client' &&
+                            selectedCategory.categoryId === 'received' &&
+                            selectedCategory.subCategoryId === 'clients-po'
+                          }
+                        >
+                          <div className="d-flex align-items-center">
+                            <FontAwesomeIcon
+                              icon={faFolder}
+                              className="me-2"
+                              size="sm"
+                              style={{ color: '#f8d775' }}
+                            />
+                            <span className="small">Client's PO</span>
+                            <div className="ms-auto">
+                              <Button
+                                variant="outline-primary"
+                                className="py-1 px-2"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  toggleEditMode('clients-po');
+                                }}
+                              >
+                                <FontAwesomeIcon
+                                  icon={
+                                    editModes['clients-po'] ? faSave : faEdit
+                                  }
+                                />
+                              </Button>
+                              {editModes['clients-po'] && (
+                                <Form.Group
+                                  controlId="fileUpload-clients-po"
+                                  className="d-inline-block ms-1"
+                                >
+                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                    <FontAwesomeIcon icon={faFileUpload} />
+                                    <Form.Control
+                                      type="file"
+                                      multiple
+                                      onChange={e =>
+                                        handleFileUpload(
+                                          e as ChangeEvent<HTMLInputElement>,
+                                          'clients-po'
+                                        )
+                                      }
+                                      style={{ display: 'none' }}
+                                    />
+                                  </Form.Label>
+                                </Form.Group>
+                              )}
+                            </div>
+                          </div>
+                          {renderFilesForNode('clients-po', 'subcategory')}
+                        </ListGroup.Item>
 
-        {isExpanded && (
-          <>
-            {mainCategory.categories.map(category =>
-              renderCategoryNode(category, level + 1, mainCategory.id)
-            )}
-          </>
-        )}
+                        <ListGroup.Item
+                          className="py-1 px-2"
+                          action
+                          onClick={() =>
+                            handleSelectNode(
+                              'docs-client',
+                              'received',
+                              'clients-swift'
+                            )
+                          }
+                          active={
+                            selectedCategory.mainId === 'docs-client' &&
+                            selectedCategory.categoryId === 'received' &&
+                            selectedCategory.subCategoryId === 'clients-swift'
+                          }
+                        >
+                          <div className="d-flex align-items-center">
+                            <FontAwesomeIcon
+                              icon={faFolder}
+                              className="me-2"
+                              size="sm"
+                              style={{ color: '#f8d775' }}
+                            />
+                            <span className="small">Client's SWIFT</span>
+                            <div className="ms-auto">
+                              <Button
+                                variant="outline-primary"
+                                className="py-1 px-2"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  toggleEditMode('clients-swift');
+                                }}
+                              >
+                                <FontAwesomeIcon
+                                  icon={
+                                    editModes['clients-swift'] ? faSave : faEdit
+                                  }
+                                />
+                              </Button>
+                              {editModes['clients-swift'] && (
+                                <Form.Group
+                                  controlId="fileUpload-clients-swift"
+                                  className="d-inline-block ms-1"
+                                >
+                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                    <FontAwesomeIcon icon={faFileUpload} />
+                                    <Form.Control
+                                      type="file"
+                                      multiple
+                                      onChange={e =>
+                                        handleFileUpload(
+                                          e as ChangeEvent<HTMLInputElement>,
+                                          'clients-swift'
+                                        )
+                                      }
+                                      style={{ display: 'none' }}
+                                    />
+                                  </Form.Label>
+                                </Form.Group>
+                              )}
+                            </div>
+                          </div>
+                          {renderFilesForNode('clients-swift', 'subcategory')}
+                        </ListGroup.Item>
+                      </ListGroup>
+                    </Card>
+                  </Col>
+
+                  <Col md={6}>
+                    <Card className="mb-2">
+                      <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
+                        <FontAwesomeIcon
+                          icon={faFolderOpen}
+                          className="me-2"
+                          size="sm"
+                          style={{ color: '#f8d775' }}
+                        />
+                        <span className="fs-6">Sent</span>
+                      </Card.Header>
+                      <ListGroup variant="flush">
+                        <ListGroup.Item
+                          className="py-1 px-2"
+                          action
+                          onClick={() =>
+                            handleSelectNode(
+                              'docs-client',
+                              'sent',
+                              'official-invoice'
+                            )
+                          }
+                          active={
+                            selectedCategory.mainId === 'docs-client' &&
+                            selectedCategory.categoryId === 'sent' &&
+                            selectedCategory.subCategoryId ===
+                              'official-invoice'
+                          }
+                        >
+                          <div className="d-flex align-items-center">
+                            <FontAwesomeIcon
+                              icon={faFolder}
+                              className="me-2"
+                              size="sm"
+                              style={{ color: '#f8d775' }}
+                            />
+                            <span className="small">Official Invoice</span>
+                            <div className="ms-auto">
+                              <Button
+                                variant="outline-primary"
+                                className="py-1 px-2"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  toggleEditMode('official-invoice');
+                                }}
+                              >
+                                <FontAwesomeIcon
+                                  icon={
+                                    editModes['official-invoice']
+                                      ? faSave
+                                      : faEdit
+                                  }
+                                />
+                              </Button>
+                              {editModes['official-invoice'] && (
+                                <Form.Group
+                                  controlId="fileUpload-official-invoice"
+                                  className="d-inline-block ms-1"
+                                >
+                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                    <FontAwesomeIcon icon={faFileUpload} />
+                                    <Form.Control
+                                      type="file"
+                                      multiple
+                                      onChange={e =>
+                                        handleFileUpload(
+                                          e as ChangeEvent<HTMLInputElement>,
+                                          'official-invoice'
+                                        )
+                                      }
+                                      style={{ display: 'none' }}
+                                    />
+                                  </Form.Label>
+                                </Form.Group>
+                              )}
+                            </div>
+                          </div>
+                          {renderFilesForNode(
+                            'official-invoice',
+                            'subcategory'
+                          )}
+                        </ListGroup.Item>
+
+                        <ListGroup.Item
+                          className="py-1 px-2"
+                          action
+                          onClick={() =>
+                            handleSelectNode(
+                              'docs-client',
+                              'sent',
+                              'clients-aws'
+                            )
+                          }
+                          active={
+                            selectedCategory.mainId === 'docs-client' &&
+                            selectedCategory.categoryId === 'sent' &&
+                            selectedCategory.subCategoryId === 'clients-aws'
+                          }
+                        >
+                          <div className="d-flex align-items-center">
+                            <FontAwesomeIcon
+                              icon={faFolder}
+                              className="me-2"
+                              size="sm"
+                              style={{ color: '#f8d775' }}
+                            />
+                            <span className="small">Client's AWS</span>
+                            <div className="ms-auto">
+                              <Button
+                                variant="outline-primary"
+                                className="py-1 px-2"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  toggleEditMode('clients-aws');
+                                }}
+                              >
+                                <FontAwesomeIcon
+                                  icon={
+                                    editModes['clients-aws'] ? faSave : faEdit
+                                  }
+                                />
+                              </Button>
+                              {editModes['clients-aws'] && (
+                                <Form.Group
+                                  controlId="fileUpload-clients-aws"
+                                  className="d-inline-block ms-1"
+                                >
+                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                    <FontAwesomeIcon icon={faFileUpload} />
+                                    <Form.Control
+                                      type="file"
+                                      multiple
+                                      onChange={e =>
+                                        handleFileUpload(
+                                          e as ChangeEvent<HTMLInputElement>,
+                                          'clients-aws'
+                                        )
+                                      }
+                                      style={{ display: 'none' }}
+                                    />
+                                  </Form.Label>
+                                </Form.Group>
+                              )}
+                            </div>
+                          </div>
+                          {renderFilesForNode('clients-aws', 'subcategory')}
+                        </ListGroup.Item>
+
+                        <ListGroup.Item
+                          className="py-1 px-2"
+                          action
+                          onClick={() =>
+                            handleSelectNode(
+                              'docs-client',
+                              'sent',
+                              'packing-list'
+                            )
+                          }
+                          active={
+                            selectedCategory.mainId === 'docs-client' &&
+                            selectedCategory.categoryId === 'sent' &&
+                            selectedCategory.subCategoryId === 'packing-list'
+                          }
+                        >
+                          <div className="d-flex align-items-center">
+                            <FontAwesomeIcon
+                              icon={faFolder}
+                              className="me-2"
+                              size="sm"
+                              style={{ color: '#f8d775' }}
+                            />
+                            <span className="small">Packing List</span>
+                            <div className="ms-auto">
+                              <Button
+                                variant="outline-primary"
+                                className="py-1 px-2"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  toggleEditMode('packing-list');
+                                }}
+                              >
+                                <FontAwesomeIcon
+                                  icon={
+                                    editModes['packing-list'] ? faSave : faEdit
+                                  }
+                                />
+                              </Button>
+                              {editModes['packing-list'] && (
+                                <Form.Group
+                                  controlId="fileUpload-packing-list"
+                                  className="d-inline-block ms-1"
+                                >
+                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                    <FontAwesomeIcon icon={faFileUpload} />
+                                    <Form.Control
+                                      type="file"
+                                      multiple
+                                      onChange={e =>
+                                        handleFileUpload(
+                                          e as ChangeEvent<HTMLInputElement>,
+                                          'packing-list'
+                                        )
+                                      }
+                                      style={{ display: 'none' }}
+                                    />
+                                  </Form.Label>
+                                </Form.Group>
+                              )}
+                            </div>
+                          </div>
+                          {renderFilesForNode('packing-list', 'subcategory')}
+                        </ListGroup.Item>
+                      </ListGroup>
+                    </Card>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Row 2: Supplier Documents */}
+        <Row className="mb-3">
+          <Col>
+            <Card>
+              <Card.Header className="bg-light">
+                <FontAwesomeIcon
+                  icon={faFolderOpen}
+                  className="me-2"
+                  style={{ color: '#f8d775' }}
+                />
+                Docs with Supplier
+              </Card.Header>
+              <Card.Body className="p-2">
+                <Row>
+                  <Col md={6}>
+                    <Card className="mb-2">
+                      <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
+                        <FontAwesomeIcon
+                          icon={faFolderOpen}
+                          className="me-2"
+                          size="sm"
+                          style={{ color: '#f8d775' }}
+                        />
+                        <span className="fs-6">Received</span>
+                      </Card.Header>
+                      <ListGroup variant="flush">
+                        {/* Supplier received docs here */}
+                        {data[1].categories[0].subCategories.map(
+                          subCategory => (
+                            <ListGroup.Item
+                              key={subCategory.id}
+                              className="py-1 px-2"
+                              action
+                              onClick={() =>
+                                handleSelectNode(
+                                  'docs-supplier',
+                                  'supplier-received',
+                                  subCategory.id
+                                )
+                              }
+                              active={
+                                selectedCategory.mainId === 'docs-supplier' &&
+                                selectedCategory.categoryId ===
+                                  'supplier-received' &&
+                                selectedCategory.subCategoryId ===
+                                  subCategory.id
+                              }
+                            >
+                              <div className="d-flex align-items-center">
+                                <FontAwesomeIcon
+                                  icon={faFolder}
+                                  className="me-2"
+                                  size="sm"
+                                  style={{ color: '#f8d775' }}
+                                />
+                                <span className="small">
+                                  {subCategory.name}
+                                </span>
+                                <div className="ms-auto">
+                                  <Button
+                                    variant="outline-primary"
+                                    className="py-1 px-2"
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      toggleEditMode(subCategory.id);
+                                    }}
+                                  >
+                                    <FontAwesomeIcon
+                                      icon={
+                                        editModes[subCategory.id]
+                                          ? faSave
+                                          : faEdit
+                                      }
+                                    />
+                                  </Button>
+                                  {editModes[subCategory.id] && (
+                                    <Form.Group
+                                      controlId={`fileUpload-${subCategory.id}`}
+                                      className="d-inline-block ms-1"
+                                    >
+                                      <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                        <FontAwesomeIcon icon={faFileUpload} />
+                                        <Form.Control
+                                          type="file"
+                                          multiple
+                                          onChange={e =>
+                                            handleFileUpload(
+                                              e as ChangeEvent<HTMLInputElement>,
+                                              subCategory.id
+                                            )
+                                          }
+                                          style={{ display: 'none' }}
+                                        />
+                                      </Form.Label>
+                                    </Form.Group>
+                                  )}
+                                </div>
+                              </div>
+                              {renderFilesForNode(
+                                subCategory.id,
+                                'subcategory'
+                              )}
+                            </ListGroup.Item>
+                          )
+                        )}
+                      </ListGroup>
+                    </Card>
+                  </Col>
+
+                  <Col md={6}>
+                    <Card className="mb-2">
+                      <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
+                        <FontAwesomeIcon
+                          icon={faFolderOpen}
+                          className="me-2"
+                          size="sm"
+                          style={{ color: '#f8d775' }}
+                        />
+                        <span className="fs-6">Sent</span>
+                      </Card.Header>
+                      <ListGroup variant="flush">
+                        {/* Supplier sent docs here */}
+                        {data[1].categories[1].subCategories.map(
+                          subCategory => (
+                            <ListGroup.Item
+                              key={subCategory.id}
+                              className="py-1 px-2"
+                              action
+                              onClick={() =>
+                                handleSelectNode(
+                                  'docs-supplier',
+                                  'supplier-sent',
+                                  subCategory.id
+                                )
+                              }
+                              active={
+                                selectedCategory.mainId === 'docs-supplier' &&
+                                selectedCategory.categoryId ===
+                                  'supplier-sent' &&
+                                selectedCategory.subCategoryId ===
+                                  subCategory.id
+                              }
+                            >
+                              <div className="d-flex align-items-center">
+                                <FontAwesomeIcon
+                                  icon={faFolder}
+                                  className="me-2"
+                                  size="sm"
+                                  style={{ color: '#f8d775' }}
+                                />
+                                <span className="small">
+                                  {subCategory.name}
+                                </span>
+                                <div className="ms-auto">
+                                  <Button
+                                    variant="outline-primary"
+                                    className="py-1 px-2"
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      toggleEditMode(subCategory.id);
+                                    }}
+                                  >
+                                    <FontAwesomeIcon
+                                      icon={
+                                        editModes[subCategory.id]
+                                          ? faSave
+                                          : faEdit
+                                      }
+                                    />
+                                  </Button>
+                                  {editModes[subCategory.id] && (
+                                    <Form.Group
+                                      controlId={`fileUpload-${subCategory.id}`}
+                                      className="d-inline-block ms-1"
+                                    >
+                                      <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                        <FontAwesomeIcon icon={faFileUpload} />
+                                        <Form.Control
+                                          type="file"
+                                          multiple
+                                          onChange={e =>
+                                            handleFileUpload(
+                                              e as ChangeEvent<HTMLInputElement>,
+                                              subCategory.id
+                                            )
+                                          }
+                                          style={{ display: 'none' }}
+                                        />
+                                      </Form.Label>
+                                    </Form.Group>
+                                  )}
+                                </div>
+                              </div>
+                              {renderFilesForNode(
+                                subCategory.id,
+                                'subcategory'
+                              )}
+                            </ListGroup.Item>
+                          )
+                        )}
+                      </ListGroup>
+                    </Card>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Row 3: FF Documents */}
+        <Row>
+          <Col>
+            <Card>
+              <Card.Header className="bg-light">
+                <FontAwesomeIcon
+                  icon={faFolderOpen}
+                  className="me-2"
+                  style={{ color: '#f8d775' }}
+                />
+                Docs with FF
+              </Card.Header>
+              <Card.Body className="p-2">
+                <Row>
+                  <Col>
+                    <ListGroup variant="flush">
+                      {/* FF docs here */}
+                      {data[2].categories.map(category => (
+                        <ListGroup.Item
+                          key={category.id}
+                          className="py-1 px-2"
+                          action
+                          onClick={() =>
+                            handleSelectNode('docs-ff', category.id)
+                          }
+                          active={
+                            selectedCategory.mainId === 'docs-ff' &&
+                            selectedCategory.categoryId === category.id
+                          }
+                        >
+                          <div className="d-flex align-items-center">
+                            <FontAwesomeIcon
+                              icon={faFolder}
+                              className="me-2"
+                              size="sm"
+                              style={{ color: '#f8d775' }}
+                            />
+                            <span className="small">{category.name}</span>
+                            <div className="ms-auto">
+                              <Button
+                                variant="outline-primary"
+                                className="py-1 px-2"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  toggleEditMode(category.id);
+                                }}
+                              >
+                                <FontAwesomeIcon
+                                  icon={
+                                    editModes[category.id] ? faSave : faEdit
+                                  }
+                                />
+                              </Button>
+                              {editModes[category.id] && (
+                                <Form.Group
+                                  controlId={`fileUpload-${category.id}`}
+                                  className="d-inline-block ms-1"
+                                >
+                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                    <FontAwesomeIcon icon={faFileUpload} />
+                                    <Form.Control
+                                      type="file"
+                                      multiple
+                                      onChange={e =>
+                                        handleFileUpload(
+                                          e as ChangeEvent<HTMLInputElement>,
+                                          category.id
+                                        )
+                                      }
+                                      style={{ display: 'none' }}
+                                    />
+                                  </Form.Label>
+                                </Form.Group>
+                              )}
+                            </div>
+                          </div>
+                          {renderFilesForNode(category.id, 'category')}
+                        </ListGroup.Item>
+                      ))}
+                    </ListGroup>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       </div>
     );
   };
@@ -763,11 +1202,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
       <Modal.Header closeButton>
         <Modal.Title>PI File Management</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <div className="file-tree">
-          {data.map(mainCategory => renderMainCategoryNode(mainCategory, 0))}
-        </div>
-      </Modal.Body>
+      <Modal.Body className="p-3">{renderVerticalFileManager()}</Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>
           Close
