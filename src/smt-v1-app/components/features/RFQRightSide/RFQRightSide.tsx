@@ -455,42 +455,168 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   };
 
   const handleConvertToQuote = async () => {
-    if (!hasUnsavedChanges) {
-      // If no changes, proceed directly
-      setIsLoading(true);
-      await handleSaveUpdate();
-      if (rfq.rfqMailStatus === 'OPEN') {
-        await convertToWFS();
+    setIsLoading(true);
+
+    // Check for required data without showing unsaved changes warning
+    if (!foundClient) {
+      toastError('Client Error', 'Client cannot be empty');
+      setIsLoading(false);
+      return;
+    }
+
+    if (partName || partNumber) {
+      toastError(
+        'Not Added Part Row',
+        "Please be careful that you didn't click '+' button in Part"
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    if (alternativePartName || alternativePartNumber) {
+      toastError(
+        'Not Added Alternative Part Row',
+        "Please be careful that you didn't click '+' button in Alternative Part"
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Prepare and save RFQ data
+      const rfqPartRequests: RFQPartRequest[] = parts.map(
+        (part): RFQPartRequest => ({
+          rfqPartId: part.rfqPartId,
+          partNumber: part.partNumber,
+          partName: part.partName,
+          partDescription: part.partDescription,
+          reqQTY: part.reqQTY,
+          fndQTY: part.fndQTY,
+          reqRFQPartCondition: part.reqCND,
+          fndRFQPartCondition: part.fndCND ? part.fndCND : null,
+          supplierLT: part.supplierLT !== 0 ? part.supplierLT : null,
+          clientLT: part.clientLT !== 0 ? part.clientLT : null,
+          supplierId: part.supplier !== null ? part.supplier.supplierId : null,
+          price: part.price,
+          currency: part.currency,
+          comment: part.comment !== '' ? part.comment : null,
+          isDgPackagingCost: part.dgPackagingCost,
+          tagDate: part.tagDate !== '' ? part.tagDate : null,
+          certificateType:
+            part.certificateType !== '' ? part.certificateType : null,
+          MSN: part.MSN !== '' ? part.MSN : null,
+          warehouse: part.wareHouse !== '' ? part.wareHouse : null,
+          stock: part.stock !== 0 ? part.stock : null,
+          stockLocation: part.stockLocation !== '' ? part.stockLocation : null,
+          airlineCompany:
+            part.airlineCompany !== '' ? part.airlineCompany : null,
+          MSDS: part.MSDS !== '' ? part.MSDS : null
+        })
+      );
+
+      const alternativeRFQPartRequests: AlternativeRFQPartRequest[] =
+        alternativeParts.map(
+          (alternativePart): AlternativeRFQPartRequest => ({
+            rfqPartId: alternativePart.rfqPartId,
+            parentPartNumber: alternativePart.parentRFQPart.partNumber,
+            partNumber: alternativePart.partNumber,
+            partName: alternativePart.partName,
+            partDescription: alternativePart.partDescription,
+            reqQTY: alternativePart.reqQTY,
+            fndQTY: alternativePart.fndQTY,
+            reqRFQPartCondition: alternativePart.reqCND,
+            fndRFQPartCondition: alternativePart.fndCND
+              ? alternativePart.fndCND
+              : null,
+            supplierLT:
+              alternativePart.supplierLT !== 0
+                ? alternativePart.supplierLT
+                : null,
+            clientLT:
+              alternativePart.clientLT !== 0 ? alternativePart.clientLT : null,
+            supplierId:
+              alternativePart.supplier !== null
+                ? alternativePart.supplier.supplierId
+                : null,
+            price: alternativePart.price,
+            currency: alternativePart.currency,
+            comment:
+              alternativePart.comment !== '' ? alternativePart.comment : null,
+            isDgPackagingCost: alternativePart.dgPackagingCost,
+            tagDate:
+              alternativePart.tagDate !== '' ? alternativePart.tagDate : null,
+            certificateType:
+              alternativePart.certificateType !== ''
+                ? alternativePart.certificateType
+                : null,
+            MSN: alternativePart.MSN !== '' ? alternativePart.MSN : null,
+            warehouse:
+              alternativePart.wareHouse !== ''
+                ? alternativePart.wareHouse
+                : null,
+            stock: alternativePart.stock !== 0 ? alternativePart.stock : null,
+            stockLocation:
+              alternativePart.stockLocation !== ''
+                ? alternativePart.stockLocation
+                : null,
+            airlineCompany:
+              alternativePart.airlineCompany !== ''
+                ? alternativePart.airlineCompany
+                : null,
+            MSDS: alternativePart.MSDS !== '' ? alternativePart.MSDS : null
+          })
+        );
+
+      const savedRFQ: SaveRFQ = {
+        rfqMailId: rfq.rfqMailId,
+        rfqPartRequests,
+        alternativeRFQPartRequests,
+        clientId: foundClient.clientId,
+        rfqDeadline: formatDateToString(rfqDeadline),
+        clientRFQId: clientRFQId !== '' ? clientRFQId : null
+      };
+
+      const saveResp = await saveRFQToDB(savedRFQ);
+      if (!saveResp || saveResp.statusCode !== 200) {
+        toastError('Save Error', 'Failed to save RFQ data');
+        setIsLoading(false);
+        return;
       }
-      const response = await convertRFQToQuote(rfq.rfqMailId);
-      if (response && response.statusCode === 200) {
+
+      // Update reference values after successful save
+      initialPartsRef.current = JSON.stringify(parts);
+      initialAlternativePartsRef.current = JSON.stringify(alternativeParts);
+      initialClientRef.current = foundClient;
+      initialRfqDeadlineRef.current = rfqDeadline
+        ? formatDateToString(rfqDeadline)
+        : '';
+      initialClientRFQIdRef.current = clientRFQId || '';
+      setHasUnsavedChanges(false);
+
+      // Convert to WFS if needed
+      if (rfq.rfqMailStatus === 'OPEN') {
+        const wfsResp = await convertOpenToWFS(rfq.rfqMailId);
+        if (!wfsResp || wfsResp.statusCode !== 200) {
+          toastError('WFS Error', 'Failed to convert to WFS');
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Convert to Quote
+      const quoteResp = await convertRFQToQuote(rfq.rfqMailId);
+      if (quoteResp && quoteResp.statusCode === 200) {
         toastSuccess('Successful Quote', 'Converted to Quote');
         setTimeout(() => {
-          navigation('/quotes/quote?quoteId=' + response.data.quoteId);
+          navigation('/quotes/quote?quoteId=' + quoteResp.data.quoteId);
         }, 1500);
       } else {
-        toastError('Unknown Error', 'There is an unknown error');
+        toastError('Quote Error', 'Failed to convert to Quote');
         setIsLoading(false);
       }
-    } else {
-      // If there are changes, show unsaved changes warning
-      checkUnsavedChangesBeforeAction(async () => {
-        setIsLoading(true);
-        await handleSaveUpdate();
-        if (rfq.rfqMailStatus === 'OPEN') {
-          await convertToWFS();
-        }
-        const response = await convertRFQToQuote(rfq.rfqMailId);
-        if (response && response.statusCode === 200) {
-          toastSuccess('Successful Quote', 'Converted to Quote');
-          setTimeout(() => {
-            navigation('/quotes/quote?quoteId=' + response.data.quoteId);
-          }, 1500);
-        } else {
-          toastError('Unknown Error', 'There is an unknown error');
-          setIsLoading(false);
-        }
-      });
+    } catch (error) {
+      toastError('Error', 'An unexpected error occurred');
+      setIsLoading(false);
     }
   };
 
