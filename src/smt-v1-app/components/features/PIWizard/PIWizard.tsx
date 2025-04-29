@@ -13,7 +13,7 @@ export interface partRow {
   fndCondition: string;
   leadTime: number;
   partNumber: string;
-  quantity: number;
+  qty: number;
   quotePartId: string;
   reqCondition: string;
   unitPrice: number;

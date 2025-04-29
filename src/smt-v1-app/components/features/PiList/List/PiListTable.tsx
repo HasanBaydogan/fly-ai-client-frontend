@@ -13,6 +13,16 @@ import RevealDropdown, {
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 // import { PiData } from 'smt-v1-app/types/PiTypes';
 import { searchByPiList } from 'smt-v1-app/services/PIServices';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faFileInvoice,
+  faSitemap,
+  faQuestionCircle as faQuestionCircleSolid,
+  faUpload
+} from '@fortawesome/free-solid-svg-icons';
+import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
+import PIListFileUpload from 'smt-v1-app/components/features/PiList/PIListFileUpload';
+import ActionTextArea from './ActionTextArea';
 
 // Add type declaration for Bootstrap
 declare global {
@@ -57,6 +67,7 @@ export interface PiListData {
   createdAt: string;
   lastModifiedAt: string;
   total: string;
+  actions?: string;
 }
 
 const formatStatus = (status: string): string => {
@@ -69,84 +80,62 @@ const formatStatus = (status: string): string => {
 export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     id: 'actions',
-    header: 'Actions',
-    cell: ({ row: { original } }) => (
-      <div className="d-flex gap-2">
-        <Link
-          to={`/pi/detail?piId=${original.piId}`}
-          style={{ textDecoration: 'none' }}
-        >
-          <Button
-            variant="outline-primary"
-            size="sm"
-            title="PI Detail"
-            className="d-flex align-items-center justify-content-center"
-            style={{ width: '32px', height: '32px', padding: '0' }}
+    header: 'Buttons',
+    cell: ({ row: { original } }) => {
+      const [showFileUploadModal, setShowFileUploadModal] = useState(false);
+
+      return (
+        <div className="d-flex gap-2 px-2">
+          <Link
+            to={`/pi/detail?piId=${original.piId}`}
+            style={{ textDecoration: 'none' }}
           >
-            <i className="fas fa-info-circle"></i>
+            <Button
+              variant="outline-primary"
+              size="sm"
+              title="PI Detail"
+              className="d-flex align-items-center justify-content-center"
+              style={{ width: '32px', height: '32px' }}
+            >
+              <FontAwesomeIcon icon={faFileInvoice} />
+            </Button>
+          </Link>
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            title="PI File Upload"
+            className="d-flex align-items-center justify-content-center"
+            style={{ width: '32px', height: '32px' }}
+            onClick={() => setShowFileUploadModal(true)}
+          >
+            <FontAwesomeIcon icon={faUpload} />
           </Button>
-        </Link>
-        <Button
-          variant="outline-secondary"
-          size="sm"
-          title="PI Trace"
-          disabled
-          className="d-flex align-items-center justify-content-center"
-          style={{ width: '32px', height: '32px', padding: '0' }}
-        >
-          <i className="fas fa-project-diagram"></i>
-        </Button>
-      </div>
-    ),
+
+          {showFileUploadModal && (
+            <PIListFileUpload
+              show={showFileUploadModal}
+              onHide={() => setShowFileUploadModal(false)}
+              piId={original.piId}
+            />
+          )}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'text-center py-2' },
-      headerProps: { style: { width: '8%' }, className: 'text-center' }
+      headerProps: { style: { width: '5%' }, className: 'text-center' }
     }
   },
   {
     id: 'piNumberId',
     accessorKey: 'piNumberId',
-    header: 'piNumberId',
+    header: 'PI ID',
     cell: ({ row: { original } }) => <span>{original.piNumberId}</span>,
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' } }
+      headerProps: { style: { width: '7%' } }
     }
   },
-  {
-    header: 'Revision',
-    accessorKey: 'revisionNumber',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
-    }
-  },
-  {
-    id: 'quoteNumberId',
-    header: 'QuoteID',
-    accessorKey: 'quoteNumberId',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'contractNo',
-    header: 'Contract NO',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
-  {
-    header: 'Company',
-    accessorKey: 'company',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
-    }
-  },
-
   {
     id: 'piStatus ',
     header: 'PI Status',
@@ -158,21 +147,149 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
     },
     meta: {
       cellProps: { className: 'ps-8 py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-8' }
+      headerProps: { style: { width: '8%' }, className: 'ps-3' }
     }
   },
-
   {
-    accessorKey: 'numOfProduct',
-    header: 'Number Of Product',
+    header: 'Actions',
+    accessorKey: '1--',
+    cell: ({ row: { original } }) => (
+      <ActionTextArea
+        initialValue={original.actions || ''}
+        onSave={value => {
+          // Here you would typically call an API to save the actions
+          console.log('Saving actions:', value);
+        }}
+      />
+    ),
     meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '20%' }, className: 'ps-3' }
+    }
+  },
+  {
+    header: 'Client',
+    accessorKey: 'company',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '20%' }, className: 'ps-3' }
+    }
+  },
+  {
+    header: 'Invoice',
+    accessorKey: '3---',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
+    accessorKey: '4---',
+    header: 'Customer Payment',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    header: 'Supplier Invoice',
+    accessorKey: '5---',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: '6---',
+    header: 'Bank',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    header: 'Bank Type',
+    accessorKey: '7---',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: 'poRequestedDate',
+    header: 'PO Date',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    header: 'PI Date',
+    accessorKey: '8---',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: '9---',
+    header: 'C. Payment Date',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    header: 'S. Paid Date',
+    accessorKey: '11---',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: '22---',
+    header: 'LT Days',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+    }
+  },
+  {
+    header: 'LT Deadline',
+    accessorKey: '33---',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: '44---',
+    header: 'OP Supplier',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    header: 'Supplier',
+    accessorKey: '55---',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  // {
+  //   accessorKey: 'numOfProduct',
+  //   header: 'Number Of Product',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2' },
+  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
+  //   }
+  // },
+  {
     accessorKey: 'piParts',
-    header: 'Part Numbers',
+    header: 'PI Parts',
     cell: ({ row: { original } }) => {
       if (
         !original.piParts ||
@@ -215,63 +332,68 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
+  // {
+  //   accessorKey: 'poRequestedDate',
+  //   header: 'PoRequested Date',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2' },
+  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
+  //   }
+  // },
   {
-    accessorKey: 'poRequestedDate',
-    header: 'PoRequested Date',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'createdBy',
-    header: 'Created By',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'lastModifiedBy',
-    header: 'Last Modified By',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'createdAt',
-    header: 'Created At',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'lastModifiedAt',
-    header: 'Last Modified At',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
-  {
-    accessorKey: 'total',
-    header: 'Total',
+    id: 'userHistory',
+    header: 'User History',
     cell: ({ row: { original } }) => {
-      const total = parseFloat(original.total);
-      return isNaN(total)
-        ? '-'
-        : total.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          });
+      const historyData = {
+        'Created By': original.createdBy || '-',
+        'Created At': original.createdAt || '-',
+        'Last Modified By': original.lastModifiedBy || '-',
+        'Last Modified At': original.lastModifiedAt || '-'
+      };
+
+      const tooltipContent = Object.entries(historyData)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+
+      return (
+        <div className="text-center">
+          <span
+            data-bs-toggle="tooltip"
+            data-bs-placement="left"
+            data-bs-html="true"
+            title={tooltipContent}
+            style={{ cursor: 'pointer' }}
+          >
+            <FontAwesomeIcon
+              icon={faQuestionCircleRegular}
+              style={{ fontSize: '1.5rem', color: 'black' }}
+            />
+          </span>
+        </div>
+      );
     },
     meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      cellProps: { className: 'text-center py-2' },
+      headerProps: { style: { width: '5%' }, className: 'text-center' }
     }
   }
+  // {
+  //   accessorKey: 'total',
+  //   header: 'Total',
+  //   cell: ({ row: { original } }) => {
+  //     const total = parseFloat(original.total);
+  //     return isNaN(total)
+  //       ? '-'
+  //       : total.toLocaleString('en-US', {
+  //           minimumFractionDigits: 2,
+  //           maximumFractionDigits: 2
+  //         });
+  //   },
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2' },
+  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
+  //   }
+  // }
 ];
 
 type SearchColumn = {
@@ -490,13 +612,18 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           </div>
         ) : (
           <>
-            <AdvanceTable
-              tableProps={{
-                className: 'phoenix-table border-top border-translucent fs-9',
-                data: data,
-                columns: PiTableColumns
-              }}
-            />
+            <div style={{ width: '100%', overflow: 'auto' }}>
+              <div style={{ width: '160%' }}>
+                <AdvanceTable
+                  tableProps={{
+                    className:
+                      'phoenix-table border-top border-translucent fs-9',
+                    data: data,
+                    columns: PiTableColumns
+                  }}
+                />
+              </div>
+            </div>
             <AdvanceTableFooter
               pagination
               className="py-1"

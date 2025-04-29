@@ -1,0 +1,26 @@
+/* Custom styling for file manager */
+
+/* Override Bootstrap's active state for ListGroup items */
+.vertical-file-manager .list-group-item.active {
+  background-color: #f0f0f0 !important;
+  color: #212529 !important;
+  border-color: rgba(0, 0, 0, 0.125) !important;
+}
+
+/* Ensure buttons remain visible on active items */
+.vertical-file-manager .list-group-item.active .btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+  background-color: transparent;
+}
+
+.vertical-file-manager .list-group-item.active .btn-outline-primary:hover {
+  color: #fff;
+  background-color: #0d6efd;
+}
+
+/* Ensure folder icons have consistent color */
+.vertical-file-manager .list-group-item.active .fa-folder,
+.vertical-file-manager .list-group-item.active .fa-folder-open {
+  color: #f8d775 !important;
+} 

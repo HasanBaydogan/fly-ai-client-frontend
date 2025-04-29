@@ -19,6 +19,14 @@ interface PIRequest {
   quoteId: string;
 }
 
+interface PIRequestDetail {
+  receivedDate: string;
+  attachments: PIAttachment[];
+  receivedPOMethod: 'MESSAGE' | 'MAIL';
+  selectedCompanyId: string;
+  quoteId: string;
+}
+
 interface PICommentUpdate {
   id: string;
   comment: string;
@@ -77,4 +85,8 @@ export const postPiUserCommentNew = async (NewComment: PICommentNew) => {
 
 export const deletePiUserComment = async (CommentId: string) => {
   return await deleteRequest(`/pi-user-comment/delete${CommentId}`);
+};
+
+export const getPiWizard = async (piId: string) => {
+  return await getRequest(`/pi/detail-wizard?piId=${piId}`);
 };

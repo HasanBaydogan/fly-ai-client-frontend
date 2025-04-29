@@ -196,10 +196,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   // Calculate sub-total
   const calculateSubTotal = () => {
-    return quotePartRows.reduce(
-      (acc, row) => acc + row.quantity * row.unitPrice,
-      0
-    );
+    return quotePartRows.reduce((acc, row) => acc + row.qty * row.unitPrice, 0);
   };
 
   // Calculate tax amount based on percentage
@@ -405,7 +402,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       no: 0,
       quotePartId: null,
       leadTime: 0,
-      quantity: 1,
+      qty: 1,
       unitPrice: 0.0,
       isNew: true,
       unitPriceString: '0.00'
@@ -556,7 +553,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       fndCondition: 'NE',
       quotePartId: null,
       leadTime: 0,
-      quantity: 1,
+      qty: 1,
       unitPrice: 0,
       isNew: true,
       unitPriceString: '0.00'
@@ -768,7 +765,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   <div className="d-flex align-items-center">
                     <Form.Control
                       type="number"
-                      value={row.quantity}
+                      value={row.qty}
                       onChange={e =>
                         handleQuantityChange(
                           parseInt(e.target.value, 10),
@@ -813,7 +810,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td>
                   {getPriceCurrencySymbol(currency) +
                     ' ' +
-                    formatRowTotal((row.quantity * row.unitPrice).toString())}
+                    formatRowTotal((row.qty * row.unitPrice).toString())}
                 </td>
                 <td className="button-cell">
                   <div className="action-buttons">
@@ -1049,7 +1046,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[1] || 0).toString()
+                              (subTotalValues[0] || 0).toString()
                             )
                           }
                           onChange={e => {
@@ -1105,7 +1102,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[2] || 0).toString()
+                              (subTotalValues[1] || 0).toString()
                             )
                           }
                           onChange={e => {
@@ -1161,7 +1158,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[3] || 0).toString()
+                              (subTotalValues[2] || 0).toString()
                             )
                           }
                           onChange={e => {
