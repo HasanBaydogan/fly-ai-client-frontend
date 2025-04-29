@@ -22,6 +22,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
 import PIListFileUpload from 'smt-v1-app/components/features/PiList/PIListFileUpload';
+import ActionTextArea from './ActionTextArea';
 
 // Add type declaration for Bootstrap
 declare global {
@@ -66,6 +67,7 @@ export interface PiListData {
   createdAt: string;
   lastModifiedAt: string;
   total: string;
+  actions?: string;
 }
 
 const formatStatus = (status: string): string => {
@@ -151,6 +153,15 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     header: 'Actions',
     accessorKey: '1--',
+    cell: ({ row: { original } }) => (
+      <ActionTextArea
+        initialValue={original.actions || ''}
+        onSave={value => {
+          // Here you would typically call an API to save the actions
+          console.log('Saving actions:', value);
+        }}
+      />
+    ),
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '20%' }, className: 'ps-3' }

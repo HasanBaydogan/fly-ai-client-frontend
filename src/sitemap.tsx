@@ -186,7 +186,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• PO List',
-                path: '/',
+                path: '/po/list',
                 pathName: 'po-list',
                 icon: '',
                 active: true,
