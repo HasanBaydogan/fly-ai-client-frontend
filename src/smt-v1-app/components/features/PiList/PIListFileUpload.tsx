@@ -26,6 +26,69 @@ import {
   faFolder
 } from '@fortawesome/free-solid-svg-icons';
 import './PIListFileUpload.css';
+import { uploadPIAttachments } from 'smt-v1-app/services/PIServices';
+
+// Type definitions for API integration
+interface AttachmentType {
+  id: string | null;
+  data?: string;
+}
+
+interface AttachmentResponse {
+  id: string;
+  fileName: string;
+}
+
+interface ApiResponse {
+  data: AttachmentResponse[];
+  message: string;
+  statusCode: number;
+  success: boolean;
+  timestamp: string;
+}
+
+// Enum for attachment types that maps to API types
+enum PIAttachmentType {
+  CLIENT_AWB_ATTACHMENT = 'CLIENT_AWB_ATTACHMENT',
+  CLIENT_OFFICIAL_INVOICE_ATTACHMENT = 'CLIENT_OFFICIAL_INVOICE_ATTACHMENT',
+  CLIENT_PACKING_LIST_ATTACHMENT = 'CLIENT_PACKING_LIST_ATTACHMENT',
+  CLIENT_PO_ATTACHMENT = 'CLIENT_PO_ATTACHMENT',
+  CLIENT_SWIFT_ATTACHMENT = 'CLIENT_SWIFT_ATTACHMENT',
+  INVOICE_OF_FF_TO_DESTINATION_ATTACHMENT = 'INVOICE_OF_FF_TO_DESTINATION_ATTACHMENT',
+  INVOICE_OF_FF_TO_TURKEY_ATTACHMENT = 'INVOICE_OF_FF_TO_TURKEY_ATTACHMENT',
+  LOT_FORM_ATTACHMENT = 'LOT_FORM_ATTACHMENT',
+  SUPPLIER_AWB_ATTACHMENT = 'SUPPLIER_AWB_ATTACHMENT',
+  SUPPLIER_CERTIFICATE_ATTACHMENT = 'SUPPLIER_CERTIFICATE_ATTACHMENT',
+  SUPPLIER_EUC_ATTACHMENT = 'SUPPLIER_EUC_ATTACHMENT',
+  SUPPLIER_FINAL_INVOICE_ATTACHMENT = 'SUPPLIER_FINAL_INVOICE_ATTACHMENT',
+  SUPPLIER_PACKING_LIST_ATTACHMENT = 'SUPPLIER_PACKING_LIST_ATTACHMENT',
+  SUPPLIER_PI_ATTACHMENT = 'SUPPLIER_PI_ATTACHMENT',
+  SUPPLIER_PURCHASE_ORDER_ATTACHMENT = 'SUPPLIER_PURCHASE_ORDER_ATTACHMENT',
+  SUPPLIER_TRACE_DOCS_ATTACHMENT = 'SUPPLIER_TRACE_DOCS_ATTACHMENT',
+  SWIFT_TO_SUPPLIER_ATTACHMENT = 'SWIFT_TO_SUPPLIER_ATTACHMENT'
+}
+
+// Map folder IDs to attachment types
+const folderToAttachmentTypeMap: { [key: string]: PIAttachmentType } = {
+  'clients-po': PIAttachmentType.CLIENT_PO_ATTACHMENT,
+  'clients-swift': PIAttachmentType.CLIENT_SWIFT_ATTACHMENT,
+  'official-invoice': PIAttachmentType.CLIENT_OFFICIAL_INVOICE_ATTACHMENT,
+  'clients-awb': PIAttachmentType.CLIENT_AWB_ATTACHMENT,
+  'packing-list': PIAttachmentType.CLIENT_PACKING_LIST_ATTACHMENT,
+  'suppliers-pi': PIAttachmentType.SUPPLIER_PI_ATTACHMENT,
+  'suppliers-final-invoice': PIAttachmentType.SUPPLIER_FINAL_INVOICE_ATTACHMENT,
+  'suppliers-packing-list': PIAttachmentType.SUPPLIER_PACKING_LIST_ATTACHMENT,
+  certificate: PIAttachmentType.SUPPLIER_CERTIFICATE_ATTACHMENT,
+  'trace-docs': PIAttachmentType.SUPPLIER_TRACE_DOCS_ATTACHMENT,
+  'suppliers-euc': PIAttachmentType.SUPPLIER_EUC_ATTACHMENT,
+  'swift-to-supplier': PIAttachmentType.SWIFT_TO_SUPPLIER_ATTACHMENT,
+  'purchase-order': PIAttachmentType.SUPPLIER_PURCHASE_ORDER_ATTACHMENT,
+  'suppliers-awb': PIAttachmentType.SUPPLIER_AWB_ATTACHMENT,
+  'invoice-ff-turkiye': PIAttachmentType.INVOICE_OF_FF_TO_TURKEY_ATTACHMENT,
+  'invoice-ff-destination':
+    PIAttachmentType.INVOICE_OF_FF_TO_DESTINATION_ATTACHMENT,
+  'lot-form': PIAttachmentType.LOT_FORM_ATTACHMENT
+};
 
 interface FileItem {
   id: string;
@@ -94,8 +157,8 @@ const mockData: MainCategory[] = [
             files: [{ id: 'invoice1', name: 'Invoice123.pdf', type: 'pdf' }]
           },
           {
-            id: 'clients-aws',
-            name: "Client's AWS",
+            id: 'clients-awb',
+            name: "Client's AWB",
             files: []
           },
           {
@@ -237,6 +300,179 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
   const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File[] }>(
     {}
   );
+  const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>(
+    {}
+  );
+  const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>(
+    {}
+  );
+
+  // Function to convert file to Base64
+  const getBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        if (reader.result) {
+          // Extract the base64 data part (remove the prefix)
+          const base64String = reader.result.toString();
+          const base64Data = base64String.split(',')[1];
+          resolve(base64Data);
+        } else {
+          reject(new Error('Failed to convert file to base64'));
+        }
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  // Function to upload files to the API
+  const uploadFilesToAPI = async (nodeId: string) => {
+    if (!piId || !folderToAttachmentTypeMap[nodeId]) {
+      setUploadErrors(prev => ({
+        ...prev,
+        [nodeId]: 'Missing PI ID or invalid folder type'
+      }));
+      return;
+    }
+
+    setIsUploading(prev => ({ ...prev, [nodeId]: true }));
+    setUploadErrors(prev => ({ ...prev, [nodeId]: '' }));
+
+    try {
+      // Get all existing files for this node to include in the request
+      const existingFiles: FileItem[] = [];
+      data.forEach(main => {
+        main.categories.forEach(category => {
+          if (category.files && category.id === nodeId) {
+            existingFiles.push(...category.files);
+          }
+          category.subCategories?.forEach(subCategory => {
+            if (subCategory.id === nodeId) {
+              existingFiles.push(...subCategory.files);
+            }
+          });
+        });
+      });
+
+      // Get all new files that need to be uploaded
+      const newFiles = selectedFiles[nodeId] || [];
+
+      // Prepare the attachment requests array
+      const piAttachmentRequests: AttachmentType[] = [];
+
+      // Add existing files with their IDs (empty data)
+      existingFiles.forEach(file => {
+        piAttachmentRequests.push({
+          id: file.id,
+          data: ''
+        });
+      });
+
+      // Add new files with null ID and base64 data
+      for (const file of newFiles) {
+        const base64Data = await getBase64(file);
+        piAttachmentRequests.push({
+          id: null,
+          data: base64Data
+        });
+      }
+
+      // Make the API call using the service
+      const response = await uploadPIAttachments(
+        piId,
+        piAttachmentRequests,
+        folderToAttachmentTypeMap[nodeId]
+      );
+
+      if (response.success) {
+        // Update the UI with the new files
+        updateFilesAfterUpload(nodeId, response.data, newFiles);
+
+        // Clear selected files for this node
+        setSelectedFiles(prev => ({
+          ...prev,
+          [nodeId]: []
+        }));
+      } else {
+        setUploadErrors(prev => ({
+          ...prev,
+          [nodeId]: response.message || 'Upload failed'
+        }));
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      setUploadErrors(prev => ({
+        ...prev,
+        [nodeId]: 'Error uploading files. Please try again.'
+      }));
+    } finally {
+      setIsUploading(prev => ({ ...prev, [nodeId]: false }));
+      // Exit edit mode after upload attempt (whether successful or not)
+      setEditModes(prev => ({
+        ...prev,
+        [nodeId]: false
+      }));
+    }
+  };
+
+  // Update the file list after successful upload
+  const updateFilesAfterUpload = (
+    nodeId: string,
+    uploadedFiles: AttachmentResponse[],
+    originalFiles: File[]
+  ) => {
+    // Map original filenames to their uploaded IDs and create FileItem objects
+    const newFileItems: FileItem[] = uploadedFiles.map(
+      (uploadedFile, index) => {
+        // Try to match with original file name if possible
+        const matchingOriginalFile = originalFiles.find(
+          file => file.name === uploadedFile.fileName
+        );
+
+        // Get file extension
+        const fileType = uploadedFile.fileName.split('.').pop() || '';
+
+        return {
+          id: uploadedFile.id,
+          name: uploadedFile.fileName,
+          type: fileType
+        };
+      }
+    );
+
+    // Update data state with new files
+    setData(prevData => {
+      return prevData.map(mainCategory => {
+        return {
+          ...mainCategory,
+          categories: mainCategory.categories.map(category => {
+            // If this category has the node ID directly
+            if (category.id === nodeId && category.files) {
+              return {
+                ...category,
+                files: [...category.files, ...newFileItems]
+              };
+            }
+
+            // Check subcategories
+            return {
+              ...category,
+              subCategories: category.subCategories.map(subCategory => {
+                if (subCategory.id === nodeId) {
+                  return {
+                    ...subCategory,
+                    files: [...subCategory.files, ...newFileItems]
+                  };
+                }
+                return subCategory;
+              })
+            };
+          })
+        };
+      });
+    });
+  };
 
   // This function would fetch real data from API
   const fetchFileStructure = async () => {
@@ -284,25 +520,45 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
         });
       });
       setSelectedFiles(initialSelectedFiles);
+
+      // Initialize uploading status
+      const initialUploadingStatus: { [key: string]: boolean } = {};
+      mockData.forEach(main => {
+        main.categories.forEach(category => {
+          if (!category.subCategories || category.subCategories.length === 0) {
+            initialUploadingStatus[category.id] = false;
+          }
+
+          if (category.subCategories && category.subCategories.length > 0) {
+            category.subCategories.forEach(subCategory => {
+              initialUploadingStatus[subCategory.id] = false;
+            });
+          }
+        });
+      });
+      setIsUploading(initialUploadingStatus);
     }
   }, [show, piId]);
 
   const toggleEditMode = (nodeId: string) => {
     if (editModes[nodeId]) {
-      // Save changes to backend
-      // This would be implemented later
-      console.log(
-        'Saving changes for',
-        nodeId,
-        'with files:',
-        selectedFiles[nodeId]
-      );
+      // If we're exiting edit mode, try to upload files
+      if (selectedFiles[nodeId]?.length > 0) {
+        uploadFilesToAPI(nodeId);
+      } else {
+        // No files selected, just exit edit mode
+        setEditModes(prev => ({
+          ...prev,
+          [nodeId]: false
+        }));
+      }
+    } else {
+      // Entering edit mode
+      setEditModes(prev => ({
+        ...prev,
+        [nodeId]: true
+      }));
     }
-
-    setEditModes(prev => ({
-      ...prev,
-      [nodeId]: !prev[nodeId]
-    }));
   };
 
   const handleFileUpload = (
@@ -444,6 +700,8 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
 
     const selectedFilesArray = selectedFiles[nodeId] || [];
     const hasSelectedFiles = selectedFilesArray.length > 0 && isEditing;
+    const isCurrentlyUploading = isUploading[nodeId] || false;
+    const uploadError = uploadErrors[nodeId];
 
     if (files.length === 0 && !hasSelectedFiles) {
       return (
@@ -455,11 +713,20 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
 
     return (
       <div className="files-container px-2">
+        {uploadError && (
+          <div className="alert alert-danger p-1 mt-1 mb-2">
+            <small>{uploadError}</small>
+          </div>
+        )}
+
         {hasSelectedFiles && (
           <div className="selected-files mb-2">
             <div className="d-flex flex-wrap gap-2">
               {selectedFilesArray.map((file, idx) => (
-                <div key={idx} className="file-item">
+                <div
+                  key={`selected-${nodeId}-${idx}-${file.name}`}
+                  className="file-item"
+                >
                   <div className="d-flex align-items-center border rounded p-1 bg-light">
                     <FontAwesomeIcon
                       icon={getFileIcon(file.name.split('.').pop() || '')}
@@ -471,6 +738,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                       variant="link"
                       className="ms-1 text-danger p-1"
                       onClick={() => handleRemoveSelectedFile(nodeId, idx)}
+                      disabled={isCurrentlyUploading}
                     >
                       <FontAwesomeIcon icon={faTrash} />
                     </Button>
@@ -485,7 +753,10 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
           <div className="existing-files">
             <div className="d-flex flex-wrap gap-2">
               {files.map(file => (
-                <div key={file.id} className="file-item">
+                <div
+                  key={`existing-${nodeId}-${file.id}-${file.name}`}
+                  className="file-item"
+                >
                   <div className="d-flex align-items-center border rounded p-1">
                     <FontAwesomeIcon
                       icon={getFileIcon(file.type)}
@@ -500,6 +771,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                         onClick={() =>
                           handleDeleteFile(file.id, nodeId, parentNodeType)
                         }
+                        disabled={isCurrentlyUploading}
                       >
                         <FontAwesomeIcon icon={faTrash} />
                       </Button>
@@ -576,19 +848,33 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode('clients-po');
                                 }}
+                                disabled={isUploading['clients-po']}
                               >
                                 <FontAwesomeIcon
                                   icon={
                                     editModes['clients-po'] ? faSave : faEdit
                                   }
                                 />
+                                {isUploading['clients-po'] && (
+                                  <span
+                                    className="spinner-border spinner-border-sm ms-1"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                )}
                               </Button>
                               {editModes['clients-po'] && (
                                 <Form.Group
                                   controlId="fileUpload-clients-po"
                                   className="d-inline-block ms-1"
                                 >
-                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                  <Form.Label
+                                    className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                      isUploading['clients-po']
+                                        ? 'disabled'
+                                        : ''
+                                    }`}
+                                  >
                                     <FontAwesomeIcon icon={faFileUpload} />
                                     <Form.Control
                                       type="file"
@@ -600,6 +886,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                         )
                                       }
                                       style={{ display: 'none' }}
+                                      disabled={isUploading['clients-po']}
                                     />
                                   </Form.Label>
                                 </Form.Group>
@@ -641,19 +928,33 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode('clients-swift');
                                 }}
+                                disabled={isUploading['clients-swift']}
                               >
                                 <FontAwesomeIcon
                                   icon={
                                     editModes['clients-swift'] ? faSave : faEdit
                                   }
                                 />
+                                {isUploading['clients-swift'] && (
+                                  <span
+                                    className="spinner-border spinner-border-sm ms-1"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                )}
                               </Button>
                               {editModes['clients-swift'] && (
                                 <Form.Group
                                   controlId="fileUpload-clients-swift"
                                   className="d-inline-block ms-1"
                                 >
-                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                  <Form.Label
+                                    className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                      isUploading['clients-swift']
+                                        ? 'disabled'
+                                        : ''
+                                    }`}
+                                  >
                                     <FontAwesomeIcon icon={faFileUpload} />
                                     <Form.Control
                                       type="file"
@@ -665,6 +966,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                         )
                                       }
                                       style={{ display: 'none' }}
+                                      disabled={isUploading['clients-swift']}
                                     />
                                   </Form.Label>
                                 </Form.Group>
@@ -722,6 +1024,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode('official-invoice');
                                 }}
+                                disabled={isUploading['official-invoice']}
                               >
                                 <FontAwesomeIcon
                                   icon={
@@ -730,13 +1033,26 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                       : faEdit
                                   }
                                 />
+                                {isUploading['official-invoice'] && (
+                                  <span
+                                    className="spinner-border spinner-border-sm ms-1"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                )}
                               </Button>
                               {editModes['official-invoice'] && (
                                 <Form.Group
                                   controlId="fileUpload-official-invoice"
                                   className="d-inline-block ms-1"
                                 >
-                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                  <Form.Label
+                                    className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                      isUploading['official-invoice']
+                                        ? 'disabled'
+                                        : ''
+                                    }`}
+                                  >
                                     <FontAwesomeIcon icon={faFileUpload} />
                                     <Form.Control
                                       type="file"
@@ -748,6 +1064,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                         )
                                       }
                                       style={{ display: 'none' }}
+                                      disabled={isUploading['official-invoice']}
                                     />
                                   </Form.Label>
                                 </Form.Group>
@@ -767,13 +1084,13 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                             handleSelectNode(
                               'docs-client',
                               'sent',
-                              'clients-aws'
+                              'clients-awb'
                             )
                           }
                           active={
                             selectedCategory.mainId === 'docs-client' &&
                             selectedCategory.categoryId === 'sent' &&
-                            selectedCategory.subCategoryId === 'clients-aws'
+                            selectedCategory.subCategoryId === 'clients-awb'
                           }
                         >
                           <div className="d-flex align-items-center">
@@ -783,28 +1100,42 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               size="sm"
                               style={{ color: '#f8d775' }}
                             />
-                            <span className="small">Client's AWS</span>
+                            <span className="small">Client's AWB</span>
                             <div className="ms-auto">
                               <Button
                                 variant="outline-primary"
                                 className="py-1 px-2"
                                 onClick={e => {
                                   e.stopPropagation();
-                                  toggleEditMode('clients-aws');
+                                  toggleEditMode('clients-awb');
                                 }}
+                                disabled={isUploading['clients-awb']}
                               >
                                 <FontAwesomeIcon
                                   icon={
-                                    editModes['clients-aws'] ? faSave : faEdit
+                                    editModes['clients-awb'] ? faSave : faEdit
                                   }
                                 />
+                                {isUploading['clients-awb'] && (
+                                  <span
+                                    className="spinner-border spinner-border-sm ms-1"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                )}
                               </Button>
-                              {editModes['clients-aws'] && (
+                              {editModes['clients-awb'] && (
                                 <Form.Group
-                                  controlId="fileUpload-clients-aws"
+                                  controlId="fileUpload-clients-awb"
                                   className="d-inline-block ms-1"
                                 >
-                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                  <Form.Label
+                                    className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                      isUploading['clients-awb']
+                                        ? 'disabled'
+                                        : ''
+                                    }`}
+                                  >
                                     <FontAwesomeIcon icon={faFileUpload} />
                                     <Form.Control
                                       type="file"
@@ -812,17 +1143,18 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                       onChange={e =>
                                         handleFileUpload(
                                           e as ChangeEvent<HTMLInputElement>,
-                                          'clients-aws'
+                                          'clients-awb'
                                         )
                                       }
                                       style={{ display: 'none' }}
+                                      disabled={isUploading['clients-awb']}
                                     />
                                   </Form.Label>
                                 </Form.Group>
                               )}
                             </div>
                           </div>
-                          {renderFilesForNode('clients-aws', 'subcategory')}
+                          {renderFilesForNode('clients-awb', 'subcategory')}
                         </ListGroup.Item>
 
                         <ListGroup.Item
@@ -857,19 +1189,33 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode('packing-list');
                                 }}
+                                disabled={isUploading['packing-list']}
                               >
                                 <FontAwesomeIcon
                                   icon={
                                     editModes['packing-list'] ? faSave : faEdit
                                   }
                                 />
+                                {isUploading['packing-list'] && (
+                                  <span
+                                    className="spinner-border spinner-border-sm ms-1"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                )}
                               </Button>
                               {editModes['packing-list'] && (
                                 <Form.Group
                                   controlId="fileUpload-packing-list"
                                   className="d-inline-block ms-1"
                                 >
-                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                  <Form.Label
+                                    className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                      isUploading['packing-list']
+                                        ? 'disabled'
+                                        : ''
+                                    }`}
+                                  >
                                     <FontAwesomeIcon icon={faFileUpload} />
                                     <Form.Control
                                       type="file"
@@ -881,6 +1227,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                         )
                                       }
                                       style={{ display: 'none' }}
+                                      disabled={isUploading['packing-list']}
                                     />
                                   </Form.Label>
                                 </Form.Group>
@@ -964,6 +1311,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                       e.stopPropagation();
                                       toggleEditMode(subCategory.id);
                                     }}
+                                    disabled={isUploading[subCategory.id]}
                                   >
                                     <FontAwesomeIcon
                                       icon={
@@ -972,13 +1320,26 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                           : faEdit
                                       }
                                     />
+                                    {isUploading[subCategory.id] && (
+                                      <span
+                                        className="spinner-border spinner-border-sm ms-1"
+                                        role="status"
+                                        aria-hidden="true"
+                                      ></span>
+                                    )}
                                   </Button>
                                   {editModes[subCategory.id] && (
                                     <Form.Group
                                       controlId={`fileUpload-${subCategory.id}`}
                                       className="d-inline-block ms-1"
                                     >
-                                      <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                      <Form.Label
+                                        className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                          isUploading[subCategory.id]
+                                            ? 'disabled'
+                                            : ''
+                                        }`}
+                                      >
                                         <FontAwesomeIcon icon={faFileUpload} />
                                         <Form.Control
                                           type="file"
@@ -990,6 +1351,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                             )
                                           }
                                           style={{ display: 'none' }}
+                                          disabled={isUploading[subCategory.id]}
                                         />
                                       </Form.Label>
                                     </Form.Group>
@@ -1059,6 +1421,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                       e.stopPropagation();
                                       toggleEditMode(subCategory.id);
                                     }}
+                                    disabled={isUploading[subCategory.id]}
                                   >
                                     <FontAwesomeIcon
                                       icon={
@@ -1067,13 +1430,26 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                           : faEdit
                                       }
                                     />
+                                    {isUploading[subCategory.id] && (
+                                      <span
+                                        className="spinner-border spinner-border-sm ms-1"
+                                        role="status"
+                                        aria-hidden="true"
+                                      ></span>
+                                    )}
                                   </Button>
                                   {editModes[subCategory.id] && (
                                     <Form.Group
                                       controlId={`fileUpload-${subCategory.id}`}
                                       className="d-inline-block ms-1"
                                     >
-                                      <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                      <Form.Label
+                                        className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                          isUploading[subCategory.id]
+                                            ? 'disabled'
+                                            : ''
+                                        }`}
+                                      >
                                         <FontAwesomeIcon icon={faFileUpload} />
                                         <Form.Control
                                           type="file"
@@ -1085,6 +1461,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                             )
                                           }
                                           style={{ display: 'none' }}
+                                          disabled={isUploading[subCategory.id]}
                                         />
                                       </Form.Label>
                                     </Form.Group>
@@ -1153,19 +1530,31 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode(category.id);
                                 }}
+                                disabled={isUploading[category.id]}
                               >
                                 <FontAwesomeIcon
                                   icon={
                                     editModes[category.id] ? faSave : faEdit
                                   }
                                 />
+                                {isUploading[category.id] && (
+                                  <span
+                                    className="spinner-border spinner-border-sm ms-1"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                )}
                               </Button>
                               {editModes[category.id] && (
                                 <Form.Group
                                   controlId={`fileUpload-${category.id}`}
                                   className="d-inline-block ms-1"
                                 >
-                                  <Form.Label className="btn btn-outline-primary py-1 px-2 mb-0">
+                                  <Form.Label
+                                    className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                      isUploading[category.id] ? 'disabled' : ''
+                                    }`}
+                                  >
                                     <FontAwesomeIcon icon={faFileUpload} />
                                     <Form.Control
                                       type="file"
@@ -1177,6 +1566,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                         )
                                       }
                                       style={{ display: 'none' }}
+                                      disabled={isUploading[category.id]}
                                     />
                                   </Form.Label>
                                 </Form.Group>

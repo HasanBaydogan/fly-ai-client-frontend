@@ -2,42 +2,17 @@ import { SendEmailProps } from 'smt-v1-app/components/features/PIWizard/forms/Wi
 import {
   getRequest,
   postRequest,
-  putRequest,
-  deleteRequest,
-  patchRequest
+  deleteRequest
 } from './ApiCore/GlobalApiCore';
-
-interface PIAttachment {
-  data: string;
-}
-
-interface PIRequest {
-  receivedDate: string;
-  attachments: PIAttachment[];
-  receivedPOMethod: 'MESSAGE' | 'MAIL';
-  selectedCompanyId: string;
-  quoteId: string;
-}
-
-interface PIRequestDetail {
-  receivedDate: string;
-  attachments: PIAttachment[];
-  receivedPOMethod: 'MESSAGE' | 'MAIL';
-  selectedCompanyId: string;
-  quoteId: string;
-}
-
-interface PICommentUpdate {
-  id: string;
-  comment: string;
-  severity: string;
-}
-
-interface PICommentNew {
-  piId: string;
-  comment: string;
-  severity: string;
-}
+import {
+  PIAttachment,
+  PIRequest,
+  PICommentUpdate,
+  PICommentNew,
+  PIAttachmentRequest,
+  PIAttachmentUploadRequest,
+  PIAttachmentResponse
+} from '../types/PiTypes';
 
 export const searchByPiList = async (
   term: string,
@@ -89,4 +64,18 @@ export const deletePiUserComment = async (CommentId: string) => {
 
 export const getPiWizard = async (piId: string) => {
   return await getRequest(`/pi/detail-wizard?piId=${piId}`);
+};
+
+export const uploadPIAttachments = async (
+  piId: string,
+  attachments: PIAttachmentRequest[],
+  type: string
+): Promise<PIAttachmentResponse> => {
+  const requestData: PIAttachmentUploadRequest = {
+    PIId: piId,
+    piAttachmentRequests: attachments,
+    type
+  };
+
+  return await postRequest('/pi/attachment', requestData);
 };

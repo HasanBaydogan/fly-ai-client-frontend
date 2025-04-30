@@ -1,5 +1,51 @@
 import { S } from '@fullcalendar/core/internal-common';
 
+export interface PIAttachment {
+  data: string;
+}
+
+export interface PIRequest {
+  receivedDate: string;
+  attachments: PIAttachment[];
+  receivedPOMethod: 'MESSAGE' | 'MAIL';
+  selectedCompanyId: string;
+  quoteId: string;
+}
+
+export interface PICommentUpdate {
+  id: string;
+  comment: string;
+  severity: string;
+}
+
+export interface PICommentNew {
+  piId: string;
+  comment: string;
+  severity: string;
+}
+
+export interface PIAttachmentRequest {
+  id: string | null;
+  data?: string;
+}
+
+export interface PIAttachmentUploadRequest {
+  PIId: string;
+  piAttachmentRequests: PIAttachmentRequest[];
+  type: string;
+}
+
+export interface PIAttachmentResponse {
+  data: Array<{
+    id: string;
+    fileName: string;
+  }>;
+  message: string;
+  statusCode: number;
+  success: boolean;
+  timestamp: string;
+}
+
 export interface PiData {
   piId: string;
   piNumberId: string;
