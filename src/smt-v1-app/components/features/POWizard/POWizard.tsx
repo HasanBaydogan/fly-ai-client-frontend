@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
-import WizardTabs from './Tabs/PIWizardTabs';
+import WizardTabs from './POWizardTabs';
 import { quoteWizardIntro } from 'smt-v1-app/services/QuoteService';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getAllCurrenciesFromDB } from 'smt-v1-app/services/RFQService';
@@ -271,7 +271,7 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
   return (
     <Modal show={showTabs} onHide={handleClose} size="xl" centered>
       <Modal.Header closeButton>
-        <Modal.Title>Proforma Invoice Wizard</Modal.Title>
+        <Modal.Title>Purchase Order Wizard</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {isLoading ? (

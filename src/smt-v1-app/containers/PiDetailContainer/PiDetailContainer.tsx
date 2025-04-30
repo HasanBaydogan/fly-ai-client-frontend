@@ -30,6 +30,7 @@ import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/Load
 import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowHelper';
 import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
 import PIWizard from 'smt-v1-app/components/features/PIWizard/PIWizard';
+import POWizard from 'smt-v1-app/components/features/POWizard/POWizard';
 
 const QuoteContainer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,6 +40,11 @@ const QuoteContainer = () => {
   const [showPIWizard, setShowPIWizard] = useState(false);
   const [piWizardData, setPiWizardData] = useState(null);
   const [isPIWizardLoading, setIsPIWizardLoading] = useState(false);
+
+  // State for POWizard
+  const [showPOWizard, setShowPOWizard] = useState(false);
+  const [poWizardData, setPoWizardData] = useState(null);
+  const [isPOWizardLoading, setIsPOWizardLoading] = useState(false);
 
   const closeModal = (shouldHide = true, openOnSecondPage = false) => {
     if (shouldHide) {
@@ -70,10 +76,6 @@ const QuoteContainer = () => {
   const [showQuoteWizardTabs, setShowQuoteWizardTabs] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasUnsavedComments, setHasUnsavedComments] = useState(false);
-  // const [statusColors, setStatusColors] = useState<{
-  //   bgColor: string;
-  //   textColor: string;
-  // }>();
 
   const [selectedParts, setSelectedParts] = useState<string[]>([]);
   const [selectedAlternativeParts, setSelectedAlternativeParts] = useState<
@@ -82,6 +84,9 @@ const QuoteContainer = () => {
 
   const handleOpenPIWizard = () => setShowPIWizard(true);
   const handleClosePIWizard = () => setShowPIWizard(false);
+
+  const handleOpenPOWizard = () => setShowPOWizard(true);
+  const handleClosePOWizard = () => setShowPOWizard(false);
 
   const handleOpen = () => setShowQuoteWizardTabs(true);
   const handleClose = () => setShowQuoteWizardTabs(false);
@@ -112,27 +117,35 @@ const QuoteContainer = () => {
     }
   };
 
+  // Function to fetch PO Wizard data and open the wizard
+  const fetchPOWizardData = async () => {
+    setIsPOWizardLoading(true);
+    try {
+      // Use the same data structure as PI Wizard initially
+      const response = await getPiWizard(piId);
+      if (response && response.statusCode === 200) {
+        setPoWizardData(response.data);
+        handleOpenPOWizard();
+      } else {
+        console.error('Failed to fetch PO Wizard data');
+      }
+    } catch (error) {
+      console.error('Error fetching PO Wizard data:', error);
+    } finally {
+      setIsPOWizardLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchQuoteValues = async () => {
       const response = await getPiDetails(piId);
       if (response && response.statusCode == 200) {
         setIsLoading(true);
-        // setMailItemMoreDetailResponse(response.data.mailItemMoreDetailResponse);
         setpiData(response.data);
-        // setContacts(response.data.clientContacts);
         setParts(response.data.piParts);
         setAlternativeParts(response.data.piAlternativeParts);
-        // const returnedColor = getColorStyles(response.data.rfqMailStatus);
-        // setStatusColors({
-        //   bgColor: returnedColor.bgColor,
-        //   textColor: returnedColor.textColor
-        // });
-
         setIsLoading(false);
       }
-      // else {
-      //   window.location.assign('/404');
-      // }
     };
     fetchQuoteValues();
   }, []);
@@ -142,7 +155,6 @@ const QuoteContainer = () => {
   };
 
   const handleGoToRFQMail = async () => {
-    // Check for unsaved comments
     if (hasUnsavedComments) {
       if (
         !window.confirm(
@@ -156,13 +168,10 @@ const QuoteContainer = () => {
     const response = await getRFQMailIdToGoToRFQMail(piId);
     if (response && response.statusCode === 200) {
       window.location.assign('/rfqs/rfq?rfqMailId=' + response.data.rfqMailId);
-    } else {
-      // console.log('An error occurs when Go To RFQ Mail');
     }
   };
 
   const handleCancel = () => {
-    // Check for unsaved comments
     if (hasUnsavedComments) {
       if (
         !window.confirm(
@@ -184,36 +193,6 @@ const QuoteContainer = () => {
         </div>
       ) : (
         <div className="rfq-container">
-          {/* <div className="rfq-left">
-            <RFQHeader
-              subject={
-                mailItemMoreDetailResponse && mailItemMoreDetailResponse.subject
-              }
-              companyName={
-                mailItemMoreDetailResponse &&
-                mailItemMoreDetailResponse.senderCompanyName
-              }
-              from={
-                mailItemMoreDetailResponse && mailItemMoreDetailResponse.from
-              }
-              date={
-                mailItemMoreDetailResponse &&
-                mailItemMoreDetailResponse.mailDate
-              }
-            />
-            <RFQContent
-              content={
-                mailItemMoreDetailResponse &&
-                mailItemMoreDetailResponse.mailContentItemResponses
-              }
-            />
-            <RFQAttachments
-              attachments={
-                mailItemMoreDetailResponse &&
-                mailItemMoreDetailResponse.mailItemAttachmentResponses
-              }
-            />
-          </div> */}
           <div className="pi-detail-right">
             <div>
               {
@@ -224,11 +203,8 @@ const QuoteContainer = () => {
                   quoteNumberId={piData && piData.quoteNumberId}
                   clientRFQId={piData && piData.clientRFQId}
                   clientName={piData && piData.clientName}
-                  // bgColor={statusColors.bgColor}
-                  // textColor={statusColors.textColor}
                   userComments={userComments}
                   setUserComments={setUserComments}
-                  // status={'FQ'} //{piData && piData.rfqMailStatus}
                   attachments={
                     mailItemMoreDetailResponse &&
                     mailItemMoreDetailResponse.mailItemAttachmentResponses
@@ -239,13 +215,6 @@ const QuoteContainer = () => {
             <div>
               <PiOthers piData={piData} />
             </div>
-            {/* <div>
-              <QuoteContactsList
-                contacts={contacts}
-                handleAddContact={handleAddContact}
-                handleDeleteContact={handleDeleteContact}
-              />
-            </div> */}
             <div>
               <PiPartList
                 parts={parts}
@@ -264,15 +233,12 @@ const QuoteContainer = () => {
               <PiComments
                 piData={piData}
                 onCommentsChange={updatedComments => {
-                  // Use functional state update to avoid dependency on current piData
                   if (piData) {
-                    // Check if there are any unsaved comments
                     const hasUnsaved = updatedComments.some(
                       comment => comment.isNew || comment.isEdited
                     );
                     setHasUnsavedComments(hasUnsaved);
 
-                    // Update piData with the new comments - use functional update
                     setpiData(prevPiData => {
                       if (!prevPiData) return prevPiData;
                       return {
@@ -295,7 +261,6 @@ const QuoteContainer = () => {
                 <CustomButton
                   variant="danger"
                   onClick={() => {
-                    // Handle Go to RFQ Mail click
                     handleCancel();
                   }}
                 >
@@ -307,10 +272,7 @@ const QuoteContainer = () => {
                   <CustomButton
                     variant="secondary"
                     onClick={() => {
-                      // PO Wizard is currently inactive
-                      // console.log(
-                      //   'PO Wizard functionality is not available yet'
-                      // );
+                      fetchPOWizardData();
                     }}
                     style={{ marginRight: '10px' }}
                   >
@@ -344,7 +306,21 @@ const QuoteContainer = () => {
             />
           )}
 
-          {isPIWizardLoading && (
+          {/* Show PO Wizard when data is loaded */}
+          {showPOWizard && poWizardData && (
+            <POWizard
+              handleOpen={handleOpenPOWizard}
+              handleClose={handleClosePOWizard}
+              showTabs={showPOWizard}
+              selectedParts={selectedParts}
+              selectedAlternativeParts={selectedAlternativeParts}
+              quoteId={piData?.quoteId || piId}
+              quoteComment=""
+              piResponseData={poWizardData}
+            />
+          )}
+
+          {(isPIWizardLoading || isPOWizardLoading) && (
             <div
               className="position-fixed top-0 left-0 d-flex justify-content-center align-items-center w-100 h-100 bg-white bg-opacity-75"
               style={{ zIndex: 1050 }}
@@ -352,18 +328,6 @@ const QuoteContainer = () => {
               <LoadingAnimation />
             </div>
           )}
-
-          {/* {showQuoteWizardTabs ? (
-            <QuoteWizard
-              selectedParts={selectedParts}
-              selectedAlternativeParts={selectedAlternativeParts}
-              quoteId={quoteData.quoteId}
-              handleOpen={handleOpen}
-              handleClose={handleClose}
-              showTabs={showQuoteWizardTabs}
-              quoteComment={quoteComment}
-            ></QuoteWizard>
-          ) : null} */}
         </div>
       )}
     </>
