@@ -23,10 +23,15 @@ import {
   faFolderOpen,
   faChevronRight,
   faChevronDown,
-  faFolder
+  faFolder,
+  faEye
 } from '@fortawesome/free-solid-svg-icons';
 import './PIListFileUpload.css';
-import { uploadPIAttachments } from 'smt-v1-app/services/PIServices';
+import {
+  uploadPIAttachments,
+  getPiAttachments,
+  getPiSelectedAttachments
+} from 'smt-v1-app/services/PIServices';
 
 // Type definitions for API integration
 interface AttachmentType {
@@ -34,13 +39,31 @@ interface AttachmentType {
   data?: string;
 }
 
-interface AttachmentResponse {
+// API response interfaces
+interface PIAttachmentItem {
   id: string;
   fileName: string;
 }
 
-interface ApiResponse {
-  data: AttachmentResponse[];
+interface PIAttachmentTypeGroup {
+  type: string;
+  piAttachments: PIAttachmentItem[];
+}
+
+interface PIAttachmentsResponse {
+  data: PIAttachmentTypeGroup[];
+  message: string;
+  statusCode: number;
+  success: boolean;
+  timestamp: string;
+}
+
+interface PISelectedAttachmentResponse {
+  data: {
+    id: string;
+    fileName: string;
+    data: string;
+  };
   message: string;
   statusCode: number;
   success: boolean;
@@ -122,7 +145,7 @@ interface PIListFileUploadProps {
   piId: string;
 }
 
-// Mock data based on the tree structure
+// Initialize with empty data structure
 const mockData: MainCategory[] = [
   {
     id: 'docs-client',
@@ -135,15 +158,12 @@ const mockData: MainCategory[] = [
           {
             id: 'clients-po',
             name: "Client's PO",
-            files: [
-              { id: 'po1', name: 'PO135.pdf', type: 'pdf' },
-              { id: 'po2', name: 'PO136.pdf', type: 'pdf' }
-            ]
+            files: []
           },
           {
             id: 'clients-swift',
             name: "Client's SWIFT",
-            files: [{ id: 'swift1', name: 'Client456Swift.txt', type: 'txt' }]
+            files: []
           }
         ]
       },
@@ -154,7 +174,7 @@ const mockData: MainCategory[] = [
           {
             id: 'official-invoice',
             name: 'Official Invoice',
-            files: [{ id: 'invoice1', name: 'Invoice123.pdf', type: 'pdf' }]
+            files: []
           },
           {
             id: 'clients-awb',
@@ -306,179 +326,112 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
   const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>(
     {}
   );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [viewingFile, setViewingFile] = useState<string | null>(null);
 
-  // Function to convert file to Base64
-  const getBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        if (reader.result) {
-          // Extract the base64 data part (remove the prefix)
-          const base64String = reader.result.toString();
-          const base64Data = base64String.split(',')[1];
-          resolve(base64Data);
-        } else {
-          reject(new Error('Failed to convert file to base64'));
-        }
-      };
-      reader.onerror = error => reject(error);
-    });
+  // Get the inverse mapping from attachment type to folder ID
+  const attachmentTypeToFolderMap = Object.entries(
+    folderToAttachmentTypeMap
+  ).reduce(
+    (acc, [folderId, attachmentType]) => {
+      acc[attachmentType] = folderId;
+      return acc;
+    },
+    {} as Record<string, string>
+  );
+
+  // Function to fetch attachments from backend
+  const fetchAttachments = async () => {
+    if (!piId) return;
+
+    setIsLoading(true);
+    try {
+      const response = await getPiAttachments(piId);
+      if (response && response.success) {
+        updateDataWithFetchedAttachments(response.data);
+      } else {
+        console.error('Failed to fetch attachments:', response?.message);
+      }
+    } catch (error) {
+      console.error('Error fetching attachments:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Function to upload files to the API
-  const uploadFilesToAPI = async (nodeId: string) => {
-    if (!piId || !folderToAttachmentTypeMap[nodeId]) {
-      setUploadErrors(prev => ({
-        ...prev,
-        [nodeId]: 'Missing PI ID or invalid folder type'
-      }));
-      return;
-    }
+  // Update the data structure with fetched attachments
+  const updateDataWithFetchedAttachments = (
+    attachmentGroups: {
+      type: string;
+      piAttachments: { id: string; fileName: string }[];
+    }[]
+  ) => {
+    // Create a copy of the current data
+    const updatedData = [...data];
 
-    setIsUploading(prev => ({ ...prev, [nodeId]: true }));
-    setUploadErrors(prev => ({ ...prev, [nodeId]: '' }));
+    // Process each attachment group
+    attachmentGroups.forEach(group => {
+      const folderId = attachmentTypeToFolderMap[group.type];
 
-    try {
-      // Get all existing files for this node to include in the request
-      const existingFiles: FileItem[] = [];
-      data.forEach(main => {
+      if (!folderId) {
+        console.warn(
+          `No folder mapping found for attachment type: ${group.type}`
+        );
+        return;
+      }
+
+      // Convert attachment items to FileItem format
+      const fileItems: FileItem[] = group.piAttachments.map(item => {
+        // Extract file extension from fileName
+        const fileExtension = item.fileName.split('.').pop() || '';
+
+        return {
+          id: item.id,
+          name: item.fileName,
+          type: fileExtension
+        };
+      });
+
+      // Find the correct location in the data structure to update
+      let updated = false;
+
+      // Look through all main categories
+      updatedData.forEach(main => {
         main.categories.forEach(category => {
-          if (category.files && category.id === nodeId) {
-            existingFiles.push(...category.files);
+          // Check if this is a category with direct files
+          if (category.id === folderId && category.files) {
+            category.files = fileItems;
+            updated = true;
           }
+
+          // Check in subcategories
           category.subCategories?.forEach(subCategory => {
-            if (subCategory.id === nodeId) {
-              existingFiles.push(...subCategory.files);
+            if (subCategory.id === folderId) {
+              subCategory.files = fileItems;
+              updated = true;
             }
           });
         });
       });
 
-      // Get all new files that need to be uploaded
-      const newFiles = selectedFiles[nodeId] || [];
-
-      // Prepare the attachment requests array
-      const piAttachmentRequests: AttachmentType[] = [];
-
-      // Add existing files with their IDs (empty data)
-      existingFiles.forEach(file => {
-        piAttachmentRequests.push({
-          id: file.id,
-          data: ''
-        });
-      });
-
-      // Add new files with null ID and base64 data
-      for (const file of newFiles) {
-        const base64Data = await getBase64(file);
-        piAttachmentRequests.push({
-          id: null,
-          data: base64Data
-        });
-      }
-
-      // Make the API call using the service
-      const response = await uploadPIAttachments(
-        piId,
-        piAttachmentRequests,
-        folderToAttachmentTypeMap[nodeId]
-      );
-
-      if (response.success) {
-        // Update the UI with the new files
-        updateFilesAfterUpload(nodeId, response.data, newFiles);
-
-        // Clear selected files for this node
-        setSelectedFiles(prev => ({
-          ...prev,
-          [nodeId]: []
-        }));
-      } else {
-        setUploadErrors(prev => ({
-          ...prev,
-          [nodeId]: response.message || 'Upload failed'
-        }));
-      }
-    } catch (error) {
-      console.error('Error uploading files:', error);
-      setUploadErrors(prev => ({
-        ...prev,
-        [nodeId]: 'Error uploading files. Please try again.'
-      }));
-    } finally {
-      setIsUploading(prev => ({ ...prev, [nodeId]: false }));
-      // Exit edit mode after upload attempt (whether successful or not)
-      setEditModes(prev => ({
-        ...prev,
-        [nodeId]: false
-      }));
-    }
-  };
-
-  // Update the file list after successful upload
-  const updateFilesAfterUpload = (
-    nodeId: string,
-    uploadedFiles: AttachmentResponse[],
-    originalFiles: File[]
-  ) => {
-    // Map original filenames to their uploaded IDs and create FileItem objects
-    const newFileItems: FileItem[] = uploadedFiles.map(
-      (uploadedFile, index) => {
-        // Try to match with original file name if possible
-        const matchingOriginalFile = originalFiles.find(
-          file => file.name === uploadedFile.fileName
+      if (!updated) {
+        console.warn(
+          `Could not find folder with ID ${folderId} in data structure`
         );
-
-        // Get file extension
-        const fileType = uploadedFile.fileName.split('.').pop() || '';
-
-        return {
-          id: uploadedFile.id,
-          name: uploadedFile.fileName,
-          type: fileType
-        };
       }
-    );
-
-    // Update data state with new files
-    setData(prevData => {
-      return prevData.map(mainCategory => {
-        return {
-          ...mainCategory,
-          categories: mainCategory.categories.map(category => {
-            // If this category has the node ID directly
-            if (category.id === nodeId && category.files) {
-              return {
-                ...category,
-                files: [...category.files, ...newFileItems]
-              };
-            }
-
-            // Check subcategories
-            return {
-              ...category,
-              subCategories: category.subCategories.map(subCategory => {
-                if (subCategory.id === nodeId) {
-                  return {
-                    ...subCategory,
-                    files: [...subCategory.files, ...newFileItems]
-                  };
-                }
-                return subCategory;
-              })
-            };
-          })
-        };
-      });
     });
+
+    // Update the state with the new data
+    setData(updatedData);
   };
 
-  // This function would fetch real data from API
+  // Fetch real data from API
   const fetchFileStructure = async () => {
-    // In real implementation, fetch data from API using piId
-    // For now, using mock data
+    // Initialize with mock structure
     setData(mockData);
+
+    // Then fetch real attachments from API
+    await fetchAttachments();
   };
 
   useEffect(() => {
@@ -540,47 +493,113 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
     }
   }, [show, piId]);
 
-  const toggleEditMode = (nodeId: string) => {
-    if (editModes[nodeId]) {
-      // If we're exiting edit mode, try to upload files
-      if (selectedFiles[nodeId]?.length > 0) {
-        uploadFilesToAPI(nodeId);
-      } else {
-        // No files selected, just exit edit mode
-        setEditModes(prev => ({
+  // After successful upload, refresh the attachments from backend
+  const handleUploadSuccess = async () => {
+    await fetchAttachments();
+  };
+
+  const uploadFilesToAPI = async (nodeId: string) => {
+    if (!piId || !folderToAttachmentTypeMap[nodeId]) {
+      setUploadErrors(prev => ({
+        ...prev,
+        [nodeId]: 'Missing PI ID or invalid folder type'
+      }));
+      return;
+    }
+
+    setIsUploading(prev => ({ ...prev, [nodeId]: true }));
+    setUploadErrors(prev => ({ ...prev, [nodeId]: '' }));
+
+    try {
+      // Get all existing files for this node to include in the request
+      // These are files that are still in the UI (haven't been deleted)
+      const existingFiles: FileItem[] = [];
+      data.forEach(main => {
+        main.categories.forEach(category => {
+          if (category.files && category.id === nodeId) {
+            existingFiles.push(...category.files);
+          }
+          category.subCategories?.forEach(subCategory => {
+            if (subCategory.id === nodeId) {
+              existingFiles.push(...subCategory.files);
+            }
+          });
+        });
+      });
+
+      // Get all new files that need to be uploaded
+      const newFiles = selectedFiles[nodeId] || [];
+
+      // Prepare the attachment requests array
+      const piAttachmentRequests: AttachmentType[] = [];
+
+      // If there are existing files, add them with their IDs (empty data)
+      // This tells backend to keep these files
+      if (existingFiles.length > 0) {
+        existingFiles.forEach(file => {
+          piAttachmentRequests.push({
+            id: file.id,
+            data: ''
+          });
+        });
+      }
+
+      // Add new files with null ID and base64 data
+      for (const file of newFiles) {
+        const base64Data = await getBase64(file);
+        piAttachmentRequests.push({
+          id: null,
+          data: base64Data
+        });
+      }
+
+      // Make the API call using the service
+      // Even if there are no files, we send an empty array to indicate all files should be deleted
+      const response = await uploadPIAttachments(
+        piId,
+        piAttachmentRequests,
+        folderToAttachmentTypeMap[nodeId]
+      );
+
+      if (response.success) {
+        // Clear selected files for this node
+        setSelectedFiles(prev => ({
           ...prev,
-          [nodeId]: false
+          [nodeId]: []
+        }));
+
+        // Refresh attachments from backend
+        await handleUploadSuccess();
+      } else {
+        setUploadErrors(prev => ({
+          ...prev,
+          [nodeId]: response.message || 'Upload failed'
         }));
       }
-    } else {
-      // Entering edit mode
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      setUploadErrors(prev => ({
+        ...prev,
+        [nodeId]: 'Error uploading files. Please try again.'
+      }));
+    } finally {
+      setIsUploading(prev => ({ ...prev, [nodeId]: false }));
+      // Exit edit mode after upload attempt (whether successful or not)
       setEditModes(prev => ({
         ...prev,
-        [nodeId]: true
+        [nodeId]: false
       }));
     }
   };
 
-  const handleFileUpload = (
-    e: ChangeEvent<HTMLInputElement>,
-    nodeId: string
-  ) => {
-    const files = e.target.files;
-    if (files) {
-      const newFiles = Array.from(files);
-      setSelectedFiles(prev => ({
-        ...prev,
-        [nodeId]: [...(prev[nodeId] || []), ...newFiles]
-      }));
-    }
-  };
-
-  const handleDeleteFile = (
+  // Since we're now fetching attachments from backend, we'll modify the file deletion
+  // function to handle deletion properly
+  const handleDeleteFile = async (
     fileId: string,
     nodeId: string,
     parentNodeType: 'category' | 'subcategory'
   ) => {
-    // This implementation would be replaced with actual API calls
+    // For now, just remove it from the UI until you implement backend deletion
     setData(prevData => {
       return prevData.map(mainCategory => {
         return {
@@ -616,6 +635,56 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
         };
       });
     });
+
+    // In a real implementation, you would call an API to delete the file
+    // Then refresh the attachments
+    // await deleteAttachment(fileId);
+    // await fetchAttachments();
+  };
+
+  // Function to convert file to Base64
+  const getBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        if (reader.result) {
+          // Return the complete data URL including the MIME type prefix
+          resolve(reader.result.toString());
+        } else {
+          reject(new Error('Failed to convert file to base64'));
+        }
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const toggleEditMode = (nodeId: string) => {
+    if (editModes[nodeId]) {
+      // If we're exiting edit mode (Save button clicked), always upload to API
+      // This ensures deletions are sent to backend even if no new files are selected
+      uploadFilesToAPI(nodeId);
+    } else {
+      // Entering edit mode
+      setEditModes(prev => ({
+        ...prev,
+        [nodeId]: true
+      }));
+    }
+  };
+
+  const handleFileUpload = (
+    e: ChangeEvent<HTMLInputElement>,
+    nodeId: string
+  ) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      setSelectedFiles(prev => ({
+        ...prev,
+        [nodeId]: [...(prev[nodeId] || []), ...newFiles]
+      }));
+    }
   };
 
   const handleRemoveSelectedFile = (nodeId: string, index: number) => {
@@ -667,6 +736,155 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
       categoryId: categoryId || null,
       subCategoryId: subCategoryId || null
     });
+  };
+
+  // Function to handle file view
+  const handleViewFile = async (fileId: string, fileType: string) => {
+    try {
+      setViewingFile(fileId);
+
+      // Get the attachment type for this file
+      let attachmentType = '';
+      // Find the file to get its original name and extension
+      let fileName = '';
+
+      data.forEach(main => {
+        main.categories.forEach(category => {
+          if (category.files) {
+            const foundFile = category.files.find(file => file.id === fileId);
+            if (foundFile) {
+              attachmentType = folderToAttachmentTypeMap[category.id];
+              fileName = foundFile.name;
+            }
+          }
+
+          category.subCategories?.forEach(subCategory => {
+            const foundFile = subCategory.files.find(
+              file => file.id === fileId
+            );
+            if (foundFile) {
+              attachmentType = folderToAttachmentTypeMap[subCategory.id];
+              fileName = foundFile.name;
+            }
+          });
+        });
+      });
+
+      if (!attachmentType) {
+        console.error('Could not determine attachment type for file:', fileId);
+        return;
+      }
+
+      // Fetch the file data by passing the attachment ID and type
+      const response = await getPiSelectedAttachments(fileId, attachmentType);
+
+      if (response && response.success && response.data) {
+        // Get file extension from fileName or use the provided fileType
+        const fileExtension =
+          fileName.split('.').pop()?.toLowerCase() || fileType.toLowerCase();
+        const mimeType = getMimeType(fileExtension);
+
+        // Extract base64 data from response
+        // Note: If data is in response.data.data, use that, otherwise use response.data
+        const base64RawData = response.data.data || response.data;
+
+        // Create a proper data URL with the correct MIME type prefix
+        // Check if it already has a data URL prefix to avoid adding it twice
+        const base64Content = base64RawData.startsWith('data:')
+          ? base64RawData
+          : `data:${mimeType};base64,${base64RawData}`;
+
+        // Create a new window with an iframe to handle all file types consistently
+        const newWindow = window.open('', '_blank');
+
+        if (newWindow) {
+          // Write HTML content with an iframe to display the file
+          newWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>${fileName || 'File Viewer'}</title>
+                <style>
+                  body, html { 
+                    margin: 0; 
+                    padding: 0; 
+                    height: 100%; 
+                    overflow: hidden; 
+                  }
+                  iframe { 
+                    width: 100%; 
+                    height: 100%; 
+                    border: none; 
+                  }
+                </style>
+              </head>
+              <body>
+                <iframe src="${base64Content}" type="${mimeType}"></iframe>
+              </body>
+            </html>
+          `);
+          newWindow.document.close();
+        } else {
+          // Fallback for popup blockers
+          const link = document.createElement('a');
+          link.href = base64Content;
+          link.download = fileName || `file.${fileExtension}`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } else {
+        console.error('Failed to fetch file data:', response?.message);
+      }
+    } catch (error) {
+      console.error('Error viewing file:', error);
+    } finally {
+      setViewingFile(null);
+    }
+  };
+
+  // Helper function to download a file
+  const downloadFile = (blob: Blob, fileName: string) => {
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up blob URL after download
+    setTimeout(() => {
+      URL.revokeObjectURL(blobUrl);
+    }, 100);
+  };
+
+  // Function to get the MIME type based on file extension
+  const getMimeType = (fileType: string): string => {
+    const type = fileType.toLowerCase();
+    switch (type) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'png':
+        return 'image/png';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'gif':
+        return 'image/gif';
+      case 'doc':
+        return 'application/msword';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      case 'xls':
+        return 'application/vnd.ms-excel';
+      case 'xlsx':
+        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case 'txt':
+        return 'text/plain';
+      default:
+        return 'application/octet-stream';
+    }
   };
 
   // Render files for a specific node
@@ -763,19 +981,34 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                       className="me-1 text-secondary"
                       size="sm"
                     />
-                    <small>{file.name}</small>
-                    {isEditing && (
-                      <Button
-                        variant="link"
-                        className="ms-1 text-danger p-1"
-                        onClick={() =>
-                          handleDeleteFile(file.id, nodeId, parentNodeType)
-                        }
-                        disabled={isCurrentlyUploading}
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </Button>
-                    )}
+                    <span
+                      className="small file-name cursor-pointer"
+                      onClick={() => handleViewFile(file.id, file.type)}
+                    >
+                      {file.name}
+                      {viewingFile === file.id && (
+                        <span
+                          className="spinner-border spinner-border-sm ms-1"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                      )}
+                    </span>
+
+                    <div className="ms-auto d-flex">
+                      {isEditing && (
+                        <Button
+                          variant="link"
+                          className="text-danger p-1"
+                          onClick={() =>
+                            handleDeleteFile(file.id, nodeId, parentNodeType)
+                          }
+                          disabled={isCurrentlyUploading}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1592,7 +1825,18 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
       <Modal.Header closeButton>
         <Modal.Title>PI File Management</Modal.Title>
       </Modal.Header>
-      <Modal.Body className="p-3">{renderVerticalFileManager()}</Modal.Body>
+      <Modal.Body className="p-3">
+        {isLoading ? (
+          <div className="text-center p-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-2">Loading attachments...</p>
+          </div>
+        ) : (
+          renderVerticalFileManager()
+        )}
+      </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>
           Close

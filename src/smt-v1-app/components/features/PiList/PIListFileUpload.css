@@ -90,4 +90,26 @@
 
 .list-group-item.active .text-secondary {
   color: #0d6efd !important;
+}
+
+/* Styling for clickable file names */
+.file-name.cursor-pointer {
+  cursor: pointer;
+  color: #0d6efd;
+  transition: color 0.2s;
+}
+
+.file-name.cursor-pointer:hover {
+  color: #0a58ca;
+  text-decoration: underline;
+}
+
+/* View button styling */
+.btn-link.text-primary {
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+}
+
+.btn-link.text-primary:hover {
+  background-color: rgba(13, 110, 253, 0.1);
 } 

@@ -66,6 +66,14 @@ export const getPiWizard = async (piId: string) => {
   return await getRequest(`/pi/detail-wizard?piId=${piId}`);
 };
 
+export const getPiAttachments = async (piId: string) => {
+  return await getRequest(`/pi/attachment/all?piId=${piId}`);
+};
+
+export const getPiSelectedAttachments = async (id: string, type: string) => {
+  return await getRequest(`/pi/attachment?id=${id}&type=${type}`);
+};
+
 export const uploadPIAttachments = async (
   piId: string,
   attachments: PIAttachmentRequest[],
