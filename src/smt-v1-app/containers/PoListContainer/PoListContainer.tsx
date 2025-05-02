@@ -1,17 +1,12 @@
 import { useEffect, useState } from 'react';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import PartTopSection from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/ListTopSection';
-
 import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
-import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import { searchByPiList } from 'smt-v1-app/services/PIServices';
 import { PiData } from 'smt-v1-app/types/PiTypes';
 import PiListTable, {
   PiTableColumns
-} from 'smt-v1-app/components/features/PiList/List/PiListTable';
+} from 'smt-v1-app/components/features/PoList/PoListTable';
 import GeneralTopSection from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/ListTopSection';
 
 const PiListContainer = () => {

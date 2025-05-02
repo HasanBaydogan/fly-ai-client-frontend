@@ -23,4 +23,93 @@
 .vertical-file-manager .list-group-item.active .fa-folder,
 .vertical-file-manager .list-group-item.active .fa-folder-open {
   color: #f8d775 !important;
+}
+
+/* Add styling for the upload component */
+.files-container {
+  min-height: 30px;
+}
+
+.file-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.file-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for the loading state */
+.btn.disabled {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+/* Styling for alert messages */
+.alert-danger {
+  font-size: 0.8rem;
+}
+
+/* Animation for file upload */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.selected-files {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Spinner size adjustments */
+.spinner-border-sm {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+/* Style adjustments for file items */
+.file-item .border {
+  border-radius: 4px;
+}
+
+.file-item:hover .border {
+  border-color: #0d6efd !important;
+}
+
+/* Active file category styling */
+.list-group-item.active {
+  background-color: #f0f7ff;
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.list-group-item.active .text-secondary {
+  color: #0d6efd !important;
+}
+
+/* Styling for clickable file names */
+.file-name.cursor-pointer {
+  cursor: pointer;
+  color: #0d6efd;
+  transition: color 0.2s;
+}
+
+.file-name.cursor-pointer:hover {
+  color: #0a58ca;
+  text-decoration: underline;
+}
+
+/* View button styling */
+.btn-link.text-primary {
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+}
+
+.btn-link.text-primary:hover {
+  background-color: rgba(13, 110, 253, 0.1);
 } 
