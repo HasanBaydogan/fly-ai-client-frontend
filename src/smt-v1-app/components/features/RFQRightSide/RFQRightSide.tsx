@@ -31,8 +31,19 @@ import {
   getQuoteIdwithMailId
 } from 'smt-v1-app/services/QuoteService';
 import { Modal, Button } from 'react-bootstrap';
+import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
 
-const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
+interface RFQRightSideProps {
+  rfq: RFQ;
+  onUnsavedChangesUpdate?: (hasChanges: boolean) => void;
+  customNavigate?: (path: string) => void;
+}
+
+const RFQRightSide = ({
+  rfq,
+  onUnsavedChangesUpdate,
+  customNavigate
+}: RFQRightSideProps) => {
   const [bgColor, setBgColor] = useState('');
   const [textColor, setTextColor] = useState('');
   const navigation = useNavigate();
@@ -75,6 +86,9 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   const [alternativeParts, setAlternativeParts] = useState(
     rfq.alternativeRFQPartResponses
   );
+
+  // Get access to the UnsavedChanges context
+  const { isNavigationCanceled, resetNavigationCanceled } = useUnsavedChanges();
 
   // Initialize the reference values when the component mounts or rfq changes
   useEffect(() => {
@@ -125,60 +139,80 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     const hasClientRFQIdChanged = clientRFQId !== initialClientRFQIdRef.current;
 
     // Set the unsaved changes flag based on whether any tracked value has changed
-    setHasUnsavedChanges(
+    const hasChanges =
       havePartsChanged ||
-        haveAlternativePartsChanged ||
-        hasClientChanged ||
-        hasRfqDeadlineChanged ||
-        hasClientRFQIdChanged
-    );
-  }, [parts, alternativeParts, foundClient, rfqDeadline, clientRFQId]);
+      haveAlternativePartsChanged ||
+      hasClientChanged ||
+      hasRfqDeadlineChanged ||
+      hasClientRFQIdChanged;
+
+    // Update local state
+    setHasUnsavedChanges(hasChanges);
+
+    // Notify parent component about unsaved changes status
+    if (onUnsavedChangesUpdate) {
+      onUnsavedChangesUpdate(hasChanges);
+    }
+  }, [
+    parts,
+    alternativeParts,
+    foundClient,
+    rfqDeadline,
+    clientRFQId,
+    onUnsavedChangesUpdate
+  ]);
 
   // Handle F5 key press and page navigation
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // F5 key
-      if (e.key === 'F5' || e.keyCode === 116) {
+    // This event handling is now delegated to the parent RFQContainer
+    // Only keeping the component-level handling to support standalone usage
+
+    // Only attach event listeners if no parent is managing this
+    if (!onUnsavedChangesUpdate) {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        // F5 key
+        if (e.key === 'F5' || e.keyCode === 116) {
+          if (hasUnsavedChanges) {
+            e.preventDefault();
+            setRefreshRequested(true);
+            setPendingAction(() => handleConfirmedRefresh);
+            setShowUnsavedWarning(true);
+          }
+        }
+      };
+
+      // For other unload events - instead of showing browser dialog,
+      // we'll just let the page unload with our custom handling
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
         if (hasUnsavedChanges) {
           e.preventDefault();
-          setRefreshRequested(true);
-          setPendingAction(() => handleConfirmedRefresh);
-          setShowUnsavedWarning(true);
+          // Modern browsers require returnValue to be set
+          e.returnValue = '';
+          return '';
         }
-      }
-    };
+      };
 
-    // For other unload events - instead of showing browser dialog,
-    // we'll just let the page unload with our custom handling
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
-        e.preventDefault();
-        // Modern browsers require returnValue to be set
-        e.returnValue = '';
-        return '';
-      }
-    };
+      const handleHistoryChange = () => {
+        if (hasUnsavedChanges) {
+          // Prevent default navigation behavior
+          // Show our custom warning modal instead
+          setShowUnsavedWarning(true);
+          // This won't actually block navigation - we need to handle that in navigation functions
+        }
+      };
 
-    const handleHistoryChange = () => {
-      if (hasUnsavedChanges) {
-        // Prevent default navigation behavior
-        // Show our custom warning modal instead
-        setShowUnsavedWarning(true);
-        // This won't actually block navigation - we need to handle that in navigation functions
-      }
-    };
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      // Listen for history changes (backward/forward navigation)
+      window.addEventListener('popstate', handleHistoryChange);
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    // Listen for history changes (backward/forward navigation)
-    window.addEventListener('popstate', handleHistoryChange);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handleHistoryChange);
-    };
-  }, [hasUnsavedChanges]);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        window.removeEventListener('popstate', handleHistoryChange);
+      };
+    }
+  }, [hasUnsavedChanges, onUnsavedChangesUpdate]);
 
   // Perform page refresh after confirmation
   const handleConfirmedRefresh = () => {
@@ -293,7 +327,9 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   };
 
   const handleSaveUpdate = async () => {
+    // Set loading state without checking for unsaved changes
     setIsLoading(true);
+
     if (!foundClient) {
       toastError('Client Error', 'Client cannot be empty');
       setIsLoading(false);
@@ -455,9 +491,10 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
   };
 
   const handleConvertToQuote = async () => {
+    // Set loading state without checking for unsaved changes
     setIsLoading(true);
 
-    // Check for required data without showing unsaved changes warning
+    // Check for required data
     if (!foundClient) {
       toastError('Client Error', 'Client cannot be empty');
       setIsLoading(false);
@@ -660,17 +697,33 @@ const RFQRightSide = ({ rfq }: { rfq: RFQ }) => {
     }
   };
 
-  const customNavigate = (path: string) => {
+  const localNavigate = (path: string) => {
     if (!hasUnsavedChanges) {
       // If no changes, navigate directly
       navigation(path);
     } else {
-      // If there are changes, show warning
-      checkUnsavedChangesBeforeAction(() => {
-        navigation(path);
-      });
+      // If there are changes, use parent's handler if available, otherwise show local warning
+      if (customNavigate) {
+        // Use parent's navigation handler
+        customNavigate(path);
+      } else {
+        // Local handling
+        checkUnsavedChangesBeforeAction(() => {
+          navigation(path);
+        });
+      }
     }
   };
+
+  // Effect to reset loading state when navigation is canceled
+  useEffect(() => {
+    if (isNavigationCanceled) {
+      // Reset loading state
+      setIsLoading(false);
+      // Reset the navigation canceled flag
+      resetNavigationCanceled();
+    }
+  }, [isNavigationCanceled, resetNavigationCanceled]);
 
   return (
     <div className="rfq-right">

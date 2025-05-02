@@ -4,20 +4,29 @@ import { Navbar } from 'react-bootstrap';
 import { useBreakpoints } from 'providers/BreakpointsProvider';
 import NavbarToggleButton from './NavbarToggleButton';
 import { Link } from 'react-router-dom';
+import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
 
 const NavbarBrand = ({ logo }: { logo?: string }) => {
   const {
     config: { navbarTopShape, navbarPosition }
   } = useAppContext();
   const { breakpoints } = useBreakpoints();
+  const { navigateSafely } = useUnsavedChanges();
+
+  // Custom navigation handler for the logo
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigateSafely('/');
+  };
 
   return (
     <>
       <div className="navbar-logo">
         {breakpoints.down('lg') && <NavbarToggleButton />}
         <Navbar.Brand
-          as={Link}
-          to="/"
+          as="a"
+          href="/"
+          onClick={handleLogoClick}
           className={classNames({
             'me-1 me-sm-3':
               navbarTopShape === 'slim' || navbarPosition === 'horizontal'

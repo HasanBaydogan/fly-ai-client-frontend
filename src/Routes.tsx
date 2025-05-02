@@ -3,6 +3,7 @@ import MainLayout from 'layouts/MainLayout';
 import { RouteObject, createBrowserRouter } from 'react-router-dom';
 
 import MainLayoutProvider from 'providers/MainLayoutProvider';
+import { UnsavedChangesProvider } from 'providers/UnsavedChangesProvider';
 
 import Error404 from 'pages/error/Error404';
 import Error403 from 'pages/error/Error403';
@@ -62,9 +63,11 @@ const routes: RouteObject[] = [
       {
         path: '/',
         element: (
-          <MainLayoutProvider>
-            <MainLayout />
-          </MainLayoutProvider>
+          <UnsavedChangesProvider>
+            <MainLayoutProvider>
+              <MainLayout />
+            </MainLayoutProvider>
+          </UnsavedChangesProvider>
         ),
         children: [
           {
