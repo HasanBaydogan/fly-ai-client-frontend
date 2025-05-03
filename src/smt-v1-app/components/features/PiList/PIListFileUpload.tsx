@@ -335,6 +335,15 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [viewingFile, setViewingFile] = useState<string | null>(null);
+  // Add new states for confirmation modals
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
+  const [showSaveConfirm, setShowSaveConfirm] = useState<boolean>(false);
+  const [fileToDelete, setFileToDelete] = useState<{
+    fileId: string;
+    nodeId: string;
+    parentNodeType: 'category' | 'subcategory';
+  } | null>(null);
+  const [nodeToSave, setNodeToSave] = useState<string | null>(null);
 
   // Get the inverse mapping from attachment type to folder ID
   const attachmentTypeToFolderMap = Object.entries(
@@ -599,21 +608,29 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
     }
   };
 
-  // Since we're now fetching attachments from backend, we'll modify the file deletion
-  // function to handle deletion properly
+  // Modify handleDeleteFile to show confirmation modal
   const handleDeleteFile = async (
     fileId: string,
     nodeId: string,
     parentNodeType: 'category' | 'subcategory'
   ) => {
-    // For now, just remove it from the UI until you implement backend deletion
+    setFileToDelete({ fileId, nodeId, parentNodeType });
+    setShowDeleteConfirm(true);
+  };
+
+  // Add new function to handle confirmed deletion
+  const handleConfirmedDelete = async () => {
+    if (!fileToDelete) return;
+
+    const { fileId, nodeId, parentNodeType } = fileToDelete;
+
+    // Remove from UI
     setData(prevData => {
       return prevData.map(mainCategory => {
         return {
           ...mainCategory,
           categories: mainCategory.categories.map(category => {
             if (parentNodeType === 'category' && category.id === nodeId) {
-              // File is directly under a category
               return {
                 ...category,
                 files: category.files
@@ -629,7 +646,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                   parentNodeType === 'subcategory' &&
                   subCategory.id === nodeId
                 ) {
-                  // File is under a subcategory
                   return {
                     ...subCategory,
                     files: subCategory.files.filter(file => file.id !== fileId)
@@ -643,10 +659,32 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
       });
     });
 
-    // In a real implementation, you would call an API to delete the file
-    // Then refresh the attachments
-    // await deleteAttachment(fileId);
-    // await fetchAttachments();
+    setShowDeleteConfirm(false);
+    setFileToDelete(null);
+  };
+
+  // Modify toggleEditMode to show save confirmation
+  const toggleEditMode = (nodeId: string) => {
+    if (editModes[nodeId]) {
+      // If we're exiting edit mode (Save button clicked), show confirmation
+      setNodeToSave(nodeId);
+      setShowSaveConfirm(true);
+    } else {
+      // Entering edit mode
+      setEditModes(prev => ({
+        ...prev,
+        [nodeId]: true
+      }));
+    }
+  };
+
+  // Add new function to handle confirmed save
+  const handleConfirmedSave = async () => {
+    if (nodeToSave) {
+      await uploadFilesToAPI(nodeToSave);
+      setShowSaveConfirm(false);
+      setNodeToSave(null);
+    }
   };
 
   // Function to convert file to Base64
@@ -664,20 +702,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
       };
       reader.onerror = error => reject(error);
     });
-  };
-
-  const toggleEditMode = (nodeId: string) => {
-    if (editModes[nodeId]) {
-      // If we're exiting edit mode (Save button clicked), always upload to API
-      // This ensures deletions are sent to backend even if no new files are selected
-      uploadFilesToAPI(nodeId);
-    } else {
-      // Entering edit mode
-      setEditModes(prev => ({
-        ...prev,
-        [nodeId]: true
-      }));
-    }
   };
 
   const handleFileUpload = (
@@ -1907,28 +1931,74 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="xl" fullscreen="lg-down">
-      <Modal.Header closeButton>
-        <Modal.Title>PI File Management</Modal.Title>
-      </Modal.Header>
-      <Modal.Body className="p-3">
-        {isLoading ? (
-          <div className="text-center p-5">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading...</span>
+    <>
+      <Modal show={show} onHide={onHide} size="xl" fullscreen="lg-down">
+        <Modal.Header closeButton>
+          <Modal.Title>PI File Management</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-3">
+          {isLoading ? (
+            <div className="text-center p-5">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="mt-2">Loading attachments...</p>
             </div>
-            <p className="mt-2">Loading attachments...</p>
-          </div>
-        ) : (
-          renderVerticalFileManager()
-        )}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Close
-        </Button>
-      </Modal.Footer>
-    </Modal>
+          ) : (
+            renderVerticalFileManager()
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={onHide}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        show={showDeleteConfirm}
+        onHide={() => setShowDeleteConfirm(false)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Delete File</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete this file? This action cannot be
+          undone.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDeleteConfirm(false)}
+          >
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleConfirmedDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Save Confirmation Modal */}
+      <Modal show={showSaveConfirm} onHide={() => setShowSaveConfirm(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Save Changes</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to save these changes? This will update the
+          files in this folder.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowSaveConfirm(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleConfirmedSave}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 
