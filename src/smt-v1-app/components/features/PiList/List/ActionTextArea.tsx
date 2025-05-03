@@ -1,161 +1,175 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Modal, Form } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Button } from 'react-bootstrap';
+import ActionListModal from './ActionListModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faListUl } from '@fortawesome/free-solid-svg-icons';
 
-interface ActionTextAreaProps {
-  initialValue: string;
-  onSave: (value: string) => void;
+interface ActionType {
+  piActionId: string;
+  description: string;
+  createdBy: string;
+  createdAt: string;
 }
 
+interface ActionTextAreaProps {
+  piId: string;
+  actions: ActionType[];
+  onActionCreated?: (action: ActionType) => void;
+  onActionUpdated?: (action: ActionType) => void;
+}
+
+// Function to truncate text with ellipsis after a certain number of lines
+const truncateText = (text: string, maxChars = 50): string => {
+  if (text.length <= maxChars) return text;
+  return text.substring(0, maxChars) + '...';
+};
+
 const ActionTextArea: React.FC<ActionTextAreaProps> = ({
-  initialValue,
-  onSave
+  piId,
+  actions: initialActions,
+  onActionCreated,
+  onActionUpdated
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState(initialValue);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
-  const [nextAction, setNextAction] = useState<() => void>(() => () => {});
+  const [showModal, setShowModal] = useState(false);
+  const [actions, setActions] = useState(initialActions);
 
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
+  // When a new action is created
+  const handleActionCreated = (newAction: ActionType) => {
+    if (!newAction) return;
 
-  const handleEditClick = () => {
-    setShowEditModal(true);
-  };
-
-  const handleStartEdit = () => {
-    setIsEditing(true);
-    setShowEditModal(false);
-  };
-
-  const handleSaveClick = () => {
-    setShowSaveModal(true);
-  };
-
-  const handleConfirmSave = () => {
-    onSave(value);
-    setIsEditing(false);
-    setShowSaveModal(false);
-  };
-
-  const checkUnsavedChanges = (nextAction: () => void) => {
-    if (value !== initialValue) {
-      setNextAction(() => nextAction);
-      setShowUnsavedModal(true);
-    } else {
-      nextAction();
+    // Null check
+    if (!newAction.description || !newAction.piActionId) {
+      console.error('Invalid action data received:', newAction);
+      return;
     }
+
+    setActions(prev => [...(prev || []), newAction]);
+    if (onActionCreated) onActionCreated(newAction);
+  };
+
+  // When an action is updated
+  const handleActionUpdated = (updatedAction: ActionType) => {
+    if (!updatedAction) return;
+
+    // Null check
+    if (!updatedAction.description || !updatedAction.piActionId) {
+      console.error('Invalid updated action data received:', updatedAction);
+      return;
+    }
+
+    setActions(prev =>
+      prev
+        ? prev.map(a =>
+            a && a.piActionId === updatedAction.piActionId ? updatedAction : a
+          )
+        : []
+    );
+    if (onActionUpdated) onActionUpdated(updatedAction);
   };
 
   return (
-    <div className="d-flex align-items-start gap-2">
-      <Form.Control
-        as="textarea"
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        disabled={!isEditing}
-        style={{ minHeight: '100px', resize: 'vertical' }}
-      />
-
-      {!isEditing ? (
-        <Button
-          variant="outline-primary"
-          size="sm"
-          onClick={handleEditClick}
-          title="Edit"
-          className="d-flex align-items-center justify-content-center"
-          style={{ width: '32px', height: '32px' }}
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 8,
+        width: '100%'
+      }}
+    >
+      <div
+        style={{
+          border: '1px solid #ddd',
+          borderRadius: 4,
+          background: '#f9f9f9',
+          padding: '10px',
+          flex: 1,
+          maxWidth: 'calc(100% - 40px)',
+          height: '100px',
+          position: 'relative'
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            width: '100%',
+            height: '100%',
+            overflowY: 'auto',
+            paddingRight: '5px'
+          }}
         >
-          <FontAwesomeIcon icon={faPenToSquare} />
-        </Button>
-      ) : (
-        <Button
-          variant="outline-success"
-          size="sm"
-          onClick={handleSaveClick}
-          title="Save"
-          className="d-flex align-items-center justify-content-center"
-          style={{ width: '32px', height: '32px' }}
-        >
-          <FontAwesomeIcon icon={faSave} />
-        </Button>
+          {!actions || actions.length === 0 ? (
+            <div
+              style={{
+                border: '1px solid #ddd',
+                borderRadius: 4,
+                height: 40,
+                width: '100%',
+                background: '#fafbfc'
+              }}
+            />
+          ) : (
+            actions
+              .filter(action => action && action.description)
+              .map(action => (
+                <div
+                  key={action.piActionId || `action-${Math.random()}`}
+                  style={{
+                    border: '1px solid #ddd',
+                    borderRadius: 4,
+                    padding: 8,
+                    background: '#fafbfc',
+                    width: '100%',
+                    minHeight: 40,
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                  title={action.description}
+                >
+                  <div
+                    style={{
+                      fontSize: 13,
+                      lineHeight: '1.4',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      wordBreak: 'break-word'
+                    }}
+                  >
+                    {action.description}
+                  </div>
+                </div>
+              ))
+          )}
+        </div>
+      </div>
+      <Button
+        variant="outline-primary"
+        size="sm"
+        onClick={() => setShowModal(true)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 32,
+          height: 32,
+          padding: 0,
+          flexShrink: 0
+        }}
+        title="View Actions"
+      >
+        <FontAwesomeIcon icon={faListUl} />
+      </Button>
+      {showModal && (
+        <ActionListModal
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          piId={piId}
+          actions={actions}
+          onActionCreated={handleActionCreated}
+          onActionUpdated={handleActionUpdated}
+        />
       )}
-
-      {/* Edit Confirmation Modal */}
-      <Modal
-        show={showEditModal}
-        onHide={() => setShowEditModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Edit Mode</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to enter edit mode?</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleStartEdit}>
-            Yes, Edit
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Save Confirmation Modal */}
-      <Modal
-        show={showSaveModal}
-        onHide={() => setShowSaveModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Save</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to save your changes?</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowSaveModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="success" onClick={handleConfirmSave}>
-            Yes, Save
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Unsaved Changes Warning Modal */}
-      <Modal
-        show={showUnsavedModal}
-        onHide={() => setShowUnsavedModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Unsaved Changes</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          You have unsaved changes. Your changes will be lost if you continue.
-          Do you want to proceed?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowUnsavedModal(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              setShowUnsavedModal(false);
-              nextAction();
-            }}
-          >
-            Yes, Proceed
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 };

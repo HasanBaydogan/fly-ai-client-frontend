@@ -11,6 +11,7 @@ import { faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { useNavbarVerticalCollapse } from './NavbarVerticalCollapseProvider';
 import Badge from 'components/base/Badge';
 import { useAppContext } from 'providers/AppProvider';
+import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
 
 interface NavbarVerticalMenuProps {
   routes: Route[];
@@ -27,6 +28,18 @@ const NavItem = ({ route, level }: NavItemProps) => {
     config: { isNavbarVerticalCollapsed }
   } = useAppContext();
   const { setOpenItems, openItems } = useNavbarVerticalCollapse();
+  const { navigateSafely } = useUnsavedChanges();
+
+  // Create custom navigation handler
+  const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (route.path && route.path !== '#!') {
+      e.preventDefault();
+      navigateSafely(route.path);
+      if (level === 1) {
+        setOpenItems(openItems.map(() => ''));
+      }
+    }
+  };
 
   return (
     <Nav.Item as="li">
@@ -38,7 +51,7 @@ const NavItem = ({ route, level }: NavItemProps) => {
             active: isActive && route.path !== '#!'
           })
         }
-        onClick={() => level === 1 && setOpenItems(openItems.map(() => ''))}
+        onClick={handleNavigation}
       >
         <div
           className={classNames('d-flex align-items-center', {

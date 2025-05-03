@@ -11,7 +11,9 @@ import {
   PICommentNew,
   PIAttachmentRequest,
   PIAttachmentUploadRequest,
-  PIAttachmentResponse
+  PIAttachmentResponse,
+  PINewAction,
+  PIUpdateAction
 } from '../types/PiTypes';
 
 export const searchByPiList = async (
@@ -86,4 +88,12 @@ export const uploadPIAttachments = async (
   };
 
   return await postRequest('/pi/attachment', requestData);
+};
+
+export const postPiActionCreate = async (NewAction: PINewAction) => {
+  return await postRequest('/pi/pi-action/create', NewAction);
+};
+
+export const postPiActionUpdate = async (UpdateAction: PIUpdateAction) => {
+  return await postRequest('/pi/pi-action/update', UpdateAction);
 };

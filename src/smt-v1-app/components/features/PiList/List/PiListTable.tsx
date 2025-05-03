@@ -68,6 +68,12 @@ export interface PiListData {
   lastModifiedAt: string;
   total: string;
   actions?: string;
+  piActions: Array<{
+    piActionId: string;
+    description: string;
+    createdBy: string;
+    createdAt: string;
+  }>;
 }
 
 const formatStatus = (status: string): string => {
@@ -154,13 +160,7 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
     header: 'Actions',
     accessorKey: '1--',
     cell: ({ row: { original } }) => (
-      <ActionTextArea
-        initialValue={original.actions || ''}
-        onSave={value => {
-          // Here you would typically call an API to save the actions
-          console.log('Saving actions:', value);
-        }}
-      />
+      <ActionTextArea piId={original.piId} actions={original.piActions || []} />
     ),
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },

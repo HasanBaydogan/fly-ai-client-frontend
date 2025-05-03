@@ -35,6 +35,16 @@ export interface PIAttachmentUploadRequest {
   type: string;
 }
 
+export interface PINewAction {
+  piId: string;
+  description: string;
+}
+
+export interface PIUpdateAction {
+  piActionId: string;
+  description: string;
+}
+
 export interface PIAttachmentResponse {
   data: Array<{
     id: string;
@@ -89,4 +99,10 @@ export interface PiData {
   createdAt: string;
   lastModifiedAt: string;
   total: string;
+  piActions: Array<{
+    piActionId: string;
+    description: string;
+    createdBy: string;
+    createdAt: string;
+  }>;
 }
