@@ -16,6 +16,7 @@ interface ActionTextAreaProps {
   actions: ActionType[];
   onActionCreated?: (action: ActionType) => void;
   onActionUpdated?: (action: ActionType) => void;
+  isEditMode?: boolean;
 }
 
 // Function to truncate text with ellipsis after a certain number of lines
@@ -28,7 +29,8 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
   piId,
   actions: initialActions,
   onActionCreated,
-  onActionUpdated
+  onActionUpdated,
+  isEditMode = false
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [actions, setActions] = useState(initialActions);
@@ -158,23 +160,25 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
           )}
         </div>
       </div>
-      <Button
-        variant="outline-primary"
-        size="sm"
-        onClick={() => setShowModal(true)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 32,
-          height: 32,
-          padding: 0,
-          flexShrink: 0
-        }}
-        title="View Actions"
-      >
-        <FontAwesomeIcon icon={faListUl} />
-      </Button>
+      {isEditMode && (
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => setShowModal(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 32,
+            height: 32,
+            padding: 0,
+            flexShrink: 0
+          }}
+          title="View Actions"
+        >
+          <FontAwesomeIcon icon={faListUl} />
+        </Button>
+      )}
       {showModal && (
         <ActionListModal
           show={showModal}

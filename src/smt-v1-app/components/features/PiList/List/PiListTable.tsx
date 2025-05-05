@@ -1,9 +1,26 @@
-import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  ChangeEvent,
+  FC,
+  createContext,
+  useContext
+} from 'react';
 import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
-import { Col, Row, Dropdown, Badge, Button } from 'react-bootstrap';
+import {
+  Col,
+  Row,
+  Dropdown,
+  Badge,
+  Button,
+  Toast,
+  ToastContainer,
+  Form
+} from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
@@ -18,7 +35,9 @@ import {
   faFileInvoice,
   faSitemap,
   faQuestionCircle as faQuestionCircleSolid,
-  faUpload
+  faUpload,
+  faEdit,
+  faSave
 } from '@fortawesome/free-solid-svg-icons';
 import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
 import PIListFileUpload from 'smt-v1-app/components/features/PiList/PIListFileUpload';
@@ -68,6 +87,8 @@ export interface PiListData {
   lastModifiedAt: string;
   total: string;
   actions?: string;
+  bank?: string;
+  bankType?: string;
   piActions: Array<{
     piActionId: string;
     description: string;
@@ -83,12 +104,22 @@ const formatStatus = (status: string): string => {
     .join(' ');
 };
 
-export const PiTableColumns: ColumnDef<PiListData>[] = [
+// Create context outside of component
+const PiListTableContext = createContext<{
+  editingPiId: string | null;
+  handleEditToggle: (piId: string) => void;
+}>({ editingPiId: null, handleEditToggle: () => {} });
+
+// Static columns without the Actions column that needs editingPiId
+export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
   {
     id: 'actions',
     header: 'Buttons',
     cell: ({ row: { original } }) => {
       const [showFileUploadModal, setShowFileUploadModal] = useState(false);
+      // Use the shared context
+      const { editingPiId, handleEditToggle } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
 
       return (
         <div className="d-flex gap-2 px-2">
@@ -115,6 +146,18 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
             onClick={() => setShowFileUploadModal(true)}
           >
             <FontAwesomeIcon icon={faUpload} />
+          </Button>
+
+          {/* Edit/Save Button */}
+          <Button
+            variant={isEditing ? 'outline-success' : 'outline-info'}
+            size="sm"
+            title={isEditing ? 'Save Changes' : 'Edit PI'}
+            className="d-flex align-items-center justify-content-center"
+            style={{ width: '32px', height: '32px' }}
+            onClick={() => handleEditToggle(original.piId)}
+          >
+            <FontAwesomeIcon icon={isEditing ? faSave : faEdit} />
           </Button>
 
           {showFileUploadModal && (
@@ -156,18 +199,7 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
       headerProps: { style: { width: '8%' }, className: 'ps-3' }
     }
   },
-  {
-    header: 'Actions',
-    id: 'actionsColumn',
-    accessorKey: '1--',
-    cell: ({ row: { original } }) => (
-      <ActionTextArea piId={original.piId} actions={original.piActions || []} />
-    ),
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '60%' }, className: 'ps-3' }
-    }
-  },
+  // The Actions column will be added inside the component
   {
     header: 'Client',
     accessorKey: 'company',
@@ -201,16 +233,75 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
     }
   },
   {
+    id: 'bank',
     accessorKey: '6---',
     header: 'Bank',
+    cell: ({ row: { original } }) => {
+      // We'll replace this implementation with a simple element as it will be dynamically replaced
+      return <div>{original.bank || 'OTHER'}</div>;
+    },
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      cellProps: {
+        className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
+      },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
     header: 'Bank Type',
     accessorKey: '7---',
+    cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [selectedBankType, setSelectedBankType] = useState(
+        original.bankType || 'NONE'
+      );
+
+      const bankTypeOptions = ['NONE', 'TRANSIT', 'EXPORT', 'IMPORTS'];
+
+      const handleBankTypeChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+      ) => {
+        const newValue = e.target.value;
+        setSelectedBankType(newValue);
+        original.bankType = newValue;
+      };
+
+      if (isEditing) {
+        return (
+          <Form.Select
+            size="sm"
+            value={selectedBankType}
+            onChange={handleBankTypeChange}
+            style={{ minWidth: '100px' }}
+          >
+            {bankTypeOptions.map(option => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </Form.Select>
+        );
+      }
+
+      return (
+        <div
+          style={{
+            padding: '0.25rem 0.5rem',
+            minWidth: '100px',
+            border: '1px solid #ced4da',
+            borderRadius: '0.25rem',
+            background: '#f8f9fa',
+            minHeight: '31px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {original.bankType || 'NONE'}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -397,6 +488,9 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   // }
 ];
 
+// Export an alias for backward compatibility with other files
+export const PiTableColumns = PiTableColumnsStatic;
+
 type SearchColumn = {
   label: string;
   value: 'all' | 'quoteNumberId' | 'clientRFQId' | 'clientName';
@@ -413,6 +507,73 @@ interface QuoteListTableProps {
   activeView: string;
 }
 
+// Add a custom AdvanceTable wrapper component for highlighting edited rows
+const EditableAdvanceTable = ({
+  tableProps,
+  editingId
+}: {
+  tableProps: any;
+  editingId: string | null;
+}) => {
+  // Use useEffect to apply styling directly to DOM elements after render
+  useEffect(() => {
+    if (editingId) {
+      // Small delay to ensure the table has rendered
+      setTimeout(() => {
+        // Find all rows and apply border to the one that matches editingId
+        const tableRows = document.querySelectorAll('table tr');
+        tableRows.forEach(element => {
+          // Cast Element to HTMLElement to access style property
+          const row = element as HTMLElement;
+
+          // Clear previous styling from all rows first
+          row.style.border = '';
+          row.style.boxShadow = '';
+          row.style.backgroundColor = '';
+
+          // Look for data-piid attribute or cell content that matches editingId
+          const rowContent = row.innerHTML;
+          if (rowContent.includes(editingId)) {
+            row.style.border = '2px solid #f3a21c';
+            row.style.boxShadow = '0 0 8px rgba(243, 162, 28, 0.3)';
+            row.style.backgroundColor = 'rgba(243, 162, 28, 0.05)';
+          }
+        });
+      }, 100);
+    } else {
+      // If no editing ID, clear all row styles
+      const tableRows = document.querySelectorAll('table tr');
+      tableRows.forEach(element => {
+        // Cast Element to HTMLElement
+        const row = element as HTMLElement;
+        row.style.border = '';
+        row.style.boxShadow = '';
+        row.style.backgroundColor = '';
+      });
+    }
+  }, [editingId]);
+
+  return (
+    <AdvanceTable
+      tableProps={{
+        ...tableProps,
+        getRowProps: (row: any) => {
+          if (row.original.piId === editingId) {
+            return {
+              'data-piid': editingId, // Add a data attribute to identify the row
+              style: {
+                border: '2px solid #f3a21c', // Apply border directly as well
+                backgroundColor: 'rgba(243, 162, 28, 0.05)'
+              }
+            };
+          }
+          return {};
+        }
+      }}
+    />
+  );
+};
+
 const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [data, setData] = useState<PiListData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -424,13 +585,16 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   );
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [actionsColumnWidth, setActionsColumnWidth] = useState(
-    window.innerWidth < 1500 ? '100%' : '60%'
+    window.innerWidth < 1500 ? '100%' : '30%'
   );
+  const [editingPiId, setEditingPiId] = useState<string | null>(null);
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
 
   // Add resize listener to update the Actions column width
   useEffect(() => {
     const handleResize = () => {
-      setActionsColumnWidth(window.innerWidth < 1500 ? '100%' : '60%');
+      setActionsColumnWidth(window.innerWidth < 1500 ? '100%' : '40%');
     };
 
     window.addEventListener('resize', handleResize);
@@ -439,40 +603,194 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     };
   }, []);
 
-  // Instead of modifying the columns, recreate the whole array
-  const columns = useMemo(() => {
-    // Find the original Actions column
-    const actionsColumnIndex = PiTableColumns.findIndex(
-      col => typeof col.header === 'string' && col.header === 'Actions'
-    );
-
-    if (actionsColumnIndex !== -1) {
-      // Create a new array with the same columns
-      return PiTableColumns.map((col, index) => {
-        // Only modify the Actions column
-        if (index === actionsColumnIndex) {
-          return {
-            ...col,
-            meta: {
-              ...col.meta,
-              headerProps: {
-                ...col.meta?.headerProps,
-                className: 'ps-3',
-                style: {
-                  width: actionsColumnWidth,
-                  minWidth: '300px'
-                }
-              }
-            }
-          };
-        }
-        // Return other columns unchanged
-        return col;
-      });
+  // Function to handle edit mode
+  const handleEditToggle = (piId: string) => {
+    if (editingPiId && editingPiId !== piId) {
+      // Show warning if trying to edit a different PI
+      setWarningMessage(
+        'Another PI is currently being edited. Please save or cancel that edit first.'
+      );
+      setShowWarning(true);
+      return;
     }
 
-    return PiTableColumns;
-  }, [actionsColumnWidth]);
+    if (editingPiId === piId) {
+      // Save changes and exit edit mode
+      // Here you would implement the actual save logic
+      console.log('Saving changes for PI:', piId);
+      setEditingPiId(null);
+    } else {
+      // Enter edit mode
+      setEditingPiId(piId);
+    }
+  };
+
+  // Instead of recreating the columns array, directly modify the first column
+  const columns = useMemo(() => {
+    // Create a deep copy of the original columns
+    const modifiedColumns = [...PiTableColumnsStatic];
+
+    // Add the Actions column that needs editingPiId
+    modifiedColumns.splice(3, 0, {
+      header: 'Actions',
+      id: 'actionsColumn',
+      accessorKey: '1--',
+      cell: ({ row: { original } }) => (
+        <ActionTextArea
+          piId={original.piId}
+          actions={original.piActions || []}
+          isEditMode={editingPiId === original.piId}
+        />
+      ),
+      meta: {
+        cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+        headerProps: {
+          className: 'ps-3',
+          style: {
+            width: actionsColumnWidth,
+            minWidth: '300px'
+          }
+        }
+      }
+    });
+
+    // Find and replace the Bank column
+    const bankColumnIndex = modifiedColumns.findIndex(col => {
+      if ('accessorKey' in col) {
+        return col.accessorKey === '6---';
+      }
+      return false;
+    });
+
+    if (bankColumnIndex !== -1) {
+      modifiedColumns[bankColumnIndex] = {
+        id: 'bank',
+        accessorKey: '6---',
+        header: 'Bank',
+        cell: ({ row: { original } }) => {
+          const isEditing = editingPiId === original.piId;
+          const [selectedBank, setSelectedBank] = useState(
+            original.bank || 'OTHER'
+          );
+
+          const bankOptions = ['OTHER', 'EK', 'FB', 'RUS', 'NUROL'];
+
+          const handleBankChange = (
+            e: React.ChangeEvent<HTMLSelectElement>
+          ) => {
+            const newValue = e.target.value;
+            setSelectedBank(newValue);
+            original.bank = newValue;
+          };
+
+          if (isEditing) {
+            return (
+              <Form.Select
+                size="sm"
+                value={selectedBank}
+                onChange={handleBankChange}
+                style={{ minWidth: '100px' }}
+              >
+                {bankOptions.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Form.Select>
+            );
+          }
+
+          return (
+            <div
+              style={{
+                padding: '0.25rem 0.5rem',
+                minWidth: '100px',
+                border: '1px solid #ced4da',
+                borderRadius: '0.25rem',
+                background: '#f8f9fa',
+                minHeight: '31px',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              {original.bank || 'OTHER'}
+            </div>
+          );
+        },
+        meta: {
+          cellProps: {
+            className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
+          },
+          headerProps: { style: { width: '10%' }, className: 'ps-3' }
+        }
+      };
+    }
+
+    // Replace the first column (Buttons/actions column)
+    modifiedColumns[0] = {
+      id: 'actions',
+      header: 'Buttons',
+      cell: ({ row: { original } }) => {
+        const [showFileUploadModal, setShowFileUploadModal] = useState(false);
+        const isEditing = editingPiId === original.piId;
+
+        return (
+          <div className="d-flex gap-2 px-2">
+            <Link
+              to={`/pi/detail?piId=${original.piId}`}
+              style={{ textDecoration: 'none' }}
+            >
+              <Button
+                variant="outline-primary"
+                size="sm"
+                title="PI Detail"
+                className="d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px' }}
+              >
+                <FontAwesomeIcon icon={faFileInvoice} />
+              </Button>
+            </Link>
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              title="PI File Upload"
+              className="d-flex align-items-center justify-content-center"
+              style={{ width: '32px', height: '32px' }}
+              onClick={() => setShowFileUploadModal(true)}
+            >
+              <FontAwesomeIcon icon={faUpload} />
+            </Button>
+
+            {/* Edit/Save Button */}
+            <Button
+              variant={isEditing ? 'outline-success' : 'outline-info'}
+              size="sm"
+              title={isEditing ? 'Save Changes' : 'Edit PI'}
+              className="d-flex align-items-center justify-content-center"
+              style={{ width: '32px', height: '32px' }}
+              onClick={() => handleEditToggle(original.piId)}
+            >
+              <FontAwesomeIcon icon={isEditing ? faSave : faEdit} />
+            </Button>
+
+            {showFileUploadModal && (
+              <PIListFileUpload
+                show={showFileUploadModal}
+                onHide={() => setShowFileUploadModal(false)}
+                piId={original.piId}
+              />
+            )}
+          </div>
+        );
+      },
+      meta: {
+        cellProps: { className: 'text-center py-2' },
+        headerProps: { style: { width: '5%' }, className: 'text-center' }
+      }
+    };
+
+    return modifiedColumns;
+  }, [actionsColumnWidth, editingPiId]);
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<PiListData>();
@@ -593,6 +911,26 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
   return (
     <div>
+      {/* Warning Toast */}
+      <ToastContainer
+        position="top-end"
+        className="p-3"
+        style={{ zIndex: 1050 }}
+      >
+        <Toast
+          show={showWarning}
+          onClose={() => setShowWarning(false)}
+          delay={3000}
+          autohide
+          bg="warning"
+        >
+          <Toast.Header>
+            <strong className="me-auto">Warning</strong>
+          </Toast.Header>
+          <Toast.Body>{warningMessage}</Toast.Body>
+        </Toast>
+      </ToastContainer>
+
       <div className="mb-4">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>
@@ -662,16 +1000,19 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
             <LoadingAnimation />
           </div>
         ) : (
-          <>
+          <PiListTableContext.Provider
+            value={{ editingPiId, handleEditToggle }}
+          >
             <div style={{ width: '100%', overflow: 'auto' }}>
               <div style={{ width: '160%' }}>
-                <AdvanceTable
+                <EditableAdvanceTable
                   tableProps={{
                     className:
                       'phoenix-table border-top border-translucent fs-9',
                     data: data,
                     columns: columns
                   }}
+                  editingId={editingPiId}
                 />
               </div>
             </div>
@@ -684,7 +1025,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
               pageSize={pageSize}
               setPageSize={setPageSize}
             />
-          </>
+          </PiListTableContext.Provider>
         )}
       </div>
     </div>

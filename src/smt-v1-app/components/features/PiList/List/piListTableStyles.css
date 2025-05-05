@@ -1,0 +1,48 @@
+/* Direct styling for edited rows using both attribute and class selectors */
+table tr[data-piid],
+table tr.pi-row-editing {
+  border: 2px solid #f3a21c !important;
+  outline: 2px solid #f3a21c !important;
+  background-color: rgba(243, 162, 28, 0.05) !important;
+}
+
+/* Force styling on individual cells for better visibility */
+table tr[data-piid] > td,
+table tr.pi-row-editing > td {
+  border-top: 1px solid #f3a21c !important;
+  border-bottom: 1px solid #f3a21c !important;
+}
+
+/* Add top border to first row */
+table tbody tr:first-child[data-piid],
+table tbody tr:first-child.pi-row-editing {
+  border-top: 2px solid #f3a21c !important;
+}
+
+/* Ensure the borders are visible on all sides */
+table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+/* Specific styling that will ensure visibility */
+.pi-row-editing {
+  position: relative !important;
+  z-index: 2 !important;
+  box-shadow: 0 0 0 2px #f3a21c !important;
+}
+
+/* Target all cells in the row as well */
+table tr[data-piid] td {
+  border-top: 2px solid #f3a21c !important;
+  border-bottom: 2px solid #f3a21c !important;
+}
+
+/* Target first and last cells for left/right borders */
+table tr[data-piid] td:first-child {
+  border-left: 2px solid #f3a21c !important;
+}
+
+table tr[data-piid] td:last-child {
+  border-right: 2px solid #f3a21c !important;
+} 
