@@ -128,6 +128,14 @@ export const routes: RouteItems[] = [
                 next: false
               },
               {
+                name: '• Create New RFQ',
+                path: '/',
+                pathName: 'create-new-rfq',
+                icon: '',
+                active: true,
+                next: false
+              },
+              {
                 name: '• Quote List',
                 path: '/quotes/quotelist',
                 pathName: 'quote-list',
