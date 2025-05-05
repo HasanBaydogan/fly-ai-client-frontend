@@ -158,13 +158,14 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   },
   {
     header: 'Actions',
+    id: 'actionsColumn',
     accessorKey: '1--',
     cell: ({ row: { original } }) => (
       <ActionTextArea piId={original.piId} actions={original.piActions || []} />
     ),
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '20%' }, className: 'ps-3' }
+      headerProps: { style: { width: '60%' }, className: 'ps-3' }
     }
   },
   {
@@ -422,6 +423,56 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     searchColumns[0]
   );
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [actionsColumnWidth, setActionsColumnWidth] = useState(
+    window.innerWidth < 1500 ? '100%' : '60%'
+  );
+
+  // Add resize listener to update the Actions column width
+  useEffect(() => {
+    const handleResize = () => {
+      setActionsColumnWidth(window.innerWidth < 1500 ? '100%' : '60%');
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Instead of modifying the columns, recreate the whole array
+  const columns = useMemo(() => {
+    // Find the original Actions column
+    const actionsColumnIndex = PiTableColumns.findIndex(
+      col => typeof col.header === 'string' && col.header === 'Actions'
+    );
+
+    if (actionsColumnIndex !== -1) {
+      // Create a new array with the same columns
+      return PiTableColumns.map((col, index) => {
+        // Only modify the Actions column
+        if (index === actionsColumnIndex) {
+          return {
+            ...col,
+            meta: {
+              ...col.meta,
+              headerProps: {
+                ...col.meta?.headerProps,
+                className: 'ps-3',
+                style: {
+                  width: actionsColumnWidth,
+                  minWidth: '300px'
+                }
+              }
+            }
+          };
+        }
+        // Return other columns unchanged
+        return col;
+      });
+    }
+
+    return PiTableColumns;
+  }, [actionsColumnWidth]);
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<PiListData>();
@@ -619,7 +670,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
                     className:
                       'phoenix-table border-top border-translucent fs-9',
                     data: data,
-                    columns: PiTableColumns
+                    columns: columns
                   }}
                 />
               </div>

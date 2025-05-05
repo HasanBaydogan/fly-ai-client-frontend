@@ -108,6 +108,7 @@ export interface AlternativePiPart {
 
 export interface Pi {
   alternativeQuotePartResponses: AlternativePiPart[];
+  companyNameAddress: string;
   clientName: string;
   clientContacts: Contact[];
   clientRFQId: string;

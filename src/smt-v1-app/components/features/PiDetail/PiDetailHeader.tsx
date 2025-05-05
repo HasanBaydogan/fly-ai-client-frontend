@@ -14,8 +14,8 @@ interface HeaderProps {
   clientName: string;
   clientRFQId: string;
   revisionNumber: number;
-  userComments: string;
-  setUserComments: React.Dispatch<React.SetStateAction<string>>;
+  companyNameAddress: string;
+  setCompanyNameAddress: React.Dispatch<React.SetStateAction<string>>;
   // status:
   //   | 'UNREAD'
   //   | 'OPEN'
@@ -36,10 +36,12 @@ const Header: React.FC<HeaderProps> = ({
   clientName,
   clientRFQId,
   revisionNumber,
-  userComments,
-  setUserComments,
+  companyNameAddress,
+  setCompanyNameAddress,
   attachments
 }) => {
+  console.log(companyNameAddress);
+
   // useLocation ile URL'e erişip query parametrelerini alıyoruz.
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -127,9 +129,9 @@ const Header: React.FC<HeaderProps> = ({
                   as="textarea"
                   rows={4}
                   disabled
-                  value={userComments}
+                  value={companyNameAddress}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                    setUserComments(e.target.value)
+                    setCompanyNameAddress(e.target.value)
                   }
                 />
               </Form.Group>

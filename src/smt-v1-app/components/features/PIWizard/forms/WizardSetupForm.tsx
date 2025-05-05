@@ -506,9 +506,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   const handleQuantityChange = (value: number, rowId: string) => {
     setQuotePartRows(prevRows =>
-      prevRows.map(row =>
-        row.id === rowId ? { ...row, quantity: value } : row
-      )
+      prevRows.map(row => (row.id === rowId ? { ...row, qty: value } : row))
     );
   };
 

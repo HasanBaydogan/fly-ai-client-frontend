@@ -71,7 +71,7 @@ const QuoteContainer = () => {
   const [piData, setpiData] = useState<Pi>();
   const [contacts, setContacts] = useState<Contact[]>([]);
 
-  const [userComments, setUserComments] = useState('');
+  const [companyNameAddress, setCompanyNameAddress] = useState('');
 
   const [showQuoteWizardTabs, setShowQuoteWizardTabs] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -203,8 +203,8 @@ const QuoteContainer = () => {
                   quoteNumberId={piData && piData.quoteNumberId}
                   clientRFQId={piData && piData.clientRFQId}
                   clientName={piData && piData.clientName}
-                  userComments={userComments}
-                  setUserComments={setUserComments}
+                  companyNameAddress={piData.companyNameAddress}
+                  setCompanyNameAddress={setCompanyNameAddress}
                   attachments={
                     mailItemMoreDetailResponse &&
                     mailItemMoreDetailResponse.mailItemAttachmentResponses

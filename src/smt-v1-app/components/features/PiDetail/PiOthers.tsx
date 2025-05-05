@@ -136,7 +136,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
   };
 
   // Balance values
-  const balanceValue = '4.634,71';
+  const balanceValue = '';
 
   return (
     <div className="pi-others-container mt-4">
@@ -459,11 +459,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
           <Form.Label>Payment Term:</Form.Label>
           <Form.Control
             type="text"
-            value={
-              piData?.paymentTerms
-                ? `Payment Term ${piData.paymentTerms}`
-                : '100% Advance Payment'
-            }
+            value={piData.paymentTerms}
             disabled
             readOnly
             className="readonly-input"
@@ -473,11 +469,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
           <Form.Label>Delivery Term:</Form.Label>
           <Form.Control
             type="text"
-            value={
-              piData?.deliveryTerms
-                ? `Delivery Term ${piData.deliveryTerms}`
-                : 'CPT - Aircargo till destination (Custom Tax and costs to be paid by client)'
-            }
+            value={piData.deliveryTerms}
             disabled
             readOnly
             className="readonly-input"
@@ -486,82 +478,80 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
       </Row>
 
       {/* Bank Details Section */}
-      {piData?.bankDetail && (
-        <>
-          <h5 className="mt-4">Bank Details</h5>
-          <hr className="custom-line m-0 mb-3" />
+      <>
+        <h5 className="mt-4">Bank Details</h5>
+        <hr className="custom-line m-0 mb-3" />
 
-          <Row className="mb-3">
-            <Col md={6} lg={4} xl={3} className="mb-3">
-              <Form.Label>Bank Name:</Form.Label>
-              <Form.Control
-                type="text"
-                value={piData.bankDetail.bankName || ''}
-                disabled
-                readOnly
-                className="readonly-input"
-              />
-            </Col>
+        <Row className="mb-3">
+          <Col md={6} lg={4} xl={3} className="mb-3">
+            <Form.Label>Bank Name:</Form.Label>
+            <Form.Control
+              type="text"
+              value={piData?.bankDetail?.bankName || ''}
+              disabled
+              readOnly
+              className="readonly-input"
+            />
+          </Col>
 
-            <Col md={6} lg={4} xl={3} className="mb-3">
-              <Form.Label>Branch Name:</Form.Label>
-              <Form.Control
-                type="text"
-                value={piData.bankDetail.branchName || ''}
-                disabled
-                readOnly
-                className="readonly-input"
-              />
-            </Col>
+          <Col md={6} lg={4} xl={3} className="mb-3">
+            <Form.Label>Branch Name:</Form.Label>
+            <Form.Control
+              type="text"
+              value={piData?.bankDetail?.branchName || ''}
+              disabled
+              readOnly
+              className="readonly-input"
+            />
+          </Col>
 
-            <Col md={6} lg={4} xl={3} className="mb-3">
-              <Form.Label>Branch Code:</Form.Label>
-              <Form.Control
-                type="text"
-                value={piData.bankDetail.branchCode || ''}
-                disabled
-                readOnly
-                className="readonly-input"
-              />
-            </Col>
+          <Col md={6} lg={4} xl={3} className="mb-3">
+            <Form.Label>Branch Code:</Form.Label>
+            <Form.Control
+              type="text"
+              value={piData?.bankDetail?.branchCode || ''}
+              disabled
+              readOnly
+              className="readonly-input"
+            />
+          </Col>
 
-            <Col md={6} lg={4} xl={3} className="mb-3">
-              <Form.Label>Currency:</Form.Label>
-              <Form.Control
-                type="text"
-                value={piData.bankDetail.currency || ''}
-                disabled
-                readOnly
-                className="readonly-input"
-              />
-            </Col>
-          </Row>
+          <Col md={6} lg={4} xl={3} className="mb-3">
+            <Form.Label>Currency:</Form.Label>
+            <Form.Control
+              type="text"
+              value={piData?.bankDetail?.currency || ''}
+              disabled
+              readOnly
+              className="readonly-input"
+            />
+          </Col>
+        </Row>
 
-          <Row>
-            <Col md={6} lg={6} className="mb-3">
-              <Form.Label>IBAN No:</Form.Label>
-              <Form.Control
-                type="text"
-                value={piData.bankDetail.ibanNo || ''}
-                disabled
-                readOnly
-                className="readonly-input"
-              />
-            </Col>
+        <Row>
+          <Col md={6} lg={6} className="mb-3">
+            <Form.Label>IBAN No:</Form.Label>
+            <Form.Control
+              type="text"
+              value={piData?.bankDetail?.ibanNo || ''}
+              disabled
+              readOnly
+              className="readonly-input"
+            />
+          </Col>
 
-            <Col md={6} lg={6} className="mb-3">
-              <Form.Label>Swift Code:</Form.Label>
-              <Form.Control
-                type="text"
-                value={piData.bankDetail.swiftCode || ''}
-                disabled
-                readOnly
-                className="readonly-input"
-              />
-            </Col>
-          </Row>
-        </>
-      )}
+          <Col md={6} lg={6} className="mb-3">
+            <Form.Label>Swift Code:</Form.Label>
+            <Form.Control
+              type="text"
+              value={piData?.bankDetail?.swiftCode || ''}
+              disabled
+              readOnly
+              className="readonly-input"
+            />
+          </Col>
+        </Row>
+      </>
     </div>
   );
 };
