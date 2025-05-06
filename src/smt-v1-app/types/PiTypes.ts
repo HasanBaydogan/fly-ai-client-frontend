@@ -45,6 +45,37 @@ export interface PIUpdateAction {
   description: string;
 }
 
+export interface PiUpdateOthers {
+  piId: string;
+  piStatus:
+    | 'NONE'
+    | 'PI_CREATED'
+    | 'PI_SENT_TO_CLIENT'
+    | 'PO_WAITING_FROM_CLIENT'
+    | 'PO_RECEIVED_FROM_CLIENT'
+    | 'PO_RECEIVED_BUT_PI_NOT_CREATED'
+    | 'PO_CREATED'
+    | 'PO_PARTIALLY_SENT'
+    | 'PO_FULLY_SENT'
+    | 'LOT_CREATED'
+    | 'LOT_PARTIALLY_SENT'
+    | 'LOT_FULLY_SENT';
+  piBank: 'OTHER' | 'EK' | 'FB' | 'RUS' | 'NUROL';
+  piBankType: 'NONE' | 'TRANSIT' | 'EXPORT' | 'IMPORTS';
+  clientPaidPrice: {
+    currency: string;
+    price: number;
+  };
+  clientPaidDate: string;
+  supplierPaidPrice: {
+    currency: string;
+    price: number;
+  };
+  supplierPaidDate: string;
+  leadTimeDays: number;
+  opSupplierId: string;
+}
+
 export interface PIAttachmentResponse {
   data: Array<{
     id: string;

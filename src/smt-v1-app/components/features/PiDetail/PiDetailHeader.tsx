@@ -40,8 +40,6 @@ const Header: React.FC<HeaderProps> = ({
   setCompanyNameAddress,
   attachments
 }) => {
-  console.log(companyNameAddress);
-
   // useLocation ile URL'e erişip query parametrelerini alıyoruz.
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);

@@ -211,7 +211,7 @@ export const routes: RouteItems[] = [
             ]
           },
           {
-            name: 'PI List - Trace',
+            name: 'PI List',
             active: true,
             icon: 'mail', //----------
             flat: true,
@@ -224,14 +224,14 @@ export const routes: RouteItems[] = [
                 active: true,
                 next: false
               },
-              {
-                name: '• PI Trace',
-                path: '/',
-                pathName: 'pi-trace',
-                icon: '',
-                active: true,
-                next: false
-              },
+              // {
+              //   name: '• PI Trace',
+              //   path: '/',
+              //   pathName: 'pi-trace',
+              //   icon: '',
+              //   active: true,
+              //   next: false
+              // },
               {
                 name: '• PI Deadline Track',
                 path: '/',
