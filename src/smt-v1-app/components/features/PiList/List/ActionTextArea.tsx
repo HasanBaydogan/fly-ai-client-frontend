@@ -16,6 +16,7 @@ interface ActionTextAreaProps {
   actions: ActionType[];
   onActionCreated?: (action: ActionType) => void;
   onActionUpdated?: (action: ActionType) => void;
+  isEditMode?: boolean;
 }
 
 // Function to truncate text with ellipsis after a certain number of lines
@@ -28,7 +29,8 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
   piId,
   actions: initialActions,
   onActionCreated,
-  onActionUpdated
+  onActionUpdated,
+  isEditMode = false
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [actions, setActions] = useState(initialActions);
@@ -71,8 +73,8 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
     <div
       style={{
         display: 'flex',
-        alignItems: 'flex-start',
-        gap: 8,
+        alignItems: 'center',
+        gap: 2,
         width: '100%'
       }}
     >
@@ -81,22 +83,21 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
           border: '1px solid #ddd',
           borderRadius: 4,
           background: '#f9f9f9',
-          padding: '10px',
+          padding: '5px',
           flex: 1,
-          maxWidth: 'calc(100% - 40px)',
-          height: '100px',
-          position: 'relative'
+          maxWidth: 'calc(100% )',
+          position: 'relative',
+          minWidth: '400px'
         }}
       >
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 8,
+            gap: 2,
             width: '100%',
-            height: '100%',
             overflowY: 'auto',
-            paddingRight: '5px'
+            paddingRight: '2px'
           }}
         >
           {!actions || actions.length === 0 ? (
@@ -118,48 +119,66 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
                   style={{
                     border: '1px solid #ddd',
                     borderRadius: 4,
-                    padding: 8,
+                    padding: 4,
                     background: '#fafbfc',
                     width: '100%',
                     minHeight: 40,
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    position: 'relative'
                   }}
                   title={action.description}
                 >
                   <div
                     style={{
-                      fontSize: 13,
-                      lineHeight: '1.4',
+                      fontSize: 12,
+                      lineHeight: '1',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      wordBreak: 'break-word'
+                      wordBreak: 'break-word',
+                      marginBottom: '16px',
+                      textAlign: 'left'
                     }}
                   >
                     {action.description}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      color: '#666',
+                      position: 'absolute',
+                      bottom: 4,
+                      right: 8,
+                      fontStyle: 'italic'
+                    }}
+                  >
+                    {action.createdBy} -{' '}
+                    {new Date(action.createdAt).toLocaleString()}
                   </div>
                 </div>
               ))
           )}
         </div>
       </div>
-      <Button
-        variant="outline-primary"
-        size="sm"
-        onClick={() => setShowModal(true)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 32,
-          height: 32,
-          padding: 0,
-          flexShrink: 0
-        }}
-        title="View Actions"
-      >
-        <FontAwesomeIcon icon={faListUl} />
-      </Button>
+      {isEditMode && (
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => setShowModal(true)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 32,
+            height: 32,
+            padding: 0,
+            flexShrink: 0
+          }}
+          title="View Actions"
+        >
+          <FontAwesomeIcon icon={faListUl} />
+        </Button>
+      )}
       {showModal && (
         <ActionListModal
           show={showModal}

@@ -1,9 +1,17 @@
-import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  ChangeEvent,
+  FC,
+  createContext,
+  useContext
+} from 'react';
 import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
-import { Col, Row, Dropdown, Badge, Button } from 'react-bootstrap';
+import { Col, Row, Dropdown, Badge, Button, Form } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
@@ -11,18 +19,35 @@ import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-// import { PiData } from 'smt-v1-app/types/PiTypes';
-import { searchByPiList } from 'smt-v1-app/services/PIServices';
+import { PiData } from 'smt-v1-app/types/PiTypes';
+import {
+  searchByPiList,
+  postOpenEditMode,
+  postPiUpdate,
+  getAllCurrenciesFromDB
+} from 'smt-v1-app/services/PIServices';
+import { PiUpdateOthers } from 'smt-v1-app/types/PiTypes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFileInvoice,
   faSitemap,
   faQuestionCircle as faQuestionCircleSolid,
-  faUpload
+  faUpload,
+  faEdit,
+  faSave,
+  faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
 import PIListFileUpload from 'smt-v1-app/components/features/PiList/PIListFileUpload';
 import ActionTextArea from './ActionTextArea';
+import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
+
+import ToastContainer from 'react-bootstrap/ToastContainer';
+import Toast from 'react-bootstrap/Toast';
+import Table from 'react-bootstrap/Table';
+import Placeholder from 'react-bootstrap/Placeholder';
+import CloseButton from 'react-bootstrap/CloseButton';
+import InputGroup from 'react-bootstrap/InputGroup';
 
 // Add type declaration for Bootstrap
 declare global {
@@ -33,6 +58,12 @@ declare global {
         getInstance: (element: Element) => { dispose: () => void } | null;
       };
     };
+  }
+}
+
+declare module 'react-bootstrap' {
+  export interface DropdownProps {
+    autoClose?: boolean | 'outside' | 'inside';
   }
 }
 
@@ -68,6 +99,33 @@ export interface PiListData {
   lastModifiedAt: string;
   total: string;
   actions?: string;
+  bank?: string;
+  bankType?: string;
+  customerPaymentDate?: string;
+  supplierPaidDate?: string;
+  ltDays?: number;
+  opSupplier?: string;
+  customerPayment?: number;
+  piBank?: string;
+  piBankType?: string;
+  clientPaidDate?: string;
+  clientPaidPrice?: {
+    currency: string;
+    price: number;
+  };
+  invoice?: {
+    currency: string;
+    price: number;
+  };
+  leadTimeDays?: number;
+  leadTimeDeadline?: string;
+  piDate?: string;
+  supplierPaidPrice?: {
+    currency: string;
+    price: number;
+  };
+  opSupplierId?: string;
+  supplier?: any[];
   piActions: Array<{
     piActionId: string;
     description: string;
@@ -76,6 +134,130 @@ export interface PiListData {
   }>;
 }
 
+// Define interface for the API response from postOpenEditMode
+interface EditModeResponse {
+  data: {
+    locked: boolean;
+  };
+  message: string;
+  statusCode: number;
+  success: boolean;
+  timestamp: string;
+}
+
+// Format number with thousands separator
+const formatNumber = (number: string): string => {
+  return number.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+// Format currency with proper symbol and decimal places
+// includeSymbol parameter controls whether to add currency symbol to avoid duplicates
+const formatCurrency = (
+  inputValue: string,
+  currency: string,
+  blur: string = '',
+  includeSymbol: boolean = true
+): string => {
+  if (inputValue === '') return '';
+  let input_val = inputValue;
+
+  // Format the decimal part
+  if (input_val.indexOf('.') >= 0) {
+    const decimal_pos = input_val.indexOf('.');
+    let left_side = input_val.substring(0, decimal_pos);
+    let right_side = input_val.substring(decimal_pos);
+    left_side = formatNumber(left_side);
+    right_side = formatNumber(right_side);
+    if (blur === 'blur') {
+      right_side += '00';
+    }
+    right_side = right_side.substring(0, 2);
+    input_val = includeSymbol
+      ? `${getCurrencySymbol(currency)}${left_side}.${right_side}`
+      : `${left_side}.${right_side}`;
+  } else {
+    input_val = includeSymbol
+      ? `${getCurrencySymbol(currency)}${formatNumber(inputValue)}`
+      : `${formatNumber(inputValue)}`;
+    if (blur === 'blur') {
+      input_val += '.00';
+    }
+  }
+  return input_val;
+};
+
+// Extract numeric value from formatted currency string
+const extractNumericValue = (
+  formattedValue: string,
+  currency: string
+): number => {
+  const x = formattedValue.split(getCurrencySymbol(currency));
+  if (x.length > 1) {
+    const inputValueArray = x[1].split(',');
+    let totalinputValueString = '';
+    inputValueArray.forEach(item => {
+      totalinputValueString += item;
+    });
+    return Math.round(parseFloat(totalinputValueString) * 100) / 100;
+  } else if (x.length === 1) {
+    return Math.round(parseFloat(x[0]) * 100) / 100;
+  }
+  return 0;
+};
+
+// Function to get currency symbol
+const getCurrencySymbol = (currency: string): string => {
+  return getPriceCurrencySymbol(currency);
+};
+
+// Format date to dd.MM.yyyy for backend
+const formatDateForBackend = (dateString: string): string => {
+  if (!dateString) return '';
+
+  // Check if already in correct format
+  if (/^\d{2}\.\d{2}\.\d{4}$/.test(dateString)) {
+    return dateString;
+  }
+
+  // Try to parse the date
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return ''; // Invalid date
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}.${month}.${year}`;
+  } catch (e) {
+    console.error('Error formatting date:', e);
+    return '';
+  }
+};
+
+// Format date from dd.MM.yyyy to YYYY-MM-DD for date inputs
+const formatDateForInput = (dateString: string): string => {
+  if (!dateString) return '';
+
+  // Check if in dd.MM.yyyy format
+  const dateParts = dateString.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (dateParts) {
+    const [_, day, month, year] = dateParts;
+    return `${year}-${month}-${day}`;
+  }
+
+  // Try to parse as a Date object
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return ''; // Invalid date
+
+    return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+  } catch (e) {
+    console.error('Error formatting date for input:', e);
+    return '';
+  }
+};
+
 const formatStatus = (status: string): string => {
   return status
     .split('_')
@@ -83,12 +265,136 @@ const formatStatus = (status: string): string => {
     .join(' ');
 };
 
-export const PiTableColumns: ColumnDef<PiListData>[] = [
+// Create a reusable component for the read-only currency display
+const ReadOnlyCurrency = ({
+  price,
+  currency
+}: {
+  price?: number;
+  currency?: string;
+}) => {
+  if (price === undefined || currency === undefined) return <span>-</span>;
+
+  return (
+    <div
+      style={{
+        padding: '0.25rem 0.5rem',
+        minWidth: '100px',
+        border: '1px solid #ced4da',
+        borderRadius: '0.25rem',
+        background: '#f8f9fa',
+        minHeight: '31px',
+        display: 'flex',
+        alignItems: 'center'
+      }}
+    >
+      {formatCurrency(price.toString(), currency)}
+    </div>
+  );
+};
+
+// Create a reusable component for the currency input
+interface CurrencyInputProps {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+  selectedCurrency: string;
+  currencies: string[];
+  onCurrencyChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  loadingCurrencies: boolean;
+}
+
+const CurrencyInput: React.FC<CurrencyInputProps> = ({
+  value,
+  onChange,
+  onBlur,
+  selectedCurrency,
+  currencies,
+  onCurrencyChange,
+  loadingCurrencies
+}) => {
+  return (
+    <div className="d-flex">
+      <div className="me-2" style={{ minWidth: '80px' }}>
+        {loadingCurrencies ? (
+          <Form.Select size="sm" disabled>
+            <option>Loading...</option>
+          </Form.Select>
+        ) : (
+          <Form.Select
+            size="sm"
+            value={selectedCurrency}
+            onChange={onCurrencyChange}
+          >
+            {currencies.map(currency => (
+              <option key={currency} value={currency}>
+                {currency} ({getCurrencySymbol(currency)})
+              </option>
+            ))}
+          </Form.Select>
+        )}
+      </div>
+      <Form.Control
+        type="text"
+        size="sm"
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        onKeyDown={e => {
+          // Allow: digits, backspace, delete, tab, escape, enter, decimal point
+          if (
+            (e.key >= '0' && e.key <= '9') || // Allow digits
+            e.key === 'Backspace' ||
+            e.key === 'Delete' ||
+            e.key === 'Tab' ||
+            e.key === 'Enter' ||
+            e.key === 'Escape' ||
+            e.key === 'ArrowLeft' ||
+            e.key === 'ArrowRight' ||
+            e.key === '.' ||
+            // Allow control combinations (copy/paste/etc)
+            e.ctrlKey ||
+            e.metaKey
+          ) {
+            return;
+          }
+
+          // Prevent all other keys
+          e.preventDefault();
+        }}
+        onWheel={(e: React.WheelEvent<HTMLInputElement>) =>
+          e.currentTarget.blur()
+        }
+        placeholder={`${getCurrencySymbol(selectedCurrency)}1,000,000.00`}
+        style={{ width: '120px' }}
+      />
+    </div>
+  );
+};
+
+// Create context outside of component
+const PiListTableContext = createContext<{
+  editingPiId: string | null;
+  handleEditToggle: (piId: string) => void;
+  currencies: string[];
+  loadingCurrencies: boolean;
+}>({
+  editingPiId: null,
+  handleEditToggle: () => {},
+  currencies: [],
+  loadingCurrencies: false
+});
+
+// Static columns without the Actions column that needs editingPiId
+export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
   {
     id: 'actions',
     header: 'Buttons',
     cell: ({ row: { original } }) => {
       const [showFileUploadModal, setShowFileUploadModal] = useState(false);
+      // Use the shared context
+      const { editingPiId, handleEditToggle } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
 
       return (
         <div className="d-flex gap-2 px-2">
@@ -115,6 +421,18 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
             onClick={() => setShowFileUploadModal(true)}
           >
             <FontAwesomeIcon icon={faUpload} />
+          </Button>
+
+          {/* Edit/Save Button */}
+          <Button
+            variant={isEditing ? 'outline-success' : 'outline-info'}
+            size="sm"
+            title={isEditing ? 'Save Changes' : 'Edit PI'}
+            className="d-flex align-items-center justify-content-center"
+            style={{ width: '32px', height: '32px' }}
+            onClick={() => handleEditToggle(original.piId)}
+          >
+            <FontAwesomeIcon icon={isEditing ? faSave : faEdit} />
           </Button>
 
           {showFileUploadModal && (
@@ -156,17 +474,7 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
       headerProps: { style: { width: '8%' }, className: 'ps-3' }
     }
   },
-  {
-    header: 'Actions',
-    accessorKey: '1--',
-    cell: ({ row: { original } }) => (
-      <ActionTextArea piId={original.piId} actions={original.piActions || []} />
-    ),
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '20%' }, className: 'ps-3' }
-    }
-  },
+  // The Actions column will be added inside the component
   {
     header: 'Client',
     accessorKey: 'company',
@@ -186,30 +494,411 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     accessorKey: '4---',
     header: 'Customer Payment',
+    cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId, currencies, loadingCurrencies } =
+        useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [paymentValue, setPaymentValue] = useState<number | undefined>(
+        original.clientPaidPrice?.price
+      );
+      const [paymentStringValue, setPaymentStringValue] = useState<string>(
+        formatCurrency(
+          original.clientPaidPrice?.price?.toString() || '',
+          original.clientPaidPrice?.currency || 'USD'
+        )
+      );
+      const [selectedCurrency, setSelectedCurrency] = useState<string>(
+        original.clientPaidPrice?.currency || 'USD'
+      );
+
+      // Update the selected payment value and currency when edit mode changes or when data changes
+      useEffect(() => {
+        setPaymentValue(original.clientPaidPrice?.price);
+        setPaymentStringValue(
+          formatCurrency(
+            original.clientPaidPrice?.price?.toString() || '',
+            original.clientPaidPrice?.currency || 'USD'
+          )
+        );
+        setSelectedCurrency(original.clientPaidPrice?.currency || 'USD');
+      }, [isEditing, original.clientPaidPrice]);
+
+      const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value;
+
+        // Handle backspace/delete
+        if (inputValue === '') {
+          setPaymentStringValue('');
+          if (!original.clientPaidPrice) {
+            original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
+          }
+          original.clientPaidPrice.price = 0;
+          return;
+        }
+
+        // Process only digits and decimal point
+        let value = inputValue.replace(/[^0-9.]/g, '');
+
+        // Format the value
+        let formattedValue = formatCurrency(value, selectedCurrency);
+        setPaymentStringValue(formattedValue);
+
+        // Extract numeric value and update the data object
+        if (!original.clientPaidPrice) {
+          original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
+        }
+        original.clientPaidPrice.price = extractNumericValue(
+          formattedValue,
+          selectedCurrency
+        );
+      };
+
+      const handlePaymentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value;
+
+        if (inputValue === '') {
+          setPaymentStringValue('');
+          if (!original.clientPaidPrice) {
+            original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
+          }
+          original.clientPaidPrice.price = 0;
+          return;
+        }
+
+        // Process only digits and decimal point
+        let value = inputValue.replace(/[^0-9.]/g, '');
+
+        // Format with blur option to append .00 if needed
+        let formattedValue = formatCurrency(value, selectedCurrency, 'blur');
+        setPaymentStringValue(formattedValue);
+
+        // Extract numeric value and update the data object
+        if (!original.clientPaidPrice) {
+          original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
+        }
+        original.clientPaidPrice.price = extractNumericValue(
+          formattedValue,
+          selectedCurrency
+        );
+      };
+
+      const handleCurrencyChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+      ) => {
+        const newCurrency = e.target.value;
+        setSelectedCurrency(newCurrency);
+
+        // Update the price object with the new currency
+        if (!original.clientPaidPrice) {
+          original.clientPaidPrice = {
+            currency: newCurrency,
+            price: 0
+          };
+        } else {
+          original.clientPaidPrice.currency = newCurrency;
+        }
+
+        // Update the formatted display value with the new currency
+        setPaymentStringValue(
+          formatCurrency(
+            original.clientPaidPrice.price?.toString() || '',
+            newCurrency
+          )
+        );
+      };
+
+      if (isEditing) {
+        return (
+          <CurrencyInput
+            value={paymentStringValue}
+            onChange={handlePaymentChange}
+            onBlur={handlePaymentBlur}
+            selectedCurrency={selectedCurrency}
+            currencies={currencies}
+            onCurrencyChange={handleCurrencyChange}
+            loadingCurrencies={loadingCurrencies}
+          />
+        );
+      }
+
+      return (
+        <ReadOnlyCurrency
+          price={original.clientPaidPrice?.price}
+          currency={original.clientPaidPrice?.currency}
+        />
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: { style: { width: '15%' }, className: 'ps-3' }
     }
   },
   {
     header: 'Supplier Invoice',
     accessorKey: '5---',
+    cell: ({ row: { original } }) => {
+      // Get editing state and currencies from context
+      const { editingPiId, currencies, loadingCurrencies } =
+        useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [invoiceValue, setInvoiceValue] = useState<number | undefined>(
+        original.supplierPaidPrice?.price
+      );
+      const [invoiceStringValue, setInvoiceStringValue] = useState<string>(
+        formatCurrency(
+          original.supplierPaidPrice?.price?.toString() || '',
+          original.supplierPaidPrice?.currency || 'USD'
+        )
+      );
+      const [selectedCurrency, setSelectedCurrency] = useState<string>(
+        original.supplierPaidPrice?.currency || 'USD'
+      );
+
+      // Update the selected invoice value and currency when edit mode changes or when data changes
+      useEffect(() => {
+        setInvoiceValue(original.supplierPaidPrice?.price);
+        setInvoiceStringValue(
+          formatCurrency(
+            original.supplierPaidPrice?.price?.toString() || '',
+            original.supplierPaidPrice?.currency || 'USD'
+          )
+        );
+        setSelectedCurrency(original.supplierPaidPrice?.currency || 'USD');
+      }, [isEditing, original.supplierPaidPrice]);
+
+      const handleInvoiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value;
+
+        // Handle backspace/delete
+        if (inputValue === '') {
+          setInvoiceStringValue('');
+          if (!original.supplierPaidPrice) {
+            original.supplierPaidPrice = {
+              currency: selectedCurrency,
+              price: 0
+            };
+          }
+          original.supplierPaidPrice.price = 0;
+          return;
+        }
+
+        // Process only digits and decimal point
+        let value = inputValue.replace(/[^0-9.]/g, '');
+
+        // Format the value
+        let formattedValue = formatCurrency(value, selectedCurrency);
+        setInvoiceStringValue(formattedValue);
+
+        // Extract numeric value and update the data object
+        if (!original.supplierPaidPrice) {
+          original.supplierPaidPrice = { currency: selectedCurrency, price: 0 };
+        }
+        original.supplierPaidPrice.price = extractNumericValue(
+          formattedValue,
+          selectedCurrency
+        );
+      };
+
+      const handleInvoiceBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value;
+
+        if (inputValue === '') {
+          setInvoiceStringValue('');
+          if (!original.supplierPaidPrice) {
+            original.supplierPaidPrice = {
+              currency: selectedCurrency,
+              price: 0
+            };
+          }
+          original.supplierPaidPrice.price = 0;
+          return;
+        }
+
+        // Process only digits and decimal point
+        let value = inputValue.replace(/[^0-9.]/g, '');
+
+        // Format with blur option to append .00 if needed
+        let formattedValue = formatCurrency(value, selectedCurrency, 'blur');
+        setInvoiceStringValue(formattedValue);
+
+        // Extract numeric value and update the data object
+        if (!original.supplierPaidPrice) {
+          original.supplierPaidPrice = { currency: selectedCurrency, price: 0 };
+        }
+        original.supplierPaidPrice.price = extractNumericValue(
+          formattedValue,
+          selectedCurrency
+        );
+      };
+
+      const handleCurrencyChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+      ) => {
+        const newCurrency = e.target.value;
+        setSelectedCurrency(newCurrency);
+
+        // Update the invoice object with the new currency
+        if (!original.supplierPaidPrice) {
+          original.supplierPaidPrice = {
+            currency: newCurrency,
+            price: 0
+          };
+        } else {
+          original.supplierPaidPrice.currency = newCurrency;
+        }
+
+        // Update the formatted display value with the new currency
+        setInvoiceStringValue(
+          formatCurrency(
+            original.supplierPaidPrice.price?.toString() || '',
+            newCurrency
+          )
+        );
+      };
+
+      if (isEditing) {
+        return (
+          <CurrencyInput
+            value={invoiceStringValue}
+            onChange={handleInvoiceChange}
+            onBlur={handleInvoiceBlur}
+            selectedCurrency={selectedCurrency}
+            currencies={currencies}
+            onCurrencyChange={handleCurrencyChange}
+            loadingCurrencies={loadingCurrencies}
+          />
+        );
+      }
+
+      return (
+        <ReadOnlyCurrency
+          price={original.supplierPaidPrice?.price}
+          currency={original.supplierPaidPrice?.currency}
+        />
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+      headerProps: { style: { width: '15%' }, className: 'ps-3' }
     }
   },
   {
+    id: 'bank',
     accessorKey: '6---',
     header: 'Bank',
+    cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [selectedBank, setSelectedBank] = useState(
+        original.piBank || 'OTHER'
+      );
+
+      const bankOptions = ['OTHER', 'EK', 'FB', 'RUS', 'NUROL'];
+
+      const handleBankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newValue = e.target.value;
+        setSelectedBank(newValue);
+        original.piBank = newValue;
+      };
+
+      if (isEditing) {
+        return (
+          <Form.Select
+            size="sm"
+            value={selectedBank}
+            onChange={handleBankChange}
+            style={{ minWidth: '100px' }}
+          >
+            {bankOptions.map(option => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </Form.Select>
+        );
+      }
+
+      return (
+        <div
+          style={{
+            padding: '0.25rem 0.5rem',
+            minWidth: '100px',
+            border: '1px solid #ced4da',
+            borderRadius: '0.25rem',
+            background: '#f8f9fa',
+            minHeight: '31px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {original.piBank || 'OTHER'}
+        </div>
+      );
+    },
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      cellProps: {
+        className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
+      },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
     header: 'Bank Type',
     accessorKey: '7---',
+    cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [selectedBankType, setSelectedBankType] = useState(
+        original.piBankType || 'NONE'
+      );
+
+      const bankTypeOptions = ['NONE', 'TRANSIT', 'EXPORT', 'IMPORTS'];
+
+      const handleBankTypeChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+      ) => {
+        const newValue = e.target.value;
+        setSelectedBankType(newValue);
+        original.piBankType = newValue;
+      };
+
+      if (isEditing) {
+        return (
+          <Form.Select
+            size="sm"
+            value={selectedBankType}
+            onChange={handleBankTypeChange}
+            style={{ minWidth: '100px' }}
+          >
+            {bankTypeOptions.map(option => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </Form.Select>
+        );
+      }
+
+      return (
+        <div
+          style={{
+            padding: '0.25rem 0.5rem',
+            minWidth: '100px',
+            border: '1px solid #ced4da',
+            borderRadius: '0.25rem',
+            background: '#f8f9fa',
+            minHeight: '31px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {original.piBankType || 'NONE'}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -225,7 +914,7 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   },
   {
     header: 'PI Date',
-    accessorKey: '8---',
+    accessorKey: 'piDate',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -234,6 +923,58 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     accessorKey: '9---',
     header: 'C. Payment Date',
+    cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [selectedDate, setSelectedDate] = useState(
+        formatDateForInput(original.clientPaidDate || '')
+      );
+
+      // Update the selected date when edit mode changes or when data changes
+      useEffect(() => {
+        setSelectedDate(formatDateForInput(original.clientPaidDate || ''));
+      }, [isEditing, original.clientPaidDate]);
+
+      const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setSelectedDate(newValue);
+
+        // Format the date immediately when it's changed in the UI
+        original.clientPaidDate = newValue
+          ? formatDateForBackend(newValue)
+          : '';
+      };
+
+      if (isEditing) {
+        return (
+          <Form.Control
+            type="date"
+            size="sm"
+            value={selectedDate}
+            onChange={handleDateChange}
+            style={{ minWidth: '130px' }}
+          />
+        );
+      }
+
+      return (
+        <div
+          style={{
+            padding: '0.25rem 0.5rem',
+            minWidth: '100px',
+            border: '1px solid #ced4da',
+            borderRadius: '0.25rem',
+            background: '#f8f9fa',
+            minHeight: '31px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {original.clientPaidDate || '-'}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -242,6 +983,58 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     header: 'S. Paid Date',
     accessorKey: '11---',
+    cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [selectedDate, setSelectedDate] = useState(
+        formatDateForInput(original.supplierPaidDate || '')
+      );
+
+      // Update the selected date when edit mode changes or when data changes
+      useEffect(() => {
+        setSelectedDate(formatDateForInput(original.supplierPaidDate || ''));
+      }, [isEditing, original.supplierPaidDate]);
+
+      const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setSelectedDate(newValue);
+
+        // Format the date immediately when it's changed in the UI
+        original.supplierPaidDate = newValue
+          ? formatDateForBackend(newValue)
+          : '';
+      };
+
+      if (isEditing) {
+        return (
+          <Form.Control
+            type="date"
+            size="sm"
+            value={selectedDate}
+            onChange={handleDateChange}
+            style={{ minWidth: '130px' }}
+          />
+        );
+      }
+
+      return (
+        <div
+          style={{
+            padding: '0.25rem 0.5rem',
+            minWidth: '100px',
+            border: '1px solid #ced4da',
+            borderRadius: '0.25rem',
+            background: '#f8f9fa',
+            minHeight: '31px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {original.supplierPaidDate || '-'}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -250,6 +1043,53 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     accessorKey: '22---',
     header: 'LT Days',
+    cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [leadTimeDays, setDaysValue] = useState<number | undefined>(
+        original.leadTimeDays
+      );
+
+      const handleDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.valueAsNumber;
+        setDaysValue(isNaN(newValue) ? undefined : newValue);
+
+        // Update the original data with the new value
+        // Store as null instead of undefined to ensure it's included in the API request
+        original.leadTimeDays = isNaN(newValue) ? null : newValue;
+      };
+
+      if (isEditing) {
+        return (
+          <Form.Control
+            type="number"
+            size="sm"
+            value={leadTimeDays === undefined ? '' : leadTimeDays}
+            onChange={handleDaysChange}
+            min="0"
+            style={{ width: '80px' }}
+          />
+        );
+      }
+
+      return (
+        <div
+          style={{
+            padding: '0.25rem 0.5rem',
+            minWidth: '60px',
+            border: '1px solid #ced4da',
+            borderRadius: '0.25rem',
+            background: '#f8f9fa',
+            minHeight: '31px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {original.leadTimeDays !== undefined ? original.leadTimeDays : '-'}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '5%' }, className: 'ps-3' }
@@ -257,7 +1097,7 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   },
   {
     header: 'LT Deadline',
-    accessorKey: '33---',
+    accessorKey: 'leadTimeDeadline',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '5%' }, className: 'ps-3' }
@@ -266,6 +1106,49 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   {
     accessorKey: '44---',
     header: 'OP Supplier',
+    cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [supplierValue, setSupplierValue] = useState<string>(
+        original.opSupplier || ''
+      );
+
+      const handleSupplierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setSupplierValue(newValue);
+        original.opSupplier = newValue;
+      };
+
+      if (isEditing) {
+        return (
+          <Form.Control
+            type="text"
+            size="sm"
+            value={supplierValue}
+            onChange={handleSupplierChange}
+            style={{ minWidth: '120px' }}
+          />
+        );
+      }
+
+      return (
+        <div
+          style={{
+            padding: '0.25rem 0.5rem',
+            minWidth: '100px',
+            border: '1px solid #ced4da',
+            borderRadius: '0.25rem',
+            background: '#f8f9fa',
+            minHeight: '31px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {original.opSupplier || '-'}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -376,6 +1259,146 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
       cellProps: { className: 'text-center py-2' },
       headerProps: { style: { width: '5%' }, className: 'text-center' }
     }
+  },
+  {
+    header: 'S. Paid Amount',
+    accessorKey: '12---',
+    cell: ({ row: { original } }) => {
+      // Get editing state and currencies from context
+      const { editingPiId, currencies, loadingCurrencies } =
+        useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [paymentValue, setPaymentValue] = useState<number | undefined>(
+        original.invoice?.price
+      );
+      const [paymentStringValue, setPaymentStringValue] = useState<string>(
+        formatCurrency(
+          original.invoice?.price?.toString() || '',
+          original.invoice?.currency || 'USD'
+        )
+      );
+      const [selectedCurrency, setSelectedCurrency] = useState<string>(
+        original.invoice?.currency || 'USD'
+      );
+
+      // Update the selected payment value and currency when edit mode changes or when data changes
+      useEffect(() => {
+        setPaymentValue(original.invoice?.price);
+        setPaymentStringValue(
+          formatCurrency(
+            original.invoice?.price?.toString() || '',
+            original.invoice?.currency || 'USD'
+          )
+        );
+        setSelectedCurrency(original.invoice?.currency || 'USD');
+      }, [isEditing, original.invoice]);
+
+      const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value;
+
+        // Handle backspace/delete
+        if (inputValue === '') {
+          setPaymentStringValue('');
+          if (!original.invoice) {
+            original.invoice = { currency: selectedCurrency, price: 0 };
+          }
+          original.invoice.price = 0;
+          return;
+        }
+
+        // Process only digits and decimal point
+        let value = inputValue.replace(/[^0-9.]/g, '');
+
+        // Format the value
+        let formattedValue = formatCurrency(value, selectedCurrency);
+        setPaymentStringValue(formattedValue);
+
+        // Extract numeric value and update the data object
+        if (!original.invoice) {
+          original.invoice = { currency: selectedCurrency, price: 0 };
+        }
+        original.invoice.price = extractNumericValue(
+          formattedValue,
+          selectedCurrency
+        );
+      };
+
+      const handlePaymentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value;
+
+        if (inputValue === '') {
+          setPaymentStringValue('');
+          if (!original.invoice) {
+            original.invoice = { currency: selectedCurrency, price: 0 };
+          }
+          original.invoice.price = 0;
+          return;
+        }
+
+        // Process only digits and decimal point
+        let value = inputValue.replace(/[^0-9.]/g, '');
+
+        // Format with blur option to append .00 if needed
+        let formattedValue = formatCurrency(value, selectedCurrency, 'blur');
+        setPaymentStringValue(formattedValue);
+
+        // Extract numeric value and update the data object
+        if (!original.invoice) {
+          original.invoice = { currency: selectedCurrency, price: 0 };
+        }
+        original.invoice.price = extractNumericValue(
+          formattedValue,
+          selectedCurrency
+        );
+      };
+
+      const handleCurrencyChange = (
+        e: React.ChangeEvent<HTMLSelectElement>
+      ) => {
+        const newCurrency = e.target.value;
+        setSelectedCurrency(newCurrency);
+
+        // Update the price object with the new currency
+        if (!original.invoice) {
+          original.invoice = {
+            currency: newCurrency,
+            price: 0
+          };
+        } else {
+          original.invoice.currency = newCurrency;
+        }
+
+        // Update the formatted display value with the new currency
+        setPaymentStringValue(
+          formatCurrency(original.invoice.price?.toString() || '', newCurrency)
+        );
+      };
+
+      if (isEditing) {
+        return (
+          <CurrencyInput
+            value={paymentStringValue}
+            onChange={handlePaymentChange}
+            onBlur={handlePaymentBlur}
+            selectedCurrency={selectedCurrency}
+            currencies={currencies}
+            onCurrencyChange={handleCurrencyChange}
+            loadingCurrencies={loadingCurrencies}
+          />
+        );
+      }
+
+      return (
+        <ReadOnlyCurrency
+          price={original.invoice?.price}
+          currency={original.invoice?.currency}
+        />
+      );
+    },
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: { style: { width: '15%' }, className: 'ps-3' }
+    }
   }
   // {
   //   accessorKey: 'total',
@@ -396,6 +1419,9 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
   // }
 ];
 
+// Export an alias for backward compatibility with other files
+export const PiTableColumns = PiTableColumnsStatic;
+
 type SearchColumn = {
   label: string;
   value: 'all' | 'quoteNumberId' | 'clientRFQId' | 'clientName';
@@ -412,6 +1438,86 @@ interface QuoteListTableProps {
   activeView: string;
 }
 
+// Add a custom AdvanceTable wrapper component for highlighting edited rows
+const EditableAdvanceTable = ({
+  tableProps,
+  editingId,
+  errorId
+}: {
+  tableProps: any;
+  editingId: string | null;
+  errorId: string | null;
+}) => {
+  // Use useEffect to apply styling directly to DOM elements after render
+  useEffect(() => {
+    if (editingId || errorId) {
+      // Small delay to ensure the table has rendered
+      setTimeout(() => {
+        // Find all rows and apply border to the one that matches editingId
+        const tableRows = document.querySelectorAll('table tr');
+        tableRows.forEach(element => {
+          // Cast Element to HTMLElement to access style property
+          const row = element as HTMLElement;
+
+          // Clear previous styling from all rows first
+          row.style.border = '';
+          row.style.boxShadow = '';
+          row.style.backgroundColor = '';
+
+          // Look for data-piid attribute or cell content that matches editingId
+          const rowContent = row.innerHTML;
+          if (rowContent.includes(editingId)) {
+            if (errorId && errorId === editingId) {
+              // Error state - show red styling
+              row.style.border = '2px solid #dc3545';
+              row.style.boxShadow = '0 0 8px rgba(220, 53, 69, 0.3)';
+              row.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+            } else {
+              // Normal editing state - show orange styling
+              row.style.border = '2px solid #f3a21c';
+              row.style.boxShadow = '0 0 8px rgba(243, 162, 28, 0.3)';
+              row.style.backgroundColor = 'rgba(243, 162, 28, 0.05)';
+            }
+          }
+        });
+      }, 100);
+    } else {
+      // If no editing ID, clear all row styles
+      const tableRows = document.querySelectorAll('table tr');
+      tableRows.forEach(element => {
+        // Cast Element to HTMLElement
+        const row = element as HTMLElement;
+        row.style.border = '';
+        row.style.boxShadow = '';
+        row.style.backgroundColor = '';
+      });
+    }
+  }, [editingId, errorId]);
+
+  return (
+    <AdvanceTable
+      tableProps={{
+        ...tableProps,
+        getRowProps: (row: any) => {
+          if (row.original.piId === editingId) {
+            const isError = errorId && errorId === editingId;
+            return {
+              'data-piid': editingId, // Add a data attribute to identify the row
+              style: {
+                border: isError ? '2px solid #dc3545' : '2px solid #f3a21c', // Red border for error
+                backgroundColor: isError
+                  ? 'rgba(220, 53, 69, 0.05)' // Light red background for error
+                  : 'rgba(243, 162, 28, 0.05)' // Light orange for normal editing
+              }
+            };
+          }
+          return {};
+        }
+      }}
+    />
+  );
+};
+
 const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [data, setData] = useState<PiListData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -422,6 +1528,574 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     searchColumns[0]
   );
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [actionsColumnWidth, setActionsColumnWidth] = useState(
+    window.innerWidth < 1500 ? '100%' : '30%'
+  );
+  const [editingPiId, setEditingPiId] = useState<string | null>(null);
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [currencies, setCurrencies] = useState<string[]>([]);
+  const [loadingCurrencies, setLoadingCurrencies] = useState(false);
+
+  // Add resize listener to update the Actions column width
+  useEffect(() => {
+    const handleResize = () => {
+      setActionsColumnWidth(window.innerWidth < 1500 ? '100%' : '40%');
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Function to handle edit mode
+  const handleEditToggle = (piId: string) => {
+    // Reset states when starting to edit
+    if (!editingPiId) {
+      setSaveError(null);
+      setSaveSuccess(false);
+    }
+
+    if (editingPiId && editingPiId !== piId) {
+      // Show warning if trying to edit a different PI
+      setWarningMessage(
+        'Another PI is currently being edited. Please save or cancel that edit first.'
+      );
+      setShowWarning(true);
+      return;
+    }
+
+    if (editingPiId === piId) {
+      saveChanges(piId);
+    } else {
+      setLoading(true);
+      // Fetch currencies when entering edit mode
+      fetchCurrencies();
+      postOpenEditMode(piId)
+        .then((response: any) => {
+          console.log('Edit mode response:', response);
+          if (response && response.data && response.data.locked === true) {
+            setEditingPiId(piId);
+          } else {
+            const errorMessage =
+              response && response.message
+                ? response.message
+                : 'This PI is currently being edited by another user or cannot be locked. Please try again later.';
+
+            setWarningMessage(errorMessage);
+            setShowWarning(true);
+          }
+        })
+        .catch(error => {
+          console.error('Error checking edit status:', error);
+          setWarningMessage(
+            'Unable to enter edit mode. Please try again later.'
+          );
+          setShowWarning(true);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  };
+
+  // Function to fetch currencies from the backend
+  const fetchCurrencies = async () => {
+    setLoadingCurrencies(true);
+    try {
+      const response = await getAllCurrenciesFromDB();
+      if (response && response.data) {
+        setCurrencies(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching currencies:', error);
+    } finally {
+      setLoadingCurrencies(false);
+    }
+  };
+
+  // Function to save changes
+  const saveChanges = (piId: string) => {
+    // Reset save status
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    // Find the PI in the data
+    const pi = data.find(item => item.piId === piId);
+    if (!pi) {
+      setWarningMessage('Cannot find PI data to save.');
+      setShowWarning(true);
+      return;
+    }
+    const validBanks = ['OTHER', 'EK', 'FB', 'RUS', 'NUROL'] as const;
+    let piBank: 'OTHER' | 'EK' | 'FB' | 'RUS' | 'NUROL' = 'OTHER';
+    if (pi.piBank && validBanks.includes(pi.piBank as any)) {
+      piBank = pi.piBank as 'OTHER' | 'EK' | 'FB' | 'RUS' | 'NUROL';
+    }
+    const validBankTypes = ['NONE', 'TRANSIT', 'EXPORT', 'IMPORTS'] as const;
+    let piBankType: 'NONE' | 'TRANSIT' | 'EXPORT' | 'IMPORTS' = 'NONE';
+    if (pi.piBankType && validBankTypes.includes(pi.piBankType as any)) {
+      piBankType = pi.piBankType as 'NONE' | 'TRANSIT' | 'EXPORT' | 'IMPORTS';
+    }
+
+    // Format dates to dd.MM.yyyy
+    const clientPaidDate = formatDateForBackend(pi.clientPaidDate || '');
+    const supplierPaidDate = formatDateForBackend(pi.supplierPaidDate || '');
+
+    // Ensure leadTimeDays is properly included even if it's null
+    // The API expects a number, so convert null/undefined to 0
+    const leadTimeDays =
+      pi.leadTimeDays !== null && pi.leadTimeDays !== undefined
+        ? pi.leadTimeDays
+        : 0;
+
+    const updateData: PiUpdateOthers = {
+      piId: pi.piId,
+      piStatus: pi.piStatus,
+      piBank: piBank,
+      piBankType: piBankType,
+      clientPaidPrice: pi.clientPaidPrice || { currency: 'USD', price: 0 },
+      clientPaidDate: clientPaidDate,
+      supplierPaidPrice: pi.supplierPaidPrice || { currency: 'USD', price: 0 },
+      supplierPaidDate: supplierPaidDate,
+      leadTimeDays: leadTimeDays,
+      opSupplierId: pi.opSupplierId || ''
+    };
+
+    setIsSaving(true);
+
+    console.log('Sending data to server:', updateData);
+
+    // Call the API to save changes
+    postPiUpdate(updateData)
+      .then(response => {
+        console.log('Save response:', response);
+        // Check if the response indicates success
+        if (response && response.success === true) {
+          // Successfully saved
+          setEditingPiId(null); // Exit edit mode
+          // Show success message
+          setWarningMessage('Changes saved successfully.');
+          setShowWarning(true);
+          setSaveSuccess(true);
+          // Refresh the data
+          fetchData(pageIndex);
+        } else {
+          // Save failed
+          const errorMessage =
+            response && response.message
+              ? response.message
+              : 'Failed to save changes. Please try again.';
+
+          setWarningMessage(errorMessage);
+          setShowWarning(true);
+          setSaveError(errorMessage);
+          // Keep edit mode open
+        }
+      })
+      .catch(error => {
+        console.error('Error saving changes:', error);
+        setWarningMessage('Error saving changes. Please try again.');
+        setShowWarning(true);
+        setSaveError('Error saving changes. Please try again.');
+        // Keep edit mode open
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
+  };
+
+  // Instead of recreating the columns array, directly modify the first column
+  const columns = useMemo(() => {
+    // Create a deep copy of the original columns
+    const modifiedColumns = [...PiTableColumnsStatic];
+
+    // Add the Actions column that needs editingPiId
+    modifiedColumns.splice(3, 0, {
+      header: 'Actions',
+      id: 'actionsColumn',
+      accessorKey: '1--',
+      cell: ({ row: { original } }) => (
+        <ActionTextArea
+          piId={original.piId}
+          actions={original.piActions || []}
+          isEditMode={editingPiId === original.piId}
+        />
+      ),
+      meta: {
+        cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+        headerProps: {
+          className: 'ps-3',
+          style: {
+            width: actionsColumnWidth,
+            minWidth: '300px'
+          }
+        }
+      }
+    });
+
+    // Find and modify the Customer Payment column
+    const customerPaymentColumnIndex = modifiedColumns.findIndex(col => {
+      if ('accessorKey' in col) {
+        return col.accessorKey === '4---';
+      }
+      return false;
+    });
+
+    if (customerPaymentColumnIndex !== -1) {
+      modifiedColumns[customerPaymentColumnIndex] = {
+        accessorKey: '4---',
+        header: 'Customer Payment',
+        cell: ({ row: { original } }) => {
+          // Get editing state from context
+          const { editingPiId, currencies, loadingCurrencies } =
+            useContext(PiListTableContext);
+          const isEditing = editingPiId === original.piId;
+          const [paymentValue, setPaymentValue] = useState<number | undefined>(
+            original.clientPaidPrice?.price
+          );
+          const [paymentStringValue, setPaymentStringValue] = useState<string>(
+            formatCurrency(
+              original.clientPaidPrice?.price?.toString() || '',
+              original.clientPaidPrice?.currency || 'USD'
+            )
+          );
+          const [selectedCurrency, setSelectedCurrency] = useState<string>(
+            original.clientPaidPrice?.currency || 'USD'
+          );
+
+          // Update the selected payment value and currency when edit mode changes or when data changes
+          useEffect(() => {
+            setPaymentValue(original.clientPaidPrice?.price);
+            setPaymentStringValue(
+              formatCurrency(
+                original.clientPaidPrice?.price?.toString() || '',
+                original.clientPaidPrice?.currency || 'USD'
+              )
+            );
+            setSelectedCurrency(original.clientPaidPrice?.currency || 'USD');
+          }, [isEditing, original.clientPaidPrice]);
+
+          const handlePaymentChange = (
+            e: React.ChangeEvent<HTMLInputElement>
+          ) => {
+            const inputValue = e.target.value;
+
+            // Handle backspace/delete
+            if (inputValue === '') {
+              setPaymentStringValue('');
+              if (!original.clientPaidPrice) {
+                original.clientPaidPrice = {
+                  currency: selectedCurrency,
+                  price: 0
+                };
+              }
+              original.clientPaidPrice.price = 0;
+              return;
+            }
+
+            // Process only digits and decimal point
+            let value = inputValue.replace(/[^0-9.]/g, '');
+
+            // Format the value
+            let formattedValue = formatCurrency(value, selectedCurrency);
+            setPaymentStringValue(formattedValue);
+
+            // Extract numeric value and update the data object
+            if (!original.clientPaidPrice) {
+              original.clientPaidPrice = {
+                currency: selectedCurrency,
+                price: 0
+              };
+            }
+            original.clientPaidPrice.price = extractNumericValue(
+              formattedValue,
+              selectedCurrency
+            );
+          };
+
+          const handlePaymentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+            const inputValue = e.target.value;
+
+            if (inputValue === '') {
+              setPaymentStringValue('');
+              if (!original.clientPaidPrice) {
+                original.clientPaidPrice = {
+                  currency: selectedCurrency,
+                  price: 0
+                };
+              }
+              original.clientPaidPrice.price = 0;
+              return;
+            }
+
+            // Process only digits and decimal point
+            let value = inputValue.replace(/[^0-9.]/g, '');
+
+            // Format with blur option to append .00 if needed
+            let formattedValue = formatCurrency(
+              value,
+              selectedCurrency,
+              'blur'
+            );
+            setPaymentStringValue(formattedValue);
+
+            // Extract numeric value and update the data object
+            if (!original.clientPaidPrice) {
+              original.clientPaidPrice = {
+                currency: selectedCurrency,
+                price: 0
+              };
+            }
+            original.clientPaidPrice.price = extractNumericValue(
+              formattedValue,
+              selectedCurrency
+            );
+          };
+
+          const handleCurrencyChange = (
+            e: React.ChangeEvent<HTMLSelectElement>
+          ) => {
+            const newCurrency = e.target.value;
+            setSelectedCurrency(newCurrency);
+
+            // Update the price object with the new currency
+            if (!original.clientPaidPrice) {
+              original.clientPaidPrice = {
+                currency: newCurrency,
+                price: 0
+              };
+            } else {
+              original.clientPaidPrice.currency = newCurrency;
+            }
+
+            // Update the formatted display value with the new currency
+            setPaymentStringValue(
+              formatCurrency(
+                original.clientPaidPrice.price?.toString() || '',
+                newCurrency
+              )
+            );
+          };
+
+          if (isEditing) {
+            return (
+              <CurrencyInput
+                value={paymentStringValue}
+                onChange={handlePaymentChange}
+                onBlur={handlePaymentBlur}
+                selectedCurrency={selectedCurrency}
+                currencies={currencies}
+                onCurrencyChange={handleCurrencyChange}
+                loadingCurrencies={loadingCurrencies}
+              />
+            );
+          }
+
+          return (
+            <ReadOnlyCurrency
+              price={original.clientPaidPrice?.price}
+              currency={original.clientPaidPrice?.currency}
+            />
+          );
+        },
+        meta: {
+          cellProps: {
+            className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
+          },
+          headerProps: { style: { width: '15%' }, className: 'ps-3' }
+        }
+      };
+    }
+
+    // Find and modify the Supplier Invoice column
+    const supplierInvoiceColumnIndex = modifiedColumns.findIndex(col => {
+      if ('accessorKey' in col) {
+        return col.accessorKey === '5---';
+      }
+      return false;
+    });
+
+    if (supplierInvoiceColumnIndex !== -1) {
+      modifiedColumns[supplierInvoiceColumnIndex] = {
+        header: 'Supplier Invoice',
+        accessorKey: '5---',
+        cell: ({ row: { original } }) => {
+          // Get editing state and currencies from context
+          const { editingPiId, currencies, loadingCurrencies } =
+            useContext(PiListTableContext);
+          const isEditing = editingPiId === original.piId;
+          const [invoiceValue, setInvoiceValue] = useState<number | undefined>(
+            original.supplierPaidPrice?.price
+          );
+          const [invoiceStringValue, setInvoiceStringValue] = useState<string>(
+            formatCurrency(
+              original.supplierPaidPrice?.price?.toString() || '',
+              original.supplierPaidPrice?.currency || 'USD'
+            )
+          );
+          const [selectedCurrency, setSelectedCurrency] = useState<string>(
+            original.supplierPaidPrice?.currency || 'USD'
+          );
+
+          // Update the selected invoice value and currency when edit mode changes or when data changes
+          useEffect(() => {
+            setInvoiceValue(original.supplierPaidPrice?.price);
+            setInvoiceStringValue(
+              formatCurrency(
+                original.supplierPaidPrice?.price?.toString() || '',
+                original.supplierPaidPrice?.currency || 'USD'
+              )
+            );
+            setSelectedCurrency(original.supplierPaidPrice?.currency || 'USD');
+          }, [isEditing, original.supplierPaidPrice]);
+
+          const handleInvoiceChange = (
+            e: React.ChangeEvent<HTMLInputElement>
+          ) => {
+            const inputValue = e.target.value;
+
+            // Handle backspace/delete
+            if (inputValue === '') {
+              setInvoiceStringValue('');
+              if (!original.supplierPaidPrice) {
+                original.supplierPaidPrice = {
+                  currency: selectedCurrency,
+                  price: 0
+                };
+              }
+              original.supplierPaidPrice.price = 0;
+              return;
+            }
+
+            // Process only digits and decimal point
+            let value = inputValue.replace(/[^0-9.]/g, '');
+
+            // Format the value
+            let formattedValue = formatCurrency(value, selectedCurrency);
+            setInvoiceStringValue(formattedValue);
+
+            // Extract numeric value and update the data object
+            if (!original.supplierPaidPrice) {
+              original.supplierPaidPrice = {
+                currency: selectedCurrency,
+                price: 0
+              };
+            }
+            original.supplierPaidPrice.price = extractNumericValue(
+              formattedValue,
+              selectedCurrency
+            );
+          };
+
+          const handleInvoiceBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+            const inputValue = e.target.value;
+
+            if (inputValue === '') {
+              setInvoiceStringValue('');
+              if (!original.supplierPaidPrice) {
+                original.supplierPaidPrice = {
+                  currency: selectedCurrency,
+                  price: 0
+                };
+              }
+              original.supplierPaidPrice.price = 0;
+              return;
+            }
+
+            // Process only digits and decimal point
+            let value = inputValue.replace(/[^0-9.]/g, '');
+
+            // Format with blur option to append .00 if needed
+            let formattedValue = formatCurrency(
+              value,
+              selectedCurrency,
+              'blur'
+            );
+            setInvoiceStringValue(formattedValue);
+
+            // Extract numeric value and update the data object
+            if (!original.supplierPaidPrice) {
+              original.supplierPaidPrice = {
+                currency: selectedCurrency,
+                price: 0
+              };
+            }
+            original.supplierPaidPrice.price = extractNumericValue(
+              formattedValue,
+              selectedCurrency
+            );
+          };
+
+          const handleCurrencyChange = (
+            e: React.ChangeEvent<HTMLSelectElement>
+          ) => {
+            const newCurrency = e.target.value;
+            setSelectedCurrency(newCurrency);
+
+            // Update the invoice object with the new currency
+            if (!original.supplierPaidPrice) {
+              original.supplierPaidPrice = {
+                currency: newCurrency,
+                price: 0
+              };
+            } else {
+              original.supplierPaidPrice.currency = newCurrency;
+            }
+
+            // Update the formatted display value with the new currency
+            setInvoiceStringValue(
+              formatCurrency(
+                original.supplierPaidPrice.price?.toString() || '',
+                newCurrency
+              )
+            );
+          };
+
+          if (isEditing) {
+            return (
+              <CurrencyInput
+                value={invoiceStringValue}
+                onChange={handleInvoiceChange}
+                onBlur={handleInvoiceBlur}
+                selectedCurrency={selectedCurrency}
+                currencies={currencies}
+                onCurrencyChange={handleCurrencyChange}
+                loadingCurrencies={loadingCurrencies}
+              />
+            );
+          }
+
+          return (
+            <ReadOnlyCurrency
+              price={original.supplierPaidPrice?.price}
+              currency={original.supplierPaidPrice?.currency}
+            />
+          );
+        },
+        meta: {
+          cellProps: {
+            className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
+          },
+          headerProps: { style: { width: '15%' }, className: 'ps-3' }
+        }
+      };
+    }
+
+    // ... existing column modifications ...
+
+    return modifiedColumns;
+  }, [
+    actionsColumnWidth,
+    editingPiId,
+    isSaving,
+    currencies,
+    loadingCurrencies
+  ]);
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<PiListData>();
@@ -542,6 +2216,29 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
   return (
     <div>
+      {/* Warning Toast */}
+      <ToastContainer
+        position="top-end"
+        className="p-3"
+        style={{ zIndex: 1050 }}
+      >
+        <Toast
+          show={showWarning}
+          onClose={() => setShowWarning(false)}
+          delay={3000}
+          autohide
+          bg={saveSuccess ? 'success' : saveError ? 'danger' : 'warning'}
+          className="text-white"
+        >
+          <Toast.Header>
+            <strong className="me-auto text-white">
+              {saveSuccess ? 'Success' : saveError ? 'Error' : 'Warning'}
+            </strong>
+          </Toast.Header>
+          <Toast.Body>{warningMessage}</Toast.Body>
+        </Toast>
+      </ToastContainer>
+
       <div className="mb-4">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>
@@ -610,17 +2307,33 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           <div>
             <LoadingAnimation />
           </div>
+        ) : isSaving ? (
+          <div className="text-center py-4">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Saving changes...</span>
+            </div>
+            <div className="mt-2">Saving changes...</div>
+          </div>
         ) : (
-          <>
+          <PiListTableContext.Provider
+            value={{
+              editingPiId,
+              handleEditToggle,
+              currencies,
+              loadingCurrencies
+            }}
+          >
             <div style={{ width: '100%', overflow: 'auto' }}>
               <div style={{ width: '160%' }}>
-                <AdvanceTable
+                <EditableAdvanceTable
                   tableProps={{
                     className:
                       'phoenix-table border-top border-translucent fs-9',
                     data: data,
-                    columns: PiTableColumns
+                    columns: columns
                   }}
+                  editingId={editingPiId}
+                  errorId={saveError ? editingPiId : null}
                 />
               </div>
             </div>
@@ -633,7 +2346,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
               pageSize={pageSize}
               setPageSize={setPageSize}
             />
-          </>
+          </PiListTableContext.Provider>
         )}
       </div>
     </div>

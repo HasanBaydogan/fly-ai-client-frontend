@@ -62,7 +62,7 @@ export const generatePDF = async (
     pdf.setTextColor(0, 0, 0);
     pdf.setFontSize(10);
     pdf.text(`Date: ${selectedDate?.toLocaleDateString()}`, pageWidth - 50, 20);
-    pdf.text(`PI Number: ${quoteNumber}`, pageWidth - 50, 25);
+    pdf.text(`PI: ${quoteNumber}`, pageWidth - 50, 25);
 
     // Client info table
     autoTable(pdf, {

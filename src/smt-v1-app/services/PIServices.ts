@@ -13,7 +13,8 @@ import {
   PIAttachmentUploadRequest,
   PIAttachmentResponse,
   PINewAction,
-  PIUpdateAction
+  PIUpdateAction,
+  PiUpdateOthers
 } from '../types/PiTypes';
 
 export const searchByPiList = async (
@@ -96,4 +97,16 @@ export const postPiActionCreate = async (NewAction: PINewAction) => {
 
 export const postPiActionUpdate = async (UpdateAction: PIUpdateAction) => {
   return await postRequest('/pi/pi-action/update', UpdateAction);
+};
+
+export const postOpenEditMode = async (piId: string) => {
+  return await postRequest(`/pi/open-edit-mode?piId=${piId}`, piId);
+};
+
+export const postPiUpdate = async (PiUpdate: PiUpdateOthers) => {
+  return await postRequest('/pi/update', PiUpdate);
+};
+
+export const getAllCurrenciesFromDB = async () => {
+  return await getRequest(`/currency/all`);
 };

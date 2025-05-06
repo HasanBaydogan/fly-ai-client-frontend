@@ -50,14 +50,14 @@ const PartListContainer = () => {
     <div>
       <AdvanceTableProvider {...table}>
         <div className="d-flex flex-wrap mb-2 gap-3 gap-sm-6 align-items-center">
-          <h2 className="mb-0">
-            <span className="me-3">Quote List</span>{' '}
+          <h2 className="m-3">
+            <span className="me-3 ">Quote List</span>{' '}
             <span className="fw-normal text-body-tertiary"></span>
           </h2>
-          <Link className="btn btn-primary px-5" to="/client/new-client">
+          {/* <Link className="btn btn-primary px-5" to="/client/new-client">
             <FontAwesomeIcon icon={faPlus} className="me-2" />
             Add New Client
-          </Link>
+          </Link> */}
         </div>
         <PartTopSection activeView="list" />
         <QuoteListTable activeView={''} />
