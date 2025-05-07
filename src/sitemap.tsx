@@ -1,5 +1,7 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { Icon, UilCube } from '@iconscout/react-unicons';
+import { Icon, UilCube, UilBuilding } from '@iconscout/react-unicons';
+import { faBuilding } from '@fortawesome/free-solid-svg-icons';
+import FeatherIcon from 'feather-icons-react';
 
 export interface Route {
   name: string;
@@ -489,6 +491,22 @@ export const routes: RouteItems[] = [
                 next: false
               }
             ]
+          }
+        ]
+      },
+      {
+        name: 'Companies',
+        active: true,
+        icon: 'layers', //----------
+        flat: true,
+        pages: [
+          {
+            name: '• Companies',
+            path: '/companies',
+            pathName: 'edit-settings',
+            icon: '',
+            active: true,
+            next: false
           }
         ]
       },

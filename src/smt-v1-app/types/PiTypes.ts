@@ -96,17 +96,18 @@ export interface PiData {
   piStatus: {
     label:
       | 'NONE'
-      | 'PI_CREATED'
-      | 'PI_SENT_TO_CLIENT'
-      | 'PO_WAITING_FROM_CLIENT'
-      | 'PO_RECEIVED_FROM_CLIENT'
-      | 'PO_RECEIVED_BUT_PI_NOT_CREATED'
-      | 'PO_CREATED'
-      | 'PO_PARTIALLY_SENT'
-      | 'PO_FULLY_SENT'
-      | 'LOT_CREATED'
-      | 'LOT_PARTIALLY_SENT'
-      | 'LOT_FULLY_SENT';
+      | 'PENDING_PAYMENT'
+      | 'PAYMENT_RECEIVED_PARTIALLY'
+      | 'PAYMENT_RECEIVED'
+      | 'PAID_TO_SUPPLIER_PARTIALLY'
+      | 'PAID_TO_SUPPLIER'
+      | 'LOGISTIC_ON_PROGRESS'
+      | 'IN_TURKEY'
+      | 'PARTIALLY_SENT_TO_CLIENT'
+      | 'SENT_TO_CLIENT'
+      | 'CLOSED'
+      | 'REFUNDED'
+      | 'CANCELLED';
     type:
       | 'dark'
       | 'primary'

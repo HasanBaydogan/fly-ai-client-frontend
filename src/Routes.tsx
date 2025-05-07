@@ -45,6 +45,7 @@ import UserQuoteStatus from 'smt-v1-app/components/features/UserQuoteStatus/User
 import PiListContainer from 'smt-v1-app/containers/PiListContainer/PiListContainer';
 import PiDetailContainer from 'smt-v1-app/containers/PiDetailContainer/PiDetailContainer';
 import PoListContainer from 'smt-v1-app/containers/PoListContainer/PoListContainer';
+import CompanyContainer from 'smt-v1-app/containers/CompanyContainer/CompanyContainer';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
@@ -146,6 +147,10 @@ const routes: RouteObject[] = [
                 element: <SupplierEditContainer />
               }
             ]
+          },
+          {
+            path: '/companies',
+            element: <CompanyContainer />
           },
           {
             path: 'client',

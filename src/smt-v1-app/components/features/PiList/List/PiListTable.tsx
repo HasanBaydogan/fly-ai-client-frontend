@@ -81,17 +81,18 @@ declare module 'react-bootstrap' {
 
 const piStatus: { [key: string]: string } = {
   NONE: 'dark',
-  PI_CREATED: 'primary',
-  PI_SENT_TO_CLIENT: 'success',
-  PO_WAITING_FROM_CLIENT: 'warning',
-  PO_RECEIVED_FROM_CLIENT: 'warning',
-  PO_RECEIVED_BUT_PI_NOT_CREATED: 'danger',
-  PO_CREATED: 'primary',
-  PO_PARTIALLY_SENT: 'info',
-  PO_FULLY_SENT: 'success',
-  LOT_CREATED: 'primary',
-  LOT_PARTIALLY_SENT: 'info',
-  LOT_FULLY_SENT: 'success'
+  PENDING_PAYMENT: 'primary',
+  PAYMENT_RECEIVED_PARTIALLY: 'success',
+  PAYMENT_RECEIVED: 'warning',
+  PAID_TO_SUPPLIER_PARTIALLY: 'warning',
+  PAID_TO_SUPPLIER: 'danger',
+  LOGISTIC_ON_PROGRESS: 'primary',
+  IN_TURKEY: 'info',
+  PARTIALLY_SENT_TO_CLIENT: 'success',
+  SENT_TO_CLIENT: 'primary',
+  CLOSED: 'info',
+  REFUNDED: 'success',
+  CANCELLED: 'danger'
 };
 
 export interface PiListData {
@@ -473,9 +474,62 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     }
   },
   {
-    id: 'piStatus ',
+    id: 'piStatus',
     header: 'PI Status',
     cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+
+      // Varolan değeri default olarak al
+      const [selectedStatus, setSelectedStatus] = useState(
+        original.piStatus || 'NONE'
+      );
+
+      // Edit moduna geçildiğinde veya original.piStatus değiştiğinde selectedStatus'u güncelle
+      useEffect(() => {
+        setSelectedStatus(original.piStatus || 'NONE');
+      }, [original.piStatus, isEditing]);
+
+      const statusOptions = [
+        'NONE',
+        'PENDING_PAYMENT',
+        'PAYMENT_RECEIVED_PARTIALLY',
+        'PAYMENT_RECEIVED',
+        'PAID_TO_SUPPLIER_PARTIALLY',
+        'PAID_TO_SUPPLIER',
+        'LOGISTIC_ON_PROGRESS',
+        'IN_TURKEY',
+        'PARTIALLY_SENT_TO_CLIENT',
+        'SENT_TO_CLIENT',
+        'CLOSED',
+        'REFUNDED',
+        'CANCELLED'
+      ];
+
+      const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newValue = e.target.value;
+        setSelectedStatus(newValue);
+        original.piStatus = newValue;
+      };
+
+      if (isEditing) {
+        return (
+          <Form.Select
+            size="sm"
+            value={selectedStatus}
+            onChange={handleStatusChange}
+            style={{ minWidth: '150px' }}
+          >
+            {statusOptions.map(option => (
+              <option key={option} value={option}>
+                {formatStatus(option)}
+              </option>
+            ))}
+          </Form.Select>
+        );
+      }
+
       const status = original.piStatus;
       if (!status) return null;
       const badgeColor = piStatus[status] || 'warning';
@@ -736,7 +790,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
 
         // Extract numeric value and update the data object
         if (!original.supplierPaidPrice) {
-          original.supplierPaidPrice = { currency: selectedCurrency, price: 0 };
+          original.supplierPaidPrice = {
+            currency: selectedCurrency,
+            price: 0
+          };
         }
         original.supplierPaidPrice.price = extractNumericValue(
           formattedValue,
