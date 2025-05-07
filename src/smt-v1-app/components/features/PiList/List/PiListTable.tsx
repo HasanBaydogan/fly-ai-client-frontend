@@ -5,13 +5,24 @@ import React, {
   ChangeEvent,
   FC,
   createContext,
-  useContext
+  useContext,
+  useRef
 } from 'react';
 import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
-import { Col, Row, Dropdown, Badge, Button, Form } from 'react-bootstrap';
+import {
+  Col,
+  Row,
+  Dropdown,
+  Badge,
+  Button,
+  Form,
+  OverlayTrigger,
+  Tooltip,
+  Popover
+} from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
@@ -48,6 +59,7 @@ import Table from 'react-bootstrap/Table';
 import Placeholder from 'react-bootstrap/Placeholder';
 import CloseButton from 'react-bootstrap/CloseButton';
 import InputGroup from 'react-bootstrap/InputGroup';
+import { usePopper } from 'react-popper';
 
 // Add type declaration for Bootstrap
 declare global {
@@ -137,7 +149,7 @@ export interface PiListData {
 // Define interface for the API response from postOpenEditMode
 interface EditModeResponse {
   data: {
-    locked: boolean;
+    isAvailable: boolean;
   };
   message: string;
   statusCode: number;
@@ -1162,14 +1174,6 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
-  // {
-  //   accessorKey: 'numOfProduct',
-  //   header: 'Number Of Product',
-  //   meta: {
-  //     cellProps: { className: 'ps-3 text-body py-2' },
-  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
-  //   }
-  // },
   {
     accessorKey: 'piParts',
     header: 'PI Parts',
@@ -1186,8 +1190,19 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       const hasMoreItems = parts.length > 3;
       const displayParts = hasMoreItems ? parts.slice(0, 2) : parts;
 
+      const tooltipContent = (
+        <div style={{ whiteSpace: 'pre-line' }}>
+          {parts.map((part: string, index: number) => (
+            <div key={index}>
+              <span className="me-1">•</span>
+              {part}
+            </div>
+          ))}
+        </div>
+      );
+
       return (
-        <div style={{ whiteSpace: 'nowrap' }}>
+        <div style={{ whiteSpace: 'nowrap', position: 'relative' }}>
           {displayParts.map((part: string, index: number) => (
             <div key={index} className="my-1">
               <span className="me-1">•</span>
@@ -1195,16 +1210,13 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             </div>
           ))}
           {hasMoreItems && (
-            <div className="position-relative">
-              <span
-                className="text-primary"
-                style={{ cursor: 'pointer' }}
-                data-bs-toggle="tooltip"
-                data-bs-placement="right"
-                title={parts.slice(2).join('\n• ')}
+            <div style={{ display: 'inline-block' }}>
+              <EnhancedTooltip
+                tooltipContent={tooltipContent}
+                placement="right"
               >
-                ...
-              </span>
+                <span className="text-primary">...</span>
+              </EnhancedTooltip>
             </div>
           )}
         </div>
@@ -1215,14 +1227,6 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
-  // {
-  //   accessorKey: 'poRequestedDate',
-  //   header: 'PoRequested Date',
-  //   meta: {
-  //     cellProps: { className: 'ps-3 text-body py-2' },
-  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
-  //   }
-  // },
   {
     id: 'userHistory',
     header: 'User History',
@@ -1234,24 +1238,24 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         'Last Modified At': original.lastModifiedAt || '-'
       };
 
-      const tooltipContent = Object.entries(historyData)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join('\n');
+      const tooltipContent = (
+        <div style={{ whiteSpace: 'pre-line' }}>
+          {Object.entries(historyData).map(([key, value], index) => (
+            <div key={index}>
+              <strong>{key}:</strong> {value}
+            </div>
+          ))}
+        </div>
+      );
 
       return (
         <div className="text-center">
-          <span
-            data-bs-toggle="tooltip"
-            data-bs-placement="left"
-            data-bs-html="true"
-            title={tooltipContent}
-            style={{ cursor: 'pointer' }}
-          >
+          <EnhancedTooltip tooltipContent={tooltipContent} placement="left">
             <FontAwesomeIcon
               icon={faQuestionCircleRegular}
-              style={{ fontSize: '1.5rem', color: 'black' }}
+              style={{ fontSize: '1.5rem', color: 'black', cursor: 'pointer' }}
             />
-          </span>
+          </EnhancedTooltip>
         </div>
       );
     },
@@ -1259,164 +1263,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       cellProps: { className: 'text-center py-2' },
       headerProps: { style: { width: '5%' }, className: 'text-center' }
     }
-  },
-  {
-    header: 'S. Paid Amount',
-    accessorKey: '12---',
-    cell: ({ row: { original } }) => {
-      // Get editing state and currencies from context
-      const { editingPiId, currencies, loadingCurrencies } =
-        useContext(PiListTableContext);
-      const isEditing = editingPiId === original.piId;
-      const [paymentValue, setPaymentValue] = useState<number | undefined>(
-        original.invoice?.price
-      );
-      const [paymentStringValue, setPaymentStringValue] = useState<string>(
-        formatCurrency(
-          original.invoice?.price?.toString() || '',
-          original.invoice?.currency || 'USD'
-        )
-      );
-      const [selectedCurrency, setSelectedCurrency] = useState<string>(
-        original.invoice?.currency || 'USD'
-      );
-
-      // Update the selected payment value and currency when edit mode changes or when data changes
-      useEffect(() => {
-        setPaymentValue(original.invoice?.price);
-        setPaymentStringValue(
-          formatCurrency(
-            original.invoice?.price?.toString() || '',
-            original.invoice?.currency || 'USD'
-          )
-        );
-        setSelectedCurrency(original.invoice?.currency || 'USD');
-      }, [isEditing, original.invoice]);
-
-      const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const inputValue = e.target.value;
-
-        // Handle backspace/delete
-        if (inputValue === '') {
-          setPaymentStringValue('');
-          if (!original.invoice) {
-            original.invoice = { currency: selectedCurrency, price: 0 };
-          }
-          original.invoice.price = 0;
-          return;
-        }
-
-        // Process only digits and decimal point
-        let value = inputValue.replace(/[^0-9.]/g, '');
-
-        // Format the value
-        let formattedValue = formatCurrency(value, selectedCurrency);
-        setPaymentStringValue(formattedValue);
-
-        // Extract numeric value and update the data object
-        if (!original.invoice) {
-          original.invoice = { currency: selectedCurrency, price: 0 };
-        }
-        original.invoice.price = extractNumericValue(
-          formattedValue,
-          selectedCurrency
-        );
-      };
-
-      const handlePaymentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        const inputValue = e.target.value;
-
-        if (inputValue === '') {
-          setPaymentStringValue('');
-          if (!original.invoice) {
-            original.invoice = { currency: selectedCurrency, price: 0 };
-          }
-          original.invoice.price = 0;
-          return;
-        }
-
-        // Process only digits and decimal point
-        let value = inputValue.replace(/[^0-9.]/g, '');
-
-        // Format with blur option to append .00 if needed
-        let formattedValue = formatCurrency(value, selectedCurrency, 'blur');
-        setPaymentStringValue(formattedValue);
-
-        // Extract numeric value and update the data object
-        if (!original.invoice) {
-          original.invoice = { currency: selectedCurrency, price: 0 };
-        }
-        original.invoice.price = extractNumericValue(
-          formattedValue,
-          selectedCurrency
-        );
-      };
-
-      const handleCurrencyChange = (
-        e: React.ChangeEvent<HTMLSelectElement>
-      ) => {
-        const newCurrency = e.target.value;
-        setSelectedCurrency(newCurrency);
-
-        // Update the price object with the new currency
-        if (!original.invoice) {
-          original.invoice = {
-            currency: newCurrency,
-            price: 0
-          };
-        } else {
-          original.invoice.currency = newCurrency;
-        }
-
-        // Update the formatted display value with the new currency
-        setPaymentStringValue(
-          formatCurrency(original.invoice.price?.toString() || '', newCurrency)
-        );
-      };
-
-      if (isEditing) {
-        return (
-          <CurrencyInput
-            value={paymentStringValue}
-            onChange={handlePaymentChange}
-            onBlur={handlePaymentBlur}
-            selectedCurrency={selectedCurrency}
-            currencies={currencies}
-            onCurrencyChange={handleCurrencyChange}
-            loadingCurrencies={loadingCurrencies}
-          />
-        );
-      }
-
-      return (
-        <ReadOnlyCurrency
-          price={original.invoice?.price}
-          currency={original.invoice?.currency}
-        />
-      );
-    },
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' }, className: 'ps-3' }
-    }
   }
-  // {
-  //   accessorKey: 'total',
-  //   header: 'Total',
-  //   cell: ({ row: { original } }) => {
-  //     const total = parseFloat(original.total);
-  //     return isNaN(total)
-  //       ? '-'
-  //       : total.toLocaleString('en-US', {
-  //           minimumFractionDigits: 2,
-  //           maximumFractionDigits: 2
-  //         });
-  //   },
-  //   meta: {
-  //     cellProps: { className: 'ps-3 text-body py-2' },
-  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
-  //   }
-  // }
 ];
 
 // Export an alias for backward compatibility with other files
@@ -1518,6 +1365,122 @@ const EditableAdvanceTable = ({
   );
 };
 
+// Create a reusable EnhancedTooltip component
+const EnhancedTooltip = ({
+  children,
+  tooltipContent,
+  placement = 'right'
+}: {
+  children: React.ReactNode;
+  tooltipContent: React.ReactNode;
+  placement?: 'top' | 'right' | 'bottom' | 'left';
+}) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [isAvailable, setisAvailable] = useState(false);
+  const referenceRef = useRef(null);
+  const popperRef = useRef(null);
+
+  const { styles, attributes } = usePopper(
+    referenceRef.current,
+    popperRef.current,
+    {
+      placement,
+      strategy: 'fixed',
+      modifiers: [
+        {
+          name: 'offset',
+          options: {
+            offset: [0, 10]
+          }
+        },
+        {
+          name: 'preventOverflow',
+          options: {
+            boundary: document.body,
+            padding: 10
+          }
+        },
+        {
+          name: 'flip',
+          options: {
+            fallbackPlacements: ['left', 'bottom', 'top']
+          }
+        }
+      ]
+    }
+  );
+
+  const handleMouseEnter = () => {
+    if (!isAvailable) {
+      setShowTooltip(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isAvailable) {
+      setShowTooltip(false);
+    }
+  };
+
+  const handleClick = () => {
+    setisAvailable(!isAvailable);
+    setShowTooltip(!isAvailable);
+  };
+
+  return (
+    <>
+      <div
+        ref={referenceRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+        style={{ cursor: 'pointer', display: 'inline-block' }}
+      >
+        {children}
+      </div>
+      {showTooltip && (
+        <div
+          ref={popperRef}
+          style={{
+            ...styles.popper,
+            zIndex: 1050,
+            backgroundColor: 'white',
+            border: '1px solid rgba(0,0,0,0.2)',
+            borderRadius: '0.25rem',
+            padding: '0.5rem',
+            maxWidth: '300px',
+            boxShadow: '0 0.5rem 1rem rgba(0, 0, 0, 0.15)',
+            fontSize: '0.875rem'
+          }}
+          {...attributes.popper}
+        >
+          {tooltipContent}
+          {isAvailable && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '2px',
+                right: '2px',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                padding: '2px 6px',
+                fontWeight: 'bold'
+              }}
+              onClick={e => {
+                e.stopPropagation();
+                setisAvailable(false);
+                setShowTooltip(false);
+              }}
+            >
+              ×
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+};
+
 const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [data, setData] = useState<PiListData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -1578,13 +1541,13 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
       postOpenEditMode(piId)
         .then((response: any) => {
           console.log('Edit mode response:', response);
-          if (response && response.data && response.data.locked === true) {
+          if (response && response.data && response.data.isAvailable === true) {
             setEditingPiId(piId);
           } else {
             const errorMessage =
               response && response.message
                 ? response.message
-                : 'This PI is currently being edited by another user or cannot be locked. Please try again later.';
+                : 'This PI is currently being edited by another user or cannot be isAvailable. Please try again later.';
 
             setWarningMessage(errorMessage);
             setShowWarning(true);
