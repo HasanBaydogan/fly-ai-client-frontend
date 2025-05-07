@@ -37,7 +37,7 @@ function AdvanceTable<T>({
   });
 
   return (
-    <div className="scrollbar ms-n1 ps-1 text-center">
+    <div className="ms-n1 ps-1 text-center">
       <Table {...tablePropsWithoutCustom}>
         <thead className={headerClassName}>
           <tr>
