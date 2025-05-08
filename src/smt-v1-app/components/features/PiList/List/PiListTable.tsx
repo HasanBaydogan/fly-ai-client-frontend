@@ -1340,14 +1340,15 @@ export const PiTableColumns = PiTableColumnsStatic;
 
 type SearchColumn = {
   label: string;
-  value: 'all' | 'quoteNumberId' | 'clientRFQId' | 'clientName';
+  value: 'all' | 'piId' | 'quoteID' | 'contractNo' | 'company';
 };
 
 const searchColumns: SearchColumn[] = [
   // { label: 'No Filter', value: 'all' },
-  { label: 'Quote Number', value: 'quoteNumberId' },
-  { label: 'Client', value: 'clientName' },
-  { label: 'Client RFQ ID', value: 'clientRFQId' }
+  { label: 'PI ID', value: 'piId' },
+  { label: 'Quote ID', value: 'quoteID' },
+  { label: 'Contract No', value: 'contractNo' },
+  { label: 'Company', value: 'company' }
 ];
 
 interface QuoteListTableProps {
@@ -1613,12 +1614,9 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           if (response && response.data && response.data.isAvailable === true) {
             setEditingPiId(piId);
           } else {
-            const errorMessage =
-              response && response.message
-                ? response.message
-                : 'This PI is currently being edited by another user or cannot be isAvailable. Please try again later.';
-
-            setWarningMessage(errorMessage);
+            setWarningMessage(
+              'This PI is currently being edited by another user. Please try again later.'
+            );
             setShowWarning(true);
           }
         })
