@@ -996,23 +996,29 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       // Get editing state from context
       const { editingPiId } = useContext(PiListTableContext);
       const isEditing = editingPiId === original.piId;
-      const [selectedDate, setSelectedDate] = useState(
-        formatDateForInput(original.clientPaidDate || '')
+      const [selectedDate, setSelectedDate] = useState<string>(
+        original.clientPaidDate
+          ? formatDateForInput(original.clientPaidDate)
+          : ''
       );
 
       // Update the selected date when edit mode changes or when data changes
       useEffect(() => {
-        setSelectedDate(formatDateForInput(original.clientPaidDate || ''));
+        setSelectedDate(
+          original.clientPaidDate
+            ? formatDateForInput(original.clientPaidDate)
+            : ''
+        );
       }, [isEditing, original.clientPaidDate]);
 
       const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         setSelectedDate(newValue);
 
-        // Format the date immediately when it's changed in the UI
+        // Update the original data with the new date or null if empty
         original.clientPaidDate = newValue
           ? formatDateForBackend(newValue)
-          : '';
+          : null;
       };
 
       if (isEditing) {
@@ -1056,23 +1062,29 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       // Get editing state from context
       const { editingPiId } = useContext(PiListTableContext);
       const isEditing = editingPiId === original.piId;
-      const [selectedDate, setSelectedDate] = useState(
-        formatDateForInput(original.supplierPaidDate || '')
+      const [selectedDate, setSelectedDate] = useState<string>(
+        original.supplierPaidDate
+          ? formatDateForInput(original.supplierPaidDate)
+          : ''
       );
 
       // Update the selected date when edit mode changes or when data changes
       useEffect(() => {
-        setSelectedDate(formatDateForInput(original.supplierPaidDate || ''));
+        setSelectedDate(
+          original.supplierPaidDate
+            ? formatDateForInput(original.supplierPaidDate)
+            : ''
+        );
       }, [isEditing, original.supplierPaidDate]);
 
       const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         setSelectedDate(newValue);
 
-        // Format the date immediately when it's changed in the UI
+        // Update the original data with the new date or null if empty
         original.supplierPaidDate = newValue
           ? formatDateForBackend(newValue)
-          : '';
+          : null;
       };
 
       if (isEditing) {
@@ -1662,9 +1674,13 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
       piBankType = pi.piBankType as 'NONE' | 'TRANSIT' | 'EXPORT' | 'IMPORTS';
     }
 
-    // Format dates to dd.MM.yyyy
-    const clientPaidDate = formatDateForBackend(pi.clientPaidDate || '');
-    const supplierPaidDate = formatDateForBackend(pi.supplierPaidDate || '');
+    // Format dates to dd.MM.yyyy only if they have values, otherwise send null
+    const clientPaidDate = pi.clientPaidDate
+      ? formatDateForBackend(pi.clientPaidDate)
+      : null;
+    const supplierPaidDate = pi.supplierPaidDate
+      ? formatDateForBackend(pi.supplierPaidDate)
+      : null;
 
     // Ensure leadTimeDays is properly included even if it's null
     // The API expects a number, so convert null/undefined to 0
