@@ -182,7 +182,7 @@ const QuoteContainer = () => {
       }
     }
 
-    window.location.assign('/mail-tracking');
+    window.location.assign('/pi/list');
   };
 
   return (
