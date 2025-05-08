@@ -625,7 +625,7 @@ export const returnPdfAsBase64String = async (
       percentageValue
     );
     if (pdf) {
-      return pdf.output('datauristring').split(',')[1];
+      return pdf.output('datauristring');
     }
   } catch (e) {
     console.error(e);

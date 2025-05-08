@@ -43,34 +43,72 @@ const FileUpload: React.FC<FileUploadProps> = ({
     return new Blob([u8arr], { type: mime });
   }
 
+  function calculateSizeFromBase64(base64String: string): string {
+    // Base64 string'den prefix'i kaldır
+    const base64WithoutPrefix = base64String.split(',')[1] || base64String;
+
+    // Base64 uzunluğundan byte boyutunu hesapla
+    // Her 4 base64 karakter 3 byte'a denk gelir
+    const padding = base64WithoutPrefix.endsWith('==')
+      ? 2
+      : base64WithoutPrefix.endsWith('=')
+      ? 1
+      : 0;
+    const fileSize = (base64WithoutPrefix.length * 3) / 4 - padding;
+
+    // Boyutu uygun birime çevir (B, KB, MB)
+    if (fileSize < 1024) {
+      return `${fileSize.toFixed(2)} B`;
+    } else if (fileSize < 1024 * 1024) {
+      return `${(fileSize / 1024).toFixed(2)} KB`;
+    } else {
+      return `${(fileSize / (1024 * 1024)).toFixed(2)} MB`;
+    }
+  }
+
   useEffect(() => {
     if (alreadyUploadedFiles && alreadyUploadedFiles.length > 0) {
       // Notify parent about the already uploaded files.
       onFilesUpload(alreadyUploadedFiles);
 
-      // Format the files for base64 state (optional: adjust id generation as needed).
-      const formattedUploadFiles = alreadyUploadedFiles.map(file => ({
-        id: Date.now().toString(),
-        name: file.name,
-        base64: file.base64
-      }));
-      setBase64Files(formattedUploadFiles);
-      // console.log(formattedUploadFiles);
-
-      // Create preview objects.
-      const previewFiles: FileAttachment[] = alreadyUploadedFiles.map(file => {
-        // Convert base64 string to a Blob.
+      // Format the files for base64 state
+      const formattedUploadFiles = alreadyUploadedFiles.map(file => {
+        let base64String = file.base64;
+        // Eğer base64 verisi data: ile başlamıyorsa, prefix ekle
+        if (!base64String.startsWith('data:')) {
+          base64String = `data:application/pdf;base64,${base64String}`;
+        }
         return {
+          id: Date.now().toString(),
           name: file.name,
-          url: 'asdasdas',
-          size: 'N/A', // or compute the size if available
-          format: '' // e.g., "application/pdf"
+          base64: base64String
         };
       });
-      // console.log(previewFiles);
+      setBase64Files(formattedUploadFiles);
+
+      // Create preview objects.
+      const previewFiles: FileAttachment[] = formattedUploadFiles.map(file => {
+        return {
+          name: file.name,
+          url: file.base64,
+          size: calculateSizeFromBase64(file.base64),
+          format: 'application/pdf'
+        };
+      });
       setUploadedFiles(previewFiles);
     }
   }, []);
+
+  // Component unmount olduğunda blob URL'leri temizle
+  useEffect(() => {
+    return () => {
+      uploadedFiles.forEach(file => {
+        if (file.url.startsWith('blob:')) {
+          URL.revokeObjectURL(file.url);
+        }
+      });
+    };
+  }, [uploadedFiles]);
 
   const handleDrop = async (acceptedFiles: File[], fileRejections: any[]) => {
     const totalSize = acceptedFiles.reduce((acc, file) => acc + file.size, 0);
@@ -110,12 +148,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
       setBase64Files(updatedBase64Files);
       onFilesUpload(updatedBase64Files);
 
-      const newPreviews: FileAttachment[] = acceptedFiles.map(file => ({
-        name: file.name,
-        url: URL.createObjectURL(file),
-        size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-        format: file.type
-      }));
+      const newPreviews: FileAttachment[] = acceptedFiles.map(
+        (file, index) => ({
+          name: file.name,
+          url: URL.createObjectURL(file),
+          size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+          format: file.type
+        })
+      );
 
       setUploadedFiles(prevFiles => [...prevFiles, ...newPreviews]);
     } catch (error) {
@@ -138,6 +178,23 @@ const FileUpload: React.FC<FileUploadProps> = ({
     onFilesUpload(updatedBase64Files);
   };
 
+  const handleFileClick = (url: string, fileName: string) => {
+    // Base64 data URL'i doğrudan yeni sekmede aç
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>${fileName}</title>
+          </head>
+          <body style="margin:0;padding:0;">
+            <embed width="100%" height="100%" src="${url}" type="application/pdf" />
+          </body>
+        </html>
+      `);
+    }
+  };
+
   return (
     <div className="pt-5">
       <Dropzone
@@ -149,11 +206,16 @@ const FileUpload: React.FC<FileUploadProps> = ({
       {errorMessage && <div className="text-danger mt-2">{errorMessage}</div>}
       <div className="mt-3">
         {uploadedFiles.map((file, index) => (
-          <AttachmentPreview
+          <div
             key={index}
-            attachment={file}
-            handleRemove={() => handleRemoveFile(index)}
-          />
+            style={{ cursor: 'pointer' }}
+            onClick={() => handleFileClick(file.url, file.name)}
+          >
+            <AttachmentPreview
+              attachment={file}
+              handleRemove={() => handleRemoveFile(index)}
+            />
+          </div>
         ))}
       </div>
     </div>

@@ -592,7 +592,12 @@ export const returnPdfAsBase64String = async (
       percentageValue
     );
     if (pdf) {
-      return pdf.output('datauristring').split(',')[1];
+      const base64Data = pdf.output('datauristring');
+      // Eğer base64 verisi data: ile başlamıyorsa, prefix ekle
+      if (!base64Data.startsWith('data:')) {
+        return `data:application/pdf;base64,${base64Data}`;
+      }
+      return base64Data;
     }
   } catch (e) {
     console.error(e);
