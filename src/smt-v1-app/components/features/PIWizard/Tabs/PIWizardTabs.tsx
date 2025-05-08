@@ -234,7 +234,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
         currency: piResponseData.allBanks[0].currency
       },
       piTax: {
-        taxRate: percentageValue
+        taxRate: percentageValue,
+        isIncluded: checkedStates[0] || false
       },
       airCargoToX: {
         airCargoToX: subTotalValues[1],
