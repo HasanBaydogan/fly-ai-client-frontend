@@ -36,7 +36,10 @@ import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
 interface RFQRightSideProps {
   rfq: RFQ;
   onUnsavedChangesUpdate?: (hasChanges: boolean) => void;
-  customNavigate?: (path: string) => void;
+  customNavigate?: (
+    path: string,
+    options?: { skipUnsavedCheck?: boolean }
+  ) => void;
 }
 
 const RFQRightSide = ({
@@ -302,7 +305,11 @@ const RFQRightSide = ({
       if (response && response.statusCode === 200) {
         toastSuccess('Success Cancel', 'RFQ Mail is canceled successfully');
         setTimeout(() => {
-          navigation('/mail-tracking');
+          if (customNavigate) {
+            customNavigate('/mail-tracking', { skipUnsavedCheck: true });
+          } else {
+            navigation('/mail-tracking');
+          }
         }, 1500);
       } else {
         toastError('An error', 'An error occurs');
@@ -316,7 +323,11 @@ const RFQRightSide = ({
         if (response && response.statusCode === 200) {
           toastSuccess('Success Cancel', 'RFQ Mail is canceled successfully');
           setTimeout(() => {
-            navigation('/mail-tracking');
+            if (customNavigate) {
+              customNavigate('/mail-tracking', { skipUnsavedCheck: true });
+            } else {
+              navigation('/mail-tracking');
+            }
           }, 1500);
         } else {
           toastError('An error', 'An error occurs');
@@ -464,7 +475,11 @@ const RFQRightSide = ({
           'RFQ is saved successfully, directed...'
         );
         setTimeout(() => {
-          navigation('/mail-tracking');
+          if (customNavigate) {
+            customNavigate('/mail-tracking', { skipUnsavedCheck: true });
+          } else {
+            navigation('/mail-tracking');
+          }
         }, 1500);
       } else {
         toastError(
@@ -645,7 +660,13 @@ const RFQRightSide = ({
       if (quoteResp && quoteResp.statusCode === 200) {
         toastSuccess('Successful Quote', 'Converted to Quote');
         setTimeout(() => {
-          navigation('/quotes/quote?quoteId=' + quoteResp.data.quoteId);
+          if (customNavigate) {
+            customNavigate('/quotes/quote?quoteId=' + quoteResp.data.quoteId, {
+              skipUnsavedCheck: true
+            });
+          } else {
+            navigation('/quotes/quote?quoteId=' + quoteResp.data.quoteId);
+          }
         }, 1500);
       } else {
         toastError('Quote Error', 'Failed to convert to Quote');

@@ -58,10 +58,19 @@ const RFQContainer = () => {
 
   // Custom navigation function that uses the UnsavedChanges provider
   const customNavigate = useCallback(
-    (path: string) => {
-      navigateSafely(path);
+    (path: string, options: { skipUnsavedCheck?: boolean } = {}) => {
+      // If skipUnsavedCheck is true or if navigating to quote page, bypass unsaved changes check
+      if (options.skipUnsavedCheck || path.includes('/quotes/quote')) {
+        // Reset unsaved changes state before navigating
+        setHasUnsavedChanges(false);
+        // Directly navigate without checking for unsaved changes
+        navigate(path);
+      } else {
+        // Use the normal navigation with unsaved changes check
+        navigateSafely(path);
+      }
     },
-    [navigateSafely]
+    [navigate, navigateSafely, setHasUnsavedChanges]
   );
 
   return (
