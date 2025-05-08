@@ -7,3 +7,7 @@ export const getbySegmentList = async () => {
 export const getAttachedFile = async (attachmentId: string) => {
   return await getRequest(`/attachment/id/${attachmentId}`);
 };
+
+export const getAllCurrenciesFromDB = async () => {
+  return await getRequest(`/currency/all`);
+};
