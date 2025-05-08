@@ -46,7 +46,7 @@ const NavbarBrand = ({ logo }: { logo?: string }) => {
             </div>
           )}
           <div className="small fs-10 text-center  text-muted">
-            v1.11.0-08.05.25
+            v1.11.1-08.05.25
           </div>
         </Navbar.Brand>
       </div>
