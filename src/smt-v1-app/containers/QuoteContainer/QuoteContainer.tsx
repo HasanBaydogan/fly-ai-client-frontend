@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import RFQHeader from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQHeader/RFQHeader';
 import RFQContent from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQContent/RFQContent';
 import RFQAttachments from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQAttachments/RFQAttachments';
@@ -22,10 +22,11 @@ import {
   getQuoteDetailsById,
   getRFQMailIdToGoToRFQMail
 } from 'smt-v1-app/services/QuoteService';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowHelper';
 import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
+import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
 
 const QuoteContainer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,6 +46,9 @@ const QuoteContainer = () => {
   };
 
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { setHasUnsavedChanges } = useUnsavedChanges();
+
   const quoteId = searchParams.get('quoteId');
 
   const [mailItemMoreDetailResponse, setMailItemMoreDetailResponse] =
@@ -104,6 +108,10 @@ const QuoteContainer = () => {
     };
     fetchQuoteValues();
   }, []);
+
+  useEffect(() => {
+    setHasUnsavedChanges(false);
+  }, [setHasUnsavedChanges]);
 
   const handleQuoteWizardTabs = () => {
     setShowQuoteWizardTabs(true);
