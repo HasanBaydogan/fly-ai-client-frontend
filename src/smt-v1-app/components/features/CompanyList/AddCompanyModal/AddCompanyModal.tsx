@@ -348,13 +348,15 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         }
         const updateData = {
           ...formattedData,
-          id: formData.companyId
+          id: formData.companyId,
+          active: initialData?.active ?? false // Preserve the current active status during update
         };
         await postCompanyUpdate(updateData as xxx);
       } else {
         const companyDataWithId = {
           ...formattedData,
-          id: 'temp-' + Date.now().toString()
+          id: 'temp-' + Date.now().toString(),
+          active: true // Always set active to true for new companies
         };
         await postCompanyCreate(companyDataWithId);
       }

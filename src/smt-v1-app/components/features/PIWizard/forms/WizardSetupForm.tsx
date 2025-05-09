@@ -559,15 +559,30 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     setQuotePartRows([...quotePartRows, newRow]);
   };
 
-  const handleBankChange = (bankName: string) => {
-    if (bankName) {
+  const handleBankChange = (selectedValue: string) => {
+    if (selectedValue) {
       setBankError(false);
+      // selectedValue formatı: "bankName|branchName" şeklinde olacak
+      const [bankName, branchName] = selectedValue.split('|');
+      const selectedBank = piResponseData?.allBanks.find(
+        bank => bank.bankName === bankName && bank.branchName === branchName
+      );
+      if (selectedBank) {
+        setupOtherProps.setSelectedBank(selectedBank);
+      }
+    } else {
+      setupOtherProps.setSelectedBank(null);
     }
+  };
 
-    const selectedBank = piResponseData?.allBanks.find(
-      bank => bank.bankName === bankName
-    );
-    setupOtherProps.setSelectedBank(selectedBank || null);
+  // Bankaları sıralama fonksiyonu
+  const getSortedBanks = () => {
+    if (!piResponseData?.allBanks) return [];
+    return [...piResponseData.allBanks].sort((a, b) => {
+      const bankNameCompare = a.bankName.localeCompare(b.bankName);
+      if (bankNameCompare !== 0) return bankNameCompare;
+      return a.branchName.localeCompare(b.branchName);
+    });
   };
 
   // Add validation check function to be used by the WizardFormProvider
@@ -1233,15 +1248,22 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <tr className="text-center align-middle">
                 <td>
                   <Form.Select
-                    value={setupOtherProps.selectedBank?.bankName || ''}
+                    value={
+                      setupOtherProps.selectedBank
+                        ? `${setupOtherProps.selectedBank.bankName}|${setupOtherProps.selectedBank.branchName}`
+                        : ''
+                    }
                     onChange={e => handleBankChange(e.target.value)}
                     isInvalid={bankError}
                     className={bankError ? 'border border-danger' : ''}
                   >
                     <option value="">Select Bank</option>
-                    {piResponseData?.allBanks.map((bank, index) => (
-                      <option key={index} value={bank.bankName}>
-                        {bank.bankName}
+                    {getSortedBanks().map(bank => (
+                      <option
+                        key={`${bank.bankName}-${bank.branchName}`}
+                        value={`${bank.bankName}|${bank.branchName}`}
+                      >
+                        {`${bank.bankName} - ${bank.branchName}`}
                       </option>
                     ))}
                   </Form.Select>
