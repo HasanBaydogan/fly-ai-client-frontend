@@ -1,7 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Modal, Form, Button, Row, Col, Alert } from 'react-bootstrap';
 import FileUpload from 'smt-v1-app/components/features/GlobalComponents/FileUpload';
-import { postCompanyCreate } from 'smt-v1-app/services/CompanyServices';
+import {
+  postCompanyCreate,
+  postCompanyUpdate,
+  xxx
+} from 'smt-v1-app/services/CompanyServices';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { getPriceCurrencySymbol } from 'smt-v1-app/types/GlobalTypes';
@@ -21,6 +25,8 @@ import {
   friendlyFormatIBAN
 } from 'ibantools';
 import { useIbanValidator } from '../../GlobalComponents/IbanValidator';
+import { CompanyData, BankInfo } from '../List/CompanyListTable';
+import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 // Get all available countries and sort them alphabetically
 const COUNTRIES = getCountries().sort((a, b) => {
@@ -78,24 +84,7 @@ interface Base64File {
   base64: string;
 }
 
-interface AddCompanyModalProps {
-  show: boolean;
-  onHide: () => void;
-  onSuccess: () => void;
-}
-
-interface BankInfo {
-  bankName: string;
-  branchName: string;
-  branchCode: string;
-  swiftCode: string;
-  ibanNo: string;
-  currency: string;
-  ibanError?: string;
-}
-
-interface CompanyData {
-  id?: string;
+interface CompanyFormData extends Partial<CompanyData> {
   logo: string;
   companyName: string;
   companyAddress: string;
@@ -104,13 +93,21 @@ interface CompanyData {
   companyBanks: BankInfo[];
 }
 
+interface AddCompanyModalProps {
+  show: boolean;
+  onHide: () => void;
+  onSuccess: () => void;
+  isEditMode?: boolean;
+  initialData?: CompanyData;
+}
+
 const initialBankInfo: BankInfo = {
   bankName: '',
   branchName: '',
   branchCode: '',
   swiftCode: '',
   ibanNo: '',
-  currency: 'USD' // Default currency
+  currency: 'USD'
 };
 
 // Add phone formatting helper function
@@ -128,10 +125,12 @@ const formatPhoneNumber = (phone: string) => {
 const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
   show,
   onHide,
-  onSuccess
+  onSuccess,
+  isEditMode = false,
+  initialData
 }) => {
   const { validateIban, formatIban } = useIbanValidator();
-  const [formData, setFormData] = useState<CompanyData>({
+  const [formData, setFormData] = useState<CompanyFormData>({
     logo: '',
     companyName: '',
     companyAddress: '',
@@ -145,6 +144,26 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
   const [validated, setValidated] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileError, setFileError] = useState<string>('');
+
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Initialize form data with initialData when in edit mode
+  useEffect(() => {
+    if (isEditMode && initialData) {
+      setFormData({
+        companyId: initialData.companyId,
+        logo: initialData.logo,
+        companyName: initialData.companyName,
+        companyAddress: initialData.companyAddress,
+        companyEmail: initialData.companyEmail,
+        companyTelephone: initialData.companyTelephone,
+        companyBanks: initialData.companyBanks.map(bank => ({
+          ...bank,
+          ibanError: undefined
+        }))
+      });
+    }
+  }, [isEditMode, initialData]);
 
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCountry = e.target.value as CountryCode;
@@ -261,62 +280,114 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement> | Event) => {
     e.preventDefault();
-    const form = e.currentTarget;
+    const form = formRef.current;
+
+    if (!form) {
+      console.error('Form reference not found');
+      setIsSubmitting(false);
+      return;
+    }
 
     // Validate all IBANs before submit
     const hasInvalidIBAN = formData.companyBanks.some(bank => {
       if (bank.ibanNo) {
         const cleanIBAN = bank.ibanNo.replace(/\s/g, '');
-        return !validateIBAN(cleanIBAN);
+        return !validateIban(cleanIBAN);
       }
       return false;
     });
 
     if (hasInvalidIBAN) {
+      setIsSubmitting(false);
       return;
     }
 
-    // Format IBANs to electronic format for submission
-    const formattedData = {
-      ...formData,
-      companyBanks: formData.companyBanks.map(bank => ({
-        ...bank,
-        ibanNo: bank.ibanNo ? electronicFormatIBAN(bank.ibanNo) : ''
-      }))
-    };
-
     // Validate phone number
-    if (
-      !formattedData.companyTelephone ||
-      formattedData.companyTelephone.length < 10
-    ) {
+    if (!formData.companyTelephone || formData.companyTelephone.length < 10) {
       setPhoneError('Please enter a valid phone number');
+      setIsSubmitting(false);
       return;
     }
 
     if (form.checkValidity() === false || phoneError) {
       e.stopPropagation();
       setValidated(true);
+      setIsSubmitting(false);
       return;
     }
 
-    setIsSubmitting(true);
+    // If validation is not done yet, just validate
+    if (!validated) {
+      setValidated(true);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // If we're already validated and submitting, proceed with the actual submission
     try {
-      const companyDataWithId = {
-        ...formattedData,
-        id: 'temp-' + Date.now().toString()
+      // Format IBANs to electronic format for submission
+      const formattedBanks = formData.companyBanks.map(bank => ({
+        bankName: bank.bankName,
+        branchName: bank.branchName,
+        branchCode: bank.branchCode,
+        swiftCode: bank.swiftCode,
+        ibanNo: bank.ibanNo ? electronicFormatIBAN(bank.ibanNo) : '',
+        currency: bank.currency
+      }));
+
+      const formattedData = {
+        ...formData,
+        companyBanks: formattedBanks
       };
-      await postCompanyCreate(companyDataWithId);
+
+      if (isEditMode) {
+        if (!formData.companyId) {
+          throw new Error('Company ID is required for update');
+        }
+        const updateData = {
+          ...formattedData,
+          id: formData.companyId
+        };
+        await postCompanyUpdate(updateData as xxx);
+      } else {
+        const companyDataWithId = {
+          ...formattedData,
+          id: 'temp-' + Date.now().toString()
+        };
+        await postCompanyCreate(companyDataWithId);
+      }
       onSuccess();
       onHide();
     } catch (error) {
-      console.error('Error creating company:', error);
+      console.error(
+        `Error ${isEditMode ? 'updating' : 'creating'} company:`,
+        error
+      );
+      setValidated(false);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Reset form when modal is closed
+  useEffect(() => {
+    if (!show) {
+      setFormData({
+        logo: '',
+        companyName: '',
+        companyAddress: '',
+        companyEmail: '',
+        companyTelephone: '',
+        companyBanks: [{ ...initialBankInfo }]
+      });
+      setValidated(false);
+      setPhoneError('');
+      setFileError('');
+      setIsSubmitting(false); // Also reset submitting state when modal closes
+    }
+  }, [show]);
 
   const ImagePreview = () => {
     if (!formData.logo) {
@@ -375,12 +446,36 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg">
-      <Form noValidate validated={validated} onSubmit={handleSubmit}>
-        <Modal.Header closeButton>
-          <Modal.Title>Add New Company</Modal.Title>
+    <Modal
+      show={show}
+      onHide={() => {
+        setIsSubmitting(false);
+        onHide();
+      }}
+      size="lg"
+    >
+      <Form
+        ref={formRef}
+        noValidate
+        validated={validated}
+        onSubmit={handleSubmit}
+      >
+        <Modal.Header
+          closeButton={!isSubmitting} // Disable close button during submission
+        >
+          <Modal.Title>
+            {isEditMode ? 'Edit Company' : 'Add New Company'}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {isSubmitting && (
+            <div
+              className="position-absolute w-100 h-100 top-0 start-0 d-flex align-items-center justify-content-center bg-white bg-opacity-75"
+              style={{ zIndex: 1 }}
+            >
+              <LoadingAnimation />
+            </div>
+          )}
           <div className="mb-4">
             <h6 className="mb-3">Company Logo</h6>
             <div className="small text-muted">
@@ -631,12 +726,44 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={onHide}>
-            Cancel
-          </Button>
-          <Button variant="primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Company'}
-          </Button>
+          {validated && !isSubmitting ? (
+            <>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  setValidated(false);
+                  setPhoneError('');
+                }}
+              >
+                Discard
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => {
+                  setIsSubmitting(true);
+                  handleSubmit(new Event('submit'));
+                }}
+              >
+                Confirm
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsSubmitting(false);
+                  onHide();
+                }}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" disabled={isSubmitting}>
+                {isEditMode ? 'Update Company' : 'Create Company'}
+              </Button>
+            </>
+          )}
         </Modal.Footer>
       </Form>
     </Modal>

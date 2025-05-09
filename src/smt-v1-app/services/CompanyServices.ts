@@ -17,6 +17,9 @@ const api = () => {
 export interface xxx {
   id: string;
 }
+export interface ReverseActive {
+  companyId: string;
+}
 
 export const getCompanyAll = async () => {
   return await getRequest(`/company/all-detail`);
@@ -27,6 +30,9 @@ export const postCompanyUpdate = async (PiUpdate: xxx) => {
 export const postCompanyCreate = async (PiUpdate: xxx) => {
   return await postRequest('/company/create', PiUpdate);
 };
-export const postCompanyReverseActive = async (PiUpdate: xxx) => {
-  return await postRequest('/company/reverse-active', PiUpdate);
+export const postCompanyReverseActive = async (companyId: string) => {
+  return await postRequest(
+    `/company/reverse-active?companyId=${companyId}`,
+    {}
+  );
 };

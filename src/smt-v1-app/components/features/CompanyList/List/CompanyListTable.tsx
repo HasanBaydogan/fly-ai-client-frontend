@@ -10,14 +10,26 @@ import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
-import { Col, Row, Dropdown, Badge, Button } from 'react-bootstrap';
+import {
+  Col,
+  Row,
+  Dropdown,
+  Badge,
+  Button,
+  Modal,
+  Toast
+} from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import { getCompanyAll } from 'smt-v1-app/services/CompanyServices';
+import {
+  getCompanyAll,
+  postCompanyReverseActive
+} from 'smt-v1-app/services/CompanyServices';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { usePopper } from 'react-popper';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import AddCompanyModal from '../AddCompanyModal/AddCompanyModal';
@@ -36,6 +48,16 @@ import AddCompanyModal from '../AddCompanyModal/AddCompanyModal';
 //   client?: string;
 // }
 
+export interface BankInfo {
+  bankName: string;
+  branchName: string;
+  branchCode: string;
+  swiftCode: string;
+  ibanNo: string;
+  currency: string;
+  ibanError?: string;
+}
+
 export interface CompanyData {
   companyId: string;
   logo: string;
@@ -43,14 +65,7 @@ export interface CompanyData {
   companyAddress: string;
   companyEmail: string;
   companyTelephone: string;
-  companyBanks: {
-    bankName: string;
-    branchName: string;
-    branchCode: string;
-    swiftCode: string;
-    ibanNo: string;
-    currency: string;
-  }[];
+  companyBanks: BankInfo[];
   createdBy: string;
   createdAt: string;
   lastModifiedBy: string;
@@ -181,7 +196,171 @@ const EnhancedTooltip = ({
   );
 };
 
-export const QuoteTableColumns: ColumnDef<CompanyData>[] = [
+const StatusToggleButton = ({
+  isActive,
+  onToggle,
+  companyId
+}: {
+  isActive: boolean;
+  onToggle: (newStatus: boolean) => void;
+  companyId: string;
+}) => {
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleClick = () => {
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    try {
+      await postCompanyReverseActive(companyId);
+      onToggle(!isActive);
+      setShowConfirmModal(false);
+    } catch (error) {
+      console.error('Error updating status:', error);
+      setErrorMessage('Failed to update status. Please try again.');
+      setShowError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        variant={isActive ? 'success' : 'danger'}
+        size="sm"
+        onClick={handleClick}
+        disabled={isLoading}
+        style={{
+          width: '48px',
+          height: '24px',
+          borderRadius: '12px',
+          border: 'none',
+          position: 'relative',
+          transition: 'background-color 0.3s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0',
+          opacity: isLoading ? 0.7 : 1
+        }}
+      >
+        <div
+          style={{
+            width: '18px',
+            height: '18px',
+            backgroundColor: 'white',
+            borderRadius: '50%',
+            position: 'absolute',
+            left: isActive ? 'calc(100% - 21px)' : '3px',
+            transition: 'left 0.3s ease'
+          }}
+        />
+      </Button>
+
+      <Modal
+        show={showConfirmModal}
+        onHide={() => !isLoading && setShowConfirmModal(false)}
+        centered
+      >
+        <Modal.Header closeButton={!isLoading}>
+          <Modal.Title>Confirm Status Change</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to change the status to{' '}
+          {isActive ? 'Passive' : 'Active'}?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowConfirmModal(false)}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant={isActive ? 'danger' : 'success'}
+            onClick={handleConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Processing...' : 'Confirm'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Toast
+        show={showError}
+        onClose={() => setShowError(false)}
+        delay={3000}
+        autohide
+        style={{
+          position: 'fixed',
+          top: 20,
+          right: 20,
+          zIndex: 9999
+        }}
+      >
+        <Toast.Header>
+          <strong className="me-auto text-danger">Error</strong>
+        </Toast.Header>
+        <Toast.Body>{errorMessage}</Toast.Body>
+      </Toast>
+    </>
+  );
+};
+
+const createColumns = (
+  onEditClick: (company: CompanyData) => void
+): ColumnDef<CompanyData>[] => [
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row: { original } }) => {
+      const [isActive, setIsActive] = useState(original.active);
+
+      const handleToggle = (newStatus: boolean) => {
+        setIsActive(newStatus);
+      };
+
+      return (
+        <div className="d-flex gap-2 align-items-center justify-content-center">
+          <StatusToggleButton
+            isActive={isActive}
+            onToggle={handleToggle}
+            companyId={original.companyId}
+          />
+
+          <Button
+            variant="outline-primary"
+            size="sm"
+            className="d-flex align-items-center justify-content-center"
+            style={{ width: '32px', height: '32px', padding: 0 }}
+            onClick={() => onEditClick(original)}
+          >
+            <FontAwesomeIcon icon={faEdit} />
+          </Button>
+
+          <Button
+            variant="outline-danger"
+            size="sm"
+            className="d-flex align-items-center justify-content-center"
+            style={{ width: '32px', height: '32px', padding: 0 }}
+            disabled
+          >
+            <FontAwesomeIcon icon={faTrash} />
+          </Button>
+        </div>
+      );
+    },
+    meta: {
+      headerProps: { className: 'text-center', style: { width: '8%' } }
+    }
+  },
   {
     id: 'logo',
     accessorKey: 'logo',
@@ -404,6 +583,11 @@ interface CompanyListTableProps {
   activeView: string;
 }
 
+// Export the columns for external use
+export const QuoteTableColumns = createColumns(() => {
+  console.warn('Edit handler not provided for QuoteTableColumns');
+});
+
 const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
   const [data, setData] = useState<CompanyData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -415,6 +599,10 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
   );
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(
+    null
+  );
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<CompanyData>();
@@ -496,6 +684,19 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
         : `${selectedColumn.value}=${searchTerm}`;
     fetchData(pageIndex, searchParam);
   }, [pageIndex, pageSize]);
+
+  const handleEditClick = (company: CompanyData) => {
+    setSelectedCompany(company);
+    setShowEditModal(true);
+  };
+
+  const handleEditSuccess = () => {
+    fetchData(pageIndex);
+    setShowEditModal(false);
+    setSelectedCompany(null);
+  };
+
+  const columns = useMemo(() => createColumns(handleEditClick), []);
 
   return (
     <div>
@@ -596,7 +797,7 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
               tableProps={{
                 className: 'phoenix-table border-top border-translucent fs-9',
                 data: data,
-                columns: QuoteTableColumns
+                columns: columns
               }}
             />
             <AdvanceTableFooter
@@ -611,6 +812,20 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
           </>
         )}
       </div>
+
+      {/* Add Edit Modal */}
+      {selectedCompany && (
+        <AddCompanyModal
+          show={showEditModal}
+          onHide={() => {
+            setShowEditModal(false);
+            setSelectedCompany(null);
+          }}
+          onSuccess={handleEditSuccess}
+          isEditMode={true}
+          initialData={selectedCompany}
+        />
+      )}
     </div>
   );
 };
