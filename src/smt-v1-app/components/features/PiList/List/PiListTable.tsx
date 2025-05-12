@@ -1610,6 +1610,9 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
   // Function to handle edit mode
   const handleEditToggle = (piId: string) => {
+    // Store current scroll position
+    const scrollPosition = window.scrollY;
+
     // Reset states when starting to edit
     if (!editingPiId) {
       setSaveError(null);
@@ -1636,6 +1639,10 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           console.log('Edit mode response:', response);
           if (response && response.data && response.data.isAvailable === true) {
             setEditingPiId(piId);
+            // Restore scroll position after state update
+            setTimeout(() => {
+              window.scrollTo(0, scrollPosition);
+            }, 0);
           } else {
             setWarningMessage(
               response && response.data && response.data.message
@@ -1675,6 +1682,9 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
   // Function to save changes
   const saveChanges = (piId: string) => {
+    // Store current scroll position
+    const scrollPosition = window.scrollY;
+
     // Reset save status
     setSaveError(null);
     setSaveSuccess(false);
@@ -1741,8 +1751,32 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           setWarningMessage('Changes saved successfully.');
           setShowWarning(true);
           setSaveSuccess(true);
-          // Refresh the data
-          fetchData(pageIndex);
+
+          // Update the data locally instead of fetching all data again
+          setData(prevData => {
+            return prevData.map(item => {
+              if (item.piId === piId) {
+                return {
+                  ...item,
+                  piStatus: pi.piStatus,
+                  piBank: piBank,
+                  piBankType: piBankType,
+                  clientPaidPrice: pi.clientPaidPrice,
+                  clientPaidDate: clientPaidDate,
+                  supplierPaidPrice: pi.supplierPaidPrice,
+                  supplierPaidDate: supplierPaidDate,
+                  leadTimeDays: leadTimeDays,
+                  opSupplierId: pi.opSupplierId
+                };
+              }
+              return item;
+            });
+          });
+
+          // Restore scroll position after state updates
+          setTimeout(() => {
+            window.scrollTo(0, scrollPosition);
+          }, 0);
         } else {
           // Save failed
           const errorMessage =
