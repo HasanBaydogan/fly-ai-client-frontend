@@ -1638,7 +1638,9 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
             setEditingPiId(piId);
           } else {
             setWarningMessage(
-              'This PI is currently being edited by another user. Please try again later.'
+              response && response.data && response.data.message
+                ? response.data.message + ' Please try again later.'
+                : 'This PI is currently being edited by another user. Please try again later.'
             );
             setShowWarning(true);
           }
