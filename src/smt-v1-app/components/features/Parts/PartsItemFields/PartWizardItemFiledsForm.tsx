@@ -59,9 +59,9 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
   const [segments, setSegments] = useState<TreeNode[]>([]);
-  const [showResultModal, setShowResultModal] = useState(false);
-  const [resultModalTitle, setResultModalTitle] = useState('');
-  const [resultModalMessage, setResultModalMessage] = useState('');
+  const [showResultAlert, setShowResultAlert] = useState(false);
+  const [resultAlertMessage, setResultAlertMessage] = useState('');
+  const [resultAlertSuccess, setResultAlertSuccess] = useState(false);
   const [loadingSave, setLoadingSave] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
@@ -69,6 +69,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   const [isSuccess, setIsSuccess] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [isConfirmMode, setIsConfirmMode] = useState(false);
 
   useEffect(() => {
     const fetchSegments = async () => {
@@ -115,7 +116,11 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   }, [partData]);
 
   const confirmCancel = () => {
-    setShowCancelModal(true);
+    if (isConfirmMode) {
+      handleCancel();
+    } else {
+      setShowCancelModal(true);
+    }
   };
 
   const handleCancel = () => {
@@ -123,13 +128,20 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
     setAlertMessage('Changes have been discarded.');
     setIsSuccess(false);
     setShowAlert(true);
+    setIsConfirmMode(false);
     setTimeout(() => {
-      navigate('/Client/list');
+      navigate('/part/list');
     }, 1000);
   };
 
   const confirmSave = () => {
-    setShowSaveModal(true);
+    if (isConfirmMode) {
+      handleSave();
+    } else {
+      setIsConfirmMode(true);
+      setAlertMessage('Please confirm your changes or discard them.');
+      setShowAlert(true);
+    }
   };
 
   const handlePartName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,6 +169,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   };
 
   const handleSave = async () => {
+    setIsConfirmMode(false);
     setShowSaveModal(false);
     const updatePartPayload = {
       partNumber,
@@ -197,11 +210,11 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
       }
 
       if (response && response.statusCode === 200) {
-        setResultModalTitle('Part editing successful');
-        setResultModalMessage(
+        setResultAlertSuccess(true);
+        setResultAlertMessage(
           'Part information has been successfully updated!'
         );
-        setShowResultModal(true);
+        setShowResultAlert(true);
 
         setTimeout(() => {
           navigate('/part/list');
@@ -211,14 +224,14 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
           onPartCreated(response.data);
         }
       } else {
-        setResultModalTitle('Undefined');
-        setResultModalMessage('An error occurred while saving Part info.');
-        setShowResultModal(true);
+        setResultAlertSuccess(false);
+        setResultAlertMessage('An error occurred while saving Part info.');
+        setShowResultAlert(true);
       }
     } catch (error) {
-      setResultModalTitle('Error');
-      setResultModalMessage('An error occurred while saving Part info.');
-      setShowResultModal(true);
+      setResultAlertSuccess(false);
+      setResultAlertMessage('An error occurred while saving Part info.');
+      setShowResultAlert(true);
     } finally {
       setLoadingSave(false);
     }
@@ -227,7 +240,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   return (
     <>
       {/* Alert */}
-      {showAlert && (
+      {/* {showAlert && (
         <div className="alert-overlay">
           <Alert
             variant={isSuccess ? 'success' : 'danger'}
@@ -239,7 +252,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
             <p>{alertMessage}</p>
           </Alert>
         </div>
-      )}
+      )} */}
       {/* Cancel Modal */}
       <Modal
         show={showCancelModal}
@@ -256,43 +269,6 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
           </Button>
           <Button variant="danger" onClick={handleCancel}>
             Yes, Discard
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      {/* Save Confirmation Modal */}
-      <Modal
-        show={showSaveModal}
-        onHide={() => setShowSaveModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Save</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to save the supplier information?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowSaveModal(false)}>
-            No, Cancel
-          </Button>
-          <Button variant="success" onClick={handleSave}>
-            Yes, Save
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      {/* Result Modal */}
-      <Modal
-        show={showResultModal}
-        onHide={() => setShowResultModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>{resultModalTitle}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>{resultModalMessage}</Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={() => setShowResultModal(false)}>
-            OK
           </Button>
         </Modal.Footer>
       </Modal>
@@ -478,20 +454,38 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
             <p>Saving data, please wait...</p>
           </div>
         )}
+        {isConfirmMode && (
+          <Alert variant="warning" className="mx-5 mt-2">
+            Click Confirm to save your changes or Discard to cancel.
+          </Alert>
+        )}
+        {showResultAlert && (
+          <Alert
+            variant={resultAlertSuccess ? 'success' : 'danger'}
+            className="mx-5 mt-2"
+            onClose={() => setShowResultAlert(false)}
+            dismissible
+          >
+            <Alert.Heading>
+              {resultAlertSuccess ? 'Success!' : 'Error!'}
+            </Alert.Heading>
+            <p>{resultAlertMessage}</p>
+          </Alert>
+        )}
         <div className="d-flex mt-3 gap-3 mx-5 justify-content-end">
           <CustomButton
-            variant="secondary"
+            variant={isConfirmMode ? 'danger' : 'secondary'}
             onClick={confirmCancel}
             disabled={loadingSave}
           >
-            Cancel
+            {isConfirmMode ? 'Discard' : 'Cancel'}
           </CustomButton>
           <CustomButton
-            variant="success"
+            variant={isConfirmMode ? 'primary' : 'success'}
             onClick={confirmSave}
             disabled={loadingSave}
           >
-            Save
+            {isConfirmMode ? 'Confirm' : 'Save'}
           </CustomButton>
         </div>
       </div>

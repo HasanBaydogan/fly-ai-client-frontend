@@ -4,7 +4,9 @@ import {
   Pagination,
   Dropdown,
   Modal,
-  Button as RBButton
+  Button as RBButton,
+  Alert,
+  Spinner
 } from 'react-bootstrap';
 import Button from 'components/base/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -64,13 +66,18 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
       description: string;
     }[]
   >([]);
+  const [fileDescriptionError, setFileDescriptionError] = useState('');
 
   // Delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<any>(null);
+  const [isDeleteConfirmMode, setIsDeleteConfirmMode] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Submit modal
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [isSubmitConfirmMode, setIsSubmitConfirmMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit modal
   const [showEditModal, setShowEditModal] = useState(false);
@@ -148,6 +155,7 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
     }[]
   ) => {
     setBase64Files(uploadedFiles);
+    setFileDescriptionError('');
   };
 
   const fetchFiles = useCallback(async () => {
@@ -178,11 +186,17 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
 
   const handleDeleteClick = (file: any) => {
     setFileToDelete(file);
-    setShowDeleteModal(true);
+    setIsDeleteConfirmMode(true);
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteConfirmMode(false);
+    setFileToDelete(null);
   };
 
   const confirmDelete = async () => {
     if (fileToDelete) {
+      setIsDeleting(true);
       try {
         const deleteResponse = await deleteByAttachedFiles(
           fileToDelete.partFileId
@@ -191,36 +205,70 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
       } catch (error) {
         console.error('Dosya silme hatası:', error);
       }
+      setIsDeleting(false);
       setFileToDelete(null);
-      setShowDeleteModal(false);
+      setIsDeleteConfirmMode(false);
     }
   };
 
   const confirmSubmit = async () => {
-    setShowSubmitModal(false);
+    setIsSubmitting(true);
     await handleSubmitFiles();
+    setIsSubmitting(false);
+    setIsSubmitConfirmMode(false);
+  };
+
+  const handleSubmitButtonClick = () => {
+    // Check if any file has an empty description
+    const filesWithoutDescription = base64Files.filter(
+      file => !file.description.trim()
+    );
+
+    if (filesWithoutDescription.length > 0) {
+      setFileDescriptionError(
+        `${filesWithoutDescription.length} file(s) missing description. All files require a description.`
+      );
+      return;
+    }
+
+    setFileDescriptionError('');
+
+    if (isSubmitConfirmMode) {
+      confirmSubmit();
+      setIsSubmitConfirmMode(false);
+    } else {
+      setIsSubmitConfirmMode(true);
+    }
+  };
+
+  const cancelSubmit = () => {
+    setIsSubmitConfirmMode(false);
   };
 
   const handleSubmitFiles = async () => {
     if (!partId) return;
-    for (const file of base64Files) {
-      const { size, unit } = convertFileSize(file.size || 0);
-      const newFilePayload = {
-        partId: partId,
-        fileName: file.name,
-        description: file.description,
-        data: file.base64,
-        fileSize: size,
-        fileSizeUnit: unit
-      };
-      try {
-        const result = await postFileCreate(newFilePayload);
-      } catch (error) {
-        console.error('Dosya gönderim hatası:', error);
+    try {
+      for (const file of base64Files) {
+        const { size, unit } = convertFileSize(file.size || 0);
+        const newFilePayload = {
+          partId: partId,
+          fileName: file.name,
+          description: file.description,
+          data: file.base64,
+          fileSize: size,
+          fileSizeUnit: unit
+        };
+        try {
+          const result = await postFileCreate(newFilePayload);
+        } catch (error) {
+          console.error('Dosya gönderim hatası:', error);
+        }
       }
+      fetchFiles();
+      setBase64Files([]);
+    } catch (error) {
+      console.error('Error during file submission:', error);
     }
-    fetchFiles();
-    setBase64Files([]);
   };
 
   const handleConfirmEdit = async () => {
@@ -251,10 +299,60 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
 
         {base64Files.length > 0 && (
           <div className="mb-3">
-            <Button variant="primary" onClick={() => setShowSubmitModal(true)}>
-              Submit Files
-            </Button>
+            {fileDescriptionError && (
+              <Alert variant="danger" className="mb-2">
+                {fileDescriptionError}
+              </Alert>
+            )}
+
+            {isSubmitConfirmMode && (
+              <Alert variant="warning" className="mb-2">
+                Click Confirm to submit these files or Cancel to abort.
+              </Alert>
+            )}
+
+            <div className="d-flex gap-2">
+              {isSubmitConfirmMode && (
+                <Button
+                  variant="secondary"
+                  onClick={cancelSubmit}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button
+                variant={isSubmitConfirmMode ? 'primary' : 'success'}
+                onClick={handleSubmitButtonClick}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-2"
+                    />
+                    Submitting...
+                  </>
+                ) : isSubmitConfirmMode ? (
+                  'Confirm Submit'
+                ) : (
+                  'Submit Files'
+                )}
+              </Button>
+            </div>
           </div>
+        )}
+
+        {isDeleteConfirmMode && fileToDelete && (
+          <Alert variant="danger" className="mb-3">
+            Are you sure you want to delete file "{fileToDelete.fileName}"?
+            Click Confirm Delete to proceed.
+          </Alert>
         )}
 
         {/* Yükleniyor gösterimi */}
@@ -294,19 +392,56 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
                   <td>{formatFileSize(file.fileSize)}</td>
                   <td>{file.createdBy}</td>
                   <td className="text-center">
-                    <Dropdown>
-                      <Dropdown.Toggle variant="link" className="p-0">
-                        <FontAwesomeIcon icon={faEllipsisH} />
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu>
-                        <Dropdown.Item onClick={() => handleEdit(file)}>
-                          Edit
-                        </Dropdown.Item>
-                        <Dropdown.Item onClick={() => handleDeleteClick(file)}>
-                          Delete
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
+                    {isDeleteConfirmMode &&
+                    fileToDelete?.partFileId === file.partFileId ? (
+                      <div className="d-flex flex-column gap-1">
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={confirmDelete}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                              />{' '}
+                              Deleting...
+                            </>
+                          ) : (
+                            'Confirm Delete'
+                          )}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={cancelDelete}
+                          disabled={isDeleting}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <Dropdown>
+                        <Dropdown.Toggle variant="link" className="p-0">
+                          <FontAwesomeIcon icon={faEllipsisH} />
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          <Dropdown.Item onClick={() => handleEdit(file)}>
+                            Edit
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => handleDeleteClick(file)}
+                          >
+                            Delete
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -337,53 +472,6 @@ const PartWizardFilesForm: React.FC<PartWizardFilesFormProps> = ({
           </Pagination>
         </div>
       </div>
-
-      {/* Silme Onay Modalı */}
-      <Modal
-        show={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete file "{fileToDelete?.fileName}"?
-        </Modal.Body>
-        <Modal.Footer>
-          <RBButton
-            variant="secondary"
-            onClick={() => setShowDeleteModal(false)}
-          >
-            Cancel
-          </RBButton>
-          <RBButton variant="danger" onClick={confirmDelete}>
-            Delete
-          </RBButton>
-        </Modal.Footer>
-      </Modal>
-
-      <Modal
-        show={showSubmitModal}
-        onHide={() => setShowSubmitModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm File Submission</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to submit these files?</Modal.Body>
-        <Modal.Footer>
-          <RBButton
-            variant="secondary"
-            onClick={() => setShowSubmitModal(false)}
-          >
-            Cancel
-          </RBButton>
-          <RBButton variant="primary" onClick={confirmSubmit}>
-            Submit
-          </RBButton>
-        </Modal.Footer>
-      </Modal>
 
       {/* Edit Modalı */}
       <Modal

@@ -4,6 +4,7 @@ import DatePicker from 'components/base/DatePicker';
 import './WizardTabs.css';
 import { partRow, QuoteWizardData, PIResponseData } from '../PIWizard';
 import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
+import useCurrencyFormatter from 'hooks/useCurrencyFormatter';
 
 interface WizardSetupFormProps {
   id: string;
@@ -80,6 +81,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   // Add state for bank validation
   const [bankError, setBankError] = useState<boolean>(false);
+  const { formatNumberWithDecimals } = useCurrencyFormatter();
 
   useEffect(() => {
     if (piResponseData) {
@@ -217,38 +219,38 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const formatNumber = (value: string): string => {
     return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
-  const formatRowTotal = (value: string): string => {
-    // Split the input on the decimal point.
-    const [integerPartRaw, fractionalPartRaw] = value.split('.');
+  // const formatRowTotal = (value: string): string => {
+  //   // Split the input on the decimal point.
+  //   const [integerPartRaw, fractionalPartRaw] = value.split('.');
 
-    // Remove non-digit characters from the integer part.
-    const integerDigits = integerPartRaw.replace(/\D/g, '');
+  //   // Remove non-digit characters from the integer part.
+  //   const integerDigits = integerPartRaw.replace(/\D/g, '');
 
-    // Format the integer part with commas.
-    const formattedInteger = integerDigits.replace(
-      /\B(?=(\d{3})+(?!\d))/g,
-      ','
-    );
+  //   // Format the integer part with commas.
+  //   const formattedInteger = integerDigits.replace(
+  //     /\B(?=(\d{3})+(?!\d))/g,
+  //     ','
+  //   );
 
-    // If there's a fractional part, remove non-digit characters from it as well.
-    if (fractionalPartRaw !== undefined) {
-      const fractionalDigits = fractionalPartRaw.replace(/\D/g, '');
-      // Re-join the formatted integer part and the fractional part.
-      return `${formattedInteger}.${fractionalDigits}`;
-    } else {
-      return formattedInteger;
-    }
-  };
-  const formatNumberWithDecimals = (value: string): string => {
-    // Split on the decimal point.
-    const [integerPart, decimalPart] = value.split('.');
-    // Format the integer part.
-    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    // Return with the decimal part (if it exists)
-    return decimalPart !== undefined
-      ? `${formattedInteger}.${decimalPart}`
-      : formattedInteger;
-  };
+  //   // If there's a fractional part, remove non-digit characters from it as well.
+  //   if (fractionalPartRaw !== undefined) {
+  //     const fractionalDigits = fractionalPartRaw.replace(/\D/g, '');
+  //     // Re-join the formatted integer part and the fractional part.
+  //     return `${formattedInteger}.${fractionalDigits}`;
+  //   } else {
+  //     return formattedInteger;
+  //   }
+  // };
+  // const formatNumberWithDecimals = (value: string): string => {
+  //   // Split on the decimal point.
+  //   const [integerPart, decimalPart] = value.split('.');
+  //   // Format the integer part.
+  //   const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  //   // Return with the decimal part (if it exists)
+  //   return decimalPart !== undefined
+  //     ? `${formattedInteger}.${decimalPart}`
+  //     : formattedInteger;
+  // };
 
   const formatCurrency = (
     inputValue: string,
@@ -559,15 +561,30 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     setQuotePartRows([...quotePartRows, newRow]);
   };
 
-  const handleBankChange = (bankName: string) => {
-    if (bankName) {
+  const handleBankChange = (selectedValue: string) => {
+    if (selectedValue) {
       setBankError(false);
+      // selectedValue formatı: "bankName|branchName" şeklinde olacak
+      const [bankName, branchName] = selectedValue.split('|');
+      const selectedBank = piResponseData?.allBanks.find(
+        bank => bank.bankName === bankName && bank.branchName === branchName
+      );
+      if (selectedBank) {
+        setupOtherProps.setSelectedBank(selectedBank);
+      }
+    } else {
+      setupOtherProps.setSelectedBank(null);
     }
+  };
 
-    const selectedBank = piResponseData?.allBanks.find(
-      bank => bank.bankName === bankName
-    );
-    setupOtherProps.setSelectedBank(selectedBank || null);
+  // Bankaları sıralama fonksiyonu
+  const getSortedBanks = () => {
+    if (!piResponseData?.allBanks) return [];
+    return [...piResponseData.allBanks].sort((a, b) => {
+      const bankNameCompare = a.bankName.localeCompare(b.bankName);
+      if (bankNameCompare !== 0) return bankNameCompare;
+      return a.branchName.localeCompare(b.branchName);
+    });
   };
 
   // Add validation check function to be used by the WizardFormProvider
@@ -808,7 +825,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td>
                   {getPriceCurrencySymbol(currency) +
                     ' ' +
-                    formatRowTotal((row.qty * row.unitPrice).toString())}
+                    formatNumberWithDecimals(
+                      (row.qty * row.unitPrice).toString()
+                    )}
                 </td>
                 <td className="button-cell">
                   <div className="action-buttons">
@@ -1233,15 +1252,22 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <tr className="text-center align-middle">
                 <td>
                   <Form.Select
-                    value={setupOtherProps.selectedBank?.bankName || ''}
+                    value={
+                      setupOtherProps.selectedBank
+                        ? `${setupOtherProps.selectedBank.bankName}|${setupOtherProps.selectedBank.branchName}`
+                        : ''
+                    }
                     onChange={e => handleBankChange(e.target.value)}
                     isInvalid={bankError}
                     className={bankError ? 'border border-danger' : ''}
                   >
                     <option value="">Select Bank</option>
-                    {piResponseData?.allBanks.map((bank, index) => (
-                      <option key={index} value={bank.bankName}>
-                        {bank.bankName}
+                    {getSortedBanks().map(bank => (
+                      <option
+                        key={`${bank.bankName}-${bank.branchName}`}
+                        value={`${bank.bankName}|${bank.branchName}`}
+                      >
+                        {`${bank.bankName} - ${bank.branchName}`}
                       </option>
                     ))}
                   </Form.Select>

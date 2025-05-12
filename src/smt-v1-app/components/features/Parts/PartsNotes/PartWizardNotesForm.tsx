@@ -6,7 +6,8 @@ import {
   Dropdown,
   Pagination,
   Modal,
-  Spinner
+  Spinner,
+  Alert
 } from 'react-bootstrap';
 import redPin from 'assets/icons/redPin.svg';
 import bluePin from 'assets/icons/bluePin.svg';
@@ -109,6 +110,7 @@ const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteConfirmMode, setIsDeleteConfirmMode] = useState(false);
 
   const mapNoteType = (noteType: string): string => {
     switch (noteType) {
@@ -160,8 +162,12 @@ const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
 
   const filteredNotes =
     filterCategory === 'all'
-      ? notes
-      : notes.filter(note => note.category === filterCategory);
+      ? notes.filter(note => !noteForm.id || note.id !== noteForm.id)
+      : notes.filter(
+          note =>
+            note.category === filterCategory &&
+            (!noteForm.id || note.id !== noteForm.id)
+        );
 
   const handleSaveNote = async () => {
     if (noteForm.text.trim() === '') return;
@@ -221,9 +227,24 @@ const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
     setShowForm(true);
   };
 
+  const handleCancelEdit = () => {
+    setNoteForm({
+      id: null,
+      author: 'New User',
+      text: '',
+      category: 'Sales Notes'
+    });
+    setShowForm(false);
+  };
+
   const handleDeleteClick = (note: Note) => {
     setNoteToDelete(note);
-    setShowDeleteModal(true);
+    setIsDeleteConfirmMode(true);
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteConfirmMode(false);
+    setNoteToDelete(null);
   };
 
   const confirmDelete = async () => {
@@ -240,16 +261,24 @@ const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
       console.error('Silme hatası:', error);
     }
     setIsDeleting(false);
-    setShowDeleteModal(false);
+    setIsDeleteConfirmMode(false);
     setNoteToDelete(null);
   };
+
+  // Force all notes view when editing or creating a note
+  useEffect(() => {
+    if (showForm) {
+      setFilterCategory('all');
+    }
+  }, [showForm]);
 
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <Dropdown>
-          <Dropdown.Toggle variant="secondary">
+          <Dropdown.Toggle variant="secondary" disabled={showForm}>
             {filterCategory === 'all' ? 'All Notes' : filterCategory}
+            {showForm}
           </Dropdown.Toggle>
           <Dropdown.Menu>
             <Dropdown.Item
@@ -334,13 +363,20 @@ const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
               <Button
                 variant="secondary"
                 className="ms-2"
-                onClick={() => setShowForm(false)}
+                onClick={handleCancelEdit}
               >
                 Cancel
               </Button>
             </div>
           </Card.Body>
         </Card>
+      )}
+
+      {isDeleteConfirmMode && noteToDelete && (
+        <Alert variant="danger" className="mb-3">
+          Are you sure you want to delete this note? Click Confirm Delete to
+          proceed or Cancel to abort.
+        </Alert>
       )}
 
       {filteredNotes.length > 0 ? (
@@ -366,19 +402,54 @@ const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
               </Card.Title>
               <Card.Text>{note.text}</Card.Text>
               <div className="mt-2">
-                <Button
-                  variant="success"
-                  className="me-2"
-                  onClick={() => handleEdit(note)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => handleDeleteClick(note)}
-                >
-                  Delete
-                </Button>
+                {isDeleteConfirmMode && noteToDelete?.id === note.id ? (
+                  <>
+                    <Button
+                      variant="danger"
+                      className="me-2"
+                      onClick={confirmDelete}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                          />{' '}
+                          Deleting...
+                        </>
+                      ) : (
+                        'Confirm Delete'
+                      )}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={cancelDelete}
+                      disabled={isDeleting}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="success"
+                      className="me-2"
+                      onClick={() => handleEdit(note)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDeleteClick(note)}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                )}
               </div>
             </Card.Body>
           </Card>
@@ -414,47 +485,6 @@ const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
           </Pagination>
         </div>
       </div>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        show={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this note?</Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => setShowDeleteModal(false)}
-            disabled={isDeleting}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={confirmDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? (
-              <>
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                />{' '}
-                Deleting...
-              </>
-            ) : (
-              'Delete'
-            )}
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 };

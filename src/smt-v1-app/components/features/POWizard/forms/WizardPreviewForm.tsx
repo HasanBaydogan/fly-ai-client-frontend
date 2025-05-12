@@ -641,6 +641,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     <p>
                       If you have any questions about this form, please contact:
                     </p>
+                    {settings.companyName}
+                    <br />
                     {settings.companyAddress}
                     <br />
                     {settings.phone}

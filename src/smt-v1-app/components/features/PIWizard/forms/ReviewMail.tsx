@@ -33,9 +33,22 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
     <div className="p-4" style={{ position: 'relative' }}>
       {/* Sağ üst köşeye "Go Mail Tracking" butonu ekledik */}
       <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-        <Button variant="primary" onClick={() => navigate('/pi/list')}>
-          Go PI List
-        </Button>
+        <div className="d-flex flex-column">
+          <Button
+            className="p-2 mb-2"
+            variant="primary"
+            onClick={() => navigate('/pi/list')}
+          >
+            Go PI List
+          </Button>
+          <Button
+            className="p-2"
+            variant="primary"
+            onClick={() => navigate('/mail-tracking')}
+          >
+            Go Mail Tracking
+          </Button>
+        </div>
       </div>
 
       {isSendEmailSuccess ? (

@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.4a13f70f.css",
-    "main.js": "/static/js/main.bfdd79ad.js",
+    "main.js": "/static/js/main.bc2242e9.js",
     "static/js/905.05cb42e3.chunk.js": "/static/js/905.05cb42e3.chunk.js",
     "static/js/313.c6024fed.chunk.js": "/static/js/313.c6024fed.chunk.js",
     "static/js/249.0a520196.chunk.js": "/static/js/249.0a520196.chunk.js",
@@ -48,11 +48,13 @@
     "static/media/7.png": "/static/media/7.ac3294f9115aa9744d55.png",
     "static/media/54.png": "/static/media/54.9ae530163f8e545a2b8a.png",
     "static/media/53.png": "/static/media/53.73ec4fcc00acc0f802df.png",
+    "static/media/PermissionErrorIllustration2.png": "/static/media/PermissionErrorIllustration2.fcfa203c036dbbec2cd9.png",
     "static/media/16.png": "/static/media/16.55c3901646c226eaf735.png",
     "static/media/11.png": "/static/media/11.3310023c9a66ce24ca24.png",
     "static/media/bali-3.png": "/static/media/bali-3.325c27f7669f922cd35f.png",
     "static/media/500-illustration.png": "/static/media/500-illustration.057a6ecdb36eb19a8068.png",
     "static/media/4.png": "/static/media/4.cb51890b352b5410de53.png",
+    "static/media/451.png": "/static/media/451.c489242421b26002afb1.png",
     "static/media/paris-1.png": "/static/media/paris-1.27f64dd638a51f3ae36e.png",
     "static/media/dark_500-illustration.png": "/static/media/dark_500-illustration.976de3efa55c8807c483.png",
     "static/media/10.png": "/static/media/10.ad609c6f81953c399ced.png",
@@ -162,6 +164,6 @@
   },
   "entrypoints": [
     "static/css/main.4a13f70f.css",
-    "static/js/main.bfdd79ad.js"
+    "static/js/main.bc2242e9.js"
   ]
 }

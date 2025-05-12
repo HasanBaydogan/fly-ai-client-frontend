@@ -71,15 +71,17 @@ export const getRequest = async (url: string): Promise<any> => {
     console.log('GET Request initiated:', url);
     const response: AxiosResponse = await api.get(url);
     console.log('GET Response received:', response.data);
-    if (response.data.statusCode === 200) return response.data;
-    if (response.data.statusCode === 498) {
-      //       console.log('GET request received 498 status, attempting token refresh.');
-      return (await tryRefresh(() => api.get(url)))?.data;
-    }
-    if (response.data.statusCode === 401) {
-      //   console.log('GET request unauthorized (401).');
-      handleTokenFailure();
-    }
+
+    // Return response for all status codes
+    return response.data;
+
+    // if (response.data.statusCode === 200) return response.data;
+    // if (response.data.statusCode === 498) {
+    //   return (await tryRefresh(() => api.get(url)))?.data;
+    // }
+    // if (response.data.statusCode === 401) {
+    //   handleTokenFailure();
+    // }
   } catch (err) {
     console.error(`GET Error on ${url}:`, err);
   }

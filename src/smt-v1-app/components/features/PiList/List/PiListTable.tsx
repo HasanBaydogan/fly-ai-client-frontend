@@ -21,7 +21,8 @@ import {
   Form,
   OverlayTrigger,
   Tooltip,
-  Popover
+  Popover,
+  Modal
 } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
@@ -409,11 +410,25 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       const { editingPiId, handleEditToggle } = useContext(PiListTableContext);
       const isEditing = editingPiId === original.piId;
 
+      const handlePiDetailClick = (e: React.MouseEvent) => {
+        if (editingPiId && editingPiId !== original.piId) {
+          e.preventDefault();
+          return;
+        }
+      };
+
       return (
         <div className="d-flex gap-2 px-2">
           <Link
             to={`/pi/detail?piId=${original.piId}`}
-            style={{ textDecoration: 'none' }}
+            style={{
+              textDecoration: 'none',
+              pointerEvents:
+                editingPiId && editingPiId !== original.piId ? 'none' : 'auto',
+              opacity: editingPiId && editingPiId !== original.piId ? 0.5 : 1
+            }}
+            onClick={handlePiDetailClick}
+            data-editing-allowed={isEditing ? 'true' : 'false'}
           >
             <Button
               variant="outline-primary"
@@ -421,6 +436,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
               title="PI Detail"
               className="d-flex align-items-center justify-content-center"
               style={{ width: '32px', height: '32px' }}
+              disabled={editingPiId && editingPiId !== original.piId}
             >
               <FontAwesomeIcon icon={faFileInvoice} />
             </Button>
@@ -431,7 +447,13 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             title="PI File Upload"
             className="d-flex align-items-center justify-content-center"
             style={{ width: '32px', height: '32px' }}
-            onClick={() => setShowFileUploadModal(true)}
+            onClick={() => {
+              if (editingPiId && editingPiId !== original.piId) {
+                return;
+              }
+              setShowFileUploadModal(true);
+            }}
+            disabled={editingPiId && editingPiId !== original.piId}
           >
             <FontAwesomeIcon icon={faUpload} />
           </Button>
@@ -444,6 +466,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             className="d-flex align-items-center justify-content-center"
             style={{ width: '32px', height: '32px' }}
             onClick={() => handleEditToggle(original.piId)}
+            disabled={editingPiId && editingPiId !== original.piId}
           >
             <FontAwesomeIcon icon={isEditing ? faSave : faEdit} />
           </Button>
@@ -1587,6 +1610,9 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
   // Function to handle edit mode
   const handleEditToggle = (piId: string) => {
+    // Store current scroll position
+    const scrollPosition = window.scrollY;
+
     // Reset states when starting to edit
     if (!editingPiId) {
       setSaveError(null);
@@ -1613,9 +1639,15 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           console.log('Edit mode response:', response);
           if (response && response.data && response.data.isAvailable === true) {
             setEditingPiId(piId);
+            // Restore scroll position after state update
+            setTimeout(() => {
+              window.scrollTo(0, scrollPosition);
+            }, 0);
           } else {
             setWarningMessage(
-              'This PI is currently being edited by another user. Please try again later.'
+              response && response.data && response.data.message
+                ? response.data.message + ' Please try again later.'
+                : 'This PI is currently being edited by another user. Please try again later.'
             );
             setShowWarning(true);
           }
@@ -1650,6 +1682,9 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
   // Function to save changes
   const saveChanges = (piId: string) => {
+    // Store current scroll position
+    const scrollPosition = window.scrollY;
+
     // Reset save status
     setSaveError(null);
     setSaveSuccess(false);
@@ -1716,8 +1751,32 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           setWarningMessage('Changes saved successfully.');
           setShowWarning(true);
           setSaveSuccess(true);
-          // Refresh the data
-          fetchData(pageIndex);
+
+          // Update the data locally instead of fetching all data again
+          setData(prevData => {
+            return prevData.map(item => {
+              if (item.piId === piId) {
+                return {
+                  ...item,
+                  piStatus: pi.piStatus,
+                  piBank: piBank,
+                  piBankType: piBankType,
+                  clientPaidPrice: pi.clientPaidPrice,
+                  clientPaidDate: clientPaidDate,
+                  supplierPaidPrice: pi.supplierPaidPrice,
+                  supplierPaidDate: supplierPaidDate,
+                  leadTimeDays: leadTimeDays,
+                  opSupplierId: pi.opSupplierId
+                };
+              }
+              return item;
+            });
+          });
+
+          // Restore scroll position after state updates
+          setTimeout(() => {
+            window.scrollTo(0, scrollPosition);
+          }, 0);
         } else {
           // Save failed
           const errorMessage =
@@ -2248,8 +2307,176 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     };
   }, [data]);
 
+  // Add new states for unsaved changes handling
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const [refreshRequested, setRefreshRequested] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
+  // Add this effect after your other useEffect hooks
+  useEffect(() => {
+    if (!editingPiId) return;
+
+    // Handle navigation attempts
+    const handleNavigation = (event: PopStateEvent | BeforeUnloadEvent) => {
+      if (editingPiId) {
+        // For PopStateEvent (browser back/forward)
+        if (event.type === 'popstate') {
+          event.preventDefault();
+          setShowUnsavedWarning(true);
+          // Push the current state back to prevent navigation
+          window.history.pushState(null, '', window.location.href);
+        }
+        // For BeforeUnloadEvent (page refresh/close)
+        else {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      }
+    };
+
+    // Handle clicks on any link or button
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+      const button = target.closest('button');
+
+      if (
+        (link || button) &&
+        !target.closest('[data-editing-allowed="true"]')
+      ) {
+        const href = link?.getAttribute('href');
+        const isNavbarLink = target.closest('.navbar') !== null;
+        const isInternalLink = href?.startsWith('/') || href?.startsWith('#');
+
+        if (isNavbarLink || isInternalLink) {
+          e.preventDefault();
+          e.stopPropagation();
+          setShowUnsavedWarning(true);
+          setPendingAction(() => () => {
+            if (href) window.location.href = href;
+          });
+        }
+      }
+    };
+
+    // Handle F5 and browser refresh
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+        e.preventDefault();
+        setRefreshRequested(true);
+        setPendingAction(() => () => window.location.reload());
+        setShowUnsavedWarning(true);
+      }
+    };
+
+    // Push initial state to enable popstate handling
+    window.history.pushState(null, '', window.location.href);
+
+    // Add event listeners
+    window.addEventListener('popstate', handleNavigation);
+    window.addEventListener('beforeunload', handleNavigation);
+    document.addEventListener('click', handleClick, true);
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('popstate', handleNavigation);
+      window.removeEventListener('beforeunload', handleNavigation);
+      document.removeEventListener('click', handleClick, true);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [editingPiId]);
+
+  // Execute pending action after confirmation
+  const executePendingAction = () => {
+    setShowUnsavedWarning(false);
+    setRefreshRequested(false);
+
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
+
+  // Update the UnsavedChangesModal component
+  const UnsavedChangesModal = () => (
+    <Modal
+      show={showUnsavedWarning}
+      onHide={() => setShowUnsavedWarning(false)}
+      centered
+      backdrop="static"
+      keyboard={false}
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>
+          {refreshRequested ? 'Page Refresh' : 'Unsaved Changes'}
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        You have unsaved changes. If you continue, these changes will be lost.
+        Would you like to continue without saving?
+      </Modal.Body>
+      <Modal.Footer>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setRefreshRequested(false);
+            setShowUnsavedWarning(false);
+            // Reset any pending actions
+            setPendingAction(null);
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="success"
+          onClick={async () => {
+            if (editingPiId) {
+              await saveChanges(editingPiId);
+              setShowUnsavedWarning(false);
+              if (pendingAction) {
+                pendingAction();
+              }
+            }
+          }}
+        >
+          Save Changes
+        </Button>
+        <Button
+          disabled
+          variant="danger"
+          onClick={() => {
+            executePendingAction();
+            setEditingPiId(null);
+          }}
+        >
+          Continue Without Saving
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+
   return (
-    <div>
+    <div className="position-relative">
+      {/* Add Unsaved Changes Modal */}
+      <UnsavedChangesModal />
+
+      {/* Add overlay when editing */}
+      {editingPiId && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            // backgroundColor: 'rgba(0, 0, 0, 0.1)',
+            zIndex: 999,
+            pointerEvents: 'none'
+          }}
+        />
+      )}
+
       {/* Warning Toast */}
       <ToastContainer
         position="top-end"
@@ -2377,7 +2604,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
               totalItems={totalItems}
               pageIndex={pageIndex}
               setPageIndex={setPageIndex}
-              pageSize={pageSize}
+              pageSize={pageSize === 'all' ? totalItems : pageSize}
               setPageSize={setPageSize}
             />
           </PiListTableContext.Provider>

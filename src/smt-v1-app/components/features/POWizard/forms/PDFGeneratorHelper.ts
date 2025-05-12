@@ -477,6 +477,9 @@ export const generatePDF = async (
 
     // Adres satırlarını ayırma
     const addressLines: string[] = [];
+    if (settings.companyName && settings.companyName.trim()) {
+      addressLines.push(settings.companyName.trim());
+    }
     if (settings.companyAddress) {
       const splittedAddress = settings.companyAddress.split('\n');
       splittedAddress.forEach(line => {

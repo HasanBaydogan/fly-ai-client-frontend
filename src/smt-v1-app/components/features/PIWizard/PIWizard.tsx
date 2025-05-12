@@ -28,6 +28,7 @@ export interface QuoteWizardSetting {
   addressRow2: string;
   commentsSpecialInstruction: string;
   contactInfo: string;
+  companyName: string;
   companyAddress: string;
   companyTelephone: string;
   logo: string;
@@ -58,6 +59,7 @@ export interface PIResponseData {
   }>;
   clientLegalAddress: string;
   clientName: string;
+  companyName: string;
   companyAddress: string;
   companyTelephone: string;
   contractNo: string;
@@ -207,6 +209,10 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
                 'companyTelephone' in dataToUse
                   ? dataToUse.companyTelephone
                   : '',
+              companyName:
+                'companyName' in dataToUse
+                  ? dataToUse.companyName
+                  : dataToUse.quoteWizardSetting.companyName,
               companyAddress:
                 'companyAddress' in dataToUse ? dataToUse.companyAddress : '',
               addressRow1:
