@@ -6,7 +6,7 @@ import React, {
   FC,
   useRef
 } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
@@ -603,14 +603,34 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(
     null
   );
+  const navigate = useNavigate();
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<CompanyData>();
   const fetchData = async (currentPage: number, searchParam: string = '') => {
     setLoading(true);
     try {
+      console.log('CompanyListTable - Fetching data...');
       const response = await getCompanyAll();
+      console.log('CompanyListTable - Full Response:', response);
+      console.log('CompanyListTable - Status Code:', response?.statusCode);
+      console.log('CompanyListTable - Data:', response?.data);
+      console.log('CompanyListTable - Success:', response?.success);
+
+      if (
+        response?.statusCode === 451 ||
+        (response?.data === 'Error' && response?.statusCode === 451)
+      ) {
+        console.log(
+          'CompanyListTable - 451 detected, navigating to error page'
+        );
+        navigate('/451');
+        return;
+      }
+
       const companyList = response?.data || [];
+      console.log('CompanyListTable - Company List:', companyList);
+
       const mappedData: CompanyData[] = companyList.map((item: any) => {
         let clientNames = '';
         if (Array.isArray(item.clientsResponse)) {
@@ -628,10 +648,12 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
           client: clientNames
         };
       });
+
+      console.log('CompanyListTable - Mapped Data:', mappedData);
       setData(mappedData);
       setTotalItems(response?.data?.totalElements || 0);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('CompanyListTable - Error fetching data:', error);
     } finally {
       setLoading(false);
     }

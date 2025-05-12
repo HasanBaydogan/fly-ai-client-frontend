@@ -46,6 +46,7 @@ import PiListContainer from 'smt-v1-app/containers/PiListContainer/PiListContain
 import PiDetailContainer from 'smt-v1-app/containers/PiDetailContainer/PiDetailContainer';
 import PoListContainer from 'smt-v1-app/containers/PoListContainer/PoListContainer';
 import CompanyContainer from 'smt-v1-app/containers/CompanyContainer/CompanyContainer';
+import Error451 from 'pages/error/Error451';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
@@ -231,7 +232,10 @@ const routes: RouteObject[] = [
           }
         ]
       },
-
+      {
+        path: '451',
+        element: <Error451 />
+      },
       {
         path: '/pages/errors/',
         children: [
@@ -242,6 +246,10 @@ const routes: RouteObject[] = [
           {
             path: '403',
             element: <Error403 />
+          },
+          {
+            path: '451',
+            element: <Error451 />
           },
           {
             path: '500',
