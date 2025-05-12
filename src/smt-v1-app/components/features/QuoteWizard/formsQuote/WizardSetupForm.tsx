@@ -4,6 +4,7 @@ import DatePicker from 'components/base/DatePicker';
 import './WizardTabs.css';
 import { QuotePartRow, QuoteWizardData } from '../QuoteWizard';
 import { getPriceCurrencySymbol } from '../../RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
+import useCurrencyFormatter from 'hooks/useCurrencyFormatter';
 
 interface WizardSetupFormProps {
   id: string;
@@ -50,6 +51,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   setCheckedStates,
   setupOtherProps
 }) => {
+  const { formatNumberWithDecimals } = useCurrencyFormatter();
   useEffect(() => {
     const formattedData = quoteWizardData.quoteWizardPartResponses.map(item => {
       return {
@@ -82,38 +84,38 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const formatNumber = (value: string): string => {
     return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
-  const formatRowTotal = (value: string): string => {
-    // Split the input on the decimal point.
-    const [integerPartRaw, fractionalPartRaw] = value.split('.');
 
-    // Remove non-digit characters from the integer part.
-    const integerDigits = integerPartRaw.replace(/\D/g, '');
+  // const formatRowTotal = (value: string): string => {
+  //   // Yuvarlama işlemi (örn. "3400.7999999" -> "3400.80")
+  //   const roundedValue = (Math.round(parseFloat(value) * 100) / 100).toFixed(2);
 
-    // Format the integer part with commas.
-    const formattedInteger = integerDigits.replace(
-      /\B(?=(\d{3})+(?!\d))/g,
-      ','
-    );
+  //   const [integerPartRaw, fractionalPartRaw] = roundedValue.split('.');
 
-    // If there's a fractional part, remove non-digit characters from it as well.
-    if (fractionalPartRaw !== undefined) {
-      const fractionalDigits = fractionalPartRaw.replace(/\D/g, '');
-      // Re-join the formatted integer part and the fractional part.
-      return `${formattedInteger}.${fractionalDigits}`;
-    } else {
-      return formattedInteger;
-    }
-  };
-  const formatNumberWithDecimals = (value: string): string => {
-    // Split on the decimal point.
-    const [integerPart, decimalPart] = value.split('.');
-    // Format the integer part.
-    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    // Return with the decimal part (if it exists)
-    return decimalPart !== undefined
-      ? `${formattedInteger}.${decimalPart}`
-      : formattedInteger;
-  };
+  //   const integerDigits = integerPartRaw.replace(/\D/g, '');
+
+  //   const formattedInteger = integerDigits.replace(
+  //     /\B(?=(\d{3})+(?!\d))/g,
+  //     ','
+  //   );
+
+  //   return `${formattedInteger}.${fractionalPartRaw}`;
+  // };
+
+  // const formatNumberWithDecimals = (value: string): string => {
+  //   // Yuvarlama işlemi (örn. "3400.7999999" -> "3400.80")
+  //   const roundedValue = (Math.round(parseFloat(value) * 100) / 100).toFixed(2);
+
+  //   const [integerPartRaw, fractionalPartRaw] = roundedValue.split('.');
+
+  //   const integerDigits = integerPartRaw.replace(/\D/g, '');
+
+  //   const formattedInteger = integerDigits.replace(
+  //     /\B(?=(\d{3})+(?!\d))/g,
+  //     ','
+  //   );
+
+  //   return `${formattedInteger}.${fractionalPartRaw}`;
+  // };
 
   const formatCurrency = (
     inputValue: string,
@@ -711,7 +713,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td>
                   {getPriceCurrencySymbol(currency) +
                     ' ' +
-                    formatRowTotal((row.quantity * row.unitPrice).toString())}
+                    formatNumberWithDecimals(
+                      (row.quantity * row.unitPrice).toString()
+                    )}
                 </td>
                 <td className="button-cell">
                   <div className="action-buttons">

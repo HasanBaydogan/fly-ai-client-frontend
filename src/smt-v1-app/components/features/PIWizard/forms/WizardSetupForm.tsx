@@ -4,6 +4,7 @@ import DatePicker from 'components/base/DatePicker';
 import './WizardTabs.css';
 import { partRow, QuoteWizardData, PIResponseData } from '../PIWizard';
 import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
+import useCurrencyFormatter from 'hooks/useCurrencyFormatter';
 
 interface WizardSetupFormProps {
   id: string;
@@ -80,6 +81,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   // Add state for bank validation
   const [bankError, setBankError] = useState<boolean>(false);
+  const { formatNumberWithDecimals } = useCurrencyFormatter();
 
   useEffect(() => {
     if (piResponseData) {
@@ -217,38 +219,38 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const formatNumber = (value: string): string => {
     return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
-  const formatRowTotal = (value: string): string => {
-    // Split the input on the decimal point.
-    const [integerPartRaw, fractionalPartRaw] = value.split('.');
+  // const formatRowTotal = (value: string): string => {
+  //   // Split the input on the decimal point.
+  //   const [integerPartRaw, fractionalPartRaw] = value.split('.');
 
-    // Remove non-digit characters from the integer part.
-    const integerDigits = integerPartRaw.replace(/\D/g, '');
+  //   // Remove non-digit characters from the integer part.
+  //   const integerDigits = integerPartRaw.replace(/\D/g, '');
 
-    // Format the integer part with commas.
-    const formattedInteger = integerDigits.replace(
-      /\B(?=(\d{3})+(?!\d))/g,
-      ','
-    );
+  //   // Format the integer part with commas.
+  //   const formattedInteger = integerDigits.replace(
+  //     /\B(?=(\d{3})+(?!\d))/g,
+  //     ','
+  //   );
 
-    // If there's a fractional part, remove non-digit characters from it as well.
-    if (fractionalPartRaw !== undefined) {
-      const fractionalDigits = fractionalPartRaw.replace(/\D/g, '');
-      // Re-join the formatted integer part and the fractional part.
-      return `${formattedInteger}.${fractionalDigits}`;
-    } else {
-      return formattedInteger;
-    }
-  };
-  const formatNumberWithDecimals = (value: string): string => {
-    // Split on the decimal point.
-    const [integerPart, decimalPart] = value.split('.');
-    // Format the integer part.
-    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    // Return with the decimal part (if it exists)
-    return decimalPart !== undefined
-      ? `${formattedInteger}.${decimalPart}`
-      : formattedInteger;
-  };
+  //   // If there's a fractional part, remove non-digit characters from it as well.
+  //   if (fractionalPartRaw !== undefined) {
+  //     const fractionalDigits = fractionalPartRaw.replace(/\D/g, '');
+  //     // Re-join the formatted integer part and the fractional part.
+  //     return `${formattedInteger}.${fractionalDigits}`;
+  //   } else {
+  //     return formattedInteger;
+  //   }
+  // };
+  // const formatNumberWithDecimals = (value: string): string => {
+  //   // Split on the decimal point.
+  //   const [integerPart, decimalPart] = value.split('.');
+  //   // Format the integer part.
+  //   const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  //   // Return with the decimal part (if it exists)
+  //   return decimalPart !== undefined
+  //     ? `${formattedInteger}.${decimalPart}`
+  //     : formattedInteger;
+  // };
 
   const formatCurrency = (
     inputValue: string,
@@ -823,7 +825,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td>
                   {getPriceCurrencySymbol(currency) +
                     ' ' +
-                    formatRowTotal((row.qty * row.unitPrice).toString())}
+                    formatNumberWithDecimals(
+                      (row.qty * row.unitPrice).toString()
+                    )}
                 </td>
                 <td className="button-cell">
                   <div className="action-buttons">
