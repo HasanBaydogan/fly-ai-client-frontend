@@ -96,9 +96,12 @@ const RFQModal: React.FC<RFQModalProps> = ({
   const [activeTab, setActiveTab] = useState<'message' | 'mail'>('message');
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [step, setStep] = useState<'first' | 'second'>('first');
+
+  // Shared files state for both tabs
   const [base64Files, setBase64Files] = useState<
     { name: string; base64: string }[]
   >([]);
+
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [showPIWizard, setShowPIWizard] = useState<boolean>(false);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -127,7 +130,7 @@ const RFQModal: React.FC<RFQModalProps> = ({
     }
   }, [show, openOnSecondPage]);
 
-  // FileUpload'dan gelecek base64 dosyalarını burada tutabilirsiniz
+  // File upload handler - shared between tabs
   const handleFilesUpload = (files: { name: string; base64: string }[]) => {
     setBase64Files(files);
   };
@@ -157,6 +160,8 @@ const RFQModal: React.FC<RFQModalProps> = ({
   const handlePreparePI = async () => {
     try {
       const formattedDate = selectedDate ? formatDate(selectedDate) : '';
+
+      // Use the shared base64Files
       const requestData = {
         receivedDate: formattedDate,
         attachments: base64Files.map(file => ({ data: file.base64 })),
@@ -257,7 +262,10 @@ const RFQModal: React.FC<RFQModalProps> = ({
                     </div>
                   </div>
                   <div className="mb-3">
-                    <FileUpload onFilesUpload={handleFilesUpload} />
+                    <FileUpload
+                      onFilesUpload={handleFilesUpload}
+                      initialFiles={base64Files}
+                    />
                   </div>
                 </Tab.Pane>
 
@@ -276,7 +284,10 @@ const RFQModal: React.FC<RFQModalProps> = ({
                     </div>
                   </div>
                   <div className="mb-3">
-                    <FileUpload onFilesUpload={handleFilesUpload} />
+                    <FileUpload
+                      onFilesUpload={handleFilesUpload}
+                      initialFiles={base64Files}
+                    />
                   </div>
                 </Tab.Pane>
               </Tab.Content>

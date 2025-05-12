@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Dropzone from './Dropzone';
 import styles from './FileUpload.module.css';
 import AttachmentPreview, { FileAttachment } from './AttachmentPreview';
@@ -6,19 +6,45 @@ import AttachmentPreview, { FileAttachment } from './AttachmentPreview';
 const MAX_TOTAL_SIZE = 16 * 1024 * 1024;
 
 interface Base64File {
-  id: string;
+  id?: string;
   name: string;
   base64: string;
 }
 
 interface FileUploadProps {
   onFilesUpload: (base64Files: Base64File[]) => void;
+  initialFiles?: Base64File[];
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ onFilesUpload }) => {
+const FileUpload: React.FC<FileUploadProps> = ({
+  onFilesUpload,
+  initialFiles = []
+}) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<FileAttachment[]>([]);
   const [base64Files, setBase64Files] = useState<Base64File[]>([]);
+
+  // Initialize with initialFiles if provided
+  useEffect(() => {
+    if (initialFiles && initialFiles.length > 0) {
+      setBase64Files(
+        initialFiles.map(file => ({
+          ...file,
+          id: file.id || `${file.name}-${Date.now()}`
+        }))
+      );
+
+      // Create preview objects from initialFiles
+      const previews: FileAttachment[] = initialFiles.map(file => ({
+        name: file.name,
+        url: file.base64, // Using base64 as URL for initial files
+        size: 'N/A', // Size information not available for initial files
+        format: 'N/A' // Format information not available for initial files
+      }));
+
+      setUploadedFiles(previews);
+    }
+  }, [initialFiles]);
 
   const handleDrop = async (acceptedFiles: File[], fileRejections: any[]) => {
     const totalSize = acceptedFiles.reduce((acc, file) => acc + file.size, 0);
