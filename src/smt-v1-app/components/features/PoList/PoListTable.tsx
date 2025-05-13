@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileInvoice } from '@fortawesome/free-solid-svg-icons';
+import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
 import { Col, Row, Dropdown, Badge, Button } from 'react-bootstrap';
@@ -8,8 +12,6 @@ import debounce from 'lodash/debounce';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { searchByPiList } from 'smt-v1-app/services/PIServices';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
 
 declare global {
   interface Window {
@@ -64,54 +66,32 @@ const formatStatus = (status: string): string => {
 };
 
 export const PiTableColumns: ColumnDef<PiListData>[] = [
-  // {
-  //   id: 'actions',
-  //   header: 'Buttons',
-  //   cell: ({ row: { original } }) => {
-  //     const [showFileUploadModal, setShowFileUploadModal] = useState(false);
-
-  //     return (
-  //       <div className="d-flex gap-2 px-2">
-  //         <Link
-  //           to={`/pi/detail?piId=${original.piId}`}
-  //           style={{ textDecoration: 'none' }}
-  //         >
-  //           <Button
-  //             variant="outline-primary"
-  //             size="sm"
-  //             title="PI Detail"
-  //             className="d-flex align-items-center justify-content-center"
-  //             style={{ width: '32px', height: '32px' }}
-  //           >
-  //             <FontAwesomeIcon icon={faFileInvoice} />
-  //           </Button>
-  //         </Link>
-  //         <Button
-  //           variant="outline-secondary"
-  //           size="sm"
-  //           title="PI File Upload"
-  //           className="d-flex align-items-center justify-content-center"
-  //           style={{ width: '32px', height: '32px' }}
-  //           onClick={() => setShowFileUploadModal(true)}
-  //         >
-  //           <FontAwesomeIcon icon={faUpload} />
-  //         </Button>
-
-  //         {showFileUploadModal && (
-  //           <PIListFileUpload
-  //             show={showFileUploadModal}
-  //             onHide={() => setShowFileUploadModal(false)}
-  //             piId={original.piId}
-  //           />
-  //         )}
-  //       </div>
-  //     );
-  //   },
-  //   meta: {
-  //     cellProps: { className: 'text-center py-2' },
-  //     headerProps: { style: { width: '5%' }, className: 'text-center' }
-  //   }
-  // },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row: { original } }) => (
+      <div className="d-flex gap-2 px-2">
+        <Link
+          to={`/po/detail?piId=${original.piId}`}
+          style={{ textDecoration: 'none' }}
+        >
+          <Button
+            variant="outline-primary"
+            size="sm"
+            title="PO Detail"
+            className="d-flex align-items-center justify-content-center"
+            style={{ width: '32px', height: '32px' }}
+          >
+            <FontAwesomeIcon icon={faFileInvoice} />
+          </Button>
+        </Link>
+      </div>
+    ),
+    meta: {
+      cellProps: { className: 'text-center py-2' },
+      headerProps: { style: { width: '5%' }, className: 'text-center' }
+    }
+  },
   {
     id: 'piNumberId',
     accessorKey: 'piNumberId',

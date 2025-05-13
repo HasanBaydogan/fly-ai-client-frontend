@@ -25,6 +25,34 @@ const truncateText = (text: string, maxChars = 50): string => {
   return text.substring(0, maxChars) + '...';
 };
 
+// Function to parse date string in format "15:04 13.05.2025"
+const parseDateString = (dateString: string): number => {
+  try {
+    // Extract parts: "HH:MM DD.MM.YYYY"
+    const [timeStr, dateStr] = dateString.split(' ');
+    if (!timeStr || !dateStr) return 0;
+
+    const [hours, minutes] = timeStr.split(':');
+    const [day, month, year] = dateStr.split('.');
+
+    if (!hours || !minutes || !day || !month || !year) return 0;
+
+    // JavaScript months are 0-based, so we subtract 1 from month
+    const date = new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      parseInt(hours),
+      parseInt(minutes)
+    );
+
+    return date.getTime();
+  } catch (error) {
+    console.error('Error parsing date:', dateString, error);
+    return 0;
+  }
+};
+
 const ActionTextArea: React.FC<ActionTextAreaProps> = ({
   piId,
   actions: initialActions,
@@ -45,7 +73,7 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
       return;
     }
 
-    setActions(prev => [...(prev || []), newAction]);
+    setActions(prev => [newAction, ...(prev || [])]);
     if (onActionCreated) onActionCreated(newAction);
   };
 
@@ -69,11 +97,11 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
     if (onActionUpdated) onActionUpdated(updatedAction);
   };
 
-  // Sort actions by date (newest first)
+  // Sort actions by date (newest first) using our custom date parser
   const sortedActions = [...(actions || [])].sort((a, b) => {
     if (!a || !a.createdAt) return 1;
     if (!b || !b.createdAt) return -1;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    return parseDateString(b.createdAt) - parseDateString(a.createdAt);
   });
 
   // Get the most recent action
