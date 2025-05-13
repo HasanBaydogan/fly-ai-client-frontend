@@ -110,3 +110,7 @@ export const postPiUpdate = async (PiUpdate: PiUpdateOthers) => {
 export const getAllCurrenciesFromDB = async () => {
   return await getRequest(`/currency/all`);
 };
+
+export const postCloseEditMode = async (piId: string) => {
+  return await postRequest(`/pi/close-edit-mode?piId=${piId}`, piId);
+};

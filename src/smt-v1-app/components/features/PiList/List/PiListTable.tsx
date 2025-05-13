@@ -36,7 +36,8 @@ import {
   searchByPiList,
   postOpenEditMode,
   postPiUpdate,
-  getAllCurrenciesFromDB
+  getAllCurrenciesFromDB,
+  postCloseEditMode
 } from 'smt-v1-app/services/PIServices';
 import { PiUpdateOthers } from 'smt-v1-app/types/PiTypes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -47,7 +48,8 @@ import {
   faUpload,
   faEdit,
   faSave,
-  faCalendarAlt
+  faCalendarAlt,
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
 import PIListFileUpload from 'smt-v1-app/components/features/PiList/PIListFileUpload';
@@ -392,6 +394,9 @@ const PiListTableContext = createContext<{
   handleEditToggle: (piId: string) => void;
   currencies: string[];
   loadingCurrencies: boolean;
+  setShowUnsavedWarning?: (show: boolean) => void;
+  setRefreshRequested?: (refresh: boolean) => void;
+  setPendingAction?: (action: (() => void) | null) => void;
 }>({
   editingPiId: null,
   handleEditToggle: () => {},
@@ -407,13 +412,45 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     cell: ({ row: { original } }) => {
       const [showFileUploadModal, setShowFileUploadModal] = useState(false);
       // Use the shared context
-      const { editingPiId, handleEditToggle } = useContext(PiListTableContext);
+      const {
+        editingPiId,
+        handleEditToggle,
+        setShowUnsavedWarning,
+        setRefreshRequested,
+        setPendingAction
+      } = useContext(PiListTableContext);
       const isEditing = editingPiId === original.piId;
 
       const handlePiDetailClick = (e: React.MouseEvent) => {
         if (editingPiId && editingPiId !== original.piId) {
           e.preventDefault();
           return;
+        }
+      };
+
+      const handleCancelEdit = () => {
+        if (isEditing) {
+          // Show unsaved changes modal
+          if (
+            setShowUnsavedWarning &&
+            setRefreshRequested &&
+            setPendingAction
+          ) {
+            setShowUnsavedWarning(true);
+            setRefreshRequested(false);
+            setPendingAction(() => () => {
+              postCloseEditMode(original.piId)
+                .then(response => {
+                  console.log('Edit mode closed:', response);
+                  if (window.location) {
+                    window.location.reload();
+                  }
+                })
+                .catch(error => {
+                  console.error('Error closing edit mode:', error);
+                });
+            });
+          }
         }
       };
 
@@ -470,6 +507,20 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
           >
             <FontAwesomeIcon icon={isEditing ? faSave : faEdit} />
           </Button>
+
+          {/* Cancel Edit Button - Only show when in edit mode */}
+          {isEditing && (
+            <Button
+              variant="outline-danger"
+              size="sm"
+              title="Cancel Edit"
+              className="d-flex align-items-center justify-content-center"
+              style={{ width: '32px', height: '32px' }}
+              onClick={handleCancelEdit}
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </Button>
+          )}
 
           {showFileUploadModal && (
             <PIListFileUpload
@@ -2443,11 +2494,21 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           Save Changes
         </Button>
         <Button
-          disabled
           variant="danger"
           onClick={() => {
-            executePendingAction();
-            setEditingPiId(null);
+            if (editingPiId) {
+              postCloseEditMode(editingPiId)
+                .then(() => {
+                  setEditingPiId(null);
+                  executePendingAction();
+                })
+                .catch(error => {
+                  console.error('Error closing edit mode:', error);
+                })
+                .finally(() => {
+                  setShowUnsavedWarning(false);
+                });
+            }
           }}
         >
           Continue Without Saving
@@ -2581,7 +2642,10 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
               editingPiId,
               handleEditToggle,
               currencies,
-              loadingCurrencies
+              loadingCurrencies,
+              setShowUnsavedWarning,
+              setRefreshRequested,
+              setPendingAction
             }}
           >
             <div style={{ width: '100%', overflow: 'auto' }}>
