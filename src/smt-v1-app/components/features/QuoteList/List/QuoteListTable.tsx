@@ -78,7 +78,7 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
     accessorKey: 'client',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' }, className: 'ps-3' }
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
@@ -142,8 +142,16 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
     }
   },
   {
-    accessorKey: 'lastValidDate',
-    header: 'Validity Date',
+    accessorKey: 'createdAt',
+    header: 'Created At',
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: 'lastModifiedAt',
+    header: 'Last Modified At',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
