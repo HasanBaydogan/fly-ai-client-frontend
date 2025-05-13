@@ -31,6 +31,8 @@ export interface SupplierData {
   revisionNo: string;
   clientsResponse: { clientId: string; clientName: string }[];
   clientRFQId: string;
+  totalPart: number;
+  numOfPricedPart: number;
   numOfProduct: number;
   quoteStatus: any;
   formStatus: any;
@@ -90,8 +92,13 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
     }
   },
   {
-    header: 'Number Of Product',
+    header: 'Total/Find Parts',
     accessorKey: 'numOfProduct',
+    cell: ({ row: { original } }) => {
+      const totalPart = original.totalPart ?? 0;
+      const numOfPricedPart = original.numOfPricedPart ?? 0;
+      return `${numOfPricedPart}/${totalPart}`;
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '5%' }, className: 'ps-3' }
@@ -128,6 +135,14 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
   {
     accessorKey: 'finalCost',
     header: 'Final Cost',
+    cell: ({ row: { original } }) => {
+      return (
+        original.finalCost?.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }) ?? '0.00'
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }

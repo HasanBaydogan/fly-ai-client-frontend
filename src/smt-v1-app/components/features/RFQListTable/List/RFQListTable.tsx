@@ -44,6 +44,8 @@ export interface RFQData {
   clientRFQId: string;
   date: string;
   client: string;
+  totalPart: number;
+  numOfPricedPart: number;
   numberOfProduct: number;
   comments: string;
   rfqParts: { partNumber: string; partId: string }[];
@@ -143,8 +145,13 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
     }
   },
   {
-    header: 'Number Of Product',
+    header: 'Total/Find Parts',
     accessorKey: 'numberOfProduct',
+    cell: ({ row: { original } }) => {
+      const totalPart = original.totalPart ?? 0;
+      const numOfPricedPart = original.numOfPricedPart ?? 0;
+      return `${numOfPricedPart}/${totalPart}`;
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: {
