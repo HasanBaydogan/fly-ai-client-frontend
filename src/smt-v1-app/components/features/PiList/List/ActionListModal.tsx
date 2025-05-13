@@ -100,6 +100,13 @@ const ActionListModal = ({
     setConfirmState({ type: '', target: null });
   };
 
+  // Sort actions by date (newest first)
+  const sortedActions = [...(actions || [])].sort((a, b) => {
+    if (!a || !a.createdAt) return 1;
+    if (!b || !b.createdAt) return -1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton>
@@ -194,10 +201,10 @@ const ActionListModal = ({
             gap: '12px'
           }}
         >
-          {actions.length === 0 ? (
+          {sortedActions.length === 0 ? (
             <div className="text-center py-4 text-muted">No actions yet.</div>
           ) : (
-            actions
+            sortedActions
               .filter(action => action && action.piActionId)
               .map(action => (
                 <Card key={action.piActionId} className="w-100">
@@ -322,9 +329,7 @@ const ActionListModal = ({
                           }}
                         >
                           {action.createdBy || 'Unknown'} ·{' '}
-                          {action.createdAt
-                            ? new Date(action.createdAt).toLocaleString()
-                            : ''}
+                          {action.createdAt || ''}
                         </div>
                       </div>
                     </Card.Body>

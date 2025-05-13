@@ -69,6 +69,16 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
     if (onActionUpdated) onActionUpdated(updatedAction);
   };
 
+  // Sort actions by date (newest first)
+  const sortedActions = [...(actions || [])].sort((a, b) => {
+    if (!a || !a.createdAt) return 1;
+    if (!b || !b.createdAt) return -1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  // Get the most recent action
+  const mostRecentAction = sortedActions.length > 0 ? sortedActions[0] : null;
+
   return (
     <div
       style={{
@@ -100,7 +110,7 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
             paddingRight: '2px'
           }}
         >
-          {!actions || actions.length === 0 ? (
+          {!mostRecentAction ? (
             <div
               style={{
                 border: '1px solid #ddd',
@@ -111,52 +121,47 @@ const ActionTextArea: React.FC<ActionTextAreaProps> = ({
               }}
             />
           ) : (
-            actions
-              .filter(action => action && action.description)
-              .map(action => (
-                <div
-                  key={action.piActionId || `action-${Math.random()}`}
-                  style={{
-                    border: '1px solid #ddd',
-                    borderRadius: 4,
-                    padding: 4,
-                    background: '#fafbfc',
-                    width: '100%',
-                    minHeight: 40,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    position: 'relative'
-                  }}
-                  title={action.description}
-                >
-                  <div
-                    style={{
-                      fontSize: 12,
-                      lineHeight: '1',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      wordBreak: 'break-word',
-                      marginBottom: '16px',
-                      textAlign: 'left'
-                    }}
-                  >
-                    {action.description}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: '#666',
-                      position: 'absolute',
-                      bottom: 4,
-                      right: 8,
-                      fontStyle: 'italic'
-                    }}
-                  >
-                    {action.createdBy} -{' '}
-                    {new Date(action.createdAt).toLocaleString()}
-                  </div>
-                </div>
-              ))
+            <div
+              key={mostRecentAction.piActionId || `action-${Math.random()}`}
+              style={{
+                border: '1px solid #ddd',
+                borderRadius: 4,
+                padding: 4,
+                background: '#fafbfc',
+                width: '100%',
+                minHeight: 40,
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative'
+              }}
+              title={mostRecentAction.description}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  lineHeight: '1',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  wordBreak: 'break-word',
+                  marginBottom: '16px',
+                  textAlign: 'left'
+                }}
+              >
+                {mostRecentAction.description}
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: '#666',
+                  position: 'absolute',
+                  bottom: 4,
+                  right: 8,
+                  fontStyle: 'italic'
+                }}
+              >
+                {mostRecentAction.createdBy} - {mostRecentAction.createdAt}
+              </div>
+            </div>
           )}
         </div>
       </div>

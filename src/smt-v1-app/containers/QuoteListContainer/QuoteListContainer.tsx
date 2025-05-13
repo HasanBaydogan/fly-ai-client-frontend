@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { searchByClientList } from 'smt-v1-app/services/ClientServices';
 import { QuoteData } from 'smt-v1-app/types/QuoteTypes';
 import { ColumnDef } from '@tanstack/react-table';
+import { searchByQuoteList } from 'smt-v1-app/services/QuoteService';
 
 const PartListContainer = () => {
   const [data] = useState<QuoteData[]>([]);
@@ -18,21 +19,21 @@ const PartListContainer = () => {
   const [pageIndex] = useState<number>(1);
   const [clientData, setClientData] = useState<QuoteData[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await searchByClientList('', pageIndex);
-        if (response && response.data && response.data.clients) {
-        }
-      } catch (error) {
-        console.error('Error fetching client data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [pageIndex]);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const response = await searchByQuoteList('', pageIndex);
+  //       if (response && response.data && response.data.clients) {
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching client data:', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [pageIndex]);
 
   const table = useAdvanceTable({
     data: data,
@@ -42,9 +43,9 @@ const PartListContainer = () => {
     sortable: true
   });
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
 
   return (
     <div>

@@ -50,7 +50,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
       setContractNo(piData.contractNo || '');
       setValidityDay(piData.validityDay?.toString() || '0');
 
-      setTaxChecked(piData.tax?.taxRate > 0);
+      setTaxChecked(piData.tax?.isIncluded || false);
       setAircargoChecked(piData.airCargoToX?.isIncluded || false);
       setSealineChecked(piData.sealineToX?.isIncluded || false);
       setTruckCarriageChecked(piData.truckCarriageToX?.isIncluded || false);
@@ -294,7 +294,7 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                         min="0"
                         max="100"
                         step="1"
-                        value={percentageValue}
+                        value={taxChecked ? percentageValue : 0}
                         onChange={e => {
                           const val = parseInt(e.target.value, 10);
                           if (!isNaN(val)) {
@@ -317,7 +317,9 @@ const PiOthers: React.FC<PiOthersProps> = ({ piData }) => {
                       type="text"
                       value={
                         getPriceCurrencySymbol(currency) +
-                        formatNumberInput(taxAmount.toString())
+                        formatNumberInput(
+                          (taxChecked ? taxAmount : 0).toString()
+                        )
                       }
                       disabled
                       style={{
