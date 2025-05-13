@@ -397,6 +397,7 @@ const PiListTableContext = createContext<{
   setShowUnsavedWarning?: (show: boolean) => void;
   setRefreshRequested?: (refresh: boolean) => void;
   setPendingAction?: (action: (() => void) | null) => void;
+  refreshTableData?: () => void;
 }>({
   editingPiId: null,
   handleEditToggle: () => {},
@@ -417,7 +418,8 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         handleEditToggle,
         setShowUnsavedWarning,
         setRefreshRequested,
-        setPendingAction
+        setPendingAction,
+        refreshTableData
       } = useContext(PiListTableContext);
       const isEditing = editingPiId === original.piId;
 
@@ -442,7 +444,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
               postCloseEditMode(original.piId)
                 .then(response => {
                   console.log('Edit mode closed:', response);
-                  if (window.location) {
+                  // Use the context's refreshTableData function if available
+                  if (refreshTableData) {
+                    refreshTableData();
+                  } else if (window.location) {
                     window.location.reload();
                   }
                 })
@@ -1803,26 +1808,13 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           setShowWarning(true);
           setSaveSuccess(true);
 
-          // Update the data locally instead of fetching all data again
-          setData(prevData => {
-            return prevData.map(item => {
-              if (item.piId === piId) {
-                return {
-                  ...item,
-                  piStatus: pi.piStatus,
-                  piBank: piBank,
-                  piBankType: piBankType,
-                  clientPaidPrice: pi.clientPaidPrice,
-                  clientPaidDate: clientPaidDate,
-                  supplierPaidPrice: pi.supplierPaidPrice,
-                  supplierPaidDate: supplierPaidDate,
-                  leadTimeDays: leadTimeDays,
-                  opSupplierId: pi.opSupplierId
-                };
-              }
-              return item;
-            });
-          });
+          // Refresh table data instead of updating locally
+          const effectivePageIndex = pageSize === 'all' ? 0 : pageIndex;
+          const effectiveTerm = searchTerm.trim();
+          const searchParam = effectiveTerm
+            ? `${selectedColumn.value}=${effectiveTerm}`
+            : '';
+          fetchData(effectivePageIndex, searchParam);
 
           // Restore scroll position after state updates
           setTimeout(() => {
@@ -1851,6 +1843,16 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
       .finally(() => {
         setIsSaving(false);
       });
+  };
+
+  // Add a new helper function to refresh table data
+  const refreshTableData = () => {
+    const effectivePageIndex = pageSize === 'all' ? 0 : pageIndex;
+    const effectiveTerm = searchTerm.trim();
+    const searchParam = effectiveTerm
+      ? `${selectedColumn.value}=${effectiveTerm}`
+      : '';
+    fetchData(effectivePageIndex, searchParam);
   };
 
   // Instead of recreating the columns array, directly modify the first column
@@ -2500,6 +2502,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
               postCloseEditMode(editingPiId)
                 .then(() => {
                   setEditingPiId(null);
+                  refreshTableData(); // Refresh table data
                   executePendingAction();
                 })
                 .catch(error => {
@@ -2645,7 +2648,8 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
               loadingCurrencies,
               setShowUnsavedWarning,
               setRefreshRequested,
-              setPendingAction
+              setPendingAction,
+              refreshTableData
             }}
           >
             <div style={{ width: '100%', overflow: 'auto' }}>
