@@ -16,15 +16,10 @@ interface HeaderProps {
   revisionNumber: number;
   companyNameAddress: string;
   setCompanyNameAddress: React.Dispatch<React.SetStateAction<string>>;
-  // status:
-  //   | 'UNREAD'
-  //   | 'OPEN'
-  //   | 'WFS'
-  //   | 'PQ'
-  //   | 'FQ'
-  //   | 'NOT_RFQ'
-  //   | 'NO_QUOTE'
-  //   | 'SPAM';
+  requisitioner?: string;
+  shipVia?: string;
+  fob?: string;
+  shippingTerms?: string;
   attachments?: MailItemAttachment[];
 }
 
@@ -38,6 +33,10 @@ const Header: React.FC<HeaderProps> = ({
   revisionNumber,
   companyNameAddress,
   setCompanyNameAddress,
+  requisitioner = '',
+  shipVia = '',
+  fob = '',
+  shippingTerms = '',
   attachments
 }) => {
   // useLocation ile URL'e erişip query parametrelerini alıyoruz.
@@ -129,32 +128,52 @@ const Header: React.FC<HeaderProps> = ({
         {/* <h4 className="mb-4">
           ClientRFQ Id: <span className="valueRFQ-id">{' ' + clientRFQId}</span>
         </h4> */}
-        <div className="d-flex mt-4 align-item-center justify-content-between">
+        <div className="">
           <div>
             <h3 className="mb-4">
               Client: <span className="valueRFQ-id">{' ' + clientName}</span>
             </h3>
 
-            <h4>
-              Ship To:
-              <Form.Group
-                className="my-3 px-3"
-                controlId="exampleForm.ControlTextarea1"
-                style={{ width: '400px' }}
-              >
-                <Form.Control
-                  as="textarea"
-                  rows={4}
-                  disabled
-                  value={companyNameAddress}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                    setCompanyNameAddress(e.target.value)
-                  }
-                />
-              </Form.Group>
-            </h4>
+            <div className="row g-4">
+              <div className="col-12 col-lg-6">
+                <h4>Ship To:</h4>
+                <Form.Group className="mb-3">
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    disabled
+                    value={companyNameAddress}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      setCompanyNameAddress(e.target.value)
+                    }
+                  />
+                </Form.Group>
+
+                <h4>Requisitioner:</h4>
+                <Form.Group className="mb-3">
+                  <Form.Control type="text" disabled value={requisitioner} />
+                </Form.Group>
+              </div>
+
+              <div className="col-12 col-lg-6">
+                <h4>Ship VIA:</h4>
+                <Form.Group className="mb-3">
+                  <Form.Control type="text" disabled value={shipVia} />
+                </Form.Group>
+
+                <h4>FOB:</h4>
+                <Form.Group className="mb-3">
+                  <Form.Control type="text" disabled value={fob} />
+                </Form.Group>
+
+                <h4>Shipping Terms:</h4>
+                <Form.Group className="mb-3">
+                  <Form.Control type="text" disabled value={shippingTerms} />
+                </Form.Group>
+              </div>
+            </div>
           </div>
-          <div>
+          <div className="mt-3">
             {attachments && <PiAttachments attachments={attachments} />}
           </div>
         </div>
