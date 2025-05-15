@@ -1,28 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Table, Modal, Button, Spinner } from 'react-bootstrap';
-import { PiParts } from 'smt-v1-app/containers/PiDetailContainer/QuoteContainerTypes';
+import { Form, Table, Button, Modal, Spinner } from 'react-bootstrap';
+import './PiAlternativeParts';
+import { AlternativePiPart } from 'smt-v1-app/containers/PiDetailContainer/QuoteContainerTypes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencilAlt, faSave } from '@fortawesome/free-solid-svg-icons';
 import { patchRequest } from 'smt-v1-app/services/ApiCore/GlobalApiCore';
 import { toast } from 'react-toastify';
 
-interface PiPartListProps {
-  parts: PiParts[];
-  setSelectedParts: React.Dispatch<React.SetStateAction<string[]>>;
-  selectedParts: string[];
-  refreshData?: () => void;
+interface PiListAlternativePartsProps {
+  alternativeParts: AlternativePiPart[];
+  selectedAlternativeParts: string[];
+  setSelectedAlternativeParts: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const PiPartList: React.FC<PiPartListProps> = ({
-  parts,
-  setSelectedParts,
-  selectedParts,
-  refreshData
+const PiListAlternativeParts: React.FC<PiListAlternativePartsProps> = ({
+  alternativeParts,
+  selectedAlternativeParts,
+  setSelectedAlternativeParts
 }) => {
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectAll, setSelectAll] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [modifiedParts, setModifiedParts] = useState<Map<string, StageType>>(
+    new Map()
+  );
 
   const stageOptions = [
     'NONE',
@@ -70,10 +72,6 @@ const PiPartList: React.FC<PiPartListProps> = ({
 
   type StageType = (typeof stageOptions)[number] | '';
 
-  const [modifiedParts, setModifiedParts] = useState<Map<string, StageType>>(
-    new Map()
-  );
-
   const formatStageLabel = (stage: string) => {
     return stage
       .split('_')
@@ -81,27 +79,30 @@ const PiPartList: React.FC<PiPartListProps> = ({
       .join(' ');
   };
 
-  useEffect(() => {
-    if (parts && parts.length > 0) {
-      setSelectedParts(parts.map(part => part.piPartId));
-    }
-  }, [parts]);
-
-  const allSelected = selectedParts.length === parts.length;
-
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedParts(parts.map(part => part.piPartId));
+      setSelectedAlternativeParts(alternativeParts.map(part => part.piPartId));
+      setSelectAll(true);
     } else {
-      setSelectedParts([]);
+      setSelectedAlternativeParts([]);
+      setSelectAll(false);
     }
   };
 
+  useEffect(() => {
+    if (alternativeParts && alternativeParts.length > 0) {
+      setSelectedAlternativeParts(alternativeParts.map(part => part.piPartId));
+    }
+  }, [alternativeParts]);
+
   const handleSelectPart = (piPartId: string) => {
-    setSelectedParts(prev => {
-      return prev.includes(piPartId)
-        ? prev.filter(id => id !== piPartId)
+    setSelectedAlternativeParts(prev => {
+      const newSelection = prev.includes(piPartId)
+        ? prev.filter(num => num !== piPartId)
         : [...prev, piPartId];
+
+      setSelectAll(newSelection.length === alternativeParts.length);
+      return newSelection;
     });
   };
 
@@ -122,8 +123,6 @@ const PiPartList: React.FC<PiPartListProps> = ({
   };
 
   const handleSaveChanges = async () => {
-    console.log('handleSaveChanges called', modifiedParts);
-
     if (modifiedParts.size === 0) {
       setIsEditing(false);
       setShowConfirmModal(false);
@@ -142,7 +141,6 @@ const PiPartList: React.FC<PiPartListProps> = ({
 
       console.log('piPartStatuses to send:', piPartStatuses);
 
-      // Always make the API request if we have modified parts
       const response = await patchRequest('/pi-part', { piPartStatuses });
       console.log('API response:', response);
 
@@ -182,7 +180,7 @@ const PiPartList: React.FC<PiPartListProps> = ({
   return (
     <div>
       <div className="d-flex align-items-center">
-        <h3 className="mt-3">Parts</h3>
+        <h3 className="mt-3">Alternative Parts</h3>
         <button
           className={`mx-2 btn btn-sm ${
             isEditing ? 'btn-success' : 'btn-primary'
@@ -195,6 +193,7 @@ const PiPartList: React.FC<PiPartListProps> = ({
             }
           }}
           style={{ marginRight: '10px' }}
+          disabled={!alternativeParts || alternativeParts.length === 0}
         >
           <FontAwesomeIcon
             icon={isEditing ? faSave : faPencilAlt}
@@ -246,7 +245,7 @@ const PiPartList: React.FC<PiPartListProps> = ({
 
       <hr className="custom-line m-0" />
 
-      <div className="mx-2" style={{ minHeight: '150px', overflowY: 'auto' }}>
+      <div className="mx-2" style={{ minHeight: '170px', overflowY: 'auto' }}>
         <Table responsive style={{ marginBottom: '0' }}>
           <thead
             style={{
@@ -259,16 +258,17 @@ const PiPartList: React.FC<PiPartListProps> = ({
             <tr>
               <th style={{ minWidth: '50px' }}>
                 <Form.Check
-                  type="checkbox"
-                  checked={allSelected}
                   disabled
+                  type="checkbox"
+                  checked={selectAll}
                   onChange={handleSelectAll}
                 />
               </th>
               <th style={{ minWidth: '120px' }}>Part Number</th>
               <th style={{ minWidth: '150px' }}>Part Name</th>
-              <th style={{ minWidth: '150px' }}>Part Description</th>
+              <th style={{ minWidth: '150px' }}>Additional Info</th>
               <th style={{ minWidth: '150px' }}>Stage Of Part</th>
+              <th style={{ minWidth: '150px' }}>Parent Part Number</th>
               <th style={{ minWidth: '100px' }}>Req QTY</th>
               <th style={{ minWidth: '100px' }}>Fnd QTY</th>
               <th style={{ minWidth: '100px' }}>Req CND</th>
@@ -279,25 +279,16 @@ const PiPartList: React.FC<PiPartListProps> = ({
               <th style={{ minWidth: '100px' }}>Currency</th>
               <th style={{ minWidth: '150px' }}>Supplier</th>
               <th style={{ minWidth: '150px' }}>Comment</th>
-              <th style={{ minWidth: '150px' }}>DG Packaging Cost</th>
-              <th style={{ minWidth: '120px' }}>Tag Date</th>
-              <th style={{ minWidth: '120px' }}>Cert Type</th>
-              <th style={{ minWidth: '100px' }}>MSN</th>
-              <th style={{ minWidth: '120px' }}>Warehouse</th>
-              <th style={{ minWidth: '100px' }}>Stock</th>
-              <th style={{ minWidth: '150px' }}>Stock Location</th>
-              <th style={{ minWidth: '150px' }}>Airline Company</th>
-              <th style={{ minWidth: '100px' }}>MSDS</th>
             </tr>
           </thead>
           <tbody>
-            {parts.map(part => (
+            {alternativeParts.map(part => (
               <tr key={part.piPartId}>
                 <td>
                   <Form.Check
                     type="checkbox"
                     disabled
-                    checked={selectedParts.includes(part.piPartId)}
+                    checked={selectedAlternativeParts.includes(part.piPartId)}
                     onChange={() => handleSelectPart(part.piPartId)}
                     style={{ marginLeft: '10px' }}
                   />
@@ -331,6 +322,7 @@ const PiPartList: React.FC<PiPartListProps> = ({
                     ''
                   )}
                 </td>
+                <td>{part.parentPartNumber}</td>
                 <td>{part.reqQuantity}</td>
                 <td>{part.fndQuantity}</td>
                 <td>{part.reqCondition}</td>
@@ -341,15 +333,6 @@ const PiPartList: React.FC<PiPartListProps> = ({
                 <td>{part.currency}</td>
                 <td>{String(part.supplier)}</td>
                 <td>{part.comment}</td>
-                <td>{part.DGPackagingCost ? 'Yes' : 'No'}</td>
-                <td>{part.tagDate}</td>
-                <td>{part.certificateType}</td>
-                <td>{part.MSN}</td>
-                <td>{part.wareHouse}</td>
-                <td>{part.stock}</td>
-                <td>{part.stockLocation}</td>
-                <td>{part.airlineCompany}</td>
-                <td>{part.MSDS}</td>
               </tr>
             ))}
           </tbody>
@@ -359,4 +342,4 @@ const PiPartList: React.FC<PiPartListProps> = ({
   );
 };
 
-export default PiPartList;
+export default PiListAlternativeParts;

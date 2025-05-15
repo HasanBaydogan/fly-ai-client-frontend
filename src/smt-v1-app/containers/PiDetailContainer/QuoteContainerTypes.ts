@@ -67,6 +67,7 @@ export interface PiParts {
   piPartId: string;
   price: number;
   pricedUpdatedDate: string;
+  stageOfPIPart: string;
   reqQuantity: number;
   reqCondition: string;
   stock: number;
@@ -81,6 +82,7 @@ export interface AlternativePiPart {
   piPartId: string;
   partNumber: string;
   parentPartNumber: string;
+  stageOfPIPart: string;
   partName: string;
   partDescription: string;
   supplierLT: number;

@@ -13,7 +13,7 @@ import {
 
 import QuoteContactsList from '../../components/features/QuoteList/QuoteListRightComponents/QuoteContactList/QuoteContactsList';
 import PiPartList from 'smt-v1-app/components/features/PiDetail/PiPartList';
-import QuoteListAlternativeParts from 'smt-v1-app/components/features/PiDetail/QuoteListAlternativeParts/PiAlternativeParts';
+import QuoteListAlternativeParts from 'smt-v1-app/components/features/PiDetail/PiDetailAlternativeParts/PiAlternativeParts';
 import CustomButton from '../../../components/base/Button';
 import QuoteWizard from '../../components/features/QuoteWizard/QuoteWizard';
 import {

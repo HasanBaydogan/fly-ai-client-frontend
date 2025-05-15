@@ -112,9 +112,9 @@ export const postRequest = async (url: string, data: any): Promise<any> => {
 /** API Generic PATCH */
 export const patchRequest = async (url: string, data: any): Promise<any> => {
   try {
-    // console.log('PATCH Request initiated:', url, data);
+    console.log('PATCH Request initiated:', url, data);
     const response: AxiosResponse = await api.patch(url, data);
-    // console.log('PATCH Response received:', response.data);
+    console.log('PATCH Response received:', response.data);
     if (response.data.statusCode === 200) return response.data;
     if (response.data.statusCode === 498) {
       //   console.log(
