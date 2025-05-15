@@ -24,7 +24,15 @@ import {
   faChevronRight,
   faChevronDown,
   faFolder,
-  faEye
+  faEye,
+  faUsersRectangle,
+  faTruckPlane,
+  faHandshake,
+  faBoxesPacking,
+  faArrowsUpToLine,
+  faArrowUpLong,
+  faArrowCircleUp,
+  faArrowCircleDown
 } from '@fortawesome/free-solid-svg-icons';
 import './PIListFileUpload.css';
 import {
@@ -953,11 +961,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
     const uploadError = uploadErrors[nodeId];
 
     if (files.length === 0 && !hasSelectedFiles) {
-      return (
-        <div className="text-muted px-2 py-1">
-          <small>No files available</small>
-        </div>
-      );
+      return null; // Return nothing instead of "No files available" to save space
     }
 
     return (
@@ -1058,11 +1062,11 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
         <Row className="mb-3">
           <Col>
             <Card>
-              <Card.Header className="bg-light">
+              <Card.Header className=" fs-6 bg-light p-2">
                 <FontAwesomeIcon
-                  icon={faFolderOpen}
+                  icon={faHandshake}
                   className="me-2"
-                  style={{ color: '#f8d775' }}
+                  style={{ color: '#6BAA75' }}
                 />
                 Docs with Client
               </Card.Header>
@@ -1072,12 +1076,12 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                     <Card className="mb-2">
                       <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
                         <FontAwesomeIcon
-                          icon={faFolderOpen}
+                          icon={faArrowCircleDown}
                           className="me-2"
-                          size="sm"
-                          style={{ color: '#f8d775' }}
+                          size="lg"
+                          style={{ color: '#4CAF50' }}
                         />
-                        <span className="fs-6">Received</span>
+                        <span className="fs-7">Received</span>
                       </Card.Header>
                       <ListGroup variant="flush">
                         <ListGroup.Item
@@ -1326,12 +1330,12 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                     <Card className="mb-2">
                       <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
                         <FontAwesomeIcon
-                          icon={faFolderOpen}
+                          icon={faArrowCircleUp}
                           className="me-2"
-                          size="sm"
-                          style={{ color: '#f8d775' }}
+                          size="lg"
+                          style={{ color: '#1976D2' }}
                         />
-                        <span className="fs-6">Sent</span>
+                        <span className="fs-7">Sent</span>
                       </Card.Header>
                       <ListGroup variant="flush">
                         <ListGroup.Item
@@ -1592,11 +1596,11 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
         <Row className="mb-3">
           <Col>
             <Card>
-              <Card.Header className="bg-light">
+              <Card.Header className="bg-light fs-6 p-2">
                 <FontAwesomeIcon
-                  icon={faFolderOpen}
+                  icon={faBoxesPacking}
                   className="me-2"
-                  style={{ color: '#f8d775' }}
+                  style={{ color: '#4B6A9B ' }}
                 />
                 Docs with Supplier
               </Card.Header>
@@ -1606,12 +1610,12 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                     <Card className="mb-2">
                       <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
                         <FontAwesomeIcon
-                          icon={faFolderOpen}
+                          icon={faArrowCircleDown}
                           className="me-2"
-                          size="sm"
-                          style={{ color: '#f8d775' }}
+                          size="lg"
+                          style={{ color: '#4CAF50' }}
                         />
-                        <span className="fs-6">Received</span>
+                        <span className="fs-7">Received</span>
                       </Card.Header>
                       <ListGroup variant="flush">
                         {/* Supplier received docs here */}
@@ -1716,12 +1720,12 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                     <Card className="mb-2">
                       <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
                         <FontAwesomeIcon
-                          icon={faFolderOpen}
+                          icon={faArrowCircleUp}
                           className="me-2"
-                          size="sm"
-                          style={{ color: '#f8d775' }}
+                          size="lg"
+                          style={{ color: '#1976D2' }}
                         />
-                        <span className="fs-6">Sent</span>
+                        <span className="fs-7">Sent</span>
                       </Card.Header>
                       <ListGroup variant="flush">
                         {/* Supplier sent docs here */}
@@ -1831,11 +1835,11 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
         <Row>
           <Col>
             <Card>
-              <Card.Header className="bg-light">
+              <Card.Header className="bg-light fs-6 p-2">
                 <FontAwesomeIcon
-                  icon={faFolderOpen}
+                  icon={faTruckPlane}
                   className="me-2"
-                  style={{ color: '#f8d775' }}
+                  style={{ color: '#2A5D66 ' }}
                 />
                 Docs with FF
               </Card.Header>
