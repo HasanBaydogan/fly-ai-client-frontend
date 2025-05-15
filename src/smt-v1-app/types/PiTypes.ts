@@ -43,6 +43,7 @@ export interface PINewAction {
 export interface PIUpdateAction {
   piActionId: string;
   description: string;
+  piId: string;
 }
 
 export interface PiUpdateOthers {
