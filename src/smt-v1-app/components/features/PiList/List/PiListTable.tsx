@@ -2520,7 +2520,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
             }
           }}
         >
-          Continue Without Saving
+          Exit Without Saving
         </Button>
       </Modal.Footer>
     </Modal>
