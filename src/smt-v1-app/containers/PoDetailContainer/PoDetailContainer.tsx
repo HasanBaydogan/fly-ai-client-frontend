@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import RFQHeader from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQHeader/RFQHeader';
-import RFQContent from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQContent/RFQContent';
-import RFQAttachments from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQAttachments/RFQAttachments';
-
-import Header from '../../components/features/PiDetail/PiDetailHeader';
+import Header from '../../components/features/PoDetail/PoDetailHeader';
 import PiOthers from '../../components/features/PiDetail/PiOthers';
 import PiComments from '../../components/features/PiDetail/PiComments';
 
@@ -212,9 +208,9 @@ const QuoteContainer = () => {
                 />
               }
             </div>
-            <div>
+            {/* <div>
               <PiOthers piData={piData} />
-            </div>
+            </div> */}
             <div>
               <PiPartList
                 parts={parts}

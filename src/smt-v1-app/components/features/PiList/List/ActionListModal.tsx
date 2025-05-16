@@ -95,7 +95,8 @@ const ActionListModal = ({
       setErrorMessage('');
       const response = await postPiActionUpdate({
         piActionId: editId,
-        description: editValue
+        description: editValue,
+        piId
       });
       const responseData = response?.data || response;
       if (responseData) {

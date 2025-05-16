@@ -2,7 +2,8 @@ import { SendEmailProps } from 'smt-v1-app/components/features/PIWizard/forms/Wi
 import {
   getRequest,
   postRequest,
-  deleteRequest
+  deleteRequest,
+  patchRequest
 } from './ApiCore/GlobalApiCore';
 import {
   PIAttachment,
@@ -14,7 +15,8 @@ import {
   PIAttachmentResponse,
   PINewAction,
   PIUpdateAction,
-  PiUpdateOthers
+  PiUpdateOthers,
+  PIStage
 } from '../types/PiTypes';
 
 export const searchByPiList = async (
@@ -113,4 +115,8 @@ export const getAllCurrenciesFromDB = async () => {
 
 export const postCloseEditMode = async (piId: string) => {
   return await postRequest(`/pi/close-edit-mode?piId=${piId}`, piId);
+};
+
+export const patchPiPart = async (piPartStatuses: PIStage) => {
+  return await patchRequest('/pi-part', piPartStatuses);
 };

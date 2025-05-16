@@ -630,7 +630,13 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
   },
   {
     header: 'Invoice',
-    accessorKey: '3---',
+    accessorKey: 'invoice',
+    cell: ({ row: { original } }) => (
+      <ReadOnlyCurrency
+        price={original.invoice?.price}
+        currency={original.invoice?.currency}
+      />
+    ),
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -2514,7 +2520,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
             }
           }}
         >
-          Continue Without Saving
+          Exit Without Saving
         </Button>
       </Modal.Footer>
     </Modal>

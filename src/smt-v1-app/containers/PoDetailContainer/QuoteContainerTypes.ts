@@ -82,9 +82,9 @@ export interface AlternativePiPart {
   piPartId: string;
   partNumber: string;
   parentPartNumber: string;
-  stageOfPIPart: string;
   partName: string;
   partDescription: string;
+  stageOfPIPart: string;
   supplierLT: number;
   clientLT: number;
   price: number;

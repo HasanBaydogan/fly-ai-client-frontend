@@ -44,6 +44,7 @@ import PartContainer from 'smt-v1-app/containers/PartContainer/PartContainer';
 import UserQuoteStatus from 'smt-v1-app/components/features/UserQuoteStatus/UserQuoteStatus';
 import PiListContainer from 'smt-v1-app/containers/PiListContainer/PiListContainer';
 import PiDetailContainer from 'smt-v1-app/containers/PiDetailContainer/PiDetailContainer';
+import PoDetailContainer from 'smt-v1-app/containers/PoDetailContainer/PoDetailContainer';
 import PoListContainer from 'smt-v1-app/containers/PoListContainer/PoListContainer';
 import CompanyContainer from 'smt-v1-app/containers/CompanyContainer/CompanyContainer';
 import Error451 from 'pages/error/Error451';
@@ -128,7 +129,7 @@ const routes: RouteObject[] = [
               },
               {
                 path: 'detail',
-                element: <PiDetailContainer />
+                element: <PoDetailContainer />
               }
             ]
           },

@@ -55,7 +55,7 @@ const ActionListModal = ({
 
   const confirmUpdate = async () => {
     const { id, description } = confirmModal.payload;
-    const res = await postPiActionUpdate({ piActionId: id, description });
+    const res = await postPiActionUpdate({ piActionId: id, description, piId });
     onActionUpdated(res.data);
     setEditId(null);
     setEditValue('');
