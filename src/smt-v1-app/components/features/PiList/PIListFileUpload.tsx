@@ -777,6 +777,27 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
     });
   };
 
+  // Yardımcı fonksiyon: Data URL'den dosya indirme
+  function downloadDataUrlFile(dataUrl: string, fileName: string) {
+    const arr = dataUrl.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : '';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    const blob = new Blob([u8arr], { type: mime });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(link.href), 100);
+  }
+
   // Function to handle file view
   const handleViewFile = async (fileId: string, fileType: string) => {
     try {
@@ -784,7 +805,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
 
       // Get the attachment type for this file
       let attachmentType = '';
-      // Find the file to get its original name and extension
       let fileName = '';
 
       data.forEach(main => {
@@ -818,60 +838,41 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
       const response = await getPiSelectedAttachments(fileId, attachmentType);
 
       if (response && response.success && response.data) {
-        // Get file extension from fileName or use the provided fileType
-        const fileExtension =
-          fileName.split('.').pop()?.toLowerCase() || fileType.toLowerCase();
-        const mimeType = getMimeType(fileExtension);
+        const dataUrl = response.data.data;
+        let downloadName = response.data.fileName || fileName || 'dosya';
 
-        // Extract base64 data from response
-        // Note: If data is in response.data.data, use that, otherwise use response.data
-        const base64RawData = response.data.data || response.data;
-
-        // Create a proper data URL with the correct MIME type prefix
-        // Check if it already has a data URL prefix to avoid adding it twice
-        const base64Content = base64RawData.startsWith('data:')
-          ? base64RawData
-          : `data:${mimeType};base64,${base64RawData}`;
-
-        // Create a new window with an iframe to handle all file types consistently
-        const newWindow = window.open('', '_blank');
-
-        if (newWindow) {
-          // Write HTML content with an iframe to display the file
-          newWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <title>${fileName || 'File Viewer'}</title>
-                <style>
-                  body, html { 
-                    margin: 0; 
-                    padding: 0; 
-                    height: 100%; 
-                    overflow: hidden; 
-                  }
-                  iframe { 
-                    width: 100%; 
-                    height: 100%; 
-                    border: none; 
-                  }
-                </style>
-              </head>
-              <body>
-                <iframe src="${base64Content}" type="${mimeType}"></iframe>
-              </body>
-            </html>
-          `);
-          newWindow.document.close();
-        } else {
-          // Fallback for popup blockers
-          const link = document.createElement('a');
-          link.href = base64Content;
-          link.download = fileName || `file.${fileExtension}`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+        // Uzantı kontrolü ve ekleme
+        // dataUrl: "data:application/pdf;base64,...."
+        const arr = dataUrl.split(',');
+        const mimeMatch = arr[0].match(/data:(.*?);/);
+        let ext = '';
+        if (mimeMatch && mimeMatch[1]) {
+          // örn: application/pdf
+          const mime = mimeMatch[1];
+          if (mime === 'application/pdf') ext = '.pdf';
+          else if (
+            mime ===
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          )
+            ext = '.xlsx';
+          else if (mime === 'application/msword') ext = '.doc';
+          else if (
+            mime ===
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          )
+            ext = '.docx';
+          else if (mime === 'image/png') ext = '.png';
+          else if (mime === 'image/jpeg') ext = '.jpg';
+          else if (mime === 'text/plain') ext = '.txt';
+          // Diğer uzantılar eklenebilir
         }
+
+        // Eğer dosya adında uzantı yoksa ekle
+        if (ext && !downloadName.toLowerCase().endsWith(ext)) {
+          downloadName += ext;
+        }
+
+        downloadDataUrlFile(dataUrl, downloadName);
       } else {
         console.error('Failed to fetch file data:', response?.message);
       }
