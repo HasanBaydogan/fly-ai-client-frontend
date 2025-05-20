@@ -441,7 +441,6 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     {settings.contactInfo}
                     <br />
                     {settings.phone}
-                    <br />
                   </td>
                 </tr>
               </tbody>

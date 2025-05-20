@@ -104,7 +104,7 @@ const PiPartList: React.FC<PiPartListProps> = ({
     PART_IN_TURKEY: 'Part in Turkey',
     CUSTOMS_PROCEDURE_STARTED: 'Customs Procedure Started',
     AWB_SENT_TO_CUSTOMER_FOR_APPROVAL: 'AWB Sent to Customer for Approval',
-    WB_APPROVED_BY_CUSTOMER: 'WB Approved by Customer',
+    WB_APPROVED_BY_CUSTOMER: 'AWB Approved by Customer',
     PART_ON_THE_WAY_TO_FINAL_DESTINATION:
       'Part on the Way to Final Destination',
     DELIVERED: 'Delivered',
