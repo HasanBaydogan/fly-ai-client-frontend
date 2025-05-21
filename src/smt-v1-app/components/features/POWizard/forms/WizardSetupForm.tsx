@@ -124,7 +124,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
       // Set subTotalValues and checkedStates based on shipping options
       const newSubTotalValues = [
-        piResponseData.airCargoToX.airCargoToX,
+        piResponseData.airCargoToX.airCargoToX || 0,
         piResponseData.sealineToX.sealineToX,
         piResponseData.truckCarriageToX.truckCarriageToX,
         0 // Additional value if needed
@@ -545,10 +545,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 {/* Burayı tek satırlı input bırakıyoruz */}
                 <Form.Control
                   type="text"
-                  value={setupOtherProps.clientLocation}
-                  onChange={e =>
-                    setupOtherProps.setClientLocation(e.target.value)
-                  }
+                  value={setupOtherProps.shipTo}
+                  onChange={e => setupOtherProps.setShipTo(e.target.value)}
                   style={{ width: '95%' }}
                 />
               </div>
@@ -972,7 +970,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[1] || 0).toString()
+                              (subTotalValues[1] || 0).toString() || '0.00'
                             )
                           }
                           onChange={e => {

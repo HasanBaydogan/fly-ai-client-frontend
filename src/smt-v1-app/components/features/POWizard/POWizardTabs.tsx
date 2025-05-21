@@ -108,7 +108,6 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
     setRequisitioner,
     shipVia,
     setShipVia,
-
     fob,
     setFob,
     shippingTerms,
@@ -319,6 +318,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                       taxAmount={taxAmount}
                       setupOtherProps={setupOtherProps}
                       piResponseData={piResponseData}
+                      poResponseData={poResponseData}
                     />
                   }
                 </WizardForm>
