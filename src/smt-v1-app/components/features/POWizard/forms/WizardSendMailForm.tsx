@@ -199,9 +199,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                   );
                 }}
                 newSelectionPrefix="Add email: "
-                options={toEmails.map(email => ({ label: email }))}
+                options={(toEmails || []).map(email => ({ label: email }))}
                 placeholder="Add recipient emails"
-                selected={toEmails.map(email => ({ label: email }))}
+                selected={(toEmails || []).map(email => ({ label: email }))}
                 onChange={(selected: TypeaheadOption[]) => {
                   handleEmailChange(selected, setToEmails);
                 }}
@@ -217,9 +217,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                 multiple
                 allowNew
                 newSelectionPrefix="Add new email: "
-                options={ccEmails.map(email => ({ label: email }))}
+                options={(ccEmails || []).map(email => ({ label: email }))}
                 placeholder="Add CC emails"
-                selected={ccEmails.map(email => ({ label: email }))}
+                selected={(ccEmails || []).map(email => ({ label: email }))}
                 onChange={(selected: TypeaheadOption[]) => {
                   handleEmailChange(selected, setCcEmails);
                 }}
@@ -233,9 +233,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                 multiple
                 allowNew
                 newSelectionPrefix="Add new email: "
-                options={bccEmails.map(email => ({ label: email }))}
+                options={(bccEmails || []).map(email => ({ label: email }))}
                 placeholder="Add BCC emails"
-                selected={bccEmails.map(email => ({ label: email }))}
+                selected={(bccEmails || []).map(email => ({ label: email }))}
                 onChange={(selected: TypeaheadOption[]) => {
                   handleEmailChange(selected, setBccEmails);
                 }}

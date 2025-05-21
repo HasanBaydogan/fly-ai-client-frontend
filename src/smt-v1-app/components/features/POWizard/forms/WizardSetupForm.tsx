@@ -526,8 +526,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   as="textarea"
                   ref={suppliersRef}
                   value={
-                    poResponseData?.suppliers
-                      ?.map(s => `• ${s.supplier}`)
+                    (poResponseData?.suppliers || [])
+                      .map(s => `• ${s.supplier}`)
                       .join('\n') || ''
                   }
                   disabled

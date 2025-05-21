@@ -6,7 +6,7 @@ import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
-import { partRow, QuoteWizardSetting } from '../POWizard';
+import { partRow, POResponseData, QuoteWizardSetting } from '../POWizard';
 import {
   downloadPDF,
   generatePDF,
@@ -49,6 +49,7 @@ interface WizardPersonalFormProps {
     setValidityDay: React.Dispatch<React.SetStateAction<number>>;
   };
   piResponseData: any; // Assuming piResponseData is of type any
+  poResponseData?: POResponseData;
 }
 
 const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
@@ -65,7 +66,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
   taxAmount,
   setIsPdfConvertedToBase64,
   setupOtherProps,
-  piResponseData
+  piResponseData,
+  poResponseData
 }) => {
   const [balanceValues] = useState({
     before: 4634.71,
@@ -187,26 +189,26 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         <Table bordered hover size="sm" id="client-info-form1">
           <thead>
             <tr className="bg-primary text-white text-center align-middle">
-              <td className="text-white">Company Name</td>
+              <td className="text-white">Vendor</td>
               <td colSpan={3} className="text-white">
-                Address
+                Ship To
               </td>
             </tr>
           </thead>
           <tbody>
             <tr className="text-center">
               <td>
-                {setupOtherProps.shipTo.trim() === '' ? (
+                {poResponseData?.suppliers ? (
                   <span>&nbsp;</span>
                 ) : (
-                  setupOtherProps.shipTo
+                  poResponseData?.suppliers
                 )}
               </td>
               <td colSpan={3}>
                 {setupOtherProps.clientLocation.trim() === '' ? (
                   <span>&nbsp;</span>
                 ) : (
-                  setupOtherProps.clientLocation
+                  setupOtherProps.shipTo
                 )}
               </td>
             </tr>{' '}
@@ -218,7 +220,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 SHIP VIA
               </td>
               <td className="text-white" style={{ width: '25%' }}>
-                fob
+                FOB
               </td>
               <td className="text-white" style={{ width: '25%' }}>
                 SHIPPING TERMS
