@@ -95,7 +95,7 @@ const piStatus: { [key: string]: string } = {
   SENT_TO_CLIENT: 'primary',
   CLOSED: 'info',
   REFUNDED: 'success',
-  CANCELLED: 'danger'
+  CANCELED: 'danger'
 };
 
 export interface PiListData {
@@ -583,7 +583,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         'SENT_TO_CLIENT',
         'CLOSED',
         'REFUNDED',
-        'CANCELLED'
+        'CANCELED'
       ];
 
       const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

@@ -1,34 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import RFQHeader from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQHeader/RFQHeader';
-import RFQContent from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQContent/RFQContent';
-import RFQAttachments from '../../components/features/RFQLeftSide/RFQLeftSideComponents/RFQAttachments/RFQAttachments';
-
+import { useEffect, useState } from 'react';
 import Header from '../../components/features/PiDetail/PiDetailHeader';
 import PiOthers from '../../components/features/PiDetail/PiOthers';
 import PiComments from '../../components/features/PiDetail/PiComments';
-
 import {
   MailItemMoreDetail,
-  Contact,
   Pi,
   AlternativePiPart,
   PiParts
 } from './QuoteContainerTypes';
-
-import QuoteContactsList from '../../components/features/QuoteList/QuoteListRightComponents/QuoteContactList/QuoteContactsList';
 import PiPartList from 'smt-v1-app/components/features/PiDetail/PiPartList';
 import QuoteListAlternativeParts from 'smt-v1-app/components/features/PiDetail/PiDetailAlternativeParts/PiAlternativeParts';
 import CustomButton from '../../../components/base/Button';
-import QuoteWizard from '../../components/features/QuoteWizard/QuoteWizard';
-import {
-  getQuoteDetailsById,
-  getRFQMailIdToGoToRFQMail
-} from 'smt-v1-app/services/QuoteService';
 import { getPiDetails, getPiWizard } from 'smt-v1-app/services/PIServices';
 import { useSearchParams } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowHelper';
-import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
+import POModal from 'smt-v1-app/components/features/POWizard/POModal';
 import PIWizard from 'smt-v1-app/components/features/PIWizard/PIWizard';
 import POWizard from 'smt-v1-app/components/features/POWizard/POWizard';
 
@@ -69,11 +55,9 @@ const QuoteContainer = () => {
     []
   );
   const [piData, setpiData] = useState<Pi>();
-  const [contacts, setContacts] = useState<Contact[]>([]);
 
   const [companyNameAddress, setCompanyNameAddress] = useState('');
 
-  const [showQuoteWizardTabs, setShowQuoteWizardTabs] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasUnsavedComments, setHasUnsavedComments] = useState(false);
 
@@ -88,18 +72,6 @@ const QuoteContainer = () => {
   const handleOpenPOWizard = () => setShowPOWizard(true);
   const handleClosePOWizard = () => setShowPOWizard(false);
 
-  const handleOpen = () => setShowQuoteWizardTabs(true);
-  const handleClose = () => setShowQuoteWizardTabs(false);
-
-  const handleAddContact = (contact: Contact) => {
-    setContacts(prev => [...prev, contact]);
-  };
-
-  const handleDeleteContact = (contactId: string) => {
-    setContacts(prev => prev.filter(contact => contact.id !== contactId));
-  };
-
-  // Function to fetch PI Wizard data and open the wizard
   const fetchPIWizardData = async () => {
     setIsPIWizardLoading(true);
     try {
@@ -149,27 +121,6 @@ const QuoteContainer = () => {
     };
     fetchQuoteValues();
   }, []);
-
-  const handleQuoteWizardTabs = () => {
-    setShowQuoteWizardTabs(true);
-  };
-
-  const handleGoToRFQMail = async () => {
-    if (hasUnsavedComments) {
-      if (
-        !window.confirm(
-          'You have unsaved comments. Do you want to leave without saving?'
-        )
-      ) {
-        return;
-      }
-    }
-
-    const response = await getRFQMailIdToGoToRFQMail(piId);
-    if (response && response.statusCode === 200) {
-      window.location.assign('/rfqs/rfq?rfqMailId=' + response.data.rfqMailId);
-    }
-  };
 
   const handleCancel = () => {
     if (hasUnsavedComments) {
@@ -272,7 +223,7 @@ const QuoteContainer = () => {
                   <CustomButton
                     variant="secondary"
                     onClick={() => {
-                      fetchPOWizardData();
+                      openModal();
                     }}
                     style={{ marginRight: '10px' }}
                   >
@@ -291,6 +242,19 @@ const QuoteContainer = () => {
               </div>
             </div>
           </div>
+
+          <POModal
+            show={isModalOpen}
+            onHide={closeModal}
+            rfqNumberId={piData?.clientRFQId}
+            quoteId={piData?.quoteId || piId}
+            piId={piId}
+            openOnSecondPage={openModalOnSecondPage}
+            onCreatePO={() => {
+              fetchPOWizardData();
+              closeModal();
+            }}
+          />
 
           {/* Show PI Wizard when data is loaded */}
           {showPIWizard && piWizardData && (

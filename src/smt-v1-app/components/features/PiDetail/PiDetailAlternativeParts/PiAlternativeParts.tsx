@@ -72,11 +72,59 @@ const PiListAlternativeParts: React.FC<PiListAlternativePartsProps> = ({
 
   type StageType = (typeof stageOptions)[number] | '';
 
+  const stageDisplayTexts: Record<StageType, string> = {
+    '': 'Select Stage',
+    NONE: 'None',
+    PO_WAITING_FROM_CLIENT: 'PO Waiting from Client',
+    PO_RECEIVED_FROM_CLIENT: 'PO Received from Client',
+    PI_CREATED: 'PI Created',
+    PI_SENT_TO_CLIENT: 'PI Sent to Client',
+    PI_R_SENT_TO_CLIENT: 'PI R Sent to Client',
+    PENDING_PAYMENT_FROM_CUSTOMER: 'Pending Payment from Customer',
+    PAYMENT_SENT_FROM_CUSTOMER: 'Payment Sent from Customer',
+    PAYMENT_TO_R_RECEIVED_FROM_CUSTOMER: 'Payment to R Received from Customer',
+    PAYMENT_TO_TURKEY_RECEIVED_FROM_CUSTOMER:
+      'Payment to Turkey Received from Customer',
+    PO_NEED_TO_SENT_SUPPLIER: 'PO Need to Sent Supplier',
+    PO_SENT_TO_SUPPLIER: 'PO Sent to Supplier',
+    PO_APPROVED_BY_SUPPLIER: 'PO Approved by Supplier',
+    TO_BE_PAID_TO_SUPPLIER: 'To be Paid to Supplier',
+    PAYMENT_REQUEST_SENT_TO_ACCOUNTING: 'Payment Request Sent to Accounting',
+    PAID_TO_SUPPLIER: 'Paid to Supplier',
+    PAYMENT_APPROVED_BY_SUPPLIER: 'Payment Approved by Supplier',
+    LT_PENDING_BY_SUPPLIER: 'LT Pending by Supplier',
+    READY_FOR_PICKUP_AT_SUPPLIER: 'Ready for Pickup at Supplier',
+    SUPPLIER_PREPARING_TO_SEND_BY_SUPP_FF:
+      'Supplier Preparing to Send by Supp FF',
+    SUPPLIER_CONTACT_SENT_TO_OUR_FF: 'Supplier Contact Sent to Our FF',
+    PICK_UP_PENDING_BY_OUR_FF: 'Pick up Pending by Our FF',
+    PART_ON_THE_WAY_TO_TURKEY_BY_OUR_FF: 'Part on the Way to Turkey by Our FF',
+    PART_ON_THE_WAY_TO_TURKEY_BY_SUPPLIERS_FF:
+      'Part on the Way to Turkey by Suppliers FF',
+    E_INVOICE_REQUEST_SENT_TO_ACCOUNTING:
+      'E-Invoice Request Sent to Accounting',
+    PART_IN_TURKEY: 'Part in Turkey',
+    CUSTOMS_PROCEDURE_STARTED: 'Customs Procedure Started',
+    AWB_SENT_TO_CUSTOMER_FOR_APPROVAL: 'AWB Sent to Customer for Approval',
+    WB_APPROVED_BY_CUSTOMER: 'AWB Approved by Customer',
+    PART_ON_THE_WAY_TO_FINAL_DESTINATION:
+      'Part on the Way to Final Destination',
+    DELIVERED: 'Delivered',
+    PI_RECEIVED_BUT_PI_NOT_CREATED: 'PI Received but PI not Created',
+    PO_CREATED: 'PO Created',
+    PO_PARTIALLY_SENT: 'PO Partially Sent',
+    PO_FULLY_SENT: 'PO Fully Sent',
+    LOT_CREATED: 'Lot Created',
+    LOT_PARTIALLY_SENT: 'Lot Partially Sent',
+    LOT_FULLY_SENT: 'Lot Fully Sent',
+    CANCELED: 'Canceled',
+    REFUNDED_TO_CUSTOMERS_ACCOUNT: 'Refunded to Customers Account',
+    REFUNDED_TO_CUSTOMERS_BALANCE: 'Refunded to Customers Balance'
+  };
+
   const formatStageLabel = (stage: string) => {
-    return stage
-      .split('_')
-      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-      .join(' ');
+    if (!stage) return '';
+    return stageDisplayTexts[stage as StageType] || stage;
   };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {

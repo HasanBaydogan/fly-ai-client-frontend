@@ -691,7 +691,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     onChange={e =>
                       setupOtherProps.setClientLocation(e.target.value)
                     }
-                    style={{ width: '85%' }}
+                    style={{ width: '95%' }}
                   />
                 </div>
               }
@@ -774,6 +774,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 PN/MODEL
               </td>
               <td className="text-white align-middle">DESCRIPTION</td>
+              <td className="text-white align-middle">SUPPLIER</td>
               <td className="text-white align-middle">QTY</td>
               <td className="text-white align-middle">LEAD TIME</td>
               <td className="text-white align-middle">UNIT PRICE</td>
@@ -819,6 +820,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       )
                     }
                     style={{ width: '100%', resize: 'vertical' }}
+                  />
+                </td>
+                <td>
+                  <Form.Control
+                    disabled
+                    type="text"
+                    value={''}
+                    //onChange={e => setupOtherProps.setSupplier(e.target.value)}
                   />
                 </td>
                 <td style={{ width: '75px' }}>

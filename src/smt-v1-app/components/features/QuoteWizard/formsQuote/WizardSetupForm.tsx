@@ -1085,7 +1085,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   {quoteWizardData.quoteWizardSetting.contactInfo}
                   <br />
                   {quoteWizardData.quoteWizardSetting.phone}
-                  <br />
                 </td>
               </tr>
             </tbody>

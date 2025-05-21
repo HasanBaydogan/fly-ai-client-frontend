@@ -256,8 +256,8 @@ export const generatePDF = (
     const tableWidth = 195;
     const leftMargin = (pageWidth - tableWidth) / 2;
     autoTable(pdf, {
-      startY: (pdf as any).lastAutoTable?.finalY + 5,
-      body: [[settings.contactInfo + '\n' + settings.phone]],
+      startY: (pdf as any).lastAutoTable?.finalY + 3,
+      body: [[settings.contactInfo + settings.phone]],
       theme: 'grid',
       styles: { halign: 'center', valign: 'middle' },
       columnStyles: { 0: { cellWidth: tableWidth } },

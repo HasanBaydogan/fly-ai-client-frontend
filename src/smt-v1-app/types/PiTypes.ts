@@ -108,7 +108,7 @@ export interface PiData {
       | 'SENT_TO_CLIENT'
       | 'CLOSED'
       | 'REFUNDED'
-      | 'CANCELLED';
+      | 'CANCELED';
     type:
       | 'dark'
       | 'primary'
