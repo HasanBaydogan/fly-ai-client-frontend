@@ -36,8 +36,8 @@ interface WizardPersonalFormProps {
     setRequisitioner: React.Dispatch<React.SetStateAction<string>>;
     shipVia: string;
     setShipVia: React.Dispatch<React.SetStateAction<string>>;
-    CPT: string;
-    setCPT: React.Dispatch<React.SetStateAction<string>>;
+    fob: string;
+    setFob: React.Dispatch<React.SetStateAction<string>>;
     shippingTerms: string;
     setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
     selectedBank: any;
@@ -87,7 +87,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         setupOtherProps.shipTo,
         setupOtherProps.requisitioner,
         setupOtherProps.shipVia,
-        setupOtherProps.CPT,
+        setupOtherProps.fob,
         setupOtherProps.shippingTerms,
         setupOtherProps.contractNo,
         setupOtherProps.isInternational,
@@ -118,7 +118,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             setupOtherProps.shipTo,
             setupOtherProps.requisitioner,
             setupOtherProps.shipVia,
-            setupOtherProps.CPT,
+            setupOtherProps.fob,
             setupOtherProps.shippingTerms,
             setupOtherProps.contractNo,
             setupOtherProps.isInternational,
@@ -218,7 +218,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 SHIP VIA
               </td>
               <td className="text-white" style={{ width: '25%' }}>
-                CPT
+                fob
               </td>
               <td className="text-white" style={{ width: '25%' }}>
                 SHIPPING TERMS
@@ -240,10 +240,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 )}
               </td>
               <td style={{ width: '25%' }}>
-                {setupOtherProps.CPT.trim() === '' ? (
+                {setupOtherProps.fob.trim() === '' ? (
                   <span>&nbsp;</span>
                 ) : (
-                  setupOtherProps.CPT
+                  setupOtherProps.fob
                 )}
               </td>
               <td style={{ width: '25%' }}>
@@ -293,13 +293,13 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   <td>{row.qty}</td>
                   <td>{row.leadTime} Days</td>
                   <td>
-                    {row.unitPrice.toLocaleString('en-US', {
+                    {row.price.toLocaleString('en-US', {
                       style: 'currency',
                       currency: currency.replace(/[^A-Z]/g, '')
                     })}
                   </td>
                   <td>
-                    {(row.qty * row.unitPrice).toLocaleString('en-US', {
+                    {(row.qty * row.price).toLocaleString('en-US', {
                       style: 'currency',
                       currency: currency.replace(/[^A-Z]/g, '')
                     })}
@@ -345,7 +345,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     </tr>
                     <tr>
                       <td>Delivery Term :</td>
-                      <td>{setupOtherProps.CPT}</td>
+                      <td>{setupOtherProps.fob}</td>
                     </tr>
                     <tr>
                       <td>Validity Day :</td>
@@ -373,7 +373,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                             <span className="text-primary ms-2">
                               {quotePartRows
                                 .reduce(
-                                  (acc, row) => acc + row.qty * row.unitPrice,
+                                  (acc, row) => acc + row.qty * row.price,
                                   0
                                 )
                                 .toLocaleString('en-US', {
@@ -473,7 +473,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                         <strong>
                           {(
                             quotePartRows.reduce(
-                              (acc, row) => acc + row.qty * row.unitPrice,
+                              (acc, row) => acc + row.qty * row.price,
                               0
                             ) +
                             (checkedStates[0] ? taxAmount : 0) +

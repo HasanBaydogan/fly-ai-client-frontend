@@ -7,20 +7,19 @@ import { getAllCurrenciesFromDB } from 'smt-v1-app/services/RFQService';
 
 export interface partRow {
   no: number;
-  alternativeTo: string;
   currency: string;
   description: string;
-  fndCondition: string;
   leadTime: number;
   partNumber: string;
   qty: number;
-  quotePartId: string;
-  reqCondition: string;
-  unitPrice: number;
-  isNew: boolean;
-  unitPriceString: string;
+  poPartId: string;
+  price: number;
+  priceString: string;
   tempId: number | undefined;
   id: string;
+  poPartSuppliers: {
+    supplier: string;
+  };
 }
 
 export interface QuoteWizardSetting {
@@ -90,8 +89,8 @@ export interface SetupOtherProps {
   setRequisitioner: React.Dispatch<React.SetStateAction<string>>;
   shipVia: string;
   setShipVia: React.Dispatch<React.SetStateAction<string>>;
-  CPT: string;
-  setCPT: React.Dispatch<React.SetStateAction<string>>;
+  fob: string;
+  setFob: React.Dispatch<React.SetStateAction<string>>;
   shippingTerms: string;
   setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
   contractNo: string;
@@ -106,8 +105,31 @@ export interface SetupOtherProps {
   >;
 }
 
+export interface POResponseData {
+  airCargoToX: { airCargoToX: number; isIncluded: boolean };
+  companyAddress: string;
+  companyName: string;
+  companyTelephone: string;
+  fob: string;
+  logo: string;
+  poId: string;
+  poNumberId: string;
+  poParts: any[];
+  requisitoner: string;
+  revisionNumber: number;
+  sealineToX: { sealineToX: number; isIncluded: boolean };
+  shipTo: string;
+  shipVia: string;
+  shippingTerms: string;
+  subTotal: number;
+  suppliers: any[];
+  tax: { tax: number; taxRate: number; isIncluded: boolean };
+  total: number;
+  truckCarriageToX: { truckCarriageToX: number; isIncluded: boolean };
+}
+
 // Create a union type for the data we'll use
-type WizardData = PIResponseData | QuoteWizardData;
+type WizardData = PIResponseData | QuoteWizardData | POResponseData;
 
 interface PIWizardProps {
   handleOpen: () => void;
@@ -119,9 +141,10 @@ interface PIWizardProps {
   quoteComment: string;
   initialData?: WizardData;
   piResponseData?: PIResponseData;
+  poResponseData?: POResponseData;
 }
 
-const QuoteWizard: React.FC<PIWizardProps> = ({
+const POWizard: React.FC<PIWizardProps> = ({
   handleOpen,
   handleClose,
   showTabs,
@@ -130,7 +153,8 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
   quoteId,
   quoteComment,
   initialData,
-  piResponseData
+  piResponseData,
+  poResponseData
 }) => {
   // Add console.log to check incoming props
   // console.log('PIWizard Props:', {
@@ -164,8 +188,8 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
     setRequisitioner: () => {},
     shipVia: '',
     setShipVia: () => {},
-    CPT: '',
-    setCPT: () => {},
+    fob: '',
+    setFob: () => {},
     shippingTerms: '',
     setShippingTerms: () => {},
     contractNo: '',
@@ -182,26 +206,39 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
     const getSelectedQuoteParts = async () => {
       setIsLoading(true);
       try {
-        // Use initialData as piResponseData if it exists
-        const dataToUse = initialData || piResponseData;
+        // Use initialData as piResponseData or poResponseData if it exists
+        const dataToUse = initialData || piResponseData || poResponseData;
 
         if (dataToUse) {
-          // console.log('Converting data to QuoteWizardData:', dataToUse);
           // Convert data to QuoteWizardData format
           const convertedData: QuoteWizardData = {
             currency: 'USD', // Default currency, can be updated based on your needs
-            quoteId: 'piId' in dataToUse ? dataToUse.piId : dataToUse.quoteId,
+            quoteId:
+              'poId' in dataToUse
+                ? dataToUse.poId
+                : 'piId' in dataToUse
+                ? dataToUse.piId
+                : dataToUse.quoteId,
             quoteNumberId:
-              'piNumberId' in dataToUse
+              'poNumberId' in dataToUse
+                ? dataToUse.poNumberId
+                : 'piNumberId' in dataToUse
                 ? dataToUse.piNumberId
                 : dataToUse.quoteNumberId,
             rfqNumberId: '',
             quoteWizardPartResponses:
-              'piParts' in dataToUse
+              'poParts' in dataToUse
+                ? dataToUse.poParts.map(part => ({
+                    ...part,
+                    isNew: false,
+                    priceString: part.price?.toString() || '0',
+                    tempId: undefined
+                  }))
+                : 'piParts' in dataToUse
                 ? dataToUse.piParts.map(part => ({
                     ...part,
                     isNew: false,
-                    unitPriceString: part.unitPrice?.toString() || '0',
+                    priceString: part.price?.toString() || '0',
                     tempId: undefined
                   }))
                 : dataToUse.quoteWizardPartResponses,
@@ -242,17 +279,14 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
             },
             revisionNumber: dataToUse.revisionNumber
           };
-          // console.log('Converted Data:', convertedData);
           setQuoteWizardData(convertedData);
         } else {
-          // console.log('Fetching data from quoteWizardIntro');
           const response = await quoteWizardIntro(
             quoteId,
             selectedParts,
             selectedAlternativeParts
           );
           if (response.statusCode === 200) {
-            // console.log('QuoteWizardIntro Response:', response.data);
             setQuoteWizardData(response.data);
           }
         }
@@ -272,6 +306,7 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
     selectedAlternativeParts,
     initialData,
     piResponseData,
+    poResponseData,
     quoteId
   ]);
 
@@ -291,6 +326,7 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
             selectedAlternativeParts={selectedAlternativeParts}
             quoteComment={quoteComment}
             piResponseData={(initialData as PIResponseData) || piResponseData}
+            poResponseData={(initialData as POResponseData) || poResponseData}
             onClose={handleBackToPIModal}
           />
         ) : (
@@ -303,4 +339,4 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
   );
 };
 
-export default QuoteWizard;
+export default POWizard;

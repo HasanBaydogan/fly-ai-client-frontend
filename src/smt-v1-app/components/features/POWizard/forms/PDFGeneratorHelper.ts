@@ -105,11 +105,11 @@ export const generatePDF = async (
       row.description,
       row.qty,
       `${row.leadTime} Days`,
-      row.unitPrice.toLocaleString('en-US', {
+      row.price.toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
       }),
-      (row.qty * row.unitPrice).toLocaleString('en-US', {
+      (row.qty * row.price).toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
       })
@@ -146,7 +146,7 @@ export const generatePDF = async (
 
     // Calculate totals
     const subTotal = quotePartRows.reduce(
-      (acc, row) => acc + row.qty * row.unitPrice,
+      (acc, row) => acc + row.qty * row.price,
       0
     );
     const total =
