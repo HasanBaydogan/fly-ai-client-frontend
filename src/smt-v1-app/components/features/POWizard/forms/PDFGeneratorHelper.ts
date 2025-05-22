@@ -417,11 +417,27 @@ export const returnPdfAsBase64String = async (
       percentageValue,
       currentVendor
     );
+
     if (pdf) {
-      return pdf.output('datauristring');
+      // Convert PDF to base64 string
+      const pdfBlob = pdf.output('blob');
+      const reader = new FileReader();
+      
+      return new Promise((resolve, reject) => {
+        reader.onload = () => {
+          const base64String = reader.result as string;
+          resolve(base64String);
+        };
+        reader.onerror = error => {
+          console.error('Error converting PDF to base64:', error);
+          reject(error);
+        };
+        reader.readAsDataURL(pdfBlob);
+      });
     }
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    throw error; // Re-throw the error to handle it in the component
   }
   return undefined;
 };

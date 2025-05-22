@@ -90,12 +90,16 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
   };
 
   // Debug log
-  console.log('Current Vendor:', currentVendor);
-  console.log('Filtered Parts:', filteredParts);
+  // console.log('Current Vendor:', currentVendor);
+  // console.log('Filtered Parts:', filteredParts);
 
   const handleGeneratePDF = async () => {
     try {
-      await downloadPDF(
+      console.log('Starting PDF generation...');
+      setIsPdfConvertedToBase64(true);
+
+      // Generate PDF and get base64 string in one step
+      const base64String = await returnPdfAsBase64String(
         settings,
         selectedDate,
         quoteNumber,
@@ -117,8 +121,36 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         percentageValue,
         currentVendor
       );
+
+      if (base64String) {
+        console.log('Setting PDF states...');
+        setBase64Pdf(base64String);
+        setBase64PdfFileName(`PO_${quoteNumber}.pdf`);
+
+        // Open PDF in new tab
+        const pdfWindow = window.open('', '_blank');
+        if (pdfWindow) {
+          pdfWindow.document.write(`
+            <html>
+              <head>
+                <title>PDF Preview</title>
+              </head>
+              <body style="margin:0;padding:0;">
+                <embed width="100%" height="100%" src="${base64String}" type="application/pdf">
+              </body>
+            </html>
+          `);
+          pdfWindow.document.close();
+        }
+      } else {
+        console.error('Failed to generate PDF');
+      }
+
+      setIsPdfConvertedToBase64(false);
+      console.log('PDF process completed');
     } catch (error) {
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
+      setIsPdfConvertedToBase64(false);
     }
   };
 

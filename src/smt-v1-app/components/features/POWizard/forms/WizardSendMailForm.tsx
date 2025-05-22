@@ -42,7 +42,6 @@ export interface EmailProps {
       }[]
     >
   >;
-
   inputValue: string;
   setInputValue: React.Dispatch<React.SetStateAction<string>>;
   error: string;
@@ -91,7 +90,6 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
   } = emailProps;
 
   // This state is used for files in base64 format.
-
   const [isLoading, setIsLoading] = useState(true);
 
   // Simple email validation
@@ -150,23 +148,55 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
 
   // Fetch the pre-email parameters from the API and set the email fields.
   useEffect(() => {
-    const getPreEmailParams = async () => {
-      setIsLoading(true);
-      const response = await getPreEmailSendingParameters(poId);
-      // Assuming response.data has the structure: { body, ccEmails, subject, toEmails }
-      setToEmails(response.data.toEmails);
-      setCcEmails(response.data.ccEmails);
-      setSubject(response.data.subject);
-      setContent(response.data.body);
-      setIsLoading(false);
-    };
-    getPreEmailParams();
-  }, [poId, setToEmails, setCcEmails, setSubject, setContent]);
+    const fetchEmailParameters = async () => {
+      try {
+        console.log('Fetching email parameters for poId:', poId);
+        const response = await getPreEmailSendingParameters(poId);
+        console.log('Email parameters response:', response);
 
-  // Update the file state when base64Pdf changes.
+        if (response && response.data && response.data.preEmailParameters) {
+          const emailData = response.data.preEmailParameters[0];
+          setToEmails(emailData.toEmails || []);
+          setCcEmails(emailData.ccEmails || []);
+          setSubject(emailData.subject || '');
+          setContent(emailData.body || '');
+
+          // Add supplier info if available
+          if (emailData.poSupplier) {
+            setContent(
+              prevContent =>
+                prevContent +
+                `\n\nSupplier: ${emailData.poSupplier.supplierName}`
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching email parameters:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEmailParameters();
+  }, [poId]);
+
+  // Handle PDF conversion and attachment
   useEffect(() => {
-    setBase64Files([{ name: base64PdfFileName, base64: base64Pdf }]);
-  }, [base64Pdf, base64PdfFileName]);
+    console.log('PDF State:', {
+      base64Pdf,
+      base64PdfFileName,
+      isPdfConvertedToBase64
+    });
+
+    if (base64Pdf && base64PdfFileName && !isPdfConvertedToBase64) {
+      console.log('Adding PDF to attachments');
+      const pdfFile = {
+        name: base64PdfFileName,
+        base64: base64Pdf
+      };
+      setBase64Files(prevFiles => [...prevFiles, pdfFile]);
+    }
+  }, [base64Pdf, base64PdfFileName, isPdfConvertedToBase64]);
 
   const handleFilesUpload = (files: { name: string; base64: string }[]) => {
     setBase64Files(files);
@@ -174,7 +204,16 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
 
   return (
     <div className="p-4">
-      {isLoading || isPdfConvertedToBase64 ? (
+      {(() => {
+        // console.log('Render state:', {
+        //   isLoading,
+        //   isPdfConvertedToBase64,
+        //   hasBase64Pdf: !!base64Pdf,
+        //   hasBase64FileName: !!base64PdfFileName
+        // });
+        return null;
+      })()}
+      {isLoading ? (
         <LoadingAnimation />
       ) : (
         <Form>
@@ -199,9 +238,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                   );
                 }}
                 newSelectionPrefix="Add email: "
-                options={(toEmails || []).map(email => ({ label: email }))}
+                options={toEmails.map(email => ({ label: email }))}
                 placeholder="Add recipient emails"
-                selected={(toEmails || []).map(email => ({ label: email }))}
+                selected={toEmails.map(email => ({ label: email }))}
                 onChange={(selected: TypeaheadOption[]) => {
                   handleEmailChange(selected, setToEmails);
                 }}
@@ -217,9 +256,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                 multiple
                 allowNew
                 newSelectionPrefix="Add new email: "
-                options={(ccEmails || []).map(email => ({ label: email }))}
+                options={ccEmails.map(email => ({ label: email }))}
                 placeholder="Add CC emails"
-                selected={(ccEmails || []).map(email => ({ label: email }))}
+                selected={ccEmails.map(email => ({ label: email }))}
                 onChange={(selected: TypeaheadOption[]) => {
                   handleEmailChange(selected, setCcEmails);
                 }}
@@ -233,9 +272,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                 multiple
                 allowNew
                 newSelectionPrefix="Add new email: "
-                options={(bccEmails || []).map(email => ({ label: email }))}
+                options={bccEmails.map(email => ({ label: email }))}
                 placeholder="Add BCC emails"
-                selected={(bccEmails || []).map(email => ({ label: email }))}
+                selected={bccEmails.map(email => ({ label: email }))}
                 onChange={(selected: TypeaheadOption[]) => {
                   handleEmailChange(selected, setBccEmails);
                 }}
@@ -256,9 +295,17 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
           <div className="border p-3 mb-3">
             <DropzoneQuoteWizard
               onFilesUpload={handleFilesUpload}
-              alreadyUploadedFiles={[
-                { id: undefined, name: base64PdfFileName, base64: base64Pdf }
-              ]}
+              alreadyUploadedFiles={
+                base64Pdf && base64PdfFileName
+                  ? [
+                      {
+                        id: undefined,
+                        name: base64PdfFileName,
+                        base64: base64Pdf
+                      }
+                    ]
+                  : []
+              }
             />
           </div>
 

@@ -265,6 +265,30 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
     setEmailSendLoading(false);
   };
 
+  useEffect(() => {
+    // PDF zaten ekli mi kontrol et
+    const alreadyExists = base64Files.some(
+      file => file.name === base64PdfFileName && file.base64 === base64Pdf
+    );
+
+    if (
+      base64Pdf &&
+      base64PdfFileName &&
+      !isPdfConvertedToBase64 &&
+      !alreadyExists
+    ) {
+      console.log('Adding PDF to attachments');
+      const pdfFile = {
+        name: base64PdfFileName,
+        base64: base64Pdf
+      };
+      setBase64Files(prevFiles => [...prevFiles, pdfFile]);
+    }
+    // Sadece base64Pdf, base64PdfFileName veya isPdfConvertedToBase64 değiştiğinde çalışsın
+    // base64Files'ı bağımlılığa eklemiyoruz, yoksa sonsuz döngü olur!
+    // eslint-disable-next-line
+  }, [base64Pdf, base64PdfFileName, isPdfConvertedToBase64]);
+
   return (
     <MailProvider>
       <WizardFormProvider {...form}>

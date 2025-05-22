@@ -478,7 +478,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
         <div className="upperrightsection">
           <div className="quote-section mb-4 mt-6">
-            <Form>
+            <div>
               <Form.Group className="mb-3">
                 <div className="d-flex justify-content-end">
                   <div style={{ maxWidth: '180px' }}>
@@ -492,7 +492,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   </div>
                 </div>
               </Form.Group>
-            </Form>
+            </div>
             <p className="mt-2 small mt-3">
               <strong>PO Number:</strong>{' '}
               {piResponseData?.piNumberId ||

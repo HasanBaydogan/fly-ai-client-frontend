@@ -59,7 +59,6 @@ export interface PIResponseData {
   clientLegalAddress: string;
   clientName: string;
   companyName: string;
-
   companyAddress: string;
   companyTelephone: string;
   contractNo: string;
@@ -70,7 +69,6 @@ export interface PIResponseData {
   piId: string;
   piNumberId: string;
   piParts: any[];
-
   revisionNumber: number;
   sealineToX: { sealineToX: number; isIncluded: boolean };
   subTotal: number;
