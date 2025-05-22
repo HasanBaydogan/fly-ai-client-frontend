@@ -19,3 +19,7 @@ export const postSelectCompany = async (
     selectedCompanyId: selectedCompanyId
   });
 };
+
+export const getPreEmailSendingParameters = async (poId: string) => {
+  return await getRequest(`/po/pre-email-sending?poId=${poId}`);
+};

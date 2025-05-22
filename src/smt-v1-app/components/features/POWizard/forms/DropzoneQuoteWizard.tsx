@@ -9,7 +9,7 @@ import AttachmentPreview, {
 const MAX_TOTAL_SIZE = 21 * 1024 * 1024;
 
 interface Base64File {
-  id: string;
+  id?: string;
   name: string;
   base64: string;
 }
@@ -27,56 +27,75 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [uploadedFiles, setUploadedFiles] = useState<FileAttachment[]>([]);
   const [base64Files, setBase64Files] = useState<Base64File[]>([]);
 
-  function dataURLtoBlob(dataurl: string): Blob {
-    const [header, base64Data] = dataurl.split(',');
-    const mimeMatch = header.match(/:(.*?);/);
-    if (!mimeMatch) {
-      throw new Error('Invalid dataURL');
-    }
-    const mime = mimeMatch[1];
-    const bstr = atob(base64Data);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], { type: mime });
-  }
-
+  // Process already uploaded files
   useEffect(() => {
     if (alreadyUploadedFiles && alreadyUploadedFiles.length > 0) {
-      // Notify parent about the already uploaded files.
-      onFilesUpload(alreadyUploadedFiles);
+      // Filter out empty files
+      const validFiles = alreadyUploadedFiles.filter(
+        file => file && file.name && file.base64 && file.base64.trim() !== ''
+      );
 
-      // Format the files for base64 state (optional: adjust id generation as needed).
-      const formattedUploadFiles = alreadyUploadedFiles.map(file => ({
-        id: Date.now().toString(),
+      if (validFiles.length === 0) {
+        console.log('No valid files to process');
+        return;
+      }
+
+      // console.log('Processing valid files:', validFiles);
+
+      // Notify parent about the valid files
+      onFilesUpload(validFiles);
+
+      // Format the files for base64 state
+      const formattedUploadFiles = validFiles.map(file => ({
+        id: file.id || Date.now().toString(),
         name: file.name,
         base64: file.base64
       }));
       setBase64Files(formattedUploadFiles);
-      // console.log(formattedUploadFiles);
 
-      // Create preview objects.
-      const previewFiles: FileAttachment[] = alreadyUploadedFiles.map(file => {
-        // Convert base64 string to a Blob.
-        return {
-          name: file.name,
-          url: 'asdasdas',
-          size: 'N/A', // or compute the size if available
-          format: '' // e.g., "application/pdf"
-        };
+      // Create preview objects for PDF files
+      const previewFiles: FileAttachment[] = validFiles.map(file => {
+        try {
+          // Handle both data URL and raw base64 formats
+          const base64Data = file.base64.includes('base64,')
+            ? file.base64.split('base64,')[1]
+            : file.base64;
+
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+
+          return {
+            name: file.name,
+            url: url,
+            size: 'N/A',
+            format: 'application/pdf'
+          };
+        } catch (error) {
+          console.error('Error creating preview for file:', file.name, error);
+          return {
+            name: file.name,
+            url: '',
+            size: 'N/A',
+            format: 'application/pdf'
+          };
+        }
       });
-      // console.log(previewFiles);
+
       setUploadedFiles(previewFiles);
     }
-  }, []);
+  }, [alreadyUploadedFiles, onFilesUpload]);
 
   const handleDrop = async (acceptedFiles: File[], fileRejections: any[]) => {
     const totalSize = acceptedFiles.reduce((acc, file) => acc + file.size, 0);
 
     if (totalSize > MAX_TOTAL_SIZE) {
-      setErrorMessage('Total attachment size cannot exceed 16MB.');
+      setErrorMessage('Total attachment size cannot exceed 21MB.');
       return;
     }
 
@@ -129,14 +148,29 @@ const FileUpload: React.FC<FileUploadProps> = ({
     const updatedPreviews = uploadedFiles.filter((_, ind) => ind !== index);
     setUploadedFiles(updatedPreviews);
 
-    // Also remove from base64Files by matching by name.
-    // (If multiple files have the same name, a better ID check would be needed.)
+    // Remove from base64Files by matching by name
     const updatedBase64Files = base64Files.filter(
       file => file.name !== removedPreview.name
     );
     setBase64Files(updatedBase64Files);
     onFilesUpload(updatedBase64Files);
+
+    // Clean up the object URL
+    if (removedPreview.url) {
+      URL.revokeObjectURL(removedPreview.url);
+    }
   };
+
+  // Cleanup object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      uploadedFiles.forEach(file => {
+        if (file.url) {
+          URL.revokeObjectURL(file.url);
+        }
+      });
+    };
+  }, [uploadedFiles]);
 
   return (
     <div className="pt-5">

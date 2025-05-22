@@ -15,14 +15,15 @@ export const generatePDF = async (
   shipTo: string,
   requisitioner: string,
   shipVia: string,
-  CPT: string,
+  fob: string,
   shippingTerms: string,
   contractNo: string,
   isInternational: boolean,
   validityDay: number,
   selectedBank: any,
   taxAmount: number,
-  percentageValue: number
+  percentageValue: number,
+  currentVendor: any
 ): Promise<jsPDF | void> => {
   try {
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -62,14 +63,14 @@ export const generatePDF = async (
     pdf.setTextColor(0, 0, 0);
     pdf.setFontSize(10);
     pdf.text(`Date: ${selectedDate?.toLocaleDateString()}`, pageWidth - 50, 20);
-    pdf.text(`PO Number: ${quoteNumber}`, pageWidth - 50, 25);
+    pdf.text(`${quoteNumber}`, pageWidth - 50, 25);
 
     // Client info table
     autoTable(pdf, {
       ...tableSettings,
       startY: 50,
       head: [['VENDOR', 'SHIP TO']],
-      body: [[shipTo, clientLocation]],
+      body: [[currentVendor.supplier, shipTo]],
       theme: 'grid',
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
       styles: { halign: 'center', valign: 'middle' },
@@ -85,7 +86,7 @@ export const generatePDF = async (
       ...tableSettings,
       startY: (pdf as any).lastAutoTable?.finalY + 5,
       head: [['REQUISITIONER', 'SHIP VIA', 'F.O.B.', 'SHIPPING TERMS']],
-      body: [[requisitioner, shipVia, CPT, shippingTerms]],
+      body: [[requisitioner, shipVia, fob, shippingTerms]],
       theme: 'grid',
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
       styles: { halign: 'center', valign: 'middle' },
@@ -105,11 +106,11 @@ export const generatePDF = async (
       row.description,
       row.qty,
       `${row.leadTime} Days`,
-      row.unitPrice.toLocaleString('en-US', {
+      row.price.toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
       }),
-      (row.qty * row.unitPrice).toLocaleString('en-US', {
+      (row.qty * row.price).toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
       })
@@ -146,7 +147,7 @@ export const generatePDF = async (
 
     // Calculate totals
     const subTotal = quotePartRows.reduce(
-      (acc, row) => acc + row.qty * row.unitPrice,
+      (acc, row) => acc + row.qty * row.price,
       0
     );
     const total =
@@ -161,43 +162,6 @@ export const generatePDF = async (
 
     // Use the Y position after the main product table
     const startYPosition = (pdf as any).lastAutoTable?.finalY + 5 || 40;
-
-    // ***********************
-    // CONTRACT DETAILS TABLE
-    // ***********************
-    // const contractTableDefaultWidth = 105; // mm cinsinden default genişlik
-    // autoTable(pdf, {
-    //   ...tableSettings,
-    //   startY: startYPosition,
-    //   head: [],
-    //   body: [
-    //     [
-    //       { content: 'Contract No :', styles: { fontStyle: 'bold' } },
-    //       contractNo
-    //       //+ (isInternational ? ' (International)' : '')
-    //     ],
-    //     [
-    //       { content: 'Payment Term :', styles: { fontStyle: 'bold' } },
-    //       shippingTerms
-    //     ],
-    //     [{ content: 'Delivery Term :', styles: { fontStyle: 'bold' } }, CPT],
-    //     [
-    //       { content: 'Validity Day :', styles: { fontStyle: 'bold' } },
-    //       validityDay?.toString() || '0'
-    //     ]
-    //   ],
-    //   theme: 'grid',
-    //   styles: {
-    //     fontSize: 9,
-    //     cellPadding: 2,
-    //     halign: 'left'
-    //   },
-    //   columnStyles: {
-    //     0: { cellWidth: contractTableDefaultWidth * 0.3 },
-    //     1: { cellWidth: contractTableDefaultWidth * 0.7 }
-    //   },
-    //   margin: { left: 7, right: 7 }
-    // });
 
     // Bu noktada contract tablosunun çizimi tamamlandı
     const contractTableFinalY = (pdf as any).lastAutoTable.finalY;
@@ -247,7 +211,7 @@ export const generatePDF = async (
         [
           { content: 'Aircargo to X', styles: { fontStyle: 'bold' } },
           checkedStates[1] ? 'Yes' : 'No',
-          subTotalValues[1]?.toLocaleString('en-US', {
+          (subTotalValues[1] || 0).toLocaleString('en-US', {
             style: 'currency',
             currency: currency.replace(/[^A-Z]/g, '')
           })
@@ -255,7 +219,7 @@ export const generatePDF = async (
         [
           { content: 'Sealine to X', styles: { fontStyle: 'bold' } },
           checkedStates[2] ? 'Yes' : 'No',
-          subTotalValues[2]?.toLocaleString('en-US', {
+          (subTotalValues[2] || 0).toLocaleString('en-US', {
             style: 'currency',
             currency: currency.replace(/[^A-Z]/g, '')
           })
@@ -263,7 +227,7 @@ export const generatePDF = async (
         [
           { content: 'Truck Carriage to X', styles: { fontStyle: 'bold' } },
           checkedStates[3] ? 'Yes' : 'No',
-          subTotalValues[3]?.toLocaleString('en-US', {
+          (subTotalValues[3] || 0).toLocaleString('en-US', {
             style: 'currency',
             currency: currency.replace(/[^A-Z]/g, '')
           })
@@ -288,184 +252,6 @@ export const generatePDF = async (
         2: { cellWidth: subTotalWidth * 0.35 }
       }
     });
-
-    // // Payment Balance Section - Subtotal'ın altında
-    // const balanceY = (pdf as any).lastAutoTable?.finalY + 10;
-    // const balanceValues = {
-    //   before: 4634.71,
-    //   payment: 4634.71,
-    //   after: 4634.71
-    // };
-
-    // // Balance bilgilerini yazdır
-    // autoTable(pdf, {
-    //   startY: balanceY,
-    //   margin: { left: leftMarginForSubTotal },
-    //   body: [
-    //     ['Balance Before Payment:', balanceValues.before.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })],
-    //     ['Payment Amount via Balance:', balanceValues.payment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })],
-    //     ['Balance After Payment:', balanceValues.after.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })]
-    //   ],
-    //   theme: 'plain',
-    //   styles: {
-    //     fontSize: 9,
-    //     textColor: [40, 167, 69], // success color
-    //     cellPadding: 2
-    //   },
-    //   columnStyles: {
-    //     0: { cellWidth: subTotalWidth * 0.65 },
-    //     1: { cellWidth: subTotalWidth * 0.35, halign: 'right' }
-    //   }
-    // });
-
-    // // Banka tablosunu ekle
-    // pdf.setFontSize(9);
-    // pdf.setTextColor(0, 0, 0);
-
-    // // Reset text color for bank table
-    // pdf.setTextColor(0, 0, 0);
-
-    // *****************************
-    // BANK INFORMATION TABLE (Banka Tablosu)
-    // *****************************
-    // if (selectedBank) {
-    //   // QR kodu önce oluştur
-    //   let qrCodeImage = '';
-    //   if (selectedBank.ibanNo) {
-    //     try {
-    //       qrCodeImage = await QRCode.toDataURL(selectedBank.ibanNo, {
-    //         width: 100,
-    //         margin: 0,
-    //         errorCorrectionLevel: 'H'
-    //       });
-    //     } catch (error) {
-    //       console.error('QR code generation error:', error);
-    //     }
-    //   }
-
-    //   const bankTable = {
-    //     head: [
-    //       [
-    //         'Currency',
-    //         'Bank Name',
-    //         'Branch Name',
-    //         'Branch Code',
-    //         'Swift Code',
-    //         'IBAN NO'
-    //       ]
-    //     ],
-    //     body: [
-    //       [
-    //         {
-    //           content: selectedBank.currency || '',
-    //           styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
-    //         },
-    //         {
-    //           content: selectedBank.bankName || '',
-    //           styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
-    //         },
-    //         {
-    //           content: selectedBank.branchName || '',
-    //           styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
-    //         },
-    //         {
-    //           content: selectedBank.branchCode || '',
-    //           styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
-    //         },
-    //         {
-    //           content: selectedBank.swiftCode || '',
-    //           styles: { valign: 'top' as const, cellPadding: 4, fontSize: 8 }
-    //         },
-    //         {
-    //           content: '',
-    //           styles: {
-    //             cellPadding: 4,
-    //             minCellHeight: 35,
-    //             fontSize: 8
-    //           }
-    //         }
-    //       ]
-    //     ]
-    //   };
-
-    //   // Banka tablosu için başlangıç Y pozisyonu
-    //   let bankTableStartY = contractTableFinalY + 18;
-
-    //   // Footer alanı için güvenli mesafe kontrolü
-    //   const safeFooterDistance = footerHeight + 15;
-
-    //   // Eğer footer alanına yakınsa yeni sayfada başlat
-    //   if (bankTableStartY > pageHeight - safeFooterDistance - 40) {
-    //     pdf.addPage();
-    //     bankTableStartY = 10;
-    //   }
-
-    //   autoTable(pdf, {
-    //     ...tableSettings,
-    //     startY: bankTableStartY,
-    //     head: bankTable.head,
-    //     body: bankTable.body,
-    //     theme: 'grid',
-    //     headStyles: {
-    //       fillColor: [51, 102, 204],
-    //       textColor: 255,
-    //       fontSize: 8,
-    //       cellPadding: 4,
-    //       fontStyle: 'bold' // Header hücreleri bold olacak
-    //     },
-    //     styles: {
-    //       halign: 'center',
-    //       fontSize: 8,
-    //       overflow: 'linebreak',
-    //       cellWidth: 'wrap'
-    //     },
-    //     columnStyles: {
-    //       0: { cellWidth: 20 }, // Currency
-    //       1: { cellWidth: 30 }, // Bank Name
-    //       2: { cellWidth: 30 }, // Branch Name
-    //       3: { cellWidth: 31 }, // Branch Code
-    //       4: { cellWidth: 25 }, // Swift Code
-    //       5: { cellWidth: 60 } // IBAN + QR
-    //     },
-    //     margin: { left: 7, right: 7 },
-    //     pageBreak: 'avoid',
-    //     didDrawCell: function (data) {
-    //       // IBAN hücresine QR kodu ekle
-    //       if (
-    //         data.section === 'body' &&
-    //         data.column.index === 5 && // IBAN sütunu
-    //         data.row.index === 0 && // İlk satır
-    //         qrCodeImage &&
-    //         selectedBank?.ibanNo
-    //       ) {
-    //         const cell = data.cell;
-    //         const qrSize = 20; // QR kod boyutunu küçülttük
-    //         const padding = 2;
-
-    //         // IBAN metnini hücrenin üst kısmına yerleştir
-    //         pdf.setFontSize(8);
-    //         pdf.text(
-    //           selectedBank.ibanNo,
-    //           cell.x + cell.width / 2,
-    //           cell.y + padding + 4,
-    //           { align: 'center' }
-    //         );
-
-    //         // QR kodu IBAN'ın altına ortala
-    //         const qrX = cell.x + (cell.width - qrSize) / 2;
-    //         const qrY = cell.y + padding + 10;
-
-    //         pdf.addImage(qrCodeImage, 'PNG', qrX, qrY, qrSize, qrSize);
-    //       }
-    //     }
-    //   });
-
-    //   // Footer'ın başlangıç Y pozisyonunu kontrol et
-    //   const currentY = (pdf as any).lastAutoTable.finalY;
-    //   if (currentY > pageHeight - safeFooterDistance) {
-    //     pdf.addPage();
-    //   }
-    // }
 
     // Add company address information
     pdf.setFontSize(8);
@@ -545,14 +331,15 @@ export const downloadPDF = async (
   shipTo: string,
   requisitioner: string,
   shipVia: string,
-  CPT: string,
+  fob: string,
   shippingTerms: string,
   contractNo: string,
   isInternational: boolean,
   validityDay: number,
   selectedBank: any,
   taxAmount: number,
-  percentageValue: number
+  percentageValue: number,
+  currentVendor: any
 ) => {
   try {
     const pdf = await generatePDF(
@@ -567,14 +354,15 @@ export const downloadPDF = async (
       shipTo,
       requisitioner,
       shipVia,
-      CPT,
+      fob,
       shippingTerms,
       contractNo,
       isInternational,
       validityDay,
       selectedBank,
       taxAmount,
-      percentageValue
+      percentageValue,
+      currentVendor
     );
     if (pdf) {
       pdf.save(`${quoteNumber}.pdf`);
@@ -596,14 +384,15 @@ export const returnPdfAsBase64String = async (
   shipTo: string,
   requisitioner: string,
   shipVia: string,
-  CPT: string,
+  fob: string,
   shippingTerms: string,
   contractNo: string,
   isInternational: boolean,
   validityDay: number,
   selectedBank: any,
   taxAmount: number,
-  percentageValue: number
+  percentageValue: number,
+  currentVendor: any
 ): Promise<string | undefined> => {
   try {
     const pdf = await generatePDF(
@@ -618,20 +407,37 @@ export const returnPdfAsBase64String = async (
       shipTo,
       requisitioner,
       shipVia,
-      CPT,
+      fob,
       shippingTerms,
       contractNo,
       isInternational,
       validityDay,
       selectedBank,
       taxAmount,
-      percentageValue
+      percentageValue,
+      currentVendor
     );
+
     if (pdf) {
-      return pdf.output('datauristring');
+      // Convert PDF to base64 string
+      const pdfBlob = pdf.output('blob');
+      const reader = new FileReader();
+      
+      return new Promise((resolve, reject) => {
+        reader.onload = () => {
+          const base64String = reader.result as string;
+          resolve(base64String);
+        };
+        reader.onerror = error => {
+          console.error('Error converting PDF to base64:', error);
+          reject(error);
+        };
+        reader.readAsDataURL(pdfBlob);
+      });
     }
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    throw error; // Re-throw the error to handle it in the component
   }
   return undefined;
 };

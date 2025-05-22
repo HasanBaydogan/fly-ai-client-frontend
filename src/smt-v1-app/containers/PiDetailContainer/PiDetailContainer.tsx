@@ -66,6 +66,16 @@ const QuoteContainer = () => {
     string[]
   >([]);
 
+  // PO Wizard için kullanılan fonksiyon
+  const fetchPOWizardData = async (response: any) => {
+    if (response && response.data) {
+      setPoWizardData(response.data);
+      handleOpenPOWizard();
+    } else {
+      console.error('Failed to load PO Wizard data');
+    }
+  };
+
   const handleOpenPIWizard = () => setShowPIWizard(true);
   const handleClosePIWizard = () => setShowPIWizard(false);
 
@@ -90,23 +100,23 @@ const QuoteContainer = () => {
   };
 
   // Function to fetch PO Wizard data and open the wizard
-  const fetchPOWizardData = async () => {
-    setIsPOWizardLoading(true);
-    try {
-      // Use the same data structure as PI Wizard initially
-      const response = await getPiWizard(piId);
-      if (response && response.statusCode === 200) {
-        setPoWizardData(response.data);
-        handleOpenPOWizard();
-      } else {
-        console.error('Failed to fetch PO Wizard data');
-      }
-    } catch (error) {
-      console.error('Error fetching PO Wizard data:', error);
-    } finally {
-      setIsPOWizardLoading(false);
-    }
-  };
+  // const fetchPOWizardData = async () => {
+  //   setIsPOWizardLoading(true);
+  //   try {
+  //     // Use the same data structure as PI Wizard initially
+  //     const response = await getPiWizard(piId);
+  //     if (response && response.statusCode === 200) {
+  //       setPoWizardData(response.data);
+  //       handleOpenPOWizard();
+  //     } else {
+  //       console.error('Failed to fetch PO Wizard data');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching PO Wizard data:', error);
+  //   } finally {
+  //     setIsPOWizardLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     const fetchQuoteValues = async () => {
@@ -250,8 +260,9 @@ const QuoteContainer = () => {
             quoteId={piData?.quoteId || piId}
             piId={piId}
             openOnSecondPage={openModalOnSecondPage}
-            onCreatePO={() => {
-              fetchPOWizardData();
+            onCreatePO={response => {
+              fetchPOWizardData(response);
+              console.log('PO Wizard response:', response);
               closeModal();
             }}
           />
@@ -280,7 +291,7 @@ const QuoteContainer = () => {
               selectedAlternativeParts={selectedAlternativeParts}
               quoteId={piData?.quoteId || piId}
               quoteComment=""
-              piResponseData={poWizardData}
+              poResponseData={poWizardData}
             />
           )}
 

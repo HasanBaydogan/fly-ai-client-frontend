@@ -45,6 +45,8 @@ interface WizardSetupFormProps {
     setValidityDay: React.Dispatch<React.SetStateAction<number | undefined>>;
     selectedBank: any;
     setSelectedBank: React.Dispatch<React.SetStateAction<any>>;
+    poRefNo: string;
+    setPoRefNo: React.Dispatch<React.SetStateAction<string>>;
   };
   piResponseData?: PIResponseData;
 }
@@ -919,6 +921,18 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           setupOtherProps.setValidityDay(
                             parseInt(e.target.value)
                           )
+                        }
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-2">PO Ref No :</td>
+                    <td className="p-2">
+                      <Form.Control
+                        type="text"
+                        value={setupOtherProps.poRefNo || ''}
+                        onChange={e =>
+                          setupOtherProps.setPoRefNo(e.target.value)
                         }
                       />
                     </td>

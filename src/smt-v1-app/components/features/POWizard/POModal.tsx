@@ -23,7 +23,7 @@ interface RFQModalProps {
   quoteId: string;
   piId: string;
   openOnSecondPage?: boolean;
-  onCreatePO?: () => void;
+  onCreatePO?: (response: any) => void;
 }
 
 // Tablo veri tipi
@@ -196,10 +196,9 @@ const RFQModal: React.FC<RFQModalProps> = ({
       if (response?.success) {
         onHide(true); // Close the modal
 
-        // In the parent component, this will trigger the POWizard to open
-        // by using a callback passed through props
+        // Response'u PO Wizard'a aktarıyoruz
         if (onCreatePO && typeof onCreatePO === 'function') {
-          onCreatePO();
+          onCreatePO(response);
         }
       } else {
         alert('Failed to process company selection');

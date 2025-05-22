@@ -6,7 +6,7 @@ import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
-import { partRow, QuoteWizardSetting } from '../POWizard';
+import { partRow, POResponseData, QuoteWizardSetting } from '../POWizard';
 import {
   downloadPDF,
   generatePDF,
@@ -17,13 +17,13 @@ import QRCode from 'react-qr-code';
 interface WizardPersonalFormProps {
   settings: QuoteWizardSetting;
   quotePartRows: partRow[];
-  subTotalValues: number[]; // Sub-total değerleri
-  selectedDate: Date | null; // Seçilen tarih
+  subTotalValues: number[];
+  selectedDate: Date | null;
   checkedStates: boolean[];
-  quoteNumber: string; // Add this new prop
+  quoteNumber: string;
   currency: string;
-  percentageValue: number; // Add percentageValue prop
-  taxAmount: number; // Add taxAmount prop
+  percentageValue: number;
+  taxAmount: number;
   setBase64PdfFileName: React.Dispatch<React.SetStateAction<string>>;
   setBase64Pdf: React.Dispatch<React.SetStateAction<string>>;
   setIsPdfConvertedToBase64: React.Dispatch<React.SetStateAction<boolean>>;
@@ -36,8 +36,8 @@ interface WizardPersonalFormProps {
     setRequisitioner: React.Dispatch<React.SetStateAction<string>>;
     shipVia: string;
     setShipVia: React.Dispatch<React.SetStateAction<string>>;
-    CPT: string;
-    setCPT: React.Dispatch<React.SetStateAction<string>>;
+    fob: string;
+    setFob: React.Dispatch<React.SetStateAction<string>>;
     shippingTerms: string;
     setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
     selectedBank: any;
@@ -48,7 +48,8 @@ interface WizardPersonalFormProps {
     validityDay: number;
     setValidityDay: React.Dispatch<React.SetStateAction<number>>;
   };
-  piResponseData: any; // Assuming piResponseData is of type any
+  piResponseData: any;
+  poResponseData?: POResponseData;
 }
 
 const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
@@ -65,83 +66,142 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
   taxAmount,
   setIsPdfConvertedToBase64,
   setupOtherProps,
-  piResponseData
+  piResponseData,
+  poResponseData
 }) => {
-  const [balanceValues] = useState({
-    before: 4634.71,
-    payment: 4634.71,
-    after: 4634.71
-  });
+  const [currentVendorIndex, setCurrentVendorIndex] = useState(0);
+
+  const vendors = [...(poResponseData?.suppliers || [])];
+  const hasMultipleVendors = vendors.length > 1;
+
+  // Get current vendor
+  const currentVendor = vendors[currentVendorIndex];
+
+  // Filter parts for current vendor
+  const filteredParts = hasMultipleVendors
+    ? quotePartRows.filter(
+        part => part.poPartSuppliers?.supplier === currentVendor?.supplier
+      )
+    : quotePartRows;
+
+  // Calculate totals for filtered parts
+  const calculateFilteredTotal = () => {
+    return filteredParts.reduce((acc, row) => acc + row.qty * row.price, 0);
+  };
+
+  // Debug log
+  // console.log('Current Vendor:', currentVendor);
+  // console.log('Filtered Parts:', filteredParts);
 
   const handleGeneratePDF = async () => {
     try {
-      await downloadPDF(
+      console.log('Starting PDF generation...');
+      setIsPdfConvertedToBase64(true);
+
+      // Generate PDF and get base64 string in one step
+      const base64String = await returnPdfAsBase64String(
         settings,
         selectedDate,
         quoteNumber,
         currency,
-        quotePartRows,
+        filteredParts,
         subTotalValues,
         checkedStates,
         setupOtherProps.clientLocation,
         setupOtherProps.shipTo,
         setupOtherProps.requisitioner,
         setupOtherProps.shipVia,
-        setupOtherProps.CPT,
+        setupOtherProps.fob,
         setupOtherProps.shippingTerms,
         setupOtherProps.contractNo,
         setupOtherProps.isInternational,
         setupOtherProps.validityDay,
         setupOtherProps.selectedBank,
         taxAmount,
-        percentageValue
+        percentageValue,
+        currentVendor
       );
+
+      if (base64String) {
+        console.log('Setting PDF states...');
+        setBase64Pdf(base64String);
+        setBase64PdfFileName(`PO_${quoteNumber}.pdf`);
+
+        // Open PDF in new tab
+        const pdfWindow = window.open('', '_blank');
+        if (pdfWindow) {
+          pdfWindow.document.write(`
+            <html>
+              <head>
+                <title>PDF Preview</title>
+              </head>
+              <body style="margin:0;padding:0;">
+                <embed width="100%" height="100%" src="${base64String}" type="application/pdf">
+              </body>
+            </html>
+          `);
+          pdfWindow.document.close();
+        }
+      } else {
+        console.error('Failed to generate PDF');
+      }
+
+      setIsPdfConvertedToBase64(false);
+      console.log('PDF process completed');
     } catch (error) {
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
+      setIsPdfConvertedToBase64(false);
     }
   };
-  useEffect(() => {
-    return () => {
-      // Wrap your async logic in an IIFE
-
-      (async () => {
-        try {
-          const response = await returnPdfAsBase64String(
-            settings,
-            selectedDate,
-            quoteNumber,
-            currency,
-            quotePartRows,
-            subTotalValues,
-            checkedStates,
-            setupOtherProps.clientLocation,
-            setupOtherProps.shipTo,
-            setupOtherProps.requisitioner,
-            setupOtherProps.shipVia,
-            setupOtherProps.CPT,
-            setupOtherProps.shippingTerms,
-            setupOtherProps.contractNo,
-            setupOtherProps.isInternational,
-            setupOtherProps.validityDay,
-            setupOtherProps.selectedBank,
-            taxAmount,
-            percentageValue
-          );
-          setBase64Pdf(response);
-          setBase64PdfFileName(quoteNumber + '.pdf');
-          setTimeout(() => {
-            setIsPdfConvertedToBase64(false);
-          }, 700);
-        } catch (error) {
-          console.error('Error generating PDF base64:', error);
-        }
-      })();
-    };
-  }, [quotePartRows]);
 
   return (
     <>
       <div className="p-3" id="pdf-content">
+        {hasMultipleVendors && (
+          <div className="d-flex justify-content-center gap-2 mb-4 flex-wrap">
+            {vendors.map((vendor, index) => (
+              <Button
+                key={vendor.supplierId || index}
+                variant={
+                  currentVendorIndex === index ? 'primary' : 'outline-primary'
+                }
+                className="vendor-btn"
+                onClick={() => setCurrentVendorIndex(index)}
+                style={{
+                  minWidth: 120,
+                  maxWidth: 160,
+                  height: 60,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  padding: 8,
+                  borderRadius: 10,
+                  fontWeight: 500,
+                  fontSize: '0.95rem',
+                  lineHeight: 1.1,
+                  whiteSpace: 'normal',
+                  overflow: 'hidden'
+                }}
+              >
+                <span
+                  className="vendor-text"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    wordBreak: 'break-word',
+                    width: '100%'
+                  }}
+                >
+                  {vendor.supplier}
+                </span>
+              </Button>
+            ))}
+          </div>
+        )}
         <div className="uppersection">
           <div className="upperleftsection">
             <Card
@@ -149,13 +209,6 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
               className="border-0 mb-5"
             >
               <Card.Img variant="top" src={settings.logo} />
-              {/* <Card.Body className="p-0 px-1 fs-9">
-                <Card.Text className="mb-2 pt-2">
-                  {settings.addressRow1}
-                </Card.Text>
-                <Card.Text className="mb-2">{settings.addressRow2}</Card.Text>
-                <Card.Text>{settings.mobilePhone}</Card.Text>
-              </Card.Body> */}
             </Card>
           </div>
 
@@ -178,38 +231,42 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   : new Date().toLocaleDateString()}
               </p>
               <p className=" mt-3">
-                <strong>PI Number:</strong> {quoteNumber}
+                <strong>PO Number:</strong> {quoteNumber}
               </p>
             </div>
           </div>
-        </div>{' '}
-        <h2 className="text-primary mb-3 text-center">PROFORMA INVOICE</h2>
+        </div>
+        <h2 className="text-primary mb-3 text-center">PURCHASE ORDER</h2>
         <Table bordered hover size="sm" id="client-info-form1">
           <thead>
             <tr className="bg-primary text-white text-center align-middle">
-              <td className="text-white">Company Name</td>
+              <td className="text-white">Vendor</td>
               <td colSpan={3} className="text-white">
-                Address
+                Ship To
               </td>
             </tr>
           </thead>
           <tbody>
             <tr className="text-center">
               <td>
-                {setupOtherProps.shipTo.trim() === '' ? (
-                  <span>&nbsp;</span>
-                ) : (
-                  setupOtherProps.shipTo
-                )}
+                <div
+                  style={{
+                    textAlign: 'left',
+                    padding: '10px',
+                    whiteSpace: 'pre-line'
+                  }}
+                >
+                  {currentVendor ? `${currentVendor.supplier}` : ''}
+                </div>
               </td>
               <td colSpan={3}>
-                {setupOtherProps.clientLocation.trim() === '' ? (
-                  <span>&nbsp;</span>
+                {setupOtherProps.shipTo?.trim() ? (
+                  setupOtherProps.shipTo
                 ) : (
-                  setupOtherProps.clientLocation
+                  <span>&nbsp;</span>
                 )}
               </td>
-            </tr>{' '}
+            </tr>
             <tr className="bg-primary text-white text-center align-middle">
               <td className="text-white" style={{ width: '25%' }}>
                 REQUISITIONER
@@ -218,7 +275,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 SHIP VIA
               </td>
               <td className="text-white" style={{ width: '25%' }}>
-                CPT
+                FOB
               </td>
               <td className="text-white" style={{ width: '25%' }}>
                 SHIPPING TERMS
@@ -240,10 +297,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 )}
               </td>
               <td style={{ width: '25%' }}>
-                {setupOtherProps.CPT.trim() === '' ? (
+                {setupOtherProps.fob.trim() === '' ? (
                   <span>&nbsp;</span>
                 ) : (
-                  setupOtherProps.CPT
+                  setupOtherProps.fob
                 )}
               </td>
               <td style={{ width: '25%' }}>
@@ -273,6 +330,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   PN/MODEL
                 </td>
                 <td className="text-white align-middle">DESCRIPTION</td>
+                <td className="text-white align-middle">SUPPLIER</td>
                 <td className="text-white align-middle">QTY</td>
                 <td className="text-white align-middle">LEAD TIME</td>
                 <td className="text-white align-middle">UNIT PRICE</td>
@@ -285,21 +343,22 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
               </tr>
             </thead>
             <tbody>
-              {quotePartRows.map((row, index) => (
+              {filteredParts.map((row, index) => (
                 <tr key={index} className="text-center align-middle">
                   <td>{index + 1}</td>
                   <td>{row.partNumber}</td>
                   <td>{row.description}</td>
+                  <td>{row.poPartSuppliers?.supplier || 'N/A'}</td>
                   <td>{row.qty}</td>
                   <td>{row.leadTime} Days</td>
                   <td>
-                    {row.unitPrice.toLocaleString('en-US', {
+                    {row.price.toLocaleString('en-US', {
                       style: 'currency',
                       currency: currency.replace(/[^A-Z]/g, '')
                     })}
                   </td>
                   <td>
-                    {(row.qty * row.unitPrice).toLocaleString('en-US', {
+                    {(row.qty * row.price).toLocaleString('en-US', {
                       style: 'currency',
                       currency: currency.replace(/[^A-Z]/g, '')
                     })}
@@ -311,50 +370,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         </div>
         <div className="footer-section mt-5">
           <Row className="g-3">
-            <Col md={8}>
-              {/* <div className="mb-4">
-                <Table bordered hover size="sm">
-                  <tbody>
-                    <tr>
-                      <td style={{ width: '120px' }}>Contract No :</td>
-                      <td>
-                        <div
-                          className="d-flex align-items-center justify-content-space-between"
-                          style={{ justifyContent: 'space-between' }}
-                        >
-                          {setupOtherProps.contractNo || ''}
-
-                          <Form.Check
-                            type="checkbox"
-                            label="International"
-                            className="ms-3 px-2"
-                            disabled
-                            checked={setupOtherProps.isInternational}
-                            onChange={e =>
-                              setupOtherProps.setIsInternational(
-                                e.target.checked
-                              )
-                            }
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Payment Term :</td>
-                      <td>{setupOtherProps.shippingTerms}</td>
-                    </tr>
-                    <tr>
-                      <td>Delivery Term :</td>
-                      <td>{setupOtherProps.CPT}</td>
-                    </tr>
-                    <tr>
-                      <td>Validity Day :</td>
-                      <td>{setupOtherProps.validityDay || 0}</td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </div> */}
-            </Col>
+            <Col md={8}></Col>
             <Col md={4}>
               <div className="d-flex flex-column text-center">
                 <Table
@@ -371,15 +387,13 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                         <div className="mt-3 text-center">
                           <h5>
                             <span className="text-primary ms-2">
-                              {quotePartRows
-                                .reduce(
-                                  (acc, row) => acc + row.qty * row.unitPrice,
-                                  0
-                                )
-                                .toLocaleString('en-US', {
+                              {calculateFilteredTotal().toLocaleString(
+                                'en-US',
+                                {
                                   style: 'currency',
                                   currency: currency.replace(/[^A-Z]/g, '')
-                                })}
+                                }
+                              )}
                             </span>
                           </h5>
                         </div>
@@ -427,7 +441,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                         />
                       </td>
                       <td>
-                        {subTotalValues[1]?.toLocaleString('en-US', {
+                        {(subTotalValues[1] || 0).toLocaleString('en-US', {
                           style: 'currency',
                           currency: currency.replace(/[^A-Z]/g, '')
                         })}
@@ -443,7 +457,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                         />
                       </td>
                       <td>
-                        {subTotalValues[2]?.toLocaleString('en-US', {
+                        {(subTotalValues[2] || 0).toLocaleString('en-US', {
                           style: 'currency',
                           currency: currency.replace(/[^A-Z]/g, '')
                         })}
@@ -459,7 +473,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                         />
                       </td>
                       <td>
-                        {subTotalValues[3]?.toLocaleString('en-US', {
+                        {(subTotalValues[3] || 0).toLocaleString('en-US', {
                           style: 'currency',
                           currency: currency.replace(/[^A-Z]/g, '')
                         })}
@@ -472,10 +486,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                       <td>
                         <strong>
                           {(
-                            quotePartRows.reduce(
-                              (acc, row) => acc + row.qty * row.unitPrice,
-                              0
-                            ) +
+                            calculateFilteredTotal() +
                             (checkedStates[0] ? taxAmount : 0) +
                             subTotalValues
                               .slice(1)
@@ -494,143 +505,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   </tbody>
                 </Table>
               </div>
-              {/* Balance Information Section */}
-              {/* <div
-                className="d-flex justify-content-end mb-3"
-                style={{ gap: '20px' }}
-              >
-                <div style={{ width: '330px' }}>
-                  <div className="mb-2 d-flex justify-content-between align-items-center">
-                    <span
-                      className="text-success"
-                      style={{ fontSize: '0.8rem' }}
-                    >
-                      Balance Before Payment:
-                    </span>
-                    <span
-                      className="text-end"
-                      style={{ width: '120px', fontSize: '0.875rem' }}
-                    >
-                      {balanceValues.before.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      })}
-                    </span>
-                  </div>
-
-                  <div className="mb-2 d-flex justify-content-between align-items-center">
-                    <span
-                      className="text-success"
-                      style={{ fontSize: '0.8rem' }}
-                    >
-                      Payment Amount via Balance:
-                    </span>
-                    <span
-                      className="text-end"
-                      style={{ width: '120px', fontSize: '0.875rem' }}
-                    >
-                      {balanceValues.payment.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      })}
-                    </span>
-                  </div>
-
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span
-                      className="text-success"
-                      style={{ fontSize: '0.8rem' }}
-                    >
-                      Balance After Payment:
-                    </span>
-                    <span
-                      className="text-end"
-                      style={{ width: '120px', fontSize: '0.875rem' }}
-                    >
-                      {balanceValues.after.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </div> */}
             </Col>
-            {/* <Table bordered hover size="sm" id="client-info-form1" responsive>
-              <thead>
-                <tr className="bg-primary text-white text-center align-middle">
-                  <td className="text-white" style={{ width: '8%' }}>
-                    Currency
-                  </td>
-                  <td className="text-white" style={{ width: '13%' }}>
-                    Bank Name
-                  </td>
-                  <td className="text-white" style={{ width: '13%' }}>
-                    Branch Name
-                  </td>
-                  <td className="text-white" style={{ width: '13%' }}>
-                    Branch Code
-                  </td>
-                  <td className="text-white" style={{ width: '13%' }}>
-                    Swift Code
-                  </td>
-                  <td className="text-white" style={{ width: '40%' }}>
-                    IBAN NO
-                  </td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="text-center align-middle">
-                  <td style={{ wordBreak: 'break-word' }}>
-                    {setupOtherProps.selectedBank?.currency || ''}
-                  </td>
-                  <td style={{ wordBreak: 'break-word' }}>
-                    {setupOtherProps.selectedBank?.bankName || ''}
-                  </td>
-                  <td style={{ wordBreak: 'break-word' }}>
-                    {setupOtherProps.selectedBank?.branchName || ''}
-                  </td>
-                  <td style={{ wordBreak: 'break-word' }}>
-                    {setupOtherProps.selectedBank?.branchCode || ''}
-                  </td>
-                  <td style={{ wordBreak: 'break-word' }}>
-                    {setupOtherProps.selectedBank?.swiftCode || ''}
-                  </td>
-                  <td
-                    style={{
-                      wordBreak: 'break-word',
-                      textAlign: 'center',
-                      paddingLeft: '10px',
-                      position: 'relative'
-                    }}
-                  >
-                    <div className="d-flex flex-column align-items-center justify-content-center gap-3">
-                      <span>{setupOtherProps.selectedBank?.ibanNo || ''}</span>
-                      {setupOtherProps.selectedBank?.ibanNo && (
-                        <div
-                          style={{
-                            width: '100px',
-                            height: '100px',
-                            backgroundColor: 'white'
-                          }}
-                        >
-                          <QRCode
-                            value={setupOtherProps.selectedBank.ibanNo}
-                            size={100}
-                            level="H"
-                            style={{
-                              height: 'auto',
-                              maxWidth: '100%',
-                              width: '100%'
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </Table> */}
             <Table striped bordered hover className="mb-3">
               <tbody>
                 <tr>

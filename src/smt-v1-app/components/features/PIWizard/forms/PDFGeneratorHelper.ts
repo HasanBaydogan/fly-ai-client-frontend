@@ -22,7 +22,8 @@ export const generatePDF = async (
   validityDay: number,
   selectedBank: any,
   taxAmount: number,
-  percentageValue: number
+  percentageValue: number,
+  poRefNo: string
 ): Promise<jsPDF | void> => {
   try {
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -63,12 +64,13 @@ export const generatePDF = async (
     pdf.setFontSize(10);
     pdf.text(`Date: ${selectedDate?.toLocaleDateString()}`, pageWidth - 50, 20);
     pdf.text(`PI: ${quoteNumber}`, pageWidth - 50, 25);
+    pdf.text(`PO Ref No: ${poRefNo}`, pageWidth - 50, 30);
 
     // Client info table
     autoTable(pdf, {
       ...tableSettings,
       startY: 50,
-      head: [['SHIP TO', 'CLIENT LOCATION']],
+      head: [['CLIENT', 'ADDRESS']],
       body: [[shipTo, clientLocation]],
       theme: 'grid',
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
@@ -519,7 +521,8 @@ export const downloadPDF = async (
   validityDay: number,
   selectedBank: any,
   taxAmount: number,
-  percentageValue: number
+  percentageValue: number,
+  poRefNo: string
 ) => {
   try {
     const pdf = await generatePDF(
@@ -541,7 +544,8 @@ export const downloadPDF = async (
       validityDay,
       selectedBank,
       taxAmount,
-      percentageValue
+      percentageValue,
+      poRefNo
     );
     if (pdf) {
       pdf.save(`${quoteNumber}.pdf`);
@@ -570,7 +574,8 @@ export const returnPdfAsBase64String = async (
   validityDay: number,
   selectedBank: any,
   taxAmount: number,
-  percentageValue: number
+  percentageValue: number,
+  poRefNo: string
 ): Promise<string | undefined> => {
   try {
     const pdf = await generatePDF(
@@ -592,7 +597,8 @@ export const returnPdfAsBase64String = async (
       validityDay,
       selectedBank,
       taxAmount,
-      percentageValue
+      percentageValue,
+      poRefNo
     );
     if (pdf) {
       const base64Data = pdf.output('datauristring');

@@ -56,7 +56,10 @@ const AlternativePartTableRow = ({
               {alternativeRFQPart.partNumber}
             </td>
             <td>{alternativeRFQPart.partName}</td>
-            <td>{alternativeRFQPart.parentRFQPart.partNumber}</td>
+            <td>{alternativeRFQPart.partDescription}</td>
+            <td className="text-center">
+              {alternativeRFQPart.parentRFQPart.partNumber}
+            </td>
             <td className="text-center">{alternativeRFQPart.reqQTY}</td>
             <td className="text-center">{alternativeRFQPart.fndQTY}</td>
             <td className="text-center">{alternativeRFQPart.reqCND}</td>

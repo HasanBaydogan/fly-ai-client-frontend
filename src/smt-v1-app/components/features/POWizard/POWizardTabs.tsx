@@ -14,6 +14,7 @@ import {
   partRow,
   QuoteWizardData,
   PIResponseData,
+  POResponseData,
   SetupOtherProps
 } from './POWizard';
 import WizardPreviewForm from './forms/WizardPreviewForm';
@@ -42,6 +43,7 @@ interface WizardTabsProps {
   selectedAlternativeParts: string[];
   quoteComment: string;
   piResponseData?: PIResponseData;
+  poResponseData?: POResponseData;
   onClose?: () => void;
 }
 
@@ -52,6 +54,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   selectedAlternativeParts,
   quoteComment,
   piResponseData,
+  poResponseData,
   onClose
 }) => {
   const form = useWizardForm({
@@ -68,7 +71,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   const [shipTo, setShipTo] = useState('');
   const [requisitioner, setRequisitioner] = useState('');
   const [shipVia, setShipVia] = useState('');
-  const [CPT, setCPT] = useState<string>('');
+  const [fob, setFob] = useState<string>('');
   const [shippingTerms, setShippingTerms] = useState<string>('');
   const [contractNo, setContractNo] = useState<string>('');
   const [isInternational, setIsInternational] = useState<boolean>(false);
@@ -80,7 +83,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   const [taxAmount, setTaxAmount] = useState<number>(0);
 
   const calculateSubTotal = () => {
-    return quotePartRows.reduce((acc, row) => acc + row.qty * row.unitPrice, 0);
+    return quotePartRows.reduce((acc, row) => acc + row.qty * row.price, 0);
   };
 
   const calculateTaxAmount = (percentage: number) => {
@@ -105,8 +108,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
     setRequisitioner,
     shipVia,
     setShipVia,
-    CPT,
-    setCPT,
+    fob,
+    setFob,
     shippingTerms,
     setShippingTerms,
     contractNo,
@@ -168,38 +171,36 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
       return { filename: attach.name, data: attach.base64 };
     });
     //console.log(quotePartRows);
-    const alreadySavedPart: partRow[] = quotePartRows.filter(
-      partRow => !partRow.alternativeTo.trim()
-    );
-    const partRequests: partRequest[] = alreadySavedPart.map(quotePart => {
-      return {
-        partId: quotePart.id,
-        partNumber: quotePart.partNumber,
-        quotePartName: quotePart.description,
-        reqCnd: quotePart.reqCondition,
-        fndCnd: quotePart.fndCondition,
-        leadTime: quotePart.leadTime,
-        qty: quotePart.qty,
-        unitPrice: quotePart.unitPrice
-      };
-    });
+    // const alreadySavedPart: partRow[] = quotePartRows.filter(
+    //   partRow => !partRow.alternativeTo.trim()
+    // );
+    // const partRequests: partRequest[] = alreadySavedPart.map(quotePart => {
+    //   return {
+    //     partId: quotePart.id,
+    //     partNumber: quotePart.partNumber,
+    //     quotePartName: quotePart.description,
+    //     leadTime: quotePart.leadTime,
+    //     qty: quotePart.qty,
+    //     unitPrice: quotePart.price
+    //   };
+    // });
 
-    const alreadySavedAlternativeQuotePart: partRow[] = quotePartRows.filter(
-      partRow => partRow.alternativeTo.trim()
-    );
-    const quoteAlternativePartRequests: partRequest[] =
-      alreadySavedAlternativeQuotePart.map(quotePart => {
-        return {
-          partId: quotePart.id,
-          partNumber: quotePart.partNumber,
-          quotePartName: quotePart.description,
-          reqCnd: quotePart.reqCondition,
-          fndCnd: quotePart.fndCondition,
-          leadTime: quotePart.leadTime,
-          qty: quotePart.qty,
-          unitPrice: quotePart.unitPrice
-        };
-      });
+    // const alreadySavedAlternativeQuotePart: partRow[] = quotePartRows.filter(
+    //   partRow => partRow.alternativeTo.trim()
+    // );
+    // const quoteAlternativePartRequests: partRequest[] =
+    //   alreadySavedAlternativeQuotePart.map(quotePart => {
+    //     return {
+    //       partId: quotePart.id,
+    //       partNumber: quotePart.partNumber,
+    //       quotePartName: quotePart.description,
+    //       reqCnd: quotePart.reqCondition,
+    //       fndCnd: quotePart.fndCondition,
+    //       leadTime: quotePart.leadTime,
+    //       qty: quotePart.qty,
+    //       unitPrice: quotePart.unitPrice
+    //     };
+    //   });
 
     //console.log(partRequests);
     //console.log(quoteAlternativePartRequests);
@@ -211,19 +212,19 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
       attachments: attachments,
       body: content,
       PIId: piResponseData.piId,
-      selectedPIParts: partRequests.map(part => ({
-        piPartId: part.partId,
-        partNumber: part.partNumber,
-        description: part.quotePartName,
-        qty: part.qty,
-        leadTime: part.leadTime,
-        unitPrice: part.unitPrice
-      })),
+      // selectedPIParts: partRequests.map(part => ({
+      //   piPartId: part.partId,
+      //   partNumber: part.partNumber,
+      //   description: part.quotePartName,
+      //   qty: part.qty,
+      //   leadTime: part.leadTime,
+      //   unitPrice: part.unitPrice
+      // })),
       clientLegalAddress: setupOtherProps.clientLocation,
       contractNo: contractNo,
       isInternational: isInternational,
       paymentTerm: shippingTerms,
-      deliveryTerm: CPT,
+      deliveryTerm: fob,
       validityDay: validityDay,
       bankDetail: {
         bankName: piResponseData.allBanks[0].bankName,
@@ -264,6 +265,30 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
     setEmailSendLoading(false);
   };
 
+  useEffect(() => {
+    // PDF zaten ekli mi kontrol et
+    const alreadyExists = base64Files.some(
+      file => file.name === base64PdfFileName && file.base64 === base64Pdf
+    );
+
+    if (
+      base64Pdf &&
+      base64PdfFileName &&
+      !isPdfConvertedToBase64 &&
+      !alreadyExists
+    ) {
+      console.log('Adding PDF to attachments');
+      const pdfFile = {
+        name: base64PdfFileName,
+        base64: base64Pdf
+      };
+      setBase64Files(prevFiles => [...prevFiles, pdfFile]);
+    }
+    // Sadece base64Pdf, base64PdfFileName veya isPdfConvertedToBase64 değiştiğinde çalışsın
+    // base64Files'ı bağımlılığa eklemiyoruz, yoksa sonsuz döngü olur!
+    // eslint-disable-next-line
+  }, [base64Pdf, base64PdfFileName, isPdfConvertedToBase64]);
+
   return (
     <MailProvider>
       <WizardFormProvider {...form}>
@@ -295,6 +320,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                     setTaxAmount={setTaxAmount}
                     setupOtherProps={setupOtherProps}
                     piResponseData={piResponseData}
+                    poResponseData={poResponseData}
                   />
                 </WizardForm>
               </Tab.Pane>
@@ -316,6 +342,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                       taxAmount={taxAmount}
                       setupOtherProps={setupOtherProps}
                       piResponseData={piResponseData}
+                      poResponseData={poResponseData}
                     />
                   }
                 </WizardForm>
@@ -329,7 +356,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                       isPdfConvertedToBase64={isPdfConvertedToBase64}
                       base64Pdf={base64Pdf}
                       base64PdfFileName={base64PdfFileName}
-                      piId={piResponseData.piId}
+                      poId={poResponseData.poId}
                     />
                   }
                 </WizardForm>

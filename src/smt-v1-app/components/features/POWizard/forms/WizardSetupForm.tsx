@@ -1,10 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Badge, Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import DatePicker from 'components/base/DatePicker';
 import './WizardTabs.css';
-import { partRow, QuoteWizardData, PIResponseData } from '../POWizard';
+import {
+  partRow,
+  QuoteWizardData,
+  PIResponseData,
+  POResponseData
+} from '../POWizard';
 import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
 
+import useCurrencyFormatter from 'hooks/useCurrencyFormatter';
 interface WizardSetupFormProps {
   id: string;
   currencies: string[];
@@ -32,8 +38,8 @@ interface WizardSetupFormProps {
     setRequisitioner: React.Dispatch<React.SetStateAction<string>>;
     shipVia: string;
     setShipVia: React.Dispatch<React.SetStateAction<string>>;
-    CPT: string;
-    setCPT: React.Dispatch<React.SetStateAction<string>>;
+    fob: string;
+    setFob: React.Dispatch<React.SetStateAction<string>>;
     shippingTerms: string;
     setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
     contractNo?: string;
@@ -46,6 +52,7 @@ interface WizardSetupFormProps {
     setSelectedBank: React.Dispatch<React.SetStateAction<any>>;
   };
   piResponseData?: PIResponseData;
+  poResponseData?: POResponseData;
 }
 
 const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
@@ -67,34 +74,20 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   taxAmount,
   setTaxAmount,
   setupOtherProps,
-  piResponseData
+  piResponseData,
+  poResponseData
 }) => {
-  // Add console.log to check PIResponseData
-  // console.log('PIResponseData received:', piResponseData);
-  // console.log('PIResponseData parts:', piResponseData?.piParts);
-  // console.log('PIResponseData company info:', {
-  //   logo: piResponseData?.logo,
-  //   companyAddress: piResponseData?.companyAddress,
-  //   companyTelephone: piResponseData?.companyTelephone
-  // });
-
-  // Add state for bank validation
-  const [bankError, setBankError] = useState<boolean>(false);
+  const oneRowHeight = 38;
+  const suppliersRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (piResponseData) {
-      // console.log(
-      //   'Setting isInternational from piResponseData:',
-      //   piResponseData.isInternational
-      // );
       setupOtherProps.setIsInternational(piResponseData.isInternational);
-      // console.log('Processing PIResponseData in useEffect');
-      // Set initial values from PIResponseData
       setupOtherProps.setClientLocation(piResponseData.clientLegalAddress);
       setupOtherProps.setShipTo(piResponseData.clientName);
       setupOtherProps.setContractNo(piResponseData.contractNo);
       setupOtherProps.setValidityDay(piResponseData.validityDay);
-      setupOtherProps.setCPT(piResponseData.deliveryTerm);
+      setupOtherProps.setFob(piResponseData.deliveryTerm);
       setupOtherProps.setShippingTerms(piResponseData.paymentTerm);
 
       // Set tax rate from PIResponseData
@@ -102,9 +95,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         setPercentageValue(piResponseData.tax.taxRate);
       }
 
-      // Set quote part rows from piParts with formatted unit prices
       const formattedParts = piResponseData.piParts.map(part => {
-        // console.log('Processing part:', part);
         const { formatted: formattedPrice, numericValue } = formatCurrency(
           part.unitPrice?.toString() || '0',
           part.currency || 'USD'
@@ -113,7 +104,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           ...part,
           isNew: false,
           unitPrice: numericValue,
-          unitPriceString: formattedPrice,
+          priceString: formattedPrice,
           tempId: undefined,
           id:
             part.piPartId ||
@@ -124,7 +115,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           fndCondition: part.fndCondition || 'NE',
           leadTime: part.leadTime || 0,
           partNumber: part.partNumber || '',
-          quantity: part.quantity || 1,
+          qty: part.qty || 1,
           reqCondition: part.reqCondition || 'NE'
         };
       });
@@ -133,7 +124,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
       // Set subTotalValues and checkedStates based on shipping options
       const newSubTotalValues = [
-        piResponseData.airCargoToX.airCargoToX,
+        piResponseData.airCargoToX.airCargoToX || 0,
         piResponseData.sealineToX.sealineToX,
         piResponseData.truckCarriageToX.truckCarriageToX,
         0 // Additional value if needed
@@ -151,7 +142,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       // setCheckedStates(newCheckedStates);
 
       // Set other values
-      setupOtherProps.setCPT(piResponseData.deliveryTerm || '');
+      setupOtherProps.setFob(piResponseData.deliveryTerm || '');
       setupOtherProps.setShippingTerms(piResponseData.paymentTerm || '');
       // console.log('Set other values:', {
       //   deliveryTerm: piResponseData.deliveryTerm,
@@ -162,14 +153,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       const formattedData = quoteWizardData.quoteWizardPartResponses.map(
         item => {
           const { formatted: formattedPrice, numericValue } = formatCurrency(
-            item.unitPrice?.toString() || '0',
+            item.price?.toString() || '0',
             item.currency || currency
           );
           return {
             ...item,
-            id: item.quotePartId,
+            id: item.poPartId,
             unitPrice: numericValue,
-            unitPriceString: formattedPrice
+            priceString: formattedPrice
           };
         }
       );
@@ -178,6 +169,17 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     }
   }, [quoteWizardData, piResponseData]);
 
+  const { formatNumberWithDecimals } = useCurrencyFormatter();
+
+  useEffect(() => {
+    const ta = suppliersRef.current;
+    if (!ta) return;
+    // önce içeriği sığdırmak için reset
+    ta.style.height = 'auto';
+    // sonra scrollHeight ile gerçek içerik yüksekliğini al, minimum olarak oneRowHeight uygula
+    const newHeight = Math.max(ta.scrollHeight, oneRowHeight);
+    ta.style.height = `${newHeight}px`;
+  }, [poResponseData?.suppliers]);
   // Return revision number
   const [revisionNumber] = useState(quoteWizardData?.revisionNumber || 0);
   const [reqQTY, setReqQTY] = useState(1);
@@ -196,7 +198,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   // Calculate sub-total
   const calculateSubTotal = () => {
-    return quotePartRows.reduce((acc, row) => acc + row.qty * row.unitPrice, 0);
+    return quotePartRows.reduce((acc, row) => acc + row.qty * row.price, 0);
   };
 
   // Calculate tax amount based on percentage
@@ -216,38 +218,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   const formatNumber = (value: string): string => {
     return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
-  const formatRowTotal = (value: string): string => {
-    // Split the input on the decimal point.
-    const [integerPartRaw, fractionalPartRaw] = value.split('.');
-
-    // Remove non-digit characters from the integer part.
-    const integerDigits = integerPartRaw.replace(/\D/g, '');
-
-    // Format the integer part with commas.
-    const formattedInteger = integerDigits.replace(
-      /\B(?=(\d{3})+(?!\d))/g,
-      ','
-    );
-
-    // If there's a fractional part, remove non-digit characters from it as well.
-    if (fractionalPartRaw !== undefined) {
-      const fractionalDigits = fractionalPartRaw.replace(/\D/g, '');
-      // Re-join the formatted integer part and the fractional part.
-      return `${formattedInteger}.${fractionalDigits}`;
-    } else {
-      return formattedInteger;
-    }
-  };
-  const formatNumberWithDecimals = (value: string): string => {
-    // Split on the decimal point.
-    const [integerPart, decimalPart] = value.split('.');
-    // Format the integer part.
-    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    // Return with the decimal part (if it exists)
-    return decimalPart !== undefined
-      ? `${formattedInteger}.${decimalPart}`
-      : formattedInteger;
   };
 
   const formatCurrency = (
@@ -318,8 +288,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           );
           return {
             ...row,
-            unitPriceString: formatted,
-            unitPrice: numericValue
+            priceString: formatted,
+            price: numericValue
           };
         }
         return row;
@@ -332,14 +302,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       prevRows.map(row => {
         if (row.tempId === rowId) {
           const { formatted, numericValue } = formatCurrency(
-            row.unitPriceString,
+            row.priceString,
             row.currency,
             true
           );
           return {
             ...row,
-            unitPriceString: formatted,
-            unitPrice: numericValue
+            priceString: formatted,
+            price: numericValue
           };
         }
         return row;
@@ -371,63 +341,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     updatedValues[index] = numericValue;
     setSubTotalValues(updatedValues);
   };
-
-  // const handleCurrencyChange = (selectedCurrency: string) => {
-  //   const currencyCode = selectedCurrency.replace(/[^A-Z]/g, '');
-  //   setCurrency(currencyCode);
-  //   setCurrencyLocal(currencyCode);
-
-  //   // Fake Currency Data
-  //   const defaultQuantities: Record<string, number> = {
-  //     USD: 35,
-  //     EUR: 2,
-  //     GBP: 3,
-  //     TRY: 100
-  //   };
-
-  //   setReqQTY(defaultQuantities[currencyCode]);
-  // };
-
-  // const addRow = () => {
-  //   // ***
-  //   const newRow: partRow = {
-  //     id: `temp-${tempIdCounter}`,
-  //     tempId: tempIdCounter,
-  //     partNumber: '',
-  //     alternativeTo: '',
-  //     currency: quoteWizardData.currency,
-  //     description: '',
-  //     reqCondition: 'NE',
-  //     fndCondition: 'NE',
-  //     no: 0,
-  //     quotePartId: null,
-  //     leadTime: 0,
-  //     qty: 1,
-  //     unitPrice: 0.0,
-  //     isNew: true,
-  //     unitPriceString: '0.00'
-  //   };
-
-  //   const updatedData = [...quotePartRows, newRow];
-  //   setTempIdCounter(tempIdCounter + 1);
-  //   // console.log(updatedData);
-  //   setQuotePartRows(updatedData);
-  // };
-
-  // const deleteRow = (tempId: number, quotePartId: string) => {
-  //   // ***
-  //   let updatedData = quotePartRows;
-  //   if (tempId !== undefined) {
-  //     updatedData = quotePartRows.filter(quote => quote.tempId !== tempId);
-  //   } else if (quotePartId !== undefined && quotePartId !== null) {
-  //     updatedData = quotePartRows.filter(
-  //       quote => quote.quotePartId !== quotePartId
-  //     );
-  //   } else {
-  //     // console.log('there is a bug in deleteRow');
-  //   }
-  //   setQuotePartRows(updatedData);
-  // };
 
   const formatNumberInput = (value: string): string => {
     // Remove all non-numeric characters except decimal point
@@ -506,26 +419,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   const handleQuantityChange = (value: number, rowId: string) => {
     setQuotePartRows(prevRows =>
-      prevRows.map(row =>
-        row.id === rowId ? { ...row, quantity: value } : row
-      )
+      prevRows.map(row => (row.id === rowId ? { ...row, qty: value } : row))
     );
   };
-
-  // const handleReqCondition = (value: string, rowId: string) => {
-  //   setQuotePartRows(prevRows =>
-  //     prevRows.map(row =>
-  //       row.id === rowId ? { ...row, reqCondition: value } : row
-  //     )
-  //   );
-  // };
-  // const handleFndCondition = (value: string, rowId: string) => {
-  //   setQuotePartRows(prevRows =>
-  //     prevRows.map(row =>
-  //       row.id === rowId ? { ...row, fndCondition: value } : row
-  //     )
-  //   );
-  // };
 
   // Add function to handle row numbering
   const getRowNumber = (index: number) => {
@@ -546,71 +442,27 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       tempId: Date.now(),
       partNumber: '',
-      alternativeTo: '',
       currency: currency,
       description: '',
-      reqCondition: 'NE',
-      fndCondition: 'NE',
-      quotePartId: null,
+      poPartId: null,
       leadTime: 0,
       qty: 1,
-      unitPrice: 0,
-      isNew: true,
-      unitPriceString: '0.00'
+      price: 0,
+      priceString: '0.00',
+      poPartSuppliers: {
+        supplier: '-'
+      }
     };
     setQuotePartRows([...quotePartRows, newRow]);
   };
-
-  // const handleBankChange = (bankName: string) => {
-  //   if (bankName) {
-  //     setBankError(false);
-  //   }
-
-  //   const selectedBank = piResponseData?.allBanks.find(
-  //     bank => bank.bankName === bankName
-  //   );
-  //   setupOtherProps.setSelectedBank(selectedBank || null);
-  // };
-
-  // Add validation check function to be used by the WizardFormProvider
-  // useEffect(() => {
-  //   const validateBank = () => {
-  //     if (!setupOtherProps.selectedBank) {
-  //       setBankError(true);
-  //       return false;
-  //     }
-  //     return true;
-  //   };
-
-  //   // We'll use a custom event to validate before proceeding
-  //   const handleValidateEvent = () => {
-  //     const isValid = validateBank();
-
-  //     // Dispatch a custom event with validation result
-  //     const validationEvent = new CustomEvent('bankValidationResult', {
-  //       detail: { isValid }
-  //     });
-  //     document.dispatchEvent(validationEvent);
-  //   };
-
-  //   // Add and remove event listener
-  //   document.addEventListener('validateBankSelection', handleValidateEvent);
-
-  //   return () => {
-  //     document.removeEventListener(
-  //       'validateBankSelection',
-  //       handleValidateEvent
-  //     );
-  //   };
-  // }, [setupOtherProps.selectedBank]);
 
   return (
     <>
       <div className="uppersection">
         <div className="upperleftsection">
           <Card style={{ width: '18rem', top: '30px' }} className="border-0 ">
-            {piResponseData?.logo ? (
-              <Card.Img variant="top" src={piResponseData.logo} />
+            {poResponseData?.logo ? (
+              <Card.Img variant="top" src={poResponseData.logo} />
             ) : null}
             {/* <Card.Body className="p-0 px-1 fs-9 w-100">
               <Card.Text className="mb-2 pt-2">
@@ -626,7 +478,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
         <div className="upperrightsection">
           <div className="quote-section mb-4 mt-6">
-            <Form>
+            <div>
               <Form.Group className="mb-3">
                 <div className="d-flex justify-content-end">
                   <div style={{ maxWidth: '180px' }}>
@@ -640,7 +492,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   </div>
                 </div>
               </Form.Group>
-            </Form>
+            </div>
             <p className="mt-2 small mt-3">
               <strong>PO Number:</strong>{' '}
               {piResponseData?.piNumberId ||
@@ -668,33 +520,36 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         </thead>
         <tbody>
           <tr className="text-center align-middle">
-            {' '}
             <td>
-              {
-                <div className="d-flex justify-content-center align-items-center">
-                  <Form.Control
-                    type="text"
-                    value={setupOtherProps.shipTo}
-                    disabled
-                    onChange={e => setupOtherProps.setShipTo(e.target.value)}
-                    style={{ width: '85%' }}
-                  />
-                </div>
-              }
+              <div className="d-flex justify-content-center align-items-center">
+                <Form.Control
+                  as="textarea"
+                  ref={suppliersRef}
+                  value={
+                    (poResponseData?.suppliers || [])
+                      .map(s => `• ${s.supplier}`)
+                      .join('\n') || ''
+                  }
+                  disabled
+                  style={{
+                    width: '100%',
+                    overflow: 'hidden', // scrollbar gizle
+                    resize: 'none', // kullanıcı resize edemesin
+                    minHeight: `${oneRowHeight}px`
+                  }}
+                />
+              </div>
             </td>
             <td colSpan={3}>
-              {
-                <div className="d-flex justify-content-center align-items-center">
-                  <Form.Control
-                    type="text"
-                    value={setupOtherProps.clientLocation}
-                    onChange={e =>
-                      setupOtherProps.setClientLocation(e.target.value)
-                    }
-                    style={{ width: '95%' }}
-                  />
-                </div>
-              }
+              <div className="d-flex justify-content-center align-items-center">
+                {/* Burayı tek satırlı input bırakıyoruz */}
+                <Form.Control
+                  type="text"
+                  value={setupOtherProps.shipTo}
+                  onChange={e => setupOtherProps.setShipTo(e.target.value)}
+                  style={{ width: '95%' }}
+                />
+              </div>
             </td>
           </tr>
           <tr className="bg-primary text-white text-center align-middle">
@@ -738,8 +593,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <div className="d-flex justify-content-center align-items-center">
                 <Form.Control
                   type="text"
-                  value={setupOtherProps.CPT}
-                  onChange={e => setupOtherProps.setCPT(e.target.value)}
+                  value={setupOtherProps.fob}
+                  onChange={e => setupOtherProps.setFob(e.target.value)}
                   style={{ width: '85%' }}
                 />
               </div>
@@ -826,7 +681,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   <Form.Control
                     disabled
                     type="text"
-                    value={''}
+                    value={row.poPartSuppliers.supplier}
                     //onChange={e => setupOtherProps.setSupplier(e.target.value)}
                   />
                 </td>
@@ -863,7 +718,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td style={{ width: '205px' }}>
                   <Form.Control
                     type="text"
-                    value={row.unitPriceString}
+                    value={row.priceString}
                     onChange={e =>
                       handleUnitPriceChange(e.target.value, row.id)
                     }
@@ -879,7 +734,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 <td>
                   {getPriceCurrencySymbol(currency) +
                     ' ' +
-                    formatRowTotal((row.qty * row.unitPrice).toString())}
+                    formatNumberWithDecimals((row.qty * row.price).toString())}
                 </td>
                 <td className="button-cell">
                   <div className="action-buttons">
@@ -956,7 +811,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       <Form.Control
                         type="text"
                         value={setupOtherProps.CPT}
-                        onChange={e => setupOtherProps.setCPT(e.target.value)}
+                        onChange={e => setupOtherProps.setFob(e.target.value)}
                       />
                     </td>
                   </tr>
@@ -1115,7 +970,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[0] || 0).toString()
+                              (subTotalValues[1] || 0).toString() || '0.00'
                             )
                           }
                           onChange={e => {
@@ -1171,7 +1026,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[1] || 0).toString()
+                              (subTotalValues[2] || 0).toString()
                             )
                           }
                           onChange={e => {
@@ -1227,7 +1082,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           value={
                             getPriceCurrencySymbol(currency) +
                             formatNumberInput(
-                              (subTotalValues[2] || 0).toString()
+                              (subTotalValues[3] || 0).toString()
                             )
                           }
                           onChange={e => {

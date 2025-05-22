@@ -4,7 +4,7 @@ import TinymceEditor from 'components/base/TinymceEditor';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 
-import { getPreEmailSendingParameters } from 'smt-v1-app/services/PIServices';
+import { getPreEmailSendingParameters } from 'smt-v1-app/services/PoServices';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import DropzoneQuoteWizard from './DropzoneQuoteWizard';
 
@@ -42,7 +42,6 @@ export interface EmailProps {
       }[]
     >
   >;
-
   inputValue: string;
   setInputValue: React.Dispatch<React.SetStateAction<string>>;
   error: string;
@@ -57,7 +56,7 @@ interface TypeaheadOption {
 interface WizardSendMailFormProps {
   onNext?: () => void;
   emailProps: EmailProps;
-  piId: string;
+  poId: string;
   base64Pdf: string;
   base64PdfFileName: string;
   isPdfConvertedToBase64: boolean;
@@ -66,7 +65,7 @@ interface WizardSendMailFormProps {
 const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
   onNext,
   emailProps,
-  piId,
+  poId,
   base64Pdf,
   base64PdfFileName,
   isPdfConvertedToBase64
@@ -91,7 +90,6 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
   } = emailProps;
 
   // This state is used for files in base64 format.
-
   const [isLoading, setIsLoading] = useState(true);
 
   // Simple email validation
@@ -150,23 +148,55 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
 
   // Fetch the pre-email parameters from the API and set the email fields.
   useEffect(() => {
-    const getPreEmailParams = async () => {
-      setIsLoading(true);
-      const response = await getPreEmailSendingParameters(piId);
-      // Assuming response.data has the structure: { body, ccEmails, subject, toEmails }
-      setToEmails(response.data.toEmails);
-      setCcEmails(response.data.ccEmails);
-      setSubject(response.data.subject);
-      setContent(response.data.body);
-      setIsLoading(false);
-    };
-    getPreEmailParams();
-  }, [piId, setToEmails, setCcEmails, setSubject, setContent]);
+    const fetchEmailParameters = async () => {
+      try {
+        console.log('Fetching email parameters for poId:', poId);
+        const response = await getPreEmailSendingParameters(poId);
+        console.log('Email parameters response:', response);
 
-  // Update the file state when base64Pdf changes.
+        if (response && response.data && response.data.preEmailParameters) {
+          const emailData = response.data.preEmailParameters[0];
+          setToEmails(emailData.toEmails || []);
+          setCcEmails(emailData.ccEmails || []);
+          setSubject(emailData.subject || '');
+          setContent(emailData.body || '');
+
+          // Add supplier info if available
+          if (emailData.poSupplier) {
+            setContent(
+              prevContent =>
+                prevContent +
+                `\n\nSupplier: ${emailData.poSupplier.supplierName}`
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching email parameters:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEmailParameters();
+  }, [poId]);
+
+  // Handle PDF conversion and attachment
   useEffect(() => {
-    setBase64Files([{ name: base64PdfFileName, base64: base64Pdf }]);
-  }, [base64Pdf, base64PdfFileName]);
+    console.log('PDF State:', {
+      base64Pdf,
+      base64PdfFileName,
+      isPdfConvertedToBase64
+    });
+
+    if (base64Pdf && base64PdfFileName && !isPdfConvertedToBase64) {
+      console.log('Adding PDF to attachments');
+      const pdfFile = {
+        name: base64PdfFileName,
+        base64: base64Pdf
+      };
+      setBase64Files(prevFiles => [...prevFiles, pdfFile]);
+    }
+  }, [base64Pdf, base64PdfFileName, isPdfConvertedToBase64]);
 
   const handleFilesUpload = (files: { name: string; base64: string }[]) => {
     setBase64Files(files);
@@ -174,7 +204,16 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
 
   return (
     <div className="p-4">
-      {isLoading || isPdfConvertedToBase64 ? (
+      {(() => {
+        // console.log('Render state:', {
+        //   isLoading,
+        //   isPdfConvertedToBase64,
+        //   hasBase64Pdf: !!base64Pdf,
+        //   hasBase64FileName: !!base64PdfFileName
+        // });
+        return null;
+      })()}
+      {isLoading ? (
         <LoadingAnimation />
       ) : (
         <Form>
@@ -256,9 +295,17 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
           <div className="border p-3 mb-3">
             <DropzoneQuoteWizard
               onFilesUpload={handleFilesUpload}
-              alreadyUploadedFiles={[
-                { id: undefined, name: base64PdfFileName, base64: base64Pdf }
-              ]}
+              alreadyUploadedFiles={
+                base64Pdf && base64PdfFileName
+                  ? [
+                      {
+                        id: undefined,
+                        name: base64PdfFileName,
+                        base64: base64Pdf
+                      }
+                    ]
+                  : []
+              }
             />
           </div>
 

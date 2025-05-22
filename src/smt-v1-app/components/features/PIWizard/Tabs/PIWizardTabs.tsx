@@ -14,11 +14,36 @@ import {
   partRow,
   QuoteWizardData,
   PIResponseData,
-  SetupOtherProps
+  QuoteWizardSetting
 } from '../PIWizard';
 import WizardPreviewForm from '../forms/WizardPreviewForm';
 import QuoteWizardNav from '../wizard/QuoteWizardNav';
 import { sendQuoteEmail } from 'smt-v1-app/services/PIServices';
+
+interface SetupOtherProps {
+  clientLocation: string;
+  setClientLocation: React.Dispatch<React.SetStateAction<string>>;
+  shipTo: string;
+  setShipTo: React.Dispatch<React.SetStateAction<string>>;
+  requisitioner: string;
+  setRequisitioner: React.Dispatch<React.SetStateAction<string>>;
+  shipVia: string;
+  setShipVia: React.Dispatch<React.SetStateAction<string>>;
+  CPT: string;
+  setCPT: React.Dispatch<React.SetStateAction<string>>;
+  shippingTerms: string;
+  setShippingTerms: React.Dispatch<React.SetStateAction<string>>;
+  contractNo: string;
+  setContractNo: React.Dispatch<React.SetStateAction<string>>;
+  isInternational: boolean;
+  setIsInternational: React.Dispatch<React.SetStateAction<boolean>>;
+  validityDay: number | undefined;
+  setValidityDay: React.Dispatch<React.SetStateAction<number | undefined>>;
+  selectedBank: any;
+  setSelectedBank: React.Dispatch<React.SetStateAction<any>>;
+  poRefNo: string;
+  setPoRefNo: React.Dispatch<React.SetStateAction<string>>;
+}
 
 export interface partRequest {
   partId: string;
@@ -72,12 +97,11 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   const [shippingTerms, setShippingTerms] = useState<string>('');
   const [contractNo, setContractNo] = useState<string>('');
   const [isInternational, setIsInternational] = useState<boolean>(false);
-  const [validityDay, setValidityDay] = useState<number>(0);
-  const [selectedBank, setSelectedBank] = useState<
-    PIResponseData['allBanks'][0] | null
-  >(null);
+  const [validityDay, setValidityDay] = useState<number | undefined>(undefined);
+  const [selectedBank, setSelectedBank] = useState<any>(null);
   const [percentageValue, setPercentageValue] = useState<number>(0);
   const [taxAmount, setTaxAmount] = useState<number>(0);
+  const [poRefNo, setPoRefNo] = useState<string>('');
 
   const calculateSubTotal = () => {
     return quotePartRows.reduce((acc, row) => acc + row.qty * row.unitPrice, 0);
@@ -116,7 +140,9 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
     validityDay,
     setValidityDay,
     selectedBank,
-    setSelectedBank
+    setSelectedBank,
+    poRefNo,
+    setPoRefNo
   };
 
   const [base64Pdf, setBase64Pdf] = useState<string>('');
