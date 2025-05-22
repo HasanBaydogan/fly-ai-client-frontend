@@ -293,8 +293,9 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
           <Form.Group className="mb-2">
             <Form.Label>Part Name*</Form.Label>
             <Form.Control
-              type="email"
-              name="email"
+              type="text"
+              name="partName"
+              required
               placeholder="Part Name"
               value={partName}
               onChange={handlePartName}
@@ -332,7 +333,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
             <Form.Label className="text-body">Aircraft Model</Form.Label>
             <Form.Control
               type="text"
-              name="name"
+              name="partAircraftModel"
               placeholder="Aircraft Model"
               value={aircraftModel}
               onChange={handleAircraftModel}
@@ -389,7 +390,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
             <Form.Label>HS Code</Form.Label>
             <Form.Control
               type="email"
-              name="email"
+              name="partHSCode"
               placeholder="HS Code"
               value={hsCode}
               onChange={handleHsCode}
@@ -408,7 +409,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
               as="textarea"
               rows={3}
               type="Comment"
-              name="Comment"
+              name="partComment"
               placeholder="Type your comment"
               value={comment}
               onChange={handleComment}

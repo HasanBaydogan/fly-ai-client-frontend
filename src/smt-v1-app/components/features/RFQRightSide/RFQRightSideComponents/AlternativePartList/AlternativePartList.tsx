@@ -487,7 +487,11 @@ const AlternativePartList = ({
         {isLoading ? (
           <LoadingAnimation />
         ) : (
-          <Table responsive style={{ overflow: 'visible' }}>
+          <Table
+            className="text-center"
+            responsive
+            style={{ overflow: 'visible' }}
+          >
             <thead>
               <tr>
                 {/* For adding and substracting button */}

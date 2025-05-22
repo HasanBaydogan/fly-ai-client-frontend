@@ -47,6 +47,8 @@ interface WizardPersonalFormProps {
     setIsInternational: React.Dispatch<React.SetStateAction<boolean>>;
     validityDay: number;
     setValidityDay: React.Dispatch<React.SetStateAction<number>>;
+    poRefNo: string;
+    setPoRefNo: React.Dispatch<React.SetStateAction<string>>;
   };
   piResponseData: any; // Assuming piResponseData is of type any
 }
@@ -94,7 +96,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
         setupOtherProps.validityDay,
         setupOtherProps.selectedBank,
         taxAmount,
-        percentageValue
+        percentageValue,
+        setupOtherProps.poRefNo
       );
     } catch (error) {
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
@@ -125,7 +128,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
             setupOtherProps.validityDay,
             setupOtherProps.selectedBank,
             taxAmount,
-            percentageValue
+            percentageValue,
+            setupOtherProps.poRefNo
           );
           setBase64Pdf(response);
           setBase64PdfFileName(quoteNumber + '.pdf');
@@ -306,6 +310,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     <tr>
                       <td>Validity Day :</td>
                       <td>{setupOtherProps.validityDay || 0}</td>
+                    </tr>
+                    <tr>
+                      <td>PO Ref No :</td>
+                      <td>{setupOtherProps.poRefNo || ''}</td>
                     </tr>
                   </tbody>
                 </Table>
