@@ -176,12 +176,13 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
 
 type SearchColumn = {
   label: string;
-  value: 'all' | 'quoteNumberId' | 'clientRFQId' | 'clientName';
+  value: 'all' | 'partNumber' | 'quoteNumberId' | 'clientRFQId' | 'clientName';
 };
 
 const searchColumns: SearchColumn[] = [
   // { label: 'No Filter', value: 'all' },
   { label: 'Quote Number', value: 'quoteNumberId' },
+  { label: 'Part Number', value: 'partNumber' },
   { label: 'Client', value: 'clientName' },
   { label: 'Client RFQ ID', value: 'clientRFQId' }
 ];
