@@ -219,7 +219,9 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
           subject: email.subject,
           body: email.body,
           attachments: email.attachments.map(attach => ({
-            filename: attach.filename,
+            filename: attach.filename.includes('-')
+              ? `${poResponseData.poNumberId}.pdf`
+              : attach.filename,
             data: attach.data
           }))
         })),

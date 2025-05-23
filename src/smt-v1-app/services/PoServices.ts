@@ -70,5 +70,5 @@ export const getPreEmailSendingParameters = async (poId: string) => {
 };
 
 export const sendQuoteEmail = async (sendEmailProps: POEmailProps) => {
-  return await postRequest(`/pi/send-email`, sendEmailProps);
+  return await postRequest(`/po/send-email`, sendEmailProps);
 };
