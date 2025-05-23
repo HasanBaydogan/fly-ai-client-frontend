@@ -352,11 +352,34 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                 <WizardForm step={3}>
                   {
                     <WizardSendMailForm
-                      emailProps={emailProps}
-                      isPdfConvertedToBase64={isPdfConvertedToBase64}
+                      poId={poResponseData.poId}
+                      poNumberId={poResponseData.poNumberId}
                       base64Pdf={base64Pdf}
                       base64PdfFileName={base64PdfFileName}
-                      poId={poResponseData.poId}
+                      isPdfConvertedToBase64={isPdfConvertedToBase64}
+                      onFilesUpload={files => {
+                        setBase64Files(files);
+                        setIsPdfConvertedToBase64(false);
+                      }}
+                      base64Files={base64Files}
+                      emailProps={emailProps}
+                      settings={quoteWizardData.quoteWizardSetting}
+                      quotePartRows={quotePartRows}
+                      subTotalValues={subTotalValues}
+                      selectedDate={selectedDate}
+                      checkedStates={checkedStates}
+                      setupOtherProps={{
+                        clientLocation,
+                        shipTo,
+                        requisitioner,
+                        shipVia,
+                        fob,
+                        shippingTerms,
+                        contractNo,
+                        isInternational,
+                        validityDay,
+                        selectedBank
+                      }}
                     />
                   }
                 </WizardForm>

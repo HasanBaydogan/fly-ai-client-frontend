@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import styles from 'smt-v1-app/components/features/GlobalComponents/FileUpload.module.css';
 
 import Dropzone from '../../SupplierDetail/SupplierDetailComponents/Dropzone';
@@ -26,70 +26,98 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<FileAttachment[]>([]);
   const [base64Files, setBase64Files] = useState<Base64File[]>([]);
+  const processedFilesRef = useRef<Set<string>>(new Set());
 
-  // Process already uploaded files
-  useEffect(() => {
-    if (alreadyUploadedFiles && alreadyUploadedFiles.length > 0) {
-      // Filter out empty files
-      const validFiles = alreadyUploadedFiles.filter(
-        file => file && file.name && file.base64 && file.base64.trim() !== ''
-      );
-
-      if (validFiles.length === 0) {
-        console.log('No valid files to process');
-        return;
-      }
-
-      // console.log('Processing valid files:', validFiles);
-
-      // Notify parent about the valid files
-      onFilesUpload(validFiles);
-
-      // Format the files for base64 state
-      const formattedUploadFiles = validFiles.map(file => ({
-        id: file.id || Date.now().toString(),
-        name: file.name,
-        base64: file.base64
-      }));
-      setBase64Files(formattedUploadFiles);
-
-      // Create preview objects for PDF files
-      const previewFiles: FileAttachment[] = validFiles.map(file => {
-        try {
-          // Handle both data URL and raw base64 formats
-          const base64Data = file.base64.includes('base64,')
-            ? file.base64.split('base64,')[1]
-            : file.base64;
-
-          const byteCharacters = atob(base64Data);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'application/pdf' });
-          const url = URL.createObjectURL(blob);
-
-          return {
-            name: file.name,
-            url: url,
-            size: 'N/A',
-            format: 'application/pdf'
-          };
-        } catch (error) {
-          console.error('Error creating preview for file:', file.name, error);
-          return {
-            name: file.name,
-            url: '',
-            size: 'N/A',
-            format: 'application/pdf'
-          };
-        }
-      });
-
-      setUploadedFiles(previewFiles);
+  // Memoize the file processing callback
+  const processAlreadyUploadedFiles = useCallback(() => {
+    if (!alreadyUploadedFiles || alreadyUploadedFiles.length === 0) {
+      return;
     }
+
+    // Filter out empty files and already processed files
+    const validFiles = alreadyUploadedFiles.filter(file => {
+      const isValid =
+        file && file.name && file.base64 && file.base64.trim() !== '';
+      const isProcessed = processedFilesRef.current.has(file.name);
+      return isValid && !isProcessed;
+    });
+
+    if (validFiles.length === 0) {
+      return;
+    }
+
+    // Mark files as processed
+    validFiles.forEach(file => {
+      processedFilesRef.current.add(file.name);
+    });
+
+    // Notify parent about the valid files
+    onFilesUpload(validFiles);
+
+    // Format the files for base64 state
+    const formattedUploadFiles = validFiles.map(file => ({
+      id: file.id || Date.now().toString(),
+      name: file.name,
+      base64: file.base64
+    }));
+
+    setBase64Files(prevFiles => {
+      const newFiles = formattedUploadFiles.filter(
+        newFile =>
+          !prevFiles.some(existingFile => existingFile.name === newFile.name)
+      );
+      return [...prevFiles, ...newFiles];
+    });
+
+    // Create preview objects for PDF files
+    const previewFiles: FileAttachment[] = validFiles.map(file => {
+      try {
+        // Handle both data URL and raw base64 formats
+        const base64Data = file.base64.includes('base64,')
+          ? file.base64.split('base64,')[1]
+          : file.base64;
+
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+
+        return {
+          name: file.name,
+          url: url,
+          size: 'N/A',
+          format: 'application/pdf'
+        };
+      } catch (error) {
+        console.error('Error creating preview for file:', file.name, error);
+        return {
+          name: file.name,
+          url: '',
+          size: 'N/A',
+          format: 'application/pdf'
+        };
+      }
+    });
+
+    setUploadedFiles(prevFiles => {
+      const newPreviews = previewFiles.filter(
+        newPreview =>
+          !prevFiles.some(
+            existingPreview => existingPreview.name === newPreview.name
+          )
+      );
+      return [...prevFiles, ...newPreviews];
+    });
   }, [alreadyUploadedFiles, onFilesUpload]);
+
+  // Use the memoized callback in useEffect
+  useEffect(() => {
+    processAlreadyUploadedFiles();
+  }, [processAlreadyUploadedFiles]);
 
   const handleDrop = async (acceptedFiles: File[], fileRejections: any[]) => {
     const totalSize = acceptedFiles.reduce((acc, file) => acc + file.size, 0);
@@ -154,6 +182,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
     );
     setBase64Files(updatedBase64Files);
     onFilesUpload(updatedBase64Files);
+
+    // Remove from processed files set
+    processedFilesRef.current.delete(removedPreview.name);
 
     // Clean up the object URL
     if (removedPreview.url) {
