@@ -17,6 +17,17 @@ interface TypeaheadOption {
   customOption?: boolean;
 }
 
+export interface SendEmailProps {
+  to: string[];
+  cc: string[];
+  subject: string;
+  attachments: {
+    filename: string;
+    data: string;
+  }[];
+  body: string;
+}
+
 interface PreEmailParam {
   toEmails: string[];
   ccEmails: string[];
@@ -28,8 +39,30 @@ interface PreEmailParam {
 }
 
 export interface EmailProps {
-  toEmails: string[];
-  setToEmails: React.Dispatch<React.SetStateAction<string[]>>;
+  toEmails: {
+    to: string[];
+    cc: string[];
+    subject: string;
+    body: string;
+    attachments: {
+      filename: string;
+      data: string;
+    }[];
+  }[];
+  setToEmails: React.Dispatch<
+    React.SetStateAction<
+      {
+        to: string[];
+        cc: string[];
+        subject: string;
+        body: string;
+        attachments: {
+          filename: string;
+          data: string;
+        }[];
+      }[]
+    >
+  >;
   ccEmails: string[];
   setCcEmails: React.Dispatch<React.SetStateAction<string[]>>;
   bccEmails: string[];
@@ -112,6 +145,11 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
 
   const [error, setError] = useState('');
 
+  // State for supplier PDFs
+  const [supplierPdfs, setSupplierPdfs] = useState<{
+    [key: string]: { name: string; base64: string };
+  }>({});
+
   // Fetch pre-email parameters
   useEffect(() => {
     const fetchParams = async () => {
@@ -172,6 +210,26 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     const updated = [...list];
     updated[currentIndex] = labels;
     setList(updated);
+
+    // Update parent component state for To emails
+    if (list === toList) {
+      // Create an array of email requests for each supplier
+      const emailRequests = preEmailParams.map((param, idx) => ({
+        to: toList[idx] || [],
+        cc: ccList[idx] || [],
+        subject: subjectList[idx] || '',
+        body: bodyList[idx] || '',
+        attachments: supplierPdfs[param.poSupplier.supplierId]
+          ? [
+              {
+                filename: supplierPdfs[param.poSupplier.supplierId].name,
+                data: supplierPdfs[param.poSupplier.supplierId].base64
+              }
+            ]
+          : []
+      }));
+      emailProps.setToEmails(emailRequests);
+    }
   };
 
   const handleGeneratePDF = async () => {
@@ -206,9 +264,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         selectedDate,
         poNumberId,
         'USD',
-        supplierParts, // Seçili supplier'a ait parçalar
-        [supplierSubTotal], // Seçili supplier'a ait toplam
-        [true], // Varsayılan olarak true
+        supplierParts,
+        [supplierSubTotal],
+        [true],
         setupOtherProps.clientLocation,
         setupOtherProps.shipTo,
         setupOtherProps.requisitioner,
@@ -219,19 +277,42 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         setupOtherProps.isInternational,
         setupOtherProps.validityDay,
         setupOtherProps.selectedBank,
-        0, // taxAmount
-        0, // percentageValue
-        currentParam.poSupplier // Seçili supplier bilgisi
+        0,
+        0,
+        currentParam.poSupplier
       );
 
       console.log('PDF generation response received:', !!response);
 
       if (response) {
         const pdfFile = {
-          name: `${poNumberId}.pdf`,
+          name: `${poNumberId}-${currentParam.poSupplier.supplier}.pdf`,
           base64: response
         };
         console.log('Created PDF file object:', pdfFile.name);
+
+        // Supplier PDF'ini state'e kaydet
+        setSupplierPdfs(prev => ({
+          ...prev,
+          [currentParam.poSupplier.supplierId]: pdfFile
+        }));
+
+        // Update email requests with the new PDF
+        const emailRequests = preEmailParams.map((param, idx) => ({
+          to: toList[idx] || [],
+          cc: ccList[idx] || [],
+          subject: subjectList[idx] || '',
+          body: bodyList[idx] || '',
+          attachments: supplierPdfs[param.poSupplier.supplierId]
+            ? [
+                {
+                  filename: supplierPdfs[param.poSupplier.supplierId].name,
+                  data: supplierPdfs[param.poSupplier.supplierId].base64
+                }
+              ]
+            : []
+        }));
+        emailProps.setToEmails(emailRequests);
 
         // Mevcut dosyaları koru ve yeni PDF'i ekle
         const updatedFiles = [...base64Files];
@@ -240,9 +321,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
           updatedFiles.map(f => f.name)
         );
 
-        // Aynı isimde dosya varsa kaldır
+        // Diğer supplier'ların PDF'lerini kaldır
         const filteredFiles = updatedFiles.filter(
-          file => file.name !== pdfFile.name
+          file => !file.name.includes(poNumberId) || file.name === pdfFile.name
         );
         console.log(
           'Files after filtering:',
@@ -272,6 +353,73 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     }
   };
 
+  // Update the supplier change handler to maintain email requests
+  const handleSupplierChange = (idx: number) => {
+    setCurrentIndex(idx);
+    const currentParam = preEmailParams[idx];
+
+    if (currentParam && supplierPdfs[currentParam.poSupplier.supplierId]) {
+      // Sadece seçili supplier'ın PDF'i ile yeni bir dosya listesi oluştur
+      const onlyCurrentSupplierPdf = [
+        supplierPdfs[currentParam.poSupplier.supplierId]
+      ];
+
+      console.log(
+        'Switching to supplier PDF:',
+        currentParam.poSupplier.supplier
+      );
+      console.log(
+        'Final files:',
+        onlyCurrentSupplierPdf.map(f => f.name)
+      );
+
+      onFilesUpload(onlyCurrentSupplierPdf);
+      emailProps.setBase64Files(onlyCurrentSupplierPdf);
+
+      // Update email requests when switching suppliers
+      const emailRequests = preEmailParams.map((param, index) => ({
+        to: toList[index] || [],
+        cc: ccList[index] || [],
+        subject: subjectList[index] || '',
+        body: bodyList[index] || '',
+        attachments: supplierPdfs[param.poSupplier.supplierId]
+          ? [
+              {
+                filename: supplierPdfs[param.poSupplier.supplierId].name,
+                data: supplierPdfs[param.poSupplier.supplierId].base64
+              }
+            ]
+          : []
+      }));
+      emailProps.setToEmails(emailRequests);
+    } else {
+      // Eğer PDF yoksa dropzone'u boşalt
+      onFilesUpload([]);
+      emailProps.setBase64Files([]);
+    }
+  };
+
+  // Update useEffect to initialize email requests when preEmailParams changes
+  useEffect(() => {
+    if (preEmailParams.length > 0) {
+      const emailRequests = preEmailParams.map((param, idx) => ({
+        to: toList[idx] || [],
+        cc: ccList[idx] || [],
+        subject: subjectList[idx] || '',
+        body: bodyList[idx] || '',
+        attachments: supplierPdfs[param.poSupplier.supplierId]
+          ? [
+              {
+                filename: supplierPdfs[param.poSupplier.supplierId].name,
+                data: supplierPdfs[param.poSupplier.supplierId].base64
+              }
+            ]
+          : []
+      }));
+      emailProps.setToEmails(emailRequests);
+    }
+  }, [preEmailParams, toList, ccList, subjectList, bodyList, supplierPdfs]);
+
   if (isLoading) return <LoadingAnimation />;
 
   return (
@@ -283,7 +431,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
             <Col key={p.poSupplier.supplierId} xs="auto">
               <Button
                 variant={currentIndex === idx ? 'primary' : 'outline-primary'}
-                onClick={() => setCurrentIndex(idx)}
+                onClick={() => handleSupplierChange(idx)}
               >
                 {p.poSupplier.supplier}
               </Button>

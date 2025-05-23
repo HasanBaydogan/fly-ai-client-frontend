@@ -318,6 +318,7 @@ const POWizard: React.FC<PIWizardProps> = ({
           <LoadingAnimation />
         ) : quoteWizardData ? (
           <WizardTabs
+            poId={poResponseData.poId}
             quoteWizardData={quoteWizardData}
             currencies={currencies}
             selectedParts={selectedParts}

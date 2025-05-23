@@ -19,7 +19,10 @@ import {
 } from './POWizard';
 import WizardPreviewForm from './forms/WizardPreviewForm';
 import QuoteWizardNav from './wizard/POWizardNav';
-import { sendQuoteEmail } from 'smt-v1-app/services/PIServices';
+import { sendQuoteEmail, POEmailProps } from 'smt-v1-app/services/PoServices';
+import { SendEmailProps } from './forms/WizardSendMailForm';
+import { bo } from '@fullcalendar/core/internal-common';
+import { getPreEmailSendingParameters } from 'smt-v1-app/services/PoServices';
 
 export interface partRequest {
   partId: string;
@@ -31,12 +34,14 @@ export interface partRequest {
   qty: number;
   unitPrice: number;
 }
+
 interface QuoteOtherValue {
   key: string;
   value: number;
 }
 
-interface WizardTabsProps {
+interface POWizardTabsProps {
+  poId: string;
   quoteWizardData: QuoteWizardData;
   currencies: string[];
   selectedParts: string[];
@@ -47,7 +52,8 @@ interface WizardTabsProps {
   onClose?: () => void;
 }
 
-const WizardTabs: React.FC<WizardTabsProps> = ({
+const POWizardTabs: React.FC<POWizardTabsProps> = ({
+  poId,
   quoteWizardData,
   currencies,
   selectedParts,
@@ -125,20 +131,61 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   const [base64Pdf, setBase64Pdf] = useState<string>('');
   const [base64PdfFileName, setBase64PdfFileName] = useState<string>('');
 
+  const [toEmails, setToEmails] = useState<
+    {
+      to: string[];
+      cc: string[];
+      subject: string;
+      body: string;
+      attachments: {
+        filename: string;
+        data: string;
+      }[];
+    }[]
+  >([]);
+  const [ccEmails, setCcEmails] = useState<string[]>([]);
+  const [bccEmails, setBccEmails] = useState<string[]>([]);
+  const [subject, setSubject] = useState('');
+  const [content, setContent] = useState('');
   const [base64Files, setBase64Files] = useState<
     { name: string; base64: string }[]
   >([]);
-
-  const [toEmails, setToEmails] = useState<string[]>([]);
-  const [ccEmails, setCcEmails] = useState<string[]>([]);
-  const [bccEmails, setBccEmails] = useState<string[]>([]);
-  const [subject, setSubject] = useState<string>('');
-  const [content, setContent] = useState<string>(defaultMailTemplate);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [inputValue, setInputValue] = useState<string>('');
+  const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPdfConvertedToBase64, setIsPdfConvertedToBase64] = useState(true);
+  const [preEmailParams, setPreEmailParams] = useState<any[]>([]);
   const [from, setFrom] = useState('');
+
+  // Fetch pre-email parameters
+  useEffect(() => {
+    const fetchParams = async () => {
+      try {
+        const response = await getPreEmailSendingParameters(poId);
+        const params = response.data.preEmailParameters || [];
+        setPreEmailParams(params);
+
+        // Initialize email requests
+        const emailRequests = params.map(param => ({
+          to: param.toEmails || [],
+          cc: param.ccEmails || [],
+          subject: param.subject || '',
+          body: param.body || '',
+          attachments: []
+        }));
+        setToEmails(emailRequests);
+      } catch (error) {
+        console.error('Error fetching pre-email parameters:', error);
+      }
+    };
+    fetchParams();
+  }, [poId]);
+
+  // Update base64Files when PDF changes
+  useEffect(() => {
+    if (base64Pdf && base64PdfFileName && !isPdfConvertedToBase64) {
+      setBase64Files([{ name: base64PdfFileName, base64: base64Pdf }]);
+    }
+  }, [base64Pdf, base64PdfFileName, isPdfConvertedToBase64]);
 
   const emailProps = {
     toEmails,
@@ -164,130 +211,64 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
 
   const handleSendQuoteEmail = async () => {
     setEmailSendLoading(true);
-    const attachments: {
-      filename: string;
-      data: string;
-    }[] = base64Files.map(attach => {
-      return { filename: attach.name, data: attach.base64 };
-    });
-    //console.log(quotePartRows);
-    // const alreadySavedPart: partRow[] = quotePartRows.filter(
-    //   partRow => !partRow.alternativeTo.trim()
-    // );
-    // const partRequests: partRequest[] = alreadySavedPart.map(quotePart => {
-    //   return {
-    //     partId: quotePart.id,
-    //     partNumber: quotePart.partNumber,
-    //     quotePartName: quotePart.description,
-    //     leadTime: quotePart.leadTime,
-    //     qty: quotePart.qty,
-    //     unitPrice: quotePart.price
-    //   };
-    // });
-
-    // const alreadySavedAlternativeQuotePart: partRow[] = quotePartRows.filter(
-    //   partRow => partRow.alternativeTo.trim()
-    // );
-    // const quoteAlternativePartRequests: partRequest[] =
-    //   alreadySavedAlternativeQuotePart.map(quotePart => {
-    //     return {
-    //       partId: quotePart.id,
-    //       partNumber: quotePart.partNumber,
-    //       quotePartName: quotePart.description,
-    //       reqCnd: quotePart.reqCondition,
-    //       fndCnd: quotePart.fndCondition,
-    //       leadTime: quotePart.leadTime,
-    //       qty: quotePart.qty,
-    //       unitPrice: quotePart.unitPrice
-    //     };
-    //   });
-
-    //console.log(partRequests);
-    //console.log(quoteAlternativePartRequests);
-    // console.log('xxx', piResponseData);
-    const payload = {
-      to: toEmails,
-      cc: ccEmails,
-      subject: subject,
-      attachments: attachments,
-      body: content,
-      PIId: piResponseData.piId,
-      // selectedPIParts: partRequests.map(part => ({
-      //   piPartId: part.partId,
-      //   partNumber: part.partNumber,
-      //   description: part.quotePartName,
-      //   qty: part.qty,
-      //   leadTime: part.leadTime,
-      //   unitPrice: part.unitPrice
-      // })),
-      clientLegalAddress: setupOtherProps.clientLocation,
-      contractNo: contractNo,
-      isInternational: isInternational,
-      paymentTerm: shippingTerms,
-      deliveryTerm: fob,
-      validityDay: validityDay,
-      bankDetail: {
-        bankName: piResponseData.allBanks[0].bankName,
-        branchName: piResponseData.allBanks[0].branchName,
-        branchCode: piResponseData.allBanks[0].branchCode,
-        swiftCode: piResponseData.allBanks[0].swiftCode,
-        ibanNo: piResponseData.allBanks[0].ibanNo,
-        currency: piResponseData.allBanks[0].currency
-      },
-      piTax: {
-        taxRate: percentageValue
-      },
-      airCargoToX: {
-        airCargoToX: subTotalValues[1],
-        isIncluded: checkedStates[1] || false
-      },
-      sealineToX: {
-        sealineToX: subTotalValues[2],
-        isIncluded: checkedStates[2] || false
-      },
-      truckCarriageToX: {
-        truckCarriageToX: subTotalValues[3],
-        isIncluded: checkedStates[3] || false
-      }
-    };
-
-    // console.log('Sending payload:', payload);
-
-    const response = await sendQuoteEmail(payload);
-    // console.log('sendQuoteEmail', response);
-    if (response && response.statusCode === 200) {
-      setFrom(response.data.from);
-      setIsSendEmailSuccess(true);
-    } else {
-      // console.log(response);
-    }
-
-    setEmailSendLoading(false);
-  };
-
-  useEffect(() => {
-    // PDF zaten ekli mi kontrol et
-    const alreadyExists = base64Files.some(
-      file => file.name === base64PdfFileName && file.base64 === base64Pdf
-    );
-
-    if (
-      base64Pdf &&
-      base64PdfFileName &&
-      !isPdfConvertedToBase64 &&
-      !alreadyExists
-    ) {
-      console.log('Adding PDF to attachments');
-      const pdfFile = {
-        name: base64PdfFileName,
-        base64: base64Pdf
+    try {
+      const payload: POEmailProps = {
+        poEmailRequests: toEmails.map(email => ({
+          to: email.to,
+          cc: email.cc,
+          subject: email.subject,
+          body: email.body,
+          attachments: email.attachments.map(attach => ({
+            filename: attach.filename,
+            data: attach.data
+          }))
+        })),
+        POId: poResponseData.poId,
+        shipTo: setupOtherProps.shipTo,
+        requisitoner: setupOtherProps.requisitioner,
+        shipVia: setupOtherProps.shipVia,
+        fob: setupOtherProps.fob,
+        shippingTerms: setupOtherProps.shippingTerms,
+        selectedPOParts: quotePartRows.map(part => ({
+          poPartId: part.poPartId || part.id,
+          partNumber: part.partNumber,
+          description: part.description,
+          qty: part.qty,
+          leadTime: part.leadTime,
+          price: part.price
+        })),
+        pOTax: {
+          taxRate: percentageValue || 0,
+          isIncluded: true
+        },
+        airCargoToX: {
+          airCargoToX: subTotalValues[1] || 0,
+          isIncluded: checkedStates[1] || false
+        },
+        sealineToX: {
+          sealineToX: subTotalValues[2] || 0,
+          isIncluded: checkedStates[2] || false
+        },
+        truckCarriageToX: {
+          truckCarriageToX: subTotalValues[3] || 0,
+          isIncluded: checkedStates[3] || false
+        }
       };
-      setBase64Files(prevFiles => [...prevFiles, pdfFile]);
+
+      const response = await sendQuoteEmail(payload);
+      if (response && response.statusCode === 200) {
+        setFrom(response.data.from);
+        setIsSendEmailSuccess(true);
+      } else {
+        setIsSendEmailSuccess(false);
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      setIsSendEmailSuccess(false);
+    } finally {
+      setEmailSendLoading(false);
     }
-    // Sadece base64Pdf, base64PdfFileName veya isPdfConvertedToBase64 değiştiğinde çalışsın
-    // base64Files'ı bağımlılığa eklemiyoruz, yoksa sonsuz döngü olur!
-    // eslint-disable-next-line
-  }, [base64Pdf, base64PdfFileName, isPdfConvertedToBase64]);
+  };
 
   return (
     <MailProvider>
@@ -392,8 +373,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                       emailProps={emailProps}
                       quoteNumberId={quoteWizardData.quoteNumberId}
                       rfqNumberId={quoteWizardData.rfqNumberId}
-                      isSendEmailSuccess={isSendEmailSuccess}
                       from={from}
+                      isSendEmailSuccess={isSendEmailSuccess}
                       handleSendQuoteEmail={handleSendQuoteEmail}
                       isEmailSendLoading={isEmailSendLoading}
                     />
@@ -416,4 +397,4 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   );
 };
 
-export default WizardTabs;
+export default POWizardTabs;
