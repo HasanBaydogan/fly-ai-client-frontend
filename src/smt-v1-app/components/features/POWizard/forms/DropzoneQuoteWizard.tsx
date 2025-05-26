@@ -204,13 +204,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
   }, [uploadedFiles]);
 
   return (
-    <div className="pt-5">
-      <Dropzone
+    <div className="">
+      {/* <Dropzone
         onDrop={handleDrop}
         className={
           styles.suppliercreatezoneattachmentsdropzonefileuploadcontainer
         }
-      />
+      /> */}
       {errorMessage && <div className="text-danger mt-2">{errorMessage}</div>}
       <div className="mt-3">
         {uploadedFiles.map((file, index) => (

@@ -109,6 +109,8 @@ interface WizardSendMailFormProps {
     validityDay: number;
     selectedBank: any;
   };
+  // New prop for checkbox validation
+  onSupplierSelectionChange?: (allSelected: boolean) => void;
 }
 
 const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
@@ -127,7 +129,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
   subTotalValues,
   selectedDate,
   checkedStates,
-  setupOtherProps
+  setupOtherProps,
+  // New prop for checkbox validation
+  onSupplierSelectionChange
 }) => {
   // State for loading and fetched params
   const [isLoading, setIsLoading] = useState(true);
@@ -149,6 +153,12 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
   const [supplierPdfs, setSupplierPdfs] = useState<{
     [key: string]: { name: string; base64: string };
   }>({});
+
+  // State for supplier checkboxes
+  const [supplierChecked, setSupplierChecked] = useState<boolean[]>([]);
+
+  // State for supplier PDF generation loading
+  const [supplierPdfLoading, setSupplierPdfLoading] = useState<boolean[]>([]);
 
   // Fetch pre-email parameters
   useEffect(() => {
@@ -185,6 +195,12 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         setBccList(validatedParams.map(p => p.bccEmails || []));
         setSubjectList(validatedParams.map(p => p.subject || ''));
         setBodyList(validatedParams.map(p => p.body || ''));
+
+        // Initialize supplier checkboxes (all unchecked initially)
+        setSupplierChecked(new Array(validatedParams.length).fill(false));
+
+        // Initialize supplier PDF loading states (all false initially)
+        setSupplierPdfLoading(new Array(validatedParams.length).fill(false));
       } catch (e) {
         console.error('Error fetching pre-email params', e);
         setError('Error loading email parameters');
@@ -211,9 +227,104 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     updated[currentIndex] = labels;
     setList(updated);
 
+    // If this is for To emails and we just added emails, clear any related error
+    if (list === toList && labels.length > 0) {
+      // Clear error if it was about missing To emails for current supplier
+      if (
+        error &&
+        error.includes(preEmailParams[currentIndex]?.poSupplier?.supplier)
+      ) {
+        setError('');
+      }
+    }
+
     // Update parent component state for To emails
     if (list === toList) {
+      console.log(
+        'Updating email requests with current base64Files:',
+        base64Files
+      );
+
       // Create an array of email requests for each supplier
+      const emailRequests = preEmailParams.map((param, idx) => {
+        // Get all attachments for this email
+        const attachments = base64Files.map(file => ({
+          filename: file.name.includes('-') ? `${poNumberId}.pdf` : file.name,
+          data: file.base64
+        }));
+
+        console.log(
+          `Creating email request ${idx} with attachments:`,
+          attachments
+        );
+
+        return {
+          to: toList[idx] || [],
+          cc: ccList[idx] || [],
+          subject: subjectList[idx] || '',
+          body: bodyList[idx] || '',
+          attachments
+        };
+      });
+
+      console.log('Setting new email requests:', emailRequests);
+      emailProps.setToEmails(emailRequests);
+    }
+  };
+
+  const handleGeneratePDF = async () => {
+    await generatePDFForSupplier(currentIndex);
+  };
+
+  // Update the supplier change handler to maintain email requests
+  const handleSupplierChange = (idx: number) => {
+    setCurrentIndex(idx);
+    const currentParam = preEmailParams[idx];
+
+    if (currentParam && supplierPdfs[currentParam.poSupplier.supplierId]) {
+      // Sadece seçili supplier'ın PDF'i ile yeni bir dosya listesi oluştur
+      const onlyCurrentSupplierPdf = [
+        supplierPdfs[currentParam.poSupplier.supplierId]
+      ];
+
+      console.log(
+        'Switching to supplier PDF:',
+        currentParam.poSupplier.supplier
+      );
+      console.log(
+        'Final files:',
+        onlyCurrentSupplierPdf.map(f => f.name)
+      );
+
+      onFilesUpload(onlyCurrentSupplierPdf);
+      emailProps.setBase64Files(onlyCurrentSupplierPdf);
+
+      // Update email requests when switching suppliers
+      const emailRequests = preEmailParams.map((param, index) => ({
+        to: toList[index] || [],
+        cc: ccList[index] || [],
+        subject: subjectList[index] || '',
+        body: bodyList[index] || '',
+        attachments: supplierPdfs[param.poSupplier.supplierId]
+          ? [
+              {
+                filename: `${poNumberId}.pdf`,
+                data: supplierPdfs[param.poSupplier.supplierId].base64
+              }
+            ]
+          : []
+      }));
+      emailProps.setToEmails(emailRequests);
+    } else {
+      // Eğer PDF yoksa dropzone'u boşalt
+      onFilesUpload([]);
+      emailProps.setBase64Files([]);
+    }
+  };
+
+  // Update useEffect to initialize email requests when preEmailParams changes
+  useEffect(() => {
+    if (preEmailParams.length > 0) {
       const emailRequests = preEmailParams.map((param, idx) => ({
         to: toList[idx] || [],
         cc: ccList[idx] || [],
@@ -222,7 +333,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         attachments: supplierPdfs[param.poSupplier.supplierId]
           ? [
               {
-                filename: supplierPdfs[param.poSupplier.supplierId].name,
+                filename: `${poNumberId}.pdf`,
                 data: supplierPdfs[param.poSupplier.supplierId].base64
               }
             ]
@@ -230,12 +341,54 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
       }));
       emailProps.setToEmails(emailRequests);
     }
+  }, [preEmailParams, toList, ccList, subjectList, bodyList, supplierPdfs]);
+
+  // Notify parent about supplier selection changes
+  useEffect(() => {
+    if (onSupplierSelectionChange && supplierChecked.length > 0) {
+      // Check if all suppliers have To emails and are selected
+      const allValid = preEmailParams.every((param, idx) => {
+        const hasToEmails = toList[idx] && toList[idx].length > 0;
+        const isChecked = supplierChecked[idx];
+        return hasToEmails && isChecked;
+      });
+      onSupplierSelectionChange(allValid);
+    }
+  }, [supplierChecked, toList, onSupplierSelectionChange, preEmailParams]);
+
+  // Handle supplier checkbox change
+  const handleSupplierCheckboxChange = async (
+    index: number,
+    checked: boolean
+  ) => {
+    // Check if To field is empty when trying to check the checkbox
+    if (checked && (!toList[index] || toList[index].length === 0)) {
+      setError(
+        `Please add at least one recipient email for ${preEmailParams[index].poSupplier.supplier} before selecting this supplier.`
+      );
+      return;
+    }
+
+    const updatedChecked = [...supplierChecked];
+    updatedChecked[index] = checked;
+    setSupplierChecked(updatedChecked);
+
+    // If checking the checkbox, automatically generate PDF for this supplier
+    if (checked) {
+      await generatePDFForSupplier(index);
+    }
   };
 
-  const handleGeneratePDF = async () => {
+  // Generate PDF for specific supplier
+  const generatePDFForSupplier = async (supplierIndex: number) => {
+    // Set loading state for this supplier
+    const updatedLoading = [...supplierPdfLoading];
+    updatedLoading[supplierIndex] = true;
+    setSupplierPdfLoading(updatedLoading);
+
     try {
-      console.log('Generate PDF started');
-      const currentParam = preEmailParams[currentIndex];
+      console.log(`Generate PDF started for supplier index: ${supplierIndex}`);
+      const currentParam = preEmailParams[supplierIndex];
       console.log('Current Param:', currentParam);
 
       if (!currentParam) {
@@ -306,7 +459,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
           attachments: supplierPdfs[param.poSupplier.supplierId]
             ? [
                 {
-                  filename: supplierPdfs[param.poSupplier.supplierId].name,
+                  filename: `${poNumberId}.pdf`,
                   data: supplierPdfs[param.poSupplier.supplierId].base64
                 }
               ]
@@ -314,111 +467,29 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         }));
         emailProps.setToEmails(emailRequests);
 
-        // Mevcut dosyaları koru ve yeni PDF'i ekle
-        const updatedFiles = [...base64Files];
+        // Show PDF in dropzone only if this is the current supplier
+        if (supplierIndex === currentIndex) {
+          const onlyCurrentSupplierPdf = [pdfFile];
+          onFilesUpload(onlyCurrentSupplierPdf);
+          emailProps.setBase64Files(onlyCurrentSupplierPdf);
+        }
+
         console.log(
-          'Current files in dropzone:',
-          updatedFiles.map(f => f.name)
+          `PDF generation completed for supplier: ${currentParam.poSupplier.supplier}`
         );
-
-        // Diğer supplier'ların PDF'lerini kaldır
-        const filteredFiles = updatedFiles.filter(
-          file => !file.name.includes(poNumberId) || file.name === pdfFile.name
-        );
-        console.log(
-          'Files after filtering:',
-          filteredFiles.map(f => f.name)
-        );
-
-        // Yeni PDF'i ekle
-        const finalFiles = [...filteredFiles, pdfFile];
-        console.log(
-          'Final files to upload:',
-          finalFiles.map(f => f.name)
-        );
-
-        // Dropzone'ı güncelle
-        onFilesUpload(finalFiles);
-        console.log('onFilesUpload called with new files');
-
-        // State'i güncelle
-        emailProps.setBase64Files(finalFiles);
-        console.log('base64Files state updated');
       } else {
         console.error('No PDF response received');
       }
     } catch (error) {
-      console.error('Error in handleGeneratePDF:', error);
+      console.error('Error in generatePDFForSupplier:', error);
       setError('Error generating PDF preview');
+    } finally {
+      // Clear loading state for this supplier
+      const updatedLoading = [...supplierPdfLoading];
+      updatedLoading[supplierIndex] = false;
+      setSupplierPdfLoading(updatedLoading);
     }
   };
-
-  // Update the supplier change handler to maintain email requests
-  const handleSupplierChange = (idx: number) => {
-    setCurrentIndex(idx);
-    const currentParam = preEmailParams[idx];
-
-    if (currentParam && supplierPdfs[currentParam.poSupplier.supplierId]) {
-      // Sadece seçili supplier'ın PDF'i ile yeni bir dosya listesi oluştur
-      const onlyCurrentSupplierPdf = [
-        supplierPdfs[currentParam.poSupplier.supplierId]
-      ];
-
-      console.log(
-        'Switching to supplier PDF:',
-        currentParam.poSupplier.supplier
-      );
-      console.log(
-        'Final files:',
-        onlyCurrentSupplierPdf.map(f => f.name)
-      );
-
-      onFilesUpload(onlyCurrentSupplierPdf);
-      emailProps.setBase64Files(onlyCurrentSupplierPdf);
-
-      // Update email requests when switching suppliers
-      const emailRequests = preEmailParams.map((param, index) => ({
-        to: toList[index] || [],
-        cc: ccList[index] || [],
-        subject: subjectList[index] || '',
-        body: bodyList[index] || '',
-        attachments: supplierPdfs[param.poSupplier.supplierId]
-          ? [
-              {
-                filename: supplierPdfs[param.poSupplier.supplierId].name,
-                data: supplierPdfs[param.poSupplier.supplierId].base64
-              }
-            ]
-          : []
-      }));
-      emailProps.setToEmails(emailRequests);
-    } else {
-      // Eğer PDF yoksa dropzone'u boşalt
-      onFilesUpload([]);
-      emailProps.setBase64Files([]);
-    }
-  };
-
-  // Update useEffect to initialize email requests when preEmailParams changes
-  useEffect(() => {
-    if (preEmailParams.length > 0) {
-      const emailRequests = preEmailParams.map((param, idx) => ({
-        to: toList[idx] || [],
-        cc: ccList[idx] || [],
-        subject: subjectList[idx] || '',
-        body: bodyList[idx] || '',
-        attachments: supplierPdfs[param.poSupplier.supplierId]
-          ? [
-              {
-                filename: supplierPdfs[param.poSupplier.supplierId].name,
-                data: supplierPdfs[param.poSupplier.supplierId].base64
-              }
-            ]
-          : []
-      }));
-      emailProps.setToEmails(emailRequests);
-    }
-  }, [preEmailParams, toList, ccList, subjectList, bodyList, supplierPdfs]);
 
   if (isLoading) return <LoadingAnimation />;
 
@@ -427,16 +498,101 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
       {/* Supplier tabs */}
       {preEmailParams.length > 1 && (
         <Row className="mb-3">
-          {preEmailParams.map((p, idx) => (
-            <Col key={p.poSupplier.supplierId} xs="auto">
-              <Button
-                variant={currentIndex === idx ? 'primary' : 'outline-primary'}
-                onClick={() => handleSupplierChange(idx)}
-              >
-                {p.poSupplier.supplier}
-              </Button>
-            </Col>
-          ))}
+          {preEmailParams.map((p, idx) => {
+            const hasToEmails = toList[idx] && toList[idx].length > 0;
+            return (
+              <Col key={p.poSupplier.supplierId} xs="auto">
+                <div className="d-flex align-items-center gap-2">
+                  <div className="position-relative">
+                    <Form.Check
+                      type="checkbox"
+                      id={`supplier-checkbox-${idx}`}
+                      checked={supplierChecked[idx] || false}
+                      disabled={supplierPdfLoading[idx] || !hasToEmails}
+                      onChange={e =>
+                        handleSupplierCheckboxChange(idx, e.target.checked)
+                      }
+                    />
+                    {supplierPdfLoading[idx] && (
+                      <div className="position-absolute top-50 start-50 translate-middle">
+                        <LoadingAnimation />
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    variant={
+                      currentIndex === idx ? 'primary' : 'outline-primary'
+                    }
+                    onClick={() => handleSupplierChange(idx)}
+                    className="d-flex align-items-center gap-1"
+                  >
+                    {p.poSupplier.supplier}
+                    {!hasToEmails && (
+                      <span
+                        className="badge bg-warning text-dark ms-1"
+                        title="To field required"
+                      >
+                        To Required
+                      </span>
+                    )}
+                    {supplierPdfs[p.poSupplier.supplierId] && (
+                      <FontAwesomeIcon
+                        icon={faFileLines}
+                        className="text-success"
+                      />
+                    )}
+                  </Button>
+                </div>
+              </Col>
+            );
+          })}
+        </Row>
+      )}
+
+      {/* If there's only one supplier, show checkbox separately */}
+      {preEmailParams.length === 1 && (
+        <Row className="mb-3">
+          <Col xs="auto">
+            <div className="d-flex align-items-center gap-2">
+              <div className="position-relative">
+                <Form.Check
+                  type="checkbox"
+                  id="single-supplier-checkbox"
+                  checked={supplierChecked[0] || false}
+                  disabled={
+                    supplierPdfLoading[0] ||
+                    !toList[0] ||
+                    toList[0].length === 0
+                  }
+                  onChange={e =>
+                    handleSupplierCheckboxChange(0, e.target.checked)
+                  }
+                />
+                {supplierPdfLoading[0] && (
+                  <div className="position-absolute top-50 start-50 translate-middle">
+                    <LoadingAnimation />
+                  </div>
+                )}
+              </div>
+              <span className="fw-bold d-flex align-items-center gap-1">
+                {preEmailParams[0].poSupplier.supplier}
+                {(!toList[0] || toList[0].length === 0) && (
+                  <span
+                    className="badge bg-warning text-dark ms-1"
+                    title="To field required"
+                  >
+                    To Required
+                  </span>
+                )}
+                {supplierPdfs[preEmailParams[0].poSupplier.supplierId] && (
+                  <FontAwesomeIcon
+                    icon={faFileLines}
+                    className="text-success"
+                  />
+                )}
+              </span>
+            </div>
+          </Col>
         </Row>
       )}
 
@@ -517,11 +673,12 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                 onChange={e => {
                   const updated = [...subjectList];
                   updated[currentIndex] = e.target.value;
+                  setSubjectList(updated);
                   emailProps.setSubject(updated[currentIndex]);
                 }}
               />
             </Col>
-            <Col xs="auto">
+            {/* <Col xs="auto">
               <Button
                 variant="primary"
                 className="ms-2"
@@ -530,7 +687,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                 <FontAwesomeIcon icon={faFileLines} className="me-1" />
                 Generate
               </Button>
-            </Col>
+            </Col>*/}
           </Row>
         </Form.Group>
 
@@ -560,6 +717,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
             onChange={text => {
               const updated = [...bodyList];
               updated[currentIndex] = text;
+              setBodyList(updated);
               emailProps.setContent(updated[currentIndex]);
             }}
           />

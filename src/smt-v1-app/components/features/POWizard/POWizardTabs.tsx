@@ -23,6 +23,7 @@ import { sendQuoteEmail, POEmailProps } from 'smt-v1-app/services/PoServices';
 import { SendEmailProps } from './forms/WizardSendMailForm';
 import { bo } from '@fullcalendar/core/internal-common';
 import { getPreEmailSendingParameters } from 'smt-v1-app/services/PoServices';
+import { returnPdfAsBase64String } from './forms/PDFGeneratorHelper';
 
 export interface partRequest {
   partId: string;
@@ -208,23 +209,38 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
 
   const [isEmailSendLoading, setEmailSendLoading] = useState(false);
   const [isSendEmailSuccess, setIsSendEmailSuccess] = useState(false);
+  const [allSuppliersSelected, setAllSuppliersSelected] = useState(false);
 
   const handleSendQuoteEmail = async () => {
     setEmailSendLoading(true);
     try {
+      console.log('Current base64Files:', base64Files);
+      console.log('Current toEmails:', toEmails);
+
       const payload: POEmailProps = {
-        poEmailRequests: toEmails.map(email => ({
-          to: email.to,
-          cc: email.cc,
-          subject: email.subject,
-          body: email.body,
-          attachments: email.attachments.map(attach => ({
-            filename: attach.filename.includes('-')
+        poEmailRequests: toEmails.map((email, emailIndex) => {
+          console.log('Processing email for recipients:', email.to);
+          console.log(
+            'Email attachments for this supplier:',
+            email.attachments
+          );
+
+          // Update attachment filenames to remove supplier names
+          const updatedAttachments = email.attachments.map(attachment => ({
+            filename: attachment.filename.includes('-')
               ? `${poResponseData.poNumberId}.pdf`
-              : attach.filename,
-            data: attach.data
-          }))
-        })),
+              : attachment.filename,
+            data: attachment.data
+          }));
+
+          return {
+            to: email.to,
+            cc: email.cc,
+            subject: email.subject,
+            body: email.body,
+            attachments: updatedAttachments
+          };
+        }),
         POId: poResponseData.poId,
         shipTo: setupOtherProps.shipTo,
         requisitoner: setupOtherProps.requisitioner,
@@ -258,6 +274,8 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
       };
 
       const response = await sendQuoteEmail(payload);
+      console.log('Email send response:', response);
+
       if (response && response.statusCode === 200) {
         setFrom(response.data.from);
         setIsSendEmailSuccess(true);
@@ -269,6 +287,113 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
       setIsSendEmailSuccess(false);
     } finally {
       setEmailSendLoading(false);
+    }
+  };
+
+  const handleNextStep = async () => {
+    if (poResponseData?.suppliers) {
+      // Keep existing files that were manually added (don't contain supplier name)
+      const existingManualFiles = base64Files.filter(
+        file => !file.name.includes('-')
+      );
+      const newBase64Files: { name: string; base64: string }[] = [
+        ...existingManualFiles
+      ];
+
+      // Store supplier-specific PDFs mapping
+      const supplierPdfMap: {
+        [supplierName: string]: { name: string; base64: string };
+      } = {};
+
+      for (const supplier of poResponseData.suppliers) {
+        try {
+          const base64String = await returnPdfAsBase64String(
+            quoteWizardData.quoteWizardSetting,
+            selectedDate,
+            poResponseData.poNumberId,
+            currency,
+            quotePartRows.filter(
+              part => part.poPartSuppliers?.supplier === supplier.supplier
+            ),
+            subTotalValues,
+            checkedStates,
+            setupOtherProps.clientLocation,
+            setupOtherProps.shipTo,
+            setupOtherProps.requisitioner,
+            setupOtherProps.shipVia,
+            setupOtherProps.fob,
+            setupOtherProps.shippingTerms,
+            setupOtherProps.contractNo,
+            setupOtherProps.isInternational,
+            setupOtherProps.validityDay,
+            setupOtherProps.selectedBank,
+            taxAmount,
+            percentageValue,
+            supplier
+          );
+
+          if (base64String) {
+            const pdfFile = {
+              name: `${poResponseData.poNumberId}-${supplier.supplier}.pdf`,
+              base64: base64String
+            };
+            newBase64Files.push(pdfFile);
+            supplierPdfMap[supplier.supplier] = pdfFile;
+          }
+        } catch (error) {
+          console.error(
+            `Error generating PDF for supplier ${supplier.supplier}:`,
+            error
+          );
+        }
+      }
+
+      // Update state with both manual and generated PDFs
+      setBase64Files(newBase64Files);
+
+      // Update toEmails with supplier-specific attachments
+      const updatedToEmails = toEmails.map((email, emailIndex) => {
+        // Get the corresponding supplier for this email from preEmailParams
+        const correspondingSupplier =
+          preEmailParams[emailIndex]?.poSupplier?.supplier;
+
+        if (!correspondingSupplier) {
+          console.warn(`No supplier found for email index ${emailIndex}`);
+          return {
+            ...email,
+            attachments: existingManualFiles.map(file => ({
+              filename: file.name,
+              data: file.base64
+            }))
+          };
+        }
+
+        // Create attachments array for this specific supplier
+        const emailAttachments = [];
+
+        // Add manual files (common to all suppliers)
+        existingManualFiles.forEach(file => {
+          emailAttachments.push({
+            filename: file.name,
+            data: file.base64
+          });
+        });
+
+        // Add supplier-specific PDF
+        if (supplierPdfMap[correspondingSupplier]) {
+          emailAttachments.push({
+            filename: `${poResponseData.poNumberId}.pdf`,
+            data: supplierPdfMap[correspondingSupplier].base64
+          });
+        }
+
+        return {
+          ...email,
+          attachments: emailAttachments
+        };
+      });
+
+      setToEmails(updatedToEmails);
     }
   };
 
@@ -363,6 +488,7 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
                         validityDay,
                         selectedBank
                       }}
+                      onSupplierSelectionChange={setAllSuppliersSelected}
                     />
                   }
                 </WizardForm>
@@ -379,6 +505,10 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
                       isSendEmailSuccess={isSendEmailSuccess}
                       handleSendQuoteEmail={handleSendQuoteEmail}
                       isEmailSendLoading={isEmailSendLoading}
+                      supplierNames={preEmailParams.map(
+                        param =>
+                          param.poSupplier?.supplier || 'Unknown Supplier'
+                      )}
                     />
                   }
                 </WizardForm>
@@ -390,7 +520,8 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
               handleSendQuoteEmail={handleSendQuoteEmail}
               isEmailSendLoading={isEmailSendLoading}
               setEmailSendLoading={setEmailSendLoading}
-              // onClose={onClose}
+              onNextStep={handleNextStep}
+              allSuppliersSelected={allSuppliersSelected}
             />
           </Card.Footer>
         </Card>
