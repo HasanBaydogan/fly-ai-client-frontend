@@ -214,16 +214,16 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
   const handleSendQuoteEmail = async () => {
     setEmailSendLoading(true);
     try {
-      console.log('Current base64Files:', base64Files);
-      console.log('Current toEmails:', toEmails);
+      // console.log('Current base64Files:', base64Files);
+      // console.log('Current toEmails:', toEmails);
 
       const payload: POEmailProps = {
         poEmailRequests: toEmails.map((email, emailIndex) => {
-          console.log('Processing email for recipients:', email.to);
-          console.log(
-            'Email attachments for this supplier:',
-            email.attachments
-          );
+          // console.log('Processing email for recipients:', email.to);
+          // console.log(
+          //   'Email attachments for this supplier:',
+          //   email.attachments
+          // );
 
           // Update attachment filenames to remove supplier names
           const updatedAttachments = email.attachments.map(attachment => ({
@@ -274,7 +274,7 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
       };
 
       const response = await sendQuoteEmail(payload);
-      console.log('Email send response:', response);
+      // console.log('Email send response:', response);
 
       if (response && response.statusCode === 200) {
         setFrom(response.data.from);

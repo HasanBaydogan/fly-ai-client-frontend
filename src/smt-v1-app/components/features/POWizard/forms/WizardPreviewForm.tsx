@@ -100,7 +100,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
 
   const handleGeneratePDF = async () => {
     try {
-      console.log('Starting PDF generation...');
+      // console.log('Starting PDF generation...');
       setIsPdfConvertedToBase64(true);
 
       // Generate PDF and get base64 string in one step
@@ -128,7 +128,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
       );
 
       if (base64String) {
-        console.log('Setting PDF states...');
+        //   console.log('Setting PDF states...');
         setBase64Pdf(base64String);
         setBase64PdfFileName(`PO_${quoteNumber}.pdf`);
 
@@ -152,7 +152,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
       }
 
       setIsPdfConvertedToBase64(false);
-      console.log('PDF process completed');
+      // console.log('PDF process completed');
     } catch (error) {
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
       setIsPdfConvertedToBase64(false);
