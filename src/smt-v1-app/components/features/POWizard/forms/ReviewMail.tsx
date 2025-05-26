@@ -36,17 +36,44 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
     const allAttachments = [];
     const seenFilenames = new Set();
 
-    toEmails.forEach(email => {
-      email.attachments.forEach(attachment => {
-        // Use filename as key to avoid duplicates
-        if (!seenFilenames.has(attachment.filename)) {
-          seenFilenames.add(attachment.filename);
+    // First collect attachments from base64Files
+    if (base64Files && base64Files.length > 0) {
+      base64Files.forEach(file => {
+        // Format the filename to include supplier name if it's not already included
+        const formattedName = file.name.includes('-')
+          ? file.name
+          : `PO_${quoteNumberId}-${supplierNames[0] || 'Supplier'}.pdf`;
+
+        if (!seenFilenames.has(formattedName)) {
+          seenFilenames.add(formattedName);
           allAttachments.push({
-            name: attachment.filename,
-            base64: attachment.data
+            name: formattedName,
+            base64: file.base64
           });
         }
       });
+    }
+
+    // Then collect attachments from toEmails
+    toEmails.forEach((email, index) => {
+      if (email.attachments && email.attachments.length > 0) {
+        email.attachments.forEach(attachment => {
+          // Format the filename to include supplier name if it's not already included
+          const formattedName = attachment.filename.includes('-')
+            ? attachment.filename
+            : `PO_${quoteNumberId}-${
+                supplierNames[index] || `Supplier ${index + 1}`
+              }.pdf`;
+
+          if (!seenFilenames.has(formattedName)) {
+            seenFilenames.add(formattedName);
+            allAttachments.push({
+              name: formattedName,
+              base64: attachment.data
+            });
+          }
+        });
+      }
     });
 
     return allAttachments;

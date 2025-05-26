@@ -167,26 +167,35 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         const response = await getPreEmailSendingParameters(poId);
         const params: PreEmailParam[] = response.data.preEmailParameters;
 
-        // Ensure each param has the required settings
-        const validatedParams = params.map(param => ({
-          ...param,
-          settings: param.settings || {
-            logo: '',
-            addressRow1: '',
-            addressRow2: '',
-            mobilePhone: '',
-            commentsSpecialInstruction: '',
-            contactInfo: '',
-            companyName: '',
-            companyAddress: '',
-            companyPhone: '',
-            companyEmail: '',
-            companyWebsite: '',
-            companyTelephone: '',
-            otherQuoteValues: [],
-            phone: ''
-          }
-        }));
+        // Filter out suppliers that have no parts
+        const suppliersWithParts = (quotePartRows || [])
+          .map(part => part.poPartSuppliers?.supplier)
+          .filter((supplier): supplier is string => !!supplier);
+
+        const uniqueSuppliers = [...new Set(suppliersWithParts)];
+
+        // Filter params to only include suppliers that have parts
+        const validatedParams = params
+          .filter(param => uniqueSuppliers.includes(param.poSupplier.supplier))
+          .map(param => ({
+            ...param,
+            settings: param.settings || {
+              logo: '',
+              addressRow1: '',
+              addressRow2: '',
+              mobilePhone: '',
+              commentsSpecialInstruction: '',
+              contactInfo: '',
+              companyName: '',
+              companyAddress: '',
+              companyPhone: '',
+              companyEmail: '',
+              companyWebsite: '',
+              companyTelephone: '',
+              otherQuoteValues: [],
+              phone: ''
+            }
+          }));
 
         setPreEmailParams(validatedParams);
         // initialize lists
@@ -209,7 +218,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
       }
     };
     fetchParams();
-  }, [poId]);
+  }, [poId, quotePartRows]);
 
   // Handle custom Typeahead change
   const handleTypeaheadChange = (
@@ -398,9 +407,9 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
       }
 
       // Seçili supplier'a ait parçaları filtrele
-      const supplierParts = quotePartRows.filter(
+      const supplierParts = (quotePartRows || []).filter(
         part =>
-          part.poPartSuppliers.supplier === currentParam.poSupplier.supplier
+          part.poPartSuppliers?.supplier === currentParam.poSupplier.supplier
       );
       console.log('Supplier parts:', supplierParts);
 
@@ -574,7 +583,10 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                   </div>
                 )}
               </div>
-              <span className="fw-bold d-flex align-items-center gap-1">
+              <Button
+                variant="primary"
+                className="d-flex align-items-center gap-1"
+              >
                 {preEmailParams[0].poSupplier.supplier}
                 {(!toList[0] || toList[0].length === 0) && (
                   <span
@@ -590,7 +602,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                     className="text-success"
                   />
                 )}
-              </span>
+              </Button>
             </div>
           </Col>
         </Row>
@@ -613,9 +625,13 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
             multiple
             allowNew
             newSelectionPrefix="Add email: "
-            options={toList[currentIndex].map(email => ({ label: email }))}
+            options={(toList[currentIndex] || []).map(email => ({
+              label: email
+            }))}
             placeholder="Add recipient emails"
-            selected={toList[currentIndex].map(email => ({ label: email }))}
+            selected={(toList[currentIndex] || []).map(email => ({
+              label: email
+            }))}
             onChange={(selected: TypeaheadOption[]) =>
               handleTypeaheadChange(selected, toList, setToList)
             }
@@ -631,9 +647,13 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
             multiple
             allowNew
             newSelectionPrefix="Add CC: "
-            options={ccList[currentIndex].map(email => ({ label: email }))}
+            options={(ccList[currentIndex] || []).map(email => ({
+              label: email
+            }))}
             placeholder="Add CC emails"
-            selected={ccList[currentIndex].map(email => ({ label: email }))}
+            selected={(ccList[currentIndex] || []).map(email => ({
+              label: email
+            }))}
             onChange={(selected: TypeaheadOption[]) =>
               handleTypeaheadChange(selected, ccList, setCcList)
             }
@@ -649,13 +669,13 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
             multiple
             allowNew
             newSelectionPrefix="Add BCC: "
-            options={
-              bccList[currentIndex]?.map(email => ({ label: email })) || []
-            }
+            options={(bccList[currentIndex] || []).map(email => ({
+              label: email
+            }))}
             placeholder="Add BCC emails"
-            selected={
-              bccList[currentIndex]?.map(email => ({ label: email })) || []
-            }
+            selected={(bccList[currentIndex] || []).map(email => ({
+              label: email
+            }))}
             onChange={(selected: TypeaheadOption[]) =>
               handleTypeaheadChange(selected, bccList, setBccList)
             }
@@ -669,7 +689,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
             <Col>
               <Form.Control
                 type="text"
-                value={subjectList[currentIndex]}
+                value={subjectList[currentIndex] || ''}
                 onChange={e => {
                   const updated = [...subjectList];
                   updated[currentIndex] = e.target.value;
@@ -678,16 +698,6 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
                 }}
               />
             </Col>
-            {/* <Col xs="auto">
-              <Button
-                variant="primary"
-                className="ms-2"
-                onClick={handleGeneratePDF}
-              >
-                <FontAwesomeIcon icon={faFileLines} className="me-1" />
-                Generate
-              </Button>
-            </Col>*/}
           </Row>
         </Form.Group>
 
@@ -713,7 +723,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         <Form.Group className="mb-3">
           <TinymceEditor
             options={{ height: '30rem' }}
-            value={bodyList[currentIndex]}
+            value={bodyList[currentIndex] || ''}
             onChange={text => {
               const updated = [...bodyList];
               updated[currentIndex] = text;

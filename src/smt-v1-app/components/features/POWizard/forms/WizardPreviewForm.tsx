@@ -71,7 +71,12 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
 }) => {
   const [currentVendorIndex, setCurrentVendorIndex] = useState(0);
 
-  const vendors = [...(poResponseData?.suppliers || [])];
+  // Filter out suppliers that have no parts
+  const vendors = [...(poResponseData?.suppliers || [])].filter(supplier =>
+    quotePartRows.some(
+      part => part.poPartSuppliers?.supplier === supplier.supplier
+    )
+  );
   const hasMultipleVendors = vendors.length > 1;
 
   // Get current vendor
