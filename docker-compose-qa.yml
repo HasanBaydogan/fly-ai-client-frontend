@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  react-app:
+    build:
+      context: .
+      dockerfile: Dockerfile-qa
+    ports:
+      - '80:80' # serve QA over HTTP only
+    restart: always
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - NODE_ENV=qa
+    networks:
+      - app-network
+    labels:
+      com.example.service: 'react-app-qa'
+
+networks:
+  app-network:
+    driver: bridge
