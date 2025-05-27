@@ -523,9 +523,6 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     className="p-2 text-center"
                     style={{ fontSize: '14px', padding: '15px' }}
                   >
-                    <p>
-                      If you have any questions about this form, please contact:
-                    </p>
                     {settings.companyName}
                     <br />
                     {settings.companyAddress}
