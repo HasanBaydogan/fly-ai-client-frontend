@@ -198,7 +198,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   // Calculate sub-total
   const calculateSubTotal = () => {
-    return quotePartRows.reduce((acc, row) => acc + row.qty * row.price, 0);
+    return (quotePartRows || []).reduce(
+      (acc, row) => acc + row.qty * row.price,
+      0
+    );
   };
 
   // Calculate tax amount based on percentage
@@ -430,7 +433,24 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   // Add function to handle row deletion
   const handleDeleteRow = (index: number) => {
-    const newRows = [...quotePartRows];
+    const rowToDelete = (quotePartRows || [])[index];
+    const supplier = rowToDelete.poPartSuppliers?.supplier;
+
+    // Check if this is the last part for this supplier
+    const remainingPartsForSupplier = (quotePartRows || []).filter(
+      (row, idx) => idx !== index && row.poPartSuppliers?.supplier === supplier
+    );
+
+    // If this is the last part for the supplier, remove the supplier from poResponseData
+    if (remainingPartsForSupplier.length === 0 && poResponseData?.suppliers) {
+      const updatedSuppliers = poResponseData.suppliers.filter(
+        s => s.supplier !== supplier
+      );
+      poResponseData.suppliers = updatedSuppliers;
+    }
+
+    // Remove the row
+    const newRows = [...(quotePartRows || [])];
     newRows.splice(index, 1);
     setQuotePartRows(newRows);
   };
@@ -453,7 +473,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
         supplier: '-'
       }
     };
-    setQuotePartRows([...quotePartRows, newRow]);
+    setQuotePartRows([...(quotePartRows || []), newRow]);
   };
 
   return (
@@ -560,7 +580,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               SHIP VIA
             </td>
             <td className="text-white" style={{ width: '25%' }}>
-              FOB
+              TERMS OF PAYMENT
             </td>
             <td className="text-white" style={{ width: '25%' }}>
               SHIPPING TERMS
@@ -593,7 +613,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <div className="d-flex justify-content-center align-items-center">
                 <Form.Control
                   type="text"
-                  value={setupOtherProps.fob}
+                  value={'%100 Advance by US'}
+                  // value={setupOtherProps.fob}
                   onChange={e => setupOtherProps.setFob(e.target.value)}
                   style={{ width: '85%' }}
                 />
@@ -643,7 +664,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             </tr>
           </thead>
           <tbody>
-            {quotePartRows.map((row, index) => (
+            {(quotePartRows || []).map((row, index) => (
               <tr
                 key={`${row.id}-${index}`}
                 className="text-center align-middle"

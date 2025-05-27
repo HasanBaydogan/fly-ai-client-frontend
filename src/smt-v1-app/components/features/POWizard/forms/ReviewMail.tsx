@@ -14,6 +14,7 @@ interface ReviewMailProps {
   isSendEmailSuccess: boolean;
   handleSendQuoteEmail: () => void;
   isEmailSendLoading: boolean;
+  supplierNames?: string[]; // Add supplier names for better display
 }
 
 const ReviewMail: React.FC<ReviewMailProps> = ({
@@ -23,11 +24,62 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
   from,
   isSendEmailSuccess,
   handleSendQuoteEmail,
-  isEmailSendLoading
+  isEmailSendLoading,
+  supplierNames = []
 }) => {
   const navigate = useNavigate();
   const { toEmails, subject, ccEmails, bccEmails, content, base64Files } =
     emailProps;
+
+  // Collect all unique attachments from all supplier emails
+  const getAllAttachments = () => {
+    const allAttachments = [];
+    const seenFilenames = new Set();
+
+    // First collect attachments from base64Files
+    if (base64Files && base64Files.length > 0) {
+      base64Files.forEach(file => {
+        // Format the filename to include supplier name if it's not already included
+        const formattedName = file.name.includes('-')
+          ? file.name
+          : `PO_${quoteNumberId}-${supplierNames[0] || 'Supplier'}.pdf`;
+
+        if (!seenFilenames.has(formattedName)) {
+          seenFilenames.add(formattedName);
+          allAttachments.push({
+            name: formattedName,
+            base64: file.base64
+          });
+        }
+      });
+    }
+
+    // Then collect attachments from toEmails
+    toEmails.forEach((email, index) => {
+      if (email.attachments && email.attachments.length > 0) {
+        email.attachments.forEach(attachment => {
+          // Format the filename to include supplier name if it's not already included
+          const formattedName = attachment.filename.includes('-')
+            ? attachment.filename
+            : `PO_${quoteNumberId}-${
+                supplierNames[index] || `Supplier ${index + 1}`
+              }.pdf`;
+
+          if (!seenFilenames.has(formattedName)) {
+            seenFilenames.add(formattedName);
+            allAttachments.push({
+              name: formattedName,
+              base64: attachment.data
+            });
+          }
+        });
+      }
+    });
+
+    return allAttachments;
+  };
+
+  const allAttachments = getAllAttachments();
 
   return (
     <div className="p-4" style={{ position: 'relative' }}>
@@ -53,11 +105,21 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
           </p>
           <p>
             <strong>To:</strong>{' '}
-            {toEmails.length > 0 ? toEmails.join(', ') : 'Not Provided'}
+            {toEmails.length > 0
+              ? toEmails
+                  .flatMap(email => email.to)
+                  .filter((email, index, arr) => arr.indexOf(email) === index)
+                  .join(', ')
+              : 'Not Provided'}
           </p>
           <p>
             <strong>CC:</strong>{' '}
-            {ccEmails.length > 0 ? ccEmails.join(', ') : 'Not Provided'}
+            {toEmails.length > 0
+              ? toEmails
+                  .flatMap(email => email.cc)
+                  .filter((email, index, arr) => arr.indexOf(email) === index)
+                  .join(', ') || 'Not Provided'
+              : 'Not Provided'}
           </p>
           <p>
             <strong>BCC:</strong>{' '}
@@ -69,19 +131,44 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
           <p>
             <strong>RFQ ID:</strong> {rfqNumberId}
           </p>
-          <p>
-            <strong>Content:</strong>
-          </p>
-          <div
-            dangerouslySetInnerHTML={{
-              __html: content || '<p>Not Provided</p>'
-            }}
-          />
+
+          {/* Show subjects for each supplier if they differ */}
+          <div>
+            <strong>Subjects:</strong>
+            <ul>
+              {toEmails.map((email, index) => (
+                <li key={index}>
+                  <strong>
+                    {supplierNames[index] || `Supplier ${index + 1}`}:
+                  </strong>{' '}
+                  {email.subject || 'No subject'}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Show content for each supplier if they differ */}
+          <div>
+            <strong>Email Content:</strong>
+            {toEmails.map((email, index) => (
+              <div key={index} className="mb-3">
+                <h6>
+                  {supplierNames[index] || `Supplier ${index + 1}`} Content:
+                </h6>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: email.body || '<p>No content provided</p>'
+                  }}
+                  className="border p-2 rounded"
+                />
+              </div>
+            ))}
+          </div>
           <div>
             <strong>Attachments:</strong>
             <ul>
-              {base64Files.length > 0
-                ? base64Files.map((file, index) => {
+              {allAttachments.length > 0
+                ? allAttachments.map((file, index) => {
                     // Get MIME type based on file name extension.
                     const ext = file.name.split('.').pop()?.toLowerCase();
                     const mimeType =
@@ -95,17 +182,8 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
                         ? 'application/pdf'
                         : 'application/octet-stream';
 
-                    // Construct the data URL using the determined MIME type.
-                    const dataUrl = file.base64;
-                    const binary = atob(file.base64);
-                    const len = binary.length;
-                    const bytes = new Uint8Array(len);
-                    for (let i = 0; i < len; i++) {
-                      bytes[i] = binary.charCodeAt(i);
-                    }
-                    // Blob oluşturup geçici bir URL alıyoruz
-                    const blob = new Blob([bytes], { type: mimeType });
-                    const url = URL.createObjectURL(blob);
+                    // Use the base64 data directly
+                    const dataUrl = `data:${mimeType};base64,${file.base64}`;
 
                     return (
                       <li key={index}>
@@ -121,7 +199,7 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
                             />
                           </div>
                         )}
-                        <a href={url} download={file.name}>
+                        <a href={dataUrl} download={file.name}>
                           {file.name}
                         </a>
                       </li>

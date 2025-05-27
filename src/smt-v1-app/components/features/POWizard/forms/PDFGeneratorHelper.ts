@@ -57,7 +57,7 @@ export const generatePDF = async (
     pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(51, 102, 204);
-    pdf.text('PURCHASE ORDER', pageWidth - 140, 45);
+    pdf.text('PURCHASE ORDER', pageWidth - 140, 50);
 
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(0, 0, 0);
@@ -68,7 +68,7 @@ export const generatePDF = async (
     // Client info table
     autoTable(pdf, {
       ...tableSettings,
-      startY: 50,
+      startY: 55,
       head: [['VENDOR', 'SHIP TO']],
       body: [[currentVendor.supplier, shipTo]],
       theme: 'grid',
@@ -85,8 +85,10 @@ export const generatePDF = async (
     autoTable(pdf, {
       ...tableSettings,
       startY: (pdf as any).lastAutoTable?.finalY + 5,
-      head: [['REQUISITIONER', 'SHIP VIA', 'F.O.B.', 'SHIPPING TERMS']],
-      body: [[requisitioner, shipVia, fob, shippingTerms]],
+      head: [
+        ['REQUISITIONER', 'SHIP VIA', 'TERMS OF PAYMENT', 'SHIPPING TERMS']
+      ],
+      body: [[requisitioner, shipVia, '%100 Advance by US', shippingTerms]],
       theme: 'grid',
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
       styles: { halign: 'center', valign: 'middle' },
@@ -105,7 +107,7 @@ export const generatePDF = async (
       row.partNumber,
       row.description,
       row.qty,
-      `${row.leadTime} Days`,
+      row.leadTime >= 0 && row.leadTime <= 3 ? 'STOCK' : `${row.leadTime} Days`,
       row.price.toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
@@ -279,8 +281,7 @@ export const generatePDF = async (
     // Add contact information text
     pdf.setFontSize(9);
     pdf.setFont('helvetica', 'bold');
-    const contactText =
-      'If you have any questions about this form, please contact:';
+    const contactText = '';
     const contactTextWidth =
       (pdf.getStringUnitWidth(contactText) * pdf.internal.getFontSize()) /
       pdf.internal.scaleFactor;
@@ -422,7 +423,7 @@ export const returnPdfAsBase64String = async (
       // Convert PDF to base64 string
       const pdfBlob = pdf.output('blob');
       const reader = new FileReader();
-      
+
       return new Promise((resolve, reject) => {
         reader.onload = () => {
           const base64String = reader.result as string;

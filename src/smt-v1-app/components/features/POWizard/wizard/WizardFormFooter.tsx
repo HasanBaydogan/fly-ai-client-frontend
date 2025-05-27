@@ -16,7 +16,9 @@ const WizardFormFooter = ({
   handleSubmit,
   handleSendQuoteEmail,
   isEmailSendLoading,
-  setEmailSendLoading
+  setEmailSendLoading,
+  onNextStep,
+  allSuppliersSelected = true
 }: {
   className?: string;
   nextBtnLabel?: string;
@@ -25,6 +27,8 @@ const WizardFormFooter = ({
   handleSendQuoteEmail: () => void;
   isEmailSendLoading: boolean;
   setEmailSendLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  onNextStep?: () => Promise<void>;
+  allSuppliersSelected?: boolean;
 }) => {
   const { selectedStep, goToStep, getCanNextPage, getCanPreviousPage } =
     useWizardFormContext();
@@ -56,6 +60,9 @@ const WizardFormFooter = ({
               await handleSendQuoteEmail();
               goToStep(selectedStep + 1);
             } else {
+              if (selectedStep === 2 && onNextStep) {
+                await onNextStep();
+              }
               goToStep(selectedStep + 1);
             }
           } else {
@@ -64,7 +71,9 @@ const WizardFormFooter = ({
             }
           }
         }}
-        disabled={isEmailSendLoading}
+        disabled={
+          isEmailSendLoading || (selectedStep === 3 && !allSuppliersSelected)
+        }
       >
         {isEmailSendLoading ? (
           <LoadingAnimation />

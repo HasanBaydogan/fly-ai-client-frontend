@@ -71,7 +71,12 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
 }) => {
   const [currentVendorIndex, setCurrentVendorIndex] = useState(0);
 
-  const vendors = [...(poResponseData?.suppliers || [])];
+  // Filter out suppliers that have no parts
+  const vendors = [...(poResponseData?.suppliers || [])].filter(supplier =>
+    quotePartRows.some(
+      part => part.poPartSuppliers?.supplier === supplier.supplier
+    )
+  );
   const hasMultipleVendors = vendors.length > 1;
 
   // Get current vendor
@@ -95,7 +100,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
 
   const handleGeneratePDF = async () => {
     try {
-      console.log('Starting PDF generation...');
+      // console.log('Starting PDF generation...');
       setIsPdfConvertedToBase64(true);
 
       // Generate PDF and get base64 string in one step
@@ -123,9 +128,9 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
       );
 
       if (base64String) {
-        console.log('Setting PDF states...');
-        setBase64Pdf(base64String);
-        setBase64PdfFileName(`PO_${quoteNumber}.pdf`);
+        //   console.log('Setting PDF states...');
+        // setBase64Pdf(base64String);
+        // setBase64PdfFileName(`PO_${quoteNumber}.pdf`);
 
         // Open PDF in new tab
         const pdfWindow = window.open('', '_blank');
@@ -147,7 +152,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
       }
 
       setIsPdfConvertedToBase64(false);
-      console.log('PDF process completed');
+      // console.log('PDF process completed');
     } catch (error) {
       console.error('PDF oluşturma sırasında bir hata oluştu:', error);
       setIsPdfConvertedToBase64(false);
@@ -275,7 +280,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 SHIP VIA
               </td>
               <td className="text-white" style={{ width: '25%' }}>
-                FOB
+                TERMS OF PAYMENT
               </td>
               <td className="text-white" style={{ width: '25%' }}>
                 SHIPPING TERMS
@@ -297,11 +302,12 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 )}
               </td>
               <td style={{ width: '25%' }}>
-                {setupOtherProps.fob.trim() === '' ? (
+                %100 Advance by US
+                {/* {setupOtherProps.fob.trim() === '' ? (
                   <span>&nbsp;</span>
                 ) : (
                   setupOtherProps.fob
-                )}
+                )} */}
               </td>
               <td style={{ width: '25%' }}>
                 {setupOtherProps.shippingTerms.trim() === '' ? (
@@ -350,7 +356,11 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   <td>{row.description}</td>
                   <td>{row.poPartSuppliers?.supplier || 'N/A'}</td>
                   <td>{row.qty}</td>
-                  <td>{row.leadTime} Days</td>
+                  <td>
+                    {row.leadTime >= 0 && row.leadTime <= 3
+                      ? 'STOCK'
+                      : `${row.leadTime} Days`}
+                  </td>
                   <td>
                     {row.price.toLocaleString('en-US', {
                       style: 'currency',
@@ -513,9 +523,6 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     className="p-2 text-center"
                     style={{ fontSize: '14px', padding: '15px' }}
                   >
-                    <p>
-                      If you have any questions about this form, please contact:
-                    </p>
                     {settings.companyName}
                     <br />
                     {settings.companyAddress}

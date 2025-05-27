@@ -5,40 +5,39 @@ import React, {
   PropsWithChildren
 } from 'react';
 
-interface MailContextType {
+interface EmailRequest {
   to: string[];
   cc: string[];
-  bcc: string[];
   subject: string;
-  content: string;
-  attachments: File[];
+  body: string;
+  attachments: {
+    filename: string;
+    data: string;
+  }[];
+}
+
+interface MailContextType {
+  emailRequests: EmailRequest[];
+  setEmailRequests: React.Dispatch<React.SetStateAction<EmailRequest[]>>;
   quoteId: string;
   rfqId: string;
-  setMailData: (data: Partial<MailContextType>) => void;
+  setMailData: (data: Partial<Omit<MailContextType, 'setMailData'>>) => void;
 }
 
 const MailContext = createContext<MailContextType>({
-  to: [],
-  cc: [],
-  bcc: [],
-  subject: '',
-  content: '',
-  attachments: [],
+  emailRequests: [],
+  setEmailRequests: () => {},
   quoteId: '',
   rfqId: '',
   setMailData: () => {}
 });
 
 export const MailProvider: React.FC<PropsWithChildren> = ({ children }) => {
+  const [emailRequests, setEmailRequests] = useState<EmailRequest[]>([]);
   const [mailData, setMailData] = useState<
-    Omit<MailContextType, 'setMailData'>
+    Omit<MailContextType, 'setMailData' | 'setEmailRequests'>
   >({
-    to: [],
-    cc: [],
-    bcc: [],
-    subject: '',
-    content: '',
-    attachments: [],
+    emailRequests,
     quoteId: '',
     rfqId: ''
   });
@@ -50,7 +49,9 @@ export const MailProvider: React.FC<PropsWithChildren> = ({ children }) => {
   };
 
   return (
-    <MailContext.Provider value={{ ...mailData, setMailData: updateMailData }}>
+    <MailContext.Provider
+      value={{ ...mailData, setEmailRequests, setMailData: updateMailData }}
+    >
       {children}
     </MailContext.Provider>
   );

@@ -19,7 +19,11 @@ import {
 } from './POWizard';
 import WizardPreviewForm from './forms/WizardPreviewForm';
 import QuoteWizardNav from './wizard/POWizardNav';
-import { sendQuoteEmail } from 'smt-v1-app/services/PIServices';
+import { sendQuoteEmail, POEmailProps } from 'smt-v1-app/services/PoServices';
+import { SendEmailProps } from './forms/WizardSendMailForm';
+import { bo } from '@fullcalendar/core/internal-common';
+import { getPreEmailSendingParameters } from 'smt-v1-app/services/PoServices';
+import { returnPdfAsBase64String } from './forms/PDFGeneratorHelper';
 
 export interface partRequest {
   partId: string;
@@ -31,12 +35,14 @@ export interface partRequest {
   qty: number;
   unitPrice: number;
 }
+
 interface QuoteOtherValue {
   key: string;
   value: number;
 }
 
-interface WizardTabsProps {
+interface POWizardTabsProps {
+  poId: string;
   quoteWizardData: QuoteWizardData;
   currencies: string[];
   selectedParts: string[];
@@ -47,7 +53,8 @@ interface WizardTabsProps {
   onClose?: () => void;
 }
 
-const WizardTabs: React.FC<WizardTabsProps> = ({
+const POWizardTabs: React.FC<POWizardTabsProps> = ({
+  poId,
   quoteWizardData,
   currencies,
   selectedParts,
@@ -125,20 +132,61 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   const [base64Pdf, setBase64Pdf] = useState<string>('');
   const [base64PdfFileName, setBase64PdfFileName] = useState<string>('');
 
+  const [toEmails, setToEmails] = useState<
+    {
+      to: string[];
+      cc: string[];
+      subject: string;
+      body: string;
+      attachments: {
+        filename: string;
+        data: string;
+      }[];
+    }[]
+  >([]);
+  const [ccEmails, setCcEmails] = useState<string[]>([]);
+  const [bccEmails, setBccEmails] = useState<string[]>([]);
+  const [subject, setSubject] = useState('');
+  const [content, setContent] = useState('');
   const [base64Files, setBase64Files] = useState<
     { name: string; base64: string }[]
   >([]);
-
-  const [toEmails, setToEmails] = useState<string[]>([]);
-  const [ccEmails, setCcEmails] = useState<string[]>([]);
-  const [bccEmails, setBccEmails] = useState<string[]>([]);
-  const [subject, setSubject] = useState<string>('');
-  const [content, setContent] = useState<string>(defaultMailTemplate);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [inputValue, setInputValue] = useState<string>('');
+  const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPdfConvertedToBase64, setIsPdfConvertedToBase64] = useState(true);
+  const [preEmailParams, setPreEmailParams] = useState<any[]>([]);
   const [from, setFrom] = useState('');
+
+  // Fetch pre-email parameters
+  useEffect(() => {
+    const fetchParams = async () => {
+      try {
+        const response = await getPreEmailSendingParameters(poId);
+        const params = response.data.preEmailParameters || [];
+        setPreEmailParams(params);
+
+        // Initialize email requests
+        const emailRequests = params.map(param => ({
+          to: param.toEmails || [],
+          cc: param.ccEmails || [],
+          subject: param.subject || '',
+          body: param.body || '',
+          attachments: []
+        }));
+        setToEmails(emailRequests);
+      } catch (error) {
+        console.error('Error fetching pre-email parameters:', error);
+      }
+    };
+    fetchParams();
+  }, [poId]);
+
+  // Update base64Files when PDF changes
+  useEffect(() => {
+    if (base64Pdf && base64PdfFileName && !isPdfConvertedToBase64) {
+      setBase64Files([{ name: base64PdfFileName, base64: base64Pdf }]);
+    }
+  }, [base64Pdf, base64PdfFileName, isPdfConvertedToBase64]);
 
   const emailProps = {
     toEmails,
@@ -161,133 +209,193 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
 
   const [isEmailSendLoading, setEmailSendLoading] = useState(false);
   const [isSendEmailSuccess, setIsSendEmailSuccess] = useState(false);
+  const [allSuppliersSelected, setAllSuppliersSelected] = useState(false);
 
   const handleSendQuoteEmail = async () => {
     setEmailSendLoading(true);
-    const attachments: {
-      filename: string;
-      data: string;
-    }[] = base64Files.map(attach => {
-      return { filename: attach.name, data: attach.base64 };
-    });
-    //console.log(quotePartRows);
-    // const alreadySavedPart: partRow[] = quotePartRows.filter(
-    //   partRow => !partRow.alternativeTo.trim()
-    // );
-    // const partRequests: partRequest[] = alreadySavedPart.map(quotePart => {
-    //   return {
-    //     partId: quotePart.id,
-    //     partNumber: quotePart.partNumber,
-    //     quotePartName: quotePart.description,
-    //     leadTime: quotePart.leadTime,
-    //     qty: quotePart.qty,
-    //     unitPrice: quotePart.price
-    //   };
-    // });
+    try {
+      // console.log('Current base64Files:', base64Files);
+      // console.log('Current toEmails:', toEmails);
 
-    // const alreadySavedAlternativeQuotePart: partRow[] = quotePartRows.filter(
-    //   partRow => partRow.alternativeTo.trim()
-    // );
-    // const quoteAlternativePartRequests: partRequest[] =
-    //   alreadySavedAlternativeQuotePart.map(quotePart => {
-    //     return {
-    //       partId: quotePart.id,
-    //       partNumber: quotePart.partNumber,
-    //       quotePartName: quotePart.description,
-    //       reqCnd: quotePart.reqCondition,
-    //       fndCnd: quotePart.fndCondition,
-    //       leadTime: quotePart.leadTime,
-    //       qty: quotePart.qty,
-    //       unitPrice: quotePart.unitPrice
-    //     };
-    //   });
+      const payload: POEmailProps = {
+        poEmailRequests: toEmails.map((email, emailIndex) => {
+          // console.log('Processing email for recipients:', email.to);
+          // console.log(
+          //   'Email attachments for this supplier:',
+          //   email.attachments
+          // );
 
-    //console.log(partRequests);
-    //console.log(quoteAlternativePartRequests);
-    // console.log('xxx', piResponseData);
-    const payload = {
-      to: toEmails,
-      cc: ccEmails,
-      subject: subject,
-      attachments: attachments,
-      body: content,
-      PIId: piResponseData.piId,
-      // selectedPIParts: partRequests.map(part => ({
-      //   piPartId: part.partId,
-      //   partNumber: part.partNumber,
-      //   description: part.quotePartName,
-      //   qty: part.qty,
-      //   leadTime: part.leadTime,
-      //   unitPrice: part.unitPrice
-      // })),
-      clientLegalAddress: setupOtherProps.clientLocation,
-      contractNo: contractNo,
-      isInternational: isInternational,
-      paymentTerm: shippingTerms,
-      deliveryTerm: fob,
-      validityDay: validityDay,
-      bankDetail: {
-        bankName: piResponseData.allBanks[0].bankName,
-        branchName: piResponseData.allBanks[0].branchName,
-        branchCode: piResponseData.allBanks[0].branchCode,
-        swiftCode: piResponseData.allBanks[0].swiftCode,
-        ibanNo: piResponseData.allBanks[0].ibanNo,
-        currency: piResponseData.allBanks[0].currency
-      },
-      piTax: {
-        taxRate: percentageValue
-      },
-      airCargoToX: {
-        airCargoToX: subTotalValues[1],
-        isIncluded: checkedStates[1] || false
-      },
-      sealineToX: {
-        sealineToX: subTotalValues[2],
-        isIncluded: checkedStates[2] || false
-      },
-      truckCarriageToX: {
-        truckCarriageToX: subTotalValues[3],
-        isIncluded: checkedStates[3] || false
+          // Update attachment filenames to remove supplier names
+          const updatedAttachments = email.attachments.map(attachment => ({
+            filename: attachment.filename.includes('-')
+              ? `${poResponseData.poNumberId}.pdf`
+              : attachment.filename,
+            data: attachment.data
+          }));
+
+          return {
+            to: email.to,
+            cc: email.cc,
+            subject: email.subject,
+            body: email.body,
+            attachments: updatedAttachments
+          };
+        }),
+        POId: poResponseData.poId,
+        shipTo: setupOtherProps.shipTo,
+        requisitoner: setupOtherProps.requisitioner,
+        shipVia: setupOtherProps.shipVia,
+        fob: setupOtherProps.fob,
+        shippingTerms: setupOtherProps.shippingTerms,
+        selectedPOParts: quotePartRows.map(part => ({
+          poPartId: part.poPartId || part.id,
+          partNumber: part.partNumber,
+          description: part.description,
+          qty: part.qty,
+          leadTime: part.leadTime,
+          price: part.price
+        })),
+        pOTax: {
+          taxRate: percentageValue || 0,
+          isIncluded: true
+        },
+        airCargoToX: {
+          airCargoToX: subTotalValues[1] || 0,
+          isIncluded: checkedStates[1] || false
+        },
+        sealineToX: {
+          sealineToX: subTotalValues[2] || 0,
+          isIncluded: checkedStates[2] || false
+        },
+        truckCarriageToX: {
+          truckCarriageToX: subTotalValues[3] || 0,
+          isIncluded: checkedStates[3] || false
+        }
+      };
+
+      const response = await sendQuoteEmail(payload);
+      // console.log('Email send response:', response);
+
+      if (response && response.statusCode === 200) {
+        setFrom(response.data.from);
+        setIsSendEmailSuccess(true);
+      } else {
+        setIsSendEmailSuccess(false);
       }
-    };
-
-    // console.log('Sending payload:', payload);
-
-    const response = await sendQuoteEmail(payload);
-    // console.log('sendQuoteEmail', response);
-    if (response && response.statusCode === 200) {
-      setFrom(response.data.from);
-      setIsSendEmailSuccess(true);
-    } else {
-      // console.log(response);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      setIsSendEmailSuccess(false);
+    } finally {
+      setEmailSendLoading(false);
     }
-
-    setEmailSendLoading(false);
   };
 
-  useEffect(() => {
-    // PDF zaten ekli mi kontrol et
-    const alreadyExists = base64Files.some(
-      file => file.name === base64PdfFileName && file.base64 === base64Pdf
-    );
+  const handleNextStep = async () => {
+    if (poResponseData?.suppliers) {
+      // Keep existing files that were manually added (don't contain supplier name)
+      const existingManualFiles = base64Files.filter(
+        file => !file.name.includes('-')
+      );
+      const newBase64Files: { name: string; base64: string }[] = [
+        ...existingManualFiles
+      ];
 
-    if (
-      base64Pdf &&
-      base64PdfFileName &&
-      !isPdfConvertedToBase64 &&
-      !alreadyExists
-    ) {
-      console.log('Adding PDF to attachments');
-      const pdfFile = {
-        name: base64PdfFileName,
-        base64: base64Pdf
-      };
-      setBase64Files(prevFiles => [...prevFiles, pdfFile]);
+      // Store supplier-specific PDFs mapping
+      const supplierPdfMap: {
+        [supplierName: string]: { name: string; base64: string };
+      } = {};
+
+      for (const supplier of poResponseData.suppliers) {
+        try {
+          const base64String = await returnPdfAsBase64String(
+            quoteWizardData.quoteWizardSetting,
+            selectedDate,
+            poResponseData.poNumberId,
+            currency,
+            quotePartRows.filter(
+              part => part.poPartSuppliers?.supplier === supplier.supplier
+            ),
+            subTotalValues,
+            checkedStates,
+            setupOtherProps.clientLocation,
+            setupOtherProps.shipTo,
+            setupOtherProps.requisitioner,
+            setupOtherProps.shipVia,
+            setupOtherProps.fob,
+            setupOtherProps.shippingTerms,
+            setupOtherProps.contractNo,
+            setupOtherProps.isInternational,
+            setupOtherProps.validityDay,
+            setupOtherProps.selectedBank,
+            taxAmount,
+            percentageValue,
+            supplier
+          );
+
+          if (base64String) {
+            const pdfFile = {
+              name: `${poResponseData.poNumberId}-${supplier.supplier}.pdf`,
+              base64: base64String
+            };
+            newBase64Files.push(pdfFile);
+            supplierPdfMap[supplier.supplier] = pdfFile;
+          }
+        } catch (error) {
+          console.error(
+            `Error generating PDF for supplier ${supplier.supplier}:`,
+            error
+          );
+        }
+      }
+
+      // Update state with both manual and generated PDFs
+      setBase64Files(newBase64Files);
+
+      // Update toEmails with supplier-specific attachments
+      const updatedToEmails = toEmails.map((email, emailIndex) => {
+        // Get the corresponding supplier for this email from preEmailParams
+        const correspondingSupplier =
+          preEmailParams[emailIndex]?.poSupplier?.supplier;
+
+        if (!correspondingSupplier) {
+          console.warn(`No supplier found for email index ${emailIndex}`);
+          return {
+            ...email,
+            attachments: existingManualFiles.map(file => ({
+              filename: file.name,
+              data: file.base64
+            }))
+          };
+        }
+
+        // Create attachments array for this specific supplier
+        const emailAttachments = [];
+
+        // Add manual files (common to all suppliers)
+        existingManualFiles.forEach(file => {
+          emailAttachments.push({
+            filename: file.name,
+            data: file.base64
+          });
+        });
+
+        // Add supplier-specific PDF
+        if (supplierPdfMap[correspondingSupplier]) {
+          emailAttachments.push({
+            filename: `${poResponseData.poNumberId}.pdf`,
+            data: supplierPdfMap[correspondingSupplier].base64
+          });
+        }
+
+        return {
+          ...email,
+          attachments: emailAttachments
+        };
+      });
+
+      setToEmails(updatedToEmails);
     }
-    // Sadece base64Pdf, base64PdfFileName veya isPdfConvertedToBase64 değiştiğinde çalışsın
-    // base64Files'ı bağımlılığa eklemiyoruz, yoksa sonsuz döngü olur!
-    // eslint-disable-next-line
-  }, [base64Pdf, base64PdfFileName, isPdfConvertedToBase64]);
+  };
 
   return (
     <MailProvider>
@@ -352,11 +460,35 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                 <WizardForm step={3}>
                   {
                     <WizardSendMailForm
-                      emailProps={emailProps}
-                      isPdfConvertedToBase64={isPdfConvertedToBase64}
+                      poId={poResponseData.poId}
+                      poNumberId={poResponseData.poNumberId}
                       base64Pdf={base64Pdf}
                       base64PdfFileName={base64PdfFileName}
-                      poId={poResponseData.poId}
+                      isPdfConvertedToBase64={isPdfConvertedToBase64}
+                      onFilesUpload={files => {
+                        setBase64Files(files);
+                        setIsPdfConvertedToBase64(false);
+                      }}
+                      base64Files={base64Files}
+                      emailProps={emailProps}
+                      settings={quoteWizardData.quoteWizardSetting}
+                      quotePartRows={quotePartRows}
+                      subTotalValues={subTotalValues}
+                      selectedDate={selectedDate}
+                      checkedStates={checkedStates}
+                      setupOtherProps={{
+                        clientLocation,
+                        shipTo,
+                        requisitioner,
+                        shipVia,
+                        fob,
+                        shippingTerms,
+                        contractNo,
+                        isInternational,
+                        validityDay,
+                        selectedBank
+                      }}
+                      onSupplierSelectionChange={setAllSuppliersSelected}
                     />
                   }
                 </WizardForm>
@@ -369,10 +501,14 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                       emailProps={emailProps}
                       quoteNumberId={quoteWizardData.quoteNumberId}
                       rfqNumberId={quoteWizardData.rfqNumberId}
-                      isSendEmailSuccess={isSendEmailSuccess}
                       from={from}
+                      isSendEmailSuccess={isSendEmailSuccess}
                       handleSendQuoteEmail={handleSendQuoteEmail}
                       isEmailSendLoading={isEmailSendLoading}
+                      supplierNames={preEmailParams.map(
+                        param =>
+                          param.poSupplier?.supplier || 'Unknown Supplier'
+                      )}
                     />
                   }
                 </WizardForm>
@@ -384,7 +520,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
               handleSendQuoteEmail={handleSendQuoteEmail}
               isEmailSendLoading={isEmailSendLoading}
               setEmailSendLoading={setEmailSendLoading}
-              // onClose={onClose}
+              onNextStep={handleNextStep}
+              allSuppliersSelected={allSuppliersSelected}
             />
           </Card.Footer>
         </Card>
@@ -393,4 +530,4 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   );
 };
 
-export default WizardTabs;
+export default POWizardTabs;
