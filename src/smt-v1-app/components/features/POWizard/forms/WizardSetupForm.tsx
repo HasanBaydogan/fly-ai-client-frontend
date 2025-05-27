@@ -580,7 +580,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               SHIP VIA
             </td>
             <td className="text-white" style={{ width: '25%' }}>
-              FOB
+              TERMS OF PAYMENT
             </td>
             <td className="text-white" style={{ width: '25%' }}>
               SHIPPING TERMS
@@ -613,7 +613,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <div className="d-flex justify-content-center align-items-center">
                 <Form.Control
                   type="text"
-                  value={setupOtherProps.fob}
+                  value={'%100 Advance by US'}
+                  // value={setupOtherProps.fob}
                   onChange={e => setupOtherProps.setFob(e.target.value)}
                   style={{ width: '85%' }}
                 />

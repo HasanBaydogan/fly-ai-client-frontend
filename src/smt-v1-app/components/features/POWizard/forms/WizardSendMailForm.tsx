@@ -249,10 +249,10 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
 
     // Update parent component state for To emails
     if (list === toList) {
-      console.log(
-        'Updating email requests with current base64Files:',
-        base64Files
-      );
+      // console.log(
+      //   'Updating email requests with current base64Files:',
+      //   base64Files
+      // );
 
       // Create an array of email requests for each supplier
       const emailRequests = preEmailParams.map((param, idx) => {
@@ -262,10 +262,10 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
           data: file.base64
         }));
 
-        console.log(
-          `Creating email request ${idx} with attachments:`,
-          attachments
-        );
+        // console.log(
+        //   `Creating email request ${idx} with attachments:`,
+        //   attachments
+        // );
 
         return {
           to: toList[idx] || [],
@@ -276,7 +276,6 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         };
       });
 
-      console.log('Setting new email requests:', emailRequests);
       emailProps.setToEmails(emailRequests);
     }
   };
@@ -295,15 +294,6 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
       const onlyCurrentSupplierPdf = [
         supplierPdfs[currentParam.poSupplier.supplierId]
       ];
-
-      console.log(
-        'Switching to supplier PDF:',
-        currentParam.poSupplier.supplier
-      );
-      console.log(
-        'Final files:',
-        onlyCurrentSupplierPdf.map(f => f.name)
-      );
 
       onFilesUpload(onlyCurrentSupplierPdf);
       emailProps.setBase64Files(onlyCurrentSupplierPdf);
@@ -396,9 +386,7 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
     setSupplierPdfLoading(updatedLoading);
 
     try {
-      console.log(`Generate PDF started for supplier index: ${supplierIndex}`);
       const currentParam = preEmailParams[supplierIndex];
-      console.log('Current Param:', currentParam);
 
       if (!currentParam) {
         console.error('Missing data:', { currentParam });
@@ -411,16 +399,13 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         part =>
           part.poPartSuppliers?.supplier === currentParam.poSupplier.supplier
       );
-      console.log('Supplier parts:', supplierParts);
 
       // Seçili supplier'a ait toplam değerleri hesapla
       const supplierSubTotal = supplierParts.reduce(
         (acc, row) => acc + row.qty * row.price,
         0
       );
-      console.log('Supplier sub total:', supplierSubTotal);
 
-      console.log('Calling returnPdfAsBase64String with preview data');
       const response = await returnPdfAsBase64String(
         settings,
         selectedDate,
@@ -444,14 +429,11 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         currentParam.poSupplier
       );
 
-      console.log('PDF generation response received:', !!response);
-
       if (response) {
         const pdfFile = {
           name: `${poNumberId}-${currentParam.poSupplier.supplier}.pdf`,
           base64: response
         };
-        console.log('Created PDF file object:', pdfFile.name);
 
         // Supplier PDF'ini state'e kaydet
         setSupplierPdfs(prev => ({
@@ -482,10 +464,6 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
           onFilesUpload(onlyCurrentSupplierPdf);
           emailProps.setBase64Files(onlyCurrentSupplierPdf);
         }
-
-        console.log(
-          `PDF generation completed for supplier: ${currentParam.poSupplier.supplier}`
-        );
       } else {
         console.error('No PDF response received');
       }
@@ -705,10 +683,6 @@ const WizardSendMailForm: React.FC<WizardSendMailFormProps> = ({
         <div className="border p-3 mb-3">
           <DropzoneQuoteWizard
             onFilesUpload={files => {
-              console.log(
-                'Dropzone onFilesUpload called with files:',
-                files.map(f => f.name)
-              );
               onFilesUpload(files);
             }}
             alreadyUploadedFiles={base64Files.map(file => ({

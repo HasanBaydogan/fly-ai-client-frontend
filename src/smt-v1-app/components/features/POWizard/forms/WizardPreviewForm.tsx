@@ -129,8 +129,8 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
 
       if (base64String) {
         //   console.log('Setting PDF states...');
-        setBase64Pdf(base64String);
-        setBase64PdfFileName(`PO_${quoteNumber}.pdf`);
+        // setBase64Pdf(base64String);
+        // setBase64PdfFileName(`PO_${quoteNumber}.pdf`);
 
         // Open PDF in new tab
         const pdfWindow = window.open('', '_blank');
@@ -280,7 +280,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 SHIP VIA
               </td>
               <td className="text-white" style={{ width: '25%' }}>
-                FOB
+                TERMS OF PAYMENT
               </td>
               <td className="text-white" style={{ width: '25%' }}>
                 SHIPPING TERMS
@@ -302,11 +302,12 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 )}
               </td>
               <td style={{ width: '25%' }}>
-                {setupOtherProps.fob.trim() === '' ? (
+                %100 Advance by US
+                {/* {setupOtherProps.fob.trim() === '' ? (
                   <span>&nbsp;</span>
                 ) : (
                   setupOtherProps.fob
-                )}
+                )} */}
               </td>
               <td style={{ width: '25%' }}>
                 {setupOtherProps.shippingTerms.trim() === '' ? (
@@ -355,7 +356,11 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   <td>{row.description}</td>
                   <td>{row.poPartSuppliers?.supplier || 'N/A'}</td>
                   <td>{row.qty}</td>
-                  <td>{row.leadTime} Days</td>
+                  <td>
+                    {row.leadTime >= 0 && row.leadTime <= 3
+                      ? 'STOCK'
+                      : `${row.leadTime} Days`}
+                  </td>
                   <td>
                     {row.price.toLocaleString('en-US', {
                       style: 'currency',
