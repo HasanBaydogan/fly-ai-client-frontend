@@ -95,7 +95,9 @@ const RFQModal: React.FC<RFQModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'message' | 'mail'>('message');
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [clientPONumber, setClientPONumber] = useState<string>('');
   const [step, setStep] = useState<'first' | 'second'>('first');
+  const [validationError, setValidationError] = useState<string>('');
 
   // Shared files state for both tabs
   const [base64Files, setBase64Files] = useState<
@@ -149,7 +151,14 @@ const RFQModal: React.FC<RFQModalProps> = ({
     table.setGlobalFilter(e.target.value || undefined);
   };
 
+  const isFirstStepValid = selectedDate && clientPONumber.trim() !== '';
+
   const handleNext = () => {
+    if (!isFirstStepValid) {
+      setValidationError('Date ve Client PO ID alanları zorunludur.');
+      return;
+    }
+    setValidationError('');
     setStep('second');
   };
 
@@ -158,12 +167,18 @@ const RFQModal: React.FC<RFQModalProps> = ({
   };
 
   const handlePreparePI = async () => {
+    if (!selectedDate || clientPONumber.trim() === '') {
+      setValidationError('Date ve Client PO ID alanları zorunludur.');
+      return;
+    }
+    setValidationError('');
     try {
       const formattedDate = selectedDate ? formatDate(selectedDate) : '';
 
       // Use the shared base64Files
       const requestData = {
         receivedDate: formattedDate,
+        clientPONumber,
         attachments: base64Files.map(file => ({ data: file.base64 })),
         receivedPOMethod: (activeTab === 'message' ? 'MESSAGE' : 'MAIL') as
           | 'MESSAGE'
@@ -248,18 +263,64 @@ const RFQModal: React.FC<RFQModalProps> = ({
                 {/* 1. Sekme: Requested By Message */}
                 <Tab.Pane eventKey="message">
                   <div className="mb-3 text-center">
-                    <label className="d-block fw-bold mb-2">
-                      Message Date:
-                    </label>
-                    <div style={{ margin: '0 auto', width: '25%' }}>
-                      <DatePicker
-                        placeholder="Select a date"
-                        value={selectedDate}
-                        onChange={selectedDates => {
-                          setSelectedDate(selectedDates[0]);
-                        }}
-                      />
+                    <label className="d-block fw-bold mb-2">Message:</label>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', gap: '24px', width: 450 }}>
+                        <div
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start'
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color: '#6c757d',
+                              marginBottom: 4
+                            }}
+                          >
+                            DATE
+                          </span>
+                          <DatePicker
+                            placeholder="Select a date"
+                            value={selectedDate}
+                            onChange={selectedDates => {
+                              setSelectedDate(selectedDates[0]);
+                            }}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start'
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color: '#6c757d',
+                              marginBottom: 4
+                            }}
+                          >
+                            CLIENT PO ID
+                          </span>
+                          <Form.Control
+                            type="text"
+                            value={clientPONumber}
+                            onChange={e => setClientPONumber(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
+                    {validationError && (
+                      <div style={{ color: 'red', fontSize: 13, marginTop: 8 }}>
+                        {validationError}
+                      </div>
+                    )}
                   </div>
                   <div className="mb-3">
                     <FileUpload
@@ -272,16 +333,64 @@ const RFQModal: React.FC<RFQModalProps> = ({
                 {/* 2. Sekme: Requested By Mail */}
                 <Tab.Pane eventKey="mail">
                   <div className="mb-3 text-center">
-                    <label className="d-block fw-bold mb-2">Mail Date:</label>
-                    <div style={{ margin: '0 auto', width: '25%' }}>
-                      <DatePicker
-                        placeholder="Select a date"
-                        value={selectedDate}
-                        onChange={selectedDates => {
-                          setSelectedDate(selectedDates[0]);
-                        }}
-                      />
+                    <label className="d-block fw-bold mb-2">Mail:</label>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', gap: '24px', width: 450 }}>
+                        <div
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start'
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color: '#6c757d',
+                              marginBottom: 4
+                            }}
+                          >
+                            DATE
+                          </span>
+                          <DatePicker
+                            placeholder="Select a date"
+                            value={selectedDate}
+                            onChange={selectedDates => {
+                              setSelectedDate(selectedDates[0]);
+                            }}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start'
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color: '#6c757d',
+                              marginBottom: 4
+                            }}
+                          >
+                            CLIENT PO ID
+                          </span>
+                          <Form.Control
+                            type="text"
+                            value={clientPONumber}
+                            onChange={e => setClientPONumber(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
+                    {validationError && (
+                      <div style={{ color: 'red', fontSize: 13, marginTop: 8 }}>
+                        {validationError}
+                      </div>
+                    )}
                   </div>
                   <div className="mb-3">
                     <FileUpload
@@ -318,7 +427,11 @@ const RFQModal: React.FC<RFQModalProps> = ({
               <Button variant="secondary" onClick={() => onHide(true)}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleNext}>
+              <Button
+                variant="primary"
+                onClick={handleNext}
+                disabled={!isFirstStepValid}
+              >
                 Next
               </Button>
             </>
@@ -331,6 +444,7 @@ const RFQModal: React.FC<RFQModalProps> = ({
                 variant="primary"
                 style={{ backgroundColor: '#0000FF' }}
                 onClick={handlePreparePI}
+                disabled={!selectedDate || clientPONumber.trim() === ''}
               >
                 Create & Prepare PI Form
               </Button>

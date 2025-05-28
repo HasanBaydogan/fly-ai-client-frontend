@@ -251,6 +251,7 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
       paymentTerm: shippingTerms,
       deliveryTerm: CPT,
       validityDay: validityDay,
+      clientPONumber: setupOtherProps.poRefNo,
       bankDetail: {
         bankName: piResponseData.allBanks[0].bankName,
         branchName: piResponseData.allBanks[0].branchName,

@@ -100,6 +100,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       setupOtherProps.setValidityDay(piResponseData.validityDay);
       setupOtherProps.setCPT(piResponseData.deliveryTerm);
       setupOtherProps.setShippingTerms(piResponseData.paymentTerm);
+      setupOtherProps.setPoRefNo(piResponseData.clientPONumber);
 
       // Set tax rate from PIResponseData
       if (piResponseData.tax?.taxRate) {
@@ -664,6 +665,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 quoteWizardData?.quoteNumberId ||
                 ''}
             </p>
+            <p className="mt-2 small">
+              <strong>PO Ref No:</strong> {piResponseData?.clientPONumber}
+            </p>
             <Badge bg="primary" className="small">
               REVISION{' '}
               {piResponseData?.revisionNumber ||
@@ -921,18 +925,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                           setupOtherProps.setValidityDay(
                             parseInt(e.target.value)
                           )
-                        }
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-2">PO Ref No :</td>
-                    <td className="p-2">
-                      <Form.Control
-                        type="text"
-                        value={setupOtherProps.poRefNo || ''}
-                        onChange={e =>
-                          setupOtherProps.setPoRefNo(e.target.value)
                         }
                       />
                     </td>

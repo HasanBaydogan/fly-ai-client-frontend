@@ -184,6 +184,9 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
               <p className=" mt-3">
                 <strong>PI Number:</strong> {quoteNumber}
               </p>
+              <p className="mt-3">
+                <strong>PO Ref No:</strong> {piResponseData?.clientPONumber}
+              </p>
             </div>
           </div>
         </div>{' '}
@@ -310,10 +313,6 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     <tr>
                       <td>Validity Day :</td>
                       <td>{setupOtherProps.validityDay || 0}</td>
-                    </tr>
-                    <tr>
-                      <td>PO Ref No :</td>
-                      <td>{setupOtherProps.poRefNo || ''}</td>
                     </tr>
                   </tbody>
                 </Table>

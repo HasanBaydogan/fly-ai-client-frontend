@@ -70,7 +70,7 @@ export interface PIResponseData {
   piId: string;
   piNumberId: string;
   piParts: any[];
-
+  clientPONumber: string;
   revisionNumber: number;
   sealineToX: { sealineToX: number; isIncluded: boolean };
   subTotal: number;
@@ -103,6 +103,8 @@ export interface SetupOtherProps {
   setSelectedBank: React.Dispatch<
     React.SetStateAction<PIResponseData['allBanks'][0] | null>
   >;
+  poRefNo: string;
+  setPoRefNo: React.Dispatch<React.SetStateAction<string>>;
 }
 
 // Create a union type for the data we'll use
@@ -174,7 +176,9 @@ const QuoteWizard: React.FC<PIWizardProps> = ({
     validityDay: 0,
     setValidityDay: () => {},
     selectedBank,
-    setSelectedBank
+    setSelectedBank,
+    poRefNo: '',
+    setPoRefNo: () => {}
   };
 
   useEffect(() => {
