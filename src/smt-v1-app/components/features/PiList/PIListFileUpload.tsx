@@ -264,8 +264,8 @@ const mockData: MainCategory[] = [
     ]
   },
   {
-    id: 'docs-ff',
-    name: 'Docs with FF',
+    id: 'docs-ff-received',
+    name: 'Docs with FF Received',
     categories: [
       {
         id: 'suppliers-awb',
@@ -275,7 +275,7 @@ const mockData: MainCategory[] = [
       },
       {
         id: 'invoice-ff-turkiye',
-        name: 'Invoice of FF to Turkiye',
+        name: 'Invoice of FF to Transit',
         subCategories: [],
         files: []
       },
@@ -284,7 +284,13 @@ const mockData: MainCategory[] = [
         name: 'Invoice of FF to Destination',
         subCategories: [],
         files: []
-      },
+      }
+    ]
+  },
+  {
+    id: 'docs-ff-sent',
+    name: 'Docs with FF Send',
+    categories: [
       {
         id: 'lot-form',
         name: 'Lot Form',
@@ -1005,7 +1011,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
 
         {files.length > 0 && (
           <div className="existing-files">
-            <div className="d-flex flex-wrap gap-2">
+            <div className="d-flex flex-column gap-2">
               {files.map(file => (
                 <div
                   key={`existing-${nodeId}-${file.id}-${file.name}`}
@@ -1109,7 +1115,10 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               style={{ color: '#f8d775' }}
                             />
                             <span className="small">Client's PO</span>
-                            <div className="ms-auto">
+
+                            <div className="d-flex gap-2 ms-auto align-items-center">
+                              {renderFilesForNode('clients-po', 'subcategory')}
+
                               <Button
                                 variant="outline-primary"
                                 className="py-1 px-2"
@@ -1162,7 +1171,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               )}
                             </div>
                           </div>
-                          {renderFilesForNode('clients-po', 'subcategory')}
                         </ListGroup.Item>
 
                         <ListGroup.Item
@@ -1189,7 +1197,9 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               style={{ color: '#f8d775' }}
                             />
                             <span className="small">Client's PI</span>
-                            <div className="ms-auto">
+                            <div className="d-flex gap-2 ms-auto align-items-center">
+                              {renderFilesForNode('clients-pi', 'subcategory')}
+
                               <Button
                                 variant="outline-primary"
                                 className="py-1 px-2"
@@ -1242,7 +1252,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               )}
                             </div>
                           </div>
-                          {renderFilesForNode('clients-pi', 'subcategory')}
                         </ListGroup.Item>
                         <ListGroup.Item
                           className="py-1 px-2"
@@ -1268,7 +1277,11 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               style={{ color: '#f8d775' }}
                             />
                             <span className="small">Client's SWIFT</span>
-                            <div className="ms-auto">
+                            <div className="d-flex gap-2 ms-auto align-items-center">
+                              {renderFilesForNode(
+                                'clients-swift',
+                                'subcategory'
+                              )}
                               <Button
                                 variant="outline-primary"
                                 className="py-1 px-2"
@@ -1321,7 +1334,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               )}
                             </div>
                           </div>
-                          {renderFilesForNode('clients-swift', 'subcategory')}
                         </ListGroup.Item>
                       </ListGroup>
                     </Card>
@@ -1364,7 +1376,12 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               style={{ color: '#f8d775' }}
                             />
                             <span className="small">Official Invoice</span>
-                            <div className="ms-auto">
+
+                            <div className="d-flex gap-2 ms-auto align-items-center">
+                              {renderFilesForNode(
+                                'official-invoice',
+                                'subcategory'
+                              )}
                               <Button
                                 variant="outline-primary"
                                 className="py-1 px-2"
@@ -1419,10 +1436,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               )}
                             </div>
                           </div>
-                          {renderFilesForNode(
-                            'official-invoice',
-                            'subcategory'
-                          )}
                         </ListGroup.Item>
 
                         <ListGroup.Item
@@ -1449,7 +1462,9 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               style={{ color: '#f8d775' }}
                             />
                             <span className="small">Client's AWB</span>
-                            <div className="ms-auto">
+                            <div className="d-flex gap-2 ms-auto align-items-center">
+                              {renderFilesForNode('clients-awb', 'subcategory')}
+
                               <Button
                                 variant="outline-primary"
                                 className="py-1 px-2"
@@ -1502,7 +1517,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               )}
                             </div>
                           </div>
-                          {renderFilesForNode('clients-awb', 'subcategory')}
                         </ListGroup.Item>
 
                         <ListGroup.Item
@@ -1529,7 +1543,11 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               style={{ color: '#f8d775' }}
                             />
                             <span className="small">Packing List</span>
-                            <div className="ms-auto">
+                            <div className="d-flex gap-2 ms-auto align-items-center">
+                              {renderFilesForNode(
+                                'packing-list',
+                                'subcategory'
+                              )}
                               <Button
                                 variant="outline-primary"
                                 className="py-1 px-2"
@@ -1582,7 +1600,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                               )}
                             </div>
                           </div>
-                          {renderFilesForNode('packing-list', 'subcategory')}
                         </ListGroup.Item>
                       </ListGroup>
                     </Card>
@@ -1651,7 +1668,11 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                 <span className="small">
                                   {subCategory.name}
                                 </span>
-                                <div className="ms-auto">
+                                <div className="d-flex gap-2 ms-auto align-items-center">
+                                  {renderFilesForNode(
+                                    subCategory.id,
+                                    'subcategory'
+                                  )}
                                   <Button
                                     variant="outline-primary"
                                     className="py-1 px-2"
@@ -1706,10 +1727,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   )}
                                 </div>
                               </div>
-                              {renderFilesForNode(
-                                subCategory.id,
-                                'subcategory'
-                              )}
                             </ListGroup.Item>
                           )
                         )}
@@ -1761,7 +1778,11 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                 <span className="small">
                                   {subCategory.name}
                                 </span>
-                                <div className="ms-auto">
+                                <div className="d-flex gap-2 ms-auto align-items-center">
+                                  {renderFilesForNode(
+                                    subCategory.id,
+                                    'subcategory'
+                                  )}
                                   <Button
                                     variant="outline-primary"
                                     className="py-1 px-2"
@@ -1816,10 +1837,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   )}
                                 </div>
                               </div>
-                              {renderFilesForNode(
-                                subCategory.id,
-                                'subcategory'
-                              )}
                             </ListGroup.Item>
                           )
                         )}
@@ -1846,85 +1863,191 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
               </Card.Header>
               <Card.Body className="p-2">
                 <Row>
-                  <Col>
-                    <ListGroup variant="flush">
-                      {/* FF docs here */}
-                      {data[2].categories.map(category => (
-                        <ListGroup.Item
-                          key={category.id}
-                          className="py-1 px-2"
-                          action
-                          onClick={() =>
-                            handleSelectNode('docs-ff', category.id)
-                          }
-                          active={
-                            selectedCategory.mainId === 'docs-ff' &&
-                            selectedCategory.categoryId === category.id
-                          }
-                        >
-                          <div className="d-flex align-items-center">
-                            <FontAwesomeIcon
-                              icon={faFolder}
-                              className="me-2"
-                              size="sm"
-                              style={{ color: '#f8d775' }}
-                            />
-                            <span className="small">{category.name}</span>
-                            <div className="ms-auto">
-                              <Button
-                                variant="outline-primary"
-                                className="py-1 px-2"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  toggleEditMode(category.id);
-                                }}
-                                disabled={isUploading[category.id]}
-                              >
-                                <FontAwesomeIcon
-                                  icon={
-                                    editModes[category.id] ? faSave : faEdit
-                                  }
-                                />
-                                {isUploading[category.id] && (
-                                  <span
-                                    className="spinner-border spinner-border-sm ms-1"
-                                    role="status"
-                                    aria-hidden="true"
-                                  ></span>
-                                )}
-                              </Button>
-                              {editModes[category.id] && (
-                                <Form.Group
-                                  controlId={`fileUpload-${category.id}`}
-                                  className="d-inline-block ms-1"
+                  <Col md={6}>
+                    <Card className="mb-2">
+                      <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
+                        <FontAwesomeIcon
+                          icon={faArrowCircleDown}
+                          className="me-2"
+                          size="lg"
+                          style={{ color: '#4CAF50' }}
+                        />
+                        <span className="fs-7">Received</span>
+                      </Card.Header>
+                      <ListGroup variant="flush">
+                        {/* FF docs here */}
+                        {data[2].categories.map(category => (
+                          <ListGroup.Item
+                            key={category.id}
+                            className="py-1 px-2"
+                            action
+                            onClick={() =>
+                              handleSelectNode('docs-ff-received', category.id)
+                            }
+                            active={
+                              selectedCategory.mainId === 'docs-ff-received' &&
+                              selectedCategory.categoryId === category.id
+                            }
+                          >
+                            <div className="d-flex align-items-center">
+                              <FontAwesomeIcon
+                                icon={faFolder}
+                                className="me-2"
+                                size="sm"
+                                style={{ color: '#f8d775' }}
+                              />
+                              <span className="small">{category.name}</span>
+                              <div className="d-flex gap-2 ms-auto align-items-center">
+                                {renderFilesForNode(category.id, 'category')}
+                                <Button
+                                  variant="outline-primary"
+                                  className="py-1 px-2"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    toggleEditMode(category.id);
+                                  }}
+                                  disabled={isUploading[category.id]}
                                 >
-                                  <Form.Label
-                                    className={`btn btn-outline-primary py-1 px-2 mb-0 ${
-                                      isUploading[category.id] ? 'disabled' : ''
-                                    }`}
+                                  <FontAwesomeIcon
+                                    icon={
+                                      editModes[category.id] ? faSave : faEdit
+                                    }
+                                  />
+                                  {isUploading[category.id] && (
+                                    <span
+                                      className="spinner-border spinner-border-sm ms-1"
+                                      role="status"
+                                      aria-hidden="true"
+                                    ></span>
+                                  )}
+                                </Button>
+                                {editModes[category.id] && (
+                                  <Form.Group
+                                    controlId={`fileUpload-${category.id}`}
+                                    className="d-inline-block ms-1"
                                   >
-                                    <FontAwesomeIcon icon={faFileUpload} />
-                                    <Form.Control
-                                      type="file"
-                                      multiple
-                                      onChange={e =>
-                                        handleFileUpload(
-                                          e as ChangeEvent<HTMLInputElement>,
-                                          category.id
-                                        )
-                                      }
-                                      style={{ display: 'none' }}
-                                      disabled={isUploading[category.id]}
-                                    />
-                                  </Form.Label>
-                                </Form.Group>
-                              )}
+                                    <Form.Label
+                                      className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                        isUploading[category.id]
+                                          ? 'disabled'
+                                          : ''
+                                      }`}
+                                    >
+                                      <FontAwesomeIcon icon={faFileUpload} />
+                                      <Form.Control
+                                        type="file"
+                                        multiple
+                                        onChange={e =>
+                                          handleFileUpload(
+                                            e as ChangeEvent<HTMLInputElement>,
+                                            category.id
+                                          )
+                                        }
+                                        style={{ display: 'none' }}
+                                        disabled={isUploading[category.id]}
+                                      />
+                                    </Form.Label>
+                                  </Form.Group>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          {renderFilesForNode(category.id, 'category')}
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card className="mb-2">
+                      <Card.Header className="py-1 px-2 bg-light d-flex align-items-center">
+                        <FontAwesomeIcon
+                          icon={faArrowCircleUp}
+                          className="me-2"
+                          size="lg"
+                          style={{ color: '#1976D2' }}
+                        />
+                        <span className="fs-7">Sent</span>
+                      </Card.Header>
+                      <ListGroup variant="flush">
+                        {/* FF docs here */}
+                        {data[3].categories.map(category => (
+                          <ListGroup.Item
+                            key={category.id}
+                            className="py-1 px-2"
+                            action
+                            onClick={() =>
+                              handleSelectNode('docs-ff-send', category.id)
+                            }
+                            active={
+                              selectedCategory.mainId === 'docs-ff-send' &&
+                              selectedCategory.categoryId === category.id
+                            }
+                          >
+                            <div className="d-flex align-items-center">
+                              <FontAwesomeIcon
+                                icon={faFolder}
+                                className="me-2"
+                                size="sm"
+                                style={{ color: '#f8d775' }}
+                              />
+                              <span className="small">{category.name}</span>
+                              <div className="d-flex gap-2 ms-auto align-items-center">
+                                {renderFilesForNode(category.id, 'category')}
+                                <Button
+                                  variant="outline-primary"
+                                  className="py-1 px-2"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    toggleEditMode(category.id);
+                                  }}
+                                  disabled={isUploading[category.id]}
+                                >
+                                  <FontAwesomeIcon
+                                    icon={
+                                      editModes[category.id] ? faSave : faEdit
+                                    }
+                                  />
+                                  {isUploading[category.id] && (
+                                    <span
+                                      className="spinner-border spinner-border-sm ms-1"
+                                      role="status"
+                                      aria-hidden="true"
+                                    ></span>
+                                  )}
+                                </Button>
+                                {editModes[category.id] && (
+                                  <Form.Group
+                                    controlId={`fileUpload-${category.id}`}
+                                    className="d-inline-block ms-1"
+                                  >
+                                    <Form.Label
+                                      className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                        isUploading[category.id]
+                                          ? 'disabled'
+                                          : ''
+                                      }`}
+                                    >
+                                      <FontAwesomeIcon icon={faFileUpload} />
+                                      <Form.Control
+                                        type="file"
+                                        multiple
+                                        onChange={e =>
+                                          handleFileUpload(
+                                            e as ChangeEvent<HTMLInputElement>,
+                                            category.id
+                                          )
+                                        }
+                                        style={{ display: 'none' }}
+                                        disabled={isUploading[category.id]}
+                                      />
+                                    </Form.Label>
+                                  </Form.Group>
+                                )}
+                              </div>
+                            </div>
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    </Card>
                   </Col>
                 </Row>
               </Card.Body>
