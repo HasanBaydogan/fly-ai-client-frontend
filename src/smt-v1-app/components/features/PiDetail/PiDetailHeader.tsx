@@ -12,6 +12,7 @@ interface HeaderProps {
   piNumberId: string;
   quoteNumberId: string;
   clientName: string;
+  clientPONumber: string;
   clientRFQId: string;
   revisionNumber: number;
   companyNameAddress: string;
@@ -34,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({
   piNumberId,
   quoteNumberId: initialQuoteId,
   clientName,
-  clientRFQId,
+  clientPONumber,
   revisionNumber,
   companyNameAddress,
   setCompanyNameAddress,
@@ -88,12 +89,15 @@ const Header: React.FC<HeaderProps> = ({
               <h5 className="last-modified-poRequestedDate mb-3">
                 PO Requested Date:{' ' + poRequestedDate}
               </h5>
-              <h4>
+              <h5>
                 Revision:{' '}
-                <Badge bg="primary" className="small mb-3">
+                <Badge bg="primary" className="small mb-2">
                   REVISION {revisionNumber}
                 </Badge>
-              </h4>
+              </h5>
+              <h5 className=" mb-3">
+                PO Ref No:{' ' + (clientPONumber || '-')}
+              </h5>
 
               <h5 className="last-modified-poRequestedDate"></h5>
 

@@ -164,6 +164,7 @@ const QuoteContainer = () => {
                   quoteNumberId={piData && piData.quoteNumberId}
                   clientRFQId={piData && piData.clientRFQId}
                   clientName={piData && piData.clientName}
+                  clientPONumber={piData.clientPONumber}
                   companyNameAddress={piData.companyNameAddress}
                   setCompanyNameAddress={setCompanyNameAddress}
                   attachments={

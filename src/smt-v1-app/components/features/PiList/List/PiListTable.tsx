@@ -31,7 +31,7 @@ import RevealDropdown, {
   RevealDropdownTrigger
 } from 'components/base/RevealDropdown';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import { PiData } from 'smt-v1-app/types/PiTypes';
+import { PiData, PiUpdateOthers } from 'smt-v1-app/types/PiTypes';
 import {
   searchByPiList,
   postOpenEditMode,
@@ -39,7 +39,6 @@ import {
   getAllCurrenciesFromDB,
   postCloseEditMode
 } from 'smt-v1-app/services/PIServices';
-import { PiUpdateOthers } from 'smt-v1-app/types/PiTypes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFileInvoice,
@@ -104,6 +103,7 @@ export interface PiListData {
   revisionNo: string;
   quoteNumberId: string;
   contractNo: string;
+  clientPONumber: string;
   piStatus: any;
   company: string;
   numOfProduct: number;
@@ -550,6 +550,63 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
       headerProps: { style: { width: '7%' } }
+    }
+  },
+  {
+    id: 'clientPONumber',
+    accessorKey: 'clientPONumber',
+    header: 'PO Ref No',
+    cell: ({ row: { original } }) => {
+      // Get editing state from context
+      const { editingPiId } = useContext(PiListTableContext);
+      const isEditing = editingPiId === original.piId;
+      const [poRefValue, setPoRefValue] = useState<string>(
+        original.clientPONumber || ''
+      );
+
+      // Update the value when edit mode changes or when data changes
+      useEffect(() => {
+        setPoRefValue(original.clientPONumber || '');
+      }, [isEditing, original.clientPONumber]);
+
+      const handlePoRefChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setPoRefValue(newValue);
+        original.clientPONumber = newValue;
+      };
+
+      if (isEditing) {
+        return (
+          <Form.Control
+            type="text"
+            size="sm"
+            value={poRefValue}
+            onChange={handlePoRefChange}
+            style={{ minWidth: '120px' }}
+          />
+        );
+      }
+
+      return (
+        <div
+          style={{
+            padding: '0.25rem 0.5rem',
+            minWidth: '100px',
+            border: '1px solid #ced4da',
+            borderRadius: '0.25rem',
+            background: '#f8f9fa',
+            minHeight: '31px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {original.clientPONumber || '-'}
+        </div>
+      );
+    },
+    meta: {
+      cellProps: { className: 'white-space-nowrap py-2' },
+      headerProps: { style: { width: '10%' } }
     }
   },
   {
@@ -1794,7 +1851,8 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
       supplierPaidPrice: pi.supplierPaidPrice || { currency: 'USD', price: 0 },
       supplierPaidDate: supplierPaidDate,
       leadTimeDays: leadTimeDays,
-      opSupplierId: pi.opSupplierId || ''
+      opSupplierId: pi.opSupplierId || '',
+      clientPONumber: pi.clientPONumber || ''
     };
 
     setIsSaving(true);

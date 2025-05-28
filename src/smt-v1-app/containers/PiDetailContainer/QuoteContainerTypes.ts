@@ -114,6 +114,7 @@ export interface Pi {
   clientName: string;
   clientContacts: Contact[];
   clientRFQId: string;
+  clientPONumber: string;
   comment: string;
   quoteId: string;
   quoteNumberId: string;

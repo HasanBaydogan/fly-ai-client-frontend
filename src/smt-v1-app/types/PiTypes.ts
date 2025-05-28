@@ -75,6 +75,7 @@ export interface PiUpdateOthers {
   supplierPaidDate: string;
   leadTimeDays: number;
   opSupplierId: string;
+  clientPONumber: string;
 }
 
 export interface PIAttachmentResponse {
