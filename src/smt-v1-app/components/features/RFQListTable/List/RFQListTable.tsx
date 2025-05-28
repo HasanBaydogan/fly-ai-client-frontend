@@ -161,6 +161,17 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
     }
   },
   {
+    header: 'RFQ Cost',
+    accessorKey: 'rfqCost',
+    meta: {
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      headerProps: {
+        style: { width: '10%' },
+        className: 'ps-3'
+      }
+    }
+  },
+  {
     header: 'Comments',
     accessorKey: 'comments',
     meta: {

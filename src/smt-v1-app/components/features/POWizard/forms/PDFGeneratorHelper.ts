@@ -88,7 +88,7 @@ export const generatePDF = async (
       head: [
         ['REQUISITIONER', 'SHIP VIA', 'TERMS OF PAYMENT', 'SHIPPING TERMS']
       ],
-      body: [[requisitioner, shipVia, '%100 Advance by US', shippingTerms]],
+      body: [[requisitioner, shipVia, '%100 Advance by USD', shippingTerms]],
       theme: 'grid',
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
       styles: { halign: 'center', valign: 'middle' },
@@ -306,7 +306,7 @@ export const generatePDF = async (
     // Telefon numarasını adresin altına ekle
     if (settings.phone) {
       const fontSize = pdf.internal.getFontSize();
-      const phoneText = `Tel: ${settings.phone}`;
+      const phoneText = `Phone: ${settings.phone}`;
       const phoneWidth =
         (pdf.getStringUnitWidth(phoneText) * fontSize) /
         pdf.internal.scaleFactor;

@@ -302,7 +302,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                 )}
               </td>
               <td style={{ width: '25%' }}>
-                %100 Advance by US
+                %100 Advance by USD
                 {/* {setupOtherProps.fob.trim() === '' ? (
                   <span>&nbsp;</span>
                 ) : (

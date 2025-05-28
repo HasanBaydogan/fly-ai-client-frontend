@@ -613,7 +613,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <div className="d-flex justify-content-center align-items-center">
                 <Form.Control
                   type="text"
-                  value={'%100 Advance by US'}
+                  value={'%100 Advance by USD'}
                   // value={setupOtherProps.fob}
                   onChange={e => setupOtherProps.setFob(e.target.value)}
                   style={{ width: '85%' }}

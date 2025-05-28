@@ -133,6 +133,22 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
     }
   },
   {
+    header: 'RFQ Cost',
+    accessorKey: 'rfqCost',
+    cell: ({ row: { original } }) => {
+      return (
+        original.finalCost?.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }) ?? '0.00'
+      );
+    },
+    meta: {
+      cellProps: { className: 'ps-3 text-body py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+    }
+  },
+  {
     accessorKey: 'finalCost',
     header: 'Final Cost',
     cell: ({ row: { original } }) => {
