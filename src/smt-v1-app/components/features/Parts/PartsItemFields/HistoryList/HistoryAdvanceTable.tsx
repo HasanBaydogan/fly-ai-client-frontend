@@ -31,9 +31,7 @@ const AdvanceTable = ({
                 <th
                   key={header.id}
                   {...header.column.columnDef.meta?.headerProps}
-                  className={classNames(
-                    header.column.columnDef.meta?.headerProps?.className
-                  )}
+                  className="text-center"
                   onClick={header.column.getToggleSortingHandler()}
                 >
                   {header.isPlaceholder
@@ -51,7 +49,11 @@ const AdvanceTable = ({
           {getRowModel().rows.map(row => (
             <tr key={row.id} className={rowClassName}>
               {row.getVisibleCells().map(cell => (
-                <td key={cell.id} {...cell.column.columnDef.meta?.cellProps}>
+                <td
+                  key={cell.id}
+                  {...cell.column.columnDef.meta?.cellProps}
+                  className="text-center"
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
