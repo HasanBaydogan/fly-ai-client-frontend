@@ -33,7 +33,8 @@ const SupplierDetailContainer = () => {
   // Data states
   const [companyName, setCompanyName] = useState<string>('');
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
-  const [brandInput, setBrandInput] = useState('');
+  const [telephoneInput, setTelephoneInput] = useState('');
+  const [mailInput, setMailInput] = useState('');
   const [selectedCountryId, setSelectedCountryId] = useState('');
   const [pickUpAddress, setPickUpAddress] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<SupplierStatus | ''>('');
@@ -152,7 +153,8 @@ const SupplierDetailContainer = () => {
     const payload = {
       supplierCompanyName: companyName,
       segmentIds: segmentIds,
-      brand: brandInput,
+      telephone: telephoneInput,
+      mail: mailInput,
       countryId: selectedCountryId,
       pickUpAddress: pickUpAddress,
       supplierStatus: selectedStatus,
@@ -290,9 +292,12 @@ const SupplierDetailContainer = () => {
       <SupplierInfo
         setCompanyName={setCompanyName}
         companyName={companyName}
-        setBrandInput={setBrandInput}
-        brandInput={brandInput}
+        setTelephoneInput={setTelephoneInput}
+        telephoneInput={telephoneInput}
+        mailInput={mailInput}
+        setMailInput={setMailInput}
       />
+
       {/* Segment Selection */}
       {loadingSegments ? (
         <p>Loading segments...</p>
@@ -337,6 +342,7 @@ const SupplierDetailContainer = () => {
         setUsername={setUsername}
         password={password}
         setPassword={setPassword}
+        onCountryChange={setSelectedCountryId}
       />
       <ContactListSection onContactsChange={setContacts} />
       {/* Buttons ve Loading Overlay */}

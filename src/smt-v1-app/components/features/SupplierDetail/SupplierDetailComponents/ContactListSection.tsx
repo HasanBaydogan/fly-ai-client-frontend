@@ -176,12 +176,12 @@ const ContactListSection = ({
   return (
     <Form>
       <Col md={12}>
-        <Form.Group className="mt-5 mx-5">
-          <Form.Label className="fw-bold fs-7">Contact List</Form.Label>
-        </Form.Group>
+        <div className="d-flex justify-content-between align-items-center">
+          <Form.Group className="my-3 mx-5">
+            <Form.Label className="fw-bold fs-7">Contact List</Form.Label>
+          </Form.Group>
 
-        {/* Yeni kişi ekleme butonu */}
-        <div className="d-flex justify-content-end mb-3">
+          {/* Yeni kişi ekleme butonu */}
           <Button variant="primary" onClick={() => setShowModal(true)}>
             New Contact
           </Button>

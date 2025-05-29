@@ -128,20 +128,20 @@ const RatingComponent = ({
   );
 };
 
-interface RatingSectionProps {
-  onRatingsChange: (ratings: RatingData) => void;
-  ratings: RatingData;
-}
+// interface RatingSectionProps {
+//   onRatingsChange: (ratings: RatingData) => void;
+//   ratings: RatingData;
+// }
 
-const RatingSection = ({ onRatingsChange, ratings }: RatingSectionProps) => {
-  return (
-    <Col
-      md={5}
-      className="d-flex align-items-center my-3 justify-content-center"
-    >
-      <RatingComponent onRatingsChange={onRatingsChange} ratings={ratings} />
-    </Col>
-  );
-};
+// const RatingSection = ({ onRatingsChange, ratings }: RatingSectionProps) => {
+//   return (
+//     <Col
+//       md={5}
+//       className="d-flex align-items-center my-3 justify-content-center"
+//     >
+//       <RatingComponent onRatingsChange={onRatingsChange} ratings={ratings} />
+//     </Col>
+//   );
+// };
 
-export default RatingSection;
+export default RatingComponent;

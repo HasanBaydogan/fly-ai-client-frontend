@@ -62,10 +62,10 @@ const SupplierEditContainer = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const supplierId = searchParams.get('supplierId');
-
   const [companyName, setCompanyName] = useState<string>('');
   const [segmentIds, setSegmentIds] = useState<string[]>([]);
-  const [brandInput, setBrandInput] = useState('');
+  const [telephoneInput, setTelephoneInput] = useState('');
+  const [mailInput, setMailInput] = useState('');
   const [selectedCountryId, setSelectedCountryId] = useState('');
   const [pickUpAddress, setPickUpAddress] = useState('');
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
@@ -160,7 +160,8 @@ const SupplierEditContainer = () => {
           const supplier = response.data;
           // console.log('Supplier data:', supplier);
           setCompanyName(supplier.supplierCompanyName);
-          setBrandInput(supplier.brand);
+          setMailInput(supplier.mail);
+          setTelephoneInput(supplier.telephone);
           const selectedSupplierSegmentIds = getInitialSelectedIds(
             supplier.segments
           );
@@ -259,7 +260,8 @@ const SupplierEditContainer = () => {
       supplierId,
       supplierCompanyName: companyName,
       segmentIds: segmentIds,
-      brand: brandInput,
+      telephone: telephoneInput,
+      mail: mailInput,
       countryId: selectedCountryId,
       pickUpAddress: pickUpAddress,
       status: selectedStatus,
@@ -472,8 +474,28 @@ const SupplierEditContainer = () => {
       <SupplierInfo
         setCompanyName={setCompanyName}
         companyName={companyName}
-        setBrandInput={setBrandInput}
-        brandInput={brandInput}
+        setTelephoneInput={setTelephoneInput}
+        telephoneInput={telephoneInput}
+        mailInput={mailInput}
+        setMailInput={setMailInput}
+      />
+      <AddressDetails
+        onCountryChange={setSelectedCountryId}
+        onStatusChange={handleStatusChange}
+        getbyCountryList={countryList}
+        pickUpAddress={pickUpAddress}
+        setPickUpAddress={setPickUpAddress}
+        onCertificateTypes={handleCertificateTypesChange}
+        defaultCountry={selectedCountryId}
+        defaultStatus={selectedStatus}
+        defaultCertificateTypes={certificateTypes}
+      />
+      <AccountInfo
+        username={username}
+        setUsername={setUsername}
+        password={password}
+        setPassword={setPassword}
+        onCountryChange={setSelectedCountryId}
       />
       <SegmentSelection
         data={segments}
@@ -498,42 +520,42 @@ const SupplierEditContainer = () => {
           md={5}
           className="d-flex justify-content-center align-items-center"
         >
-          <RatingSection
-            onRatingsChange={handleRatingsChange}
-            ratings={ratings}
-          />
+          <div>
+            <h5> Existing Attachments</h5>
+            {initialAttachments.map(att => (
+              <div
+                key={att.id}
+                onClick={() => handleAttachmentClick(att)}
+                style={{ cursor: 'pointer', position: 'relative' }}
+              >
+                <AttachmentPreview
+                  handleRemove={() => handleDeleteClick(att)}
+                  attachment={att}
+                />
+              </div>
+            ))}
+            <FileUpload onFilesUpload={handleFilesUpload} />
+          </div>
         </Col>
       </Row>
       <WorkingDetails
         workingDetails={workingDetails}
         setWorkingDetails={setWorkingDetails}
       />
-      <div className="mt-5">
-        <h5 className="mb-3"> Existing Attachments</h5>
-        {initialAttachments.map(att => (
-          <div
-            key={att.id}
-            onClick={() => handleAttachmentClick(att)}
-            style={{ cursor: 'pointer', position: 'relative' }}
-          >
-            <AttachmentPreview
-              handleRemove={() => handleDeleteClick(att)}
-              attachment={att}
-            />
-          </div>
-        ))}
-        <FileUpload onFilesUpload={handleFilesUpload} />
+      <div className="d-flex flex-row gap-2">
+        <div className="mt-3" style={{ width: '60%' }}>
+          <ContactListSection
+            onContactsChange={setContacts}
+            initialContacts={contacts}
+          />
+        </div>
+        <div className="mt-3" style={{ width: '40%' }}>
+          <RatingSection
+            onRatingsChange={handleRatingsChange}
+            ratings={ratings}
+          />
+        </div>
       </div>
-      <AccountInfo
-        username={username}
-        setUsername={setUsername}
-        password={password}
-        setPassword={setPassword}
-      />
-      <ContactListSection
-        onContactsChange={setContacts}
-        initialContacts={contacts}
-      />
       <div
         className="d-flex justify-content-between align-items-center"
         style={{ position: 'relative', minHeight: '70px' }}

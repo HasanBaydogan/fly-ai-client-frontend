@@ -5,15 +5,19 @@ import Form from 'react-bootstrap/Form';
 interface SupplierInfoProps {
   setCompanyName: (value: string) => void;
   companyName: string;
-  setBrandInput: (value: string) => void;
-  brandInput: string;
+  setTelephoneInput: (value: string) => void;
+  telephoneInput: string;
+  setMailInput: (value: string) => void;
+  mailInput: string;
 }
 
 const SupplierInfo = ({
   setCompanyName,
   companyName,
-  setBrandInput,
-  brandInput
+  setTelephoneInput,
+  telephoneInput,
+  setMailInput,
+  mailInput
 }: SupplierInfoProps) => {
   const [error, setError] = useState<string | null>(null); // Hata mesajı
 
@@ -35,19 +39,24 @@ const SupplierInfo = ({
       setError('Company Name cannot be empty.');
     }
   };
-  const handleBrandChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBrandInput(event.target.value);
+  const handleTelephoneChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setTelephoneInput(event.target.value);
+  };
+  const handleMailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMailInput(event.target.value);
   };
 
   return (
-    <Col md={12}>
+    <div>
       <Form>
         <Form.Group className="mt-3">
           <Form.Label className="fw-bold fs-8">Supplier Information</Form.Label>
         </Form.Group>
 
-        <Form.Group className="d-flex flex-row gap-6 mt-2">
-          <Col md={6}>
+        <div className="d-flex gap-4 mt-2">
+          <Form.Group className="flex-grow-1">
             <Form.Control
               type="text"
               placeholder="Company Name*"
@@ -59,18 +68,28 @@ const SupplierInfo = ({
             <Form.Control.Feedback type="invalid">
               {error}
             </Form.Control.Feedback>
-          </Col>
-          <Col md={5}>
-            <Form.Control
-              type="text"
-              placeholder="Brand"
-              value={brandInput}
-              onChange={handleBrandChange}
-            />
-          </Col>
-        </Form.Group>
+          </Form.Group>
+          <div className="d-flex gap-4 flex-grow-1">
+            <Form.Group className="flex-grow-1">
+              <Form.Control
+                type="text"
+                placeholder="Mail"
+                value={mailInput}
+                onChange={handleMailChange}
+              />
+            </Form.Group>
+            <Form.Group className="flex-grow-1">
+              <Form.Control
+                type="text"
+                placeholder="Telephone"
+                value={telephoneInput}
+                onChange={handleTelephoneChange}
+              />
+            </Form.Group>
+          </div>
+        </div>
       </Form>
-    </Col>
+    </div>
   );
 };
 

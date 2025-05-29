@@ -36,7 +36,8 @@ export interface SupplierData {
 export interface CreateSupplier {
   supplierCompanyName: string;
   segmentIds: string[];
-  brand: string;
+  telephone: string;
+  mail: string;
   countryId: string;
   pickUpAddress: string;
   supplierStatus: SupplierStatus;
@@ -60,7 +61,8 @@ export interface UpdateSupplierPayload {
   supplierId: string;
   supplierCompanyName: string;
   segmentIds: string[];
-  brand: string;
+  telephone: string;
+  mail: string;
   countryId: string;
   pickUpAddress: string;
   status: string;
