@@ -19,19 +19,13 @@ import {
   Badge,
   Button,
   Form,
-  OverlayTrigger,
-  Tooltip,
-  Popover,
   Modal
 } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
-import RevealDropdown, {
-  RevealDropdownTrigger
-} from 'components/base/RevealDropdown';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import { PiData, PiUpdateOthers } from 'smt-v1-app/types/PiTypes';
+import { PiUpdateOthers } from 'smt-v1-app/types/PiTypes';
 import {
   searchByPiList,
   postOpenEditMode,
@@ -42,12 +36,10 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFileInvoice,
-  faSitemap,
   faQuestionCircle as faQuestionCircleSolid,
   faUpload,
   faEdit,
   faSave,
-  faCalendarAlt,
   faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
@@ -57,10 +49,6 @@ import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightS
 
 import ToastContainer from 'react-bootstrap/ToastContainer';
 import Toast from 'react-bootstrap/Toast';
-import Table from 'react-bootstrap/Table';
-import Placeholder from 'react-bootstrap/Placeholder';
-import CloseButton from 'react-bootstrap/CloseButton';
-import InputGroup from 'react-bootstrap/InputGroup';
 import { usePopper } from 'react-popper';
 
 // Add type declaration for Bootstrap
@@ -295,13 +283,14 @@ const ReadOnlyCurrency = ({
     <div
       style={{
         padding: '0.25rem 0.5rem',
-        minWidth: '100px',
+        width: '110px',
         border: '1px solid #ced4da',
         borderRadius: '0.25rem',
         background: '#f8f9fa',
         minHeight: '31px',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'center'
       }}
     >
       {formatCurrency(price.toString(), currency)}
@@ -539,7 +528,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     },
     meta: {
       cellProps: { className: 'text-center py-2' },
-      headerProps: { style: { width: '5%' }, className: 'text-center' }
+      headerProps: {
+        style: { width: '120px', minWidth: '120px' },
+        className: 'text-center'
+      }
     }
   },
   {
@@ -548,8 +540,8 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     header: 'PI ID',
     cell: ({ row: { original } }) => <span>{original.piNumberId}</span>,
     meta: {
-      cellProps: { className: 'white-space-nowrap py-2' },
-      headerProps: { style: { width: '7%' } }
+      cellProps: { className: ' py-2' },
+      headerProps: { style: { width: '80px', minWidth: '80px' } }
     }
   },
   {
@@ -591,12 +583,13 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         <div
           style={{
             padding: '0.25rem 0.5rem',
-            minWidth: '100px',
+            width: '100px',
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
             background: '#f8f9fa',
             minHeight: '31px',
             display: 'flex',
+            justifyContent: 'center',
             alignItems: 'center'
           }}
         >
@@ -606,7 +599,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     },
     meta: {
       cellProps: { className: 'white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' } }
+      headerProps: { style: { width: '120px', minWidth: '120px' } }
     }
   },
   {
@@ -672,17 +665,22 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       return <Badge bg={badgeColor}>{formatStatus(status)}</Badge>;
     },
     meta: {
-      cellProps: { className: 'ps-8 py-2' },
-      headerProps: { style: { width: '8%' }, className: 'ps-3' }
+      cellProps: { className: ' py-2' },
+      headerProps: {
+        style: { width: '150px', minWidth: '150px' },
+        className: 'ps-3'
+      }
     }
   },
-  // The Actions column will be added inside the component
   {
     header: 'Client',
     accessorKey: 'company',
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '20%' }, className: 'ps-3' }
+      cellProps: {
+        className: 'ps-3 fs-9 text-body  py-2',
+        style: { width: '150px', minWidth: '150px' }
+      },
+      headerProps: { style: { width: '150px', minWidth: '150px' } }
     }
   },
   {
@@ -695,8 +693,14 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       />
     ),
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      cellProps: {
+        className: 'ps-3 fs-9 text-body white-space-nowrap py-2',
+        style: { width: '120px', minWidth: '120px' }
+      },
+      headerProps: {
+        style: { width: '120px', minWidth: '120px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -838,8 +842,14 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       );
     },
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' }, className: 'ps-3' }
+      cellProps: {
+        className: 'ps-3 fs-9 text-body white-space-nowrap py-2',
+        style: { width: '120px', minWidth: '120px' }
+      },
+      headerProps: {
+        style: { width: '120px', minWidth: '120px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -990,8 +1000,14 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       );
     },
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '15%' }, className: 'ps-3' }
+      cellProps: {
+        className: 'ps-3 fs-9 text-body white-space-nowrap py-2',
+        style: { width: '120px', minWidth: '120px' }
+      },
+      headerProps: {
+        style: { width: '120px', minWidth: '120px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1035,13 +1051,14 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         <div
           style={{
             padding: '0.25rem 0.5rem',
-            minWidth: '100px',
+            width: '90px',
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
             background: '#f8f9fa',
             minHeight: '31px',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
           {original.piBank || 'OTHER'}
@@ -1049,10 +1066,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       );
     },
     meta: {
-      cellProps: {
-        className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
-      },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: { style: { width: '100px', minWidth: '100px' } }
     }
   },
   {
@@ -1082,7 +1096,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             size="sm"
             value={selectedBankType}
             onChange={handleBankTypeChange}
-            style={{ minWidth: '100px' }}
+            style={{ minWidth: '90px' }}
           >
             {bankTypeOptions.map(option => (
               <option key={option} value={option}>
@@ -1097,22 +1111,22 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         <div
           style={{
             padding: '0.25rem 0.5rem',
-            minWidth: '100px',
+            widows: '90px',
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
             background: '#f8f9fa',
             minHeight: '31px',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
-          {original.piBankType || 'NONE'}
+          {original.piBank || 'OTHER'}
         </div>
       );
     },
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: { style: { width: '120px', minWidth: '120px' } }
     }
   },
   {
@@ -1120,7 +1134,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     header: 'PO Date',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '100px', minWidth: '100px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1128,7 +1145,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     accessorKey: 'piDate',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '100px', minWidth: '100px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1170,7 +1190,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             size="sm"
             value={selectedDate}
             onChange={handleDateChange}
-            style={{ minWidth: '130px' }}
+            style={{ minWidth: '100px' }}
           />
         );
       }
@@ -1179,13 +1199,14 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         <div
           style={{
             padding: '0.25rem 0.5rem',
-            minWidth: '100px',
+            width: '100px',
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
             background: '#f8f9fa',
             minHeight: '31px',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
           {original.clientPaidDate || '-'}
@@ -1194,7 +1215,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '120px', minWidth: '120px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1236,7 +1260,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             size="sm"
             value={selectedDate}
             onChange={handleDateChange}
-            style={{ minWidth: '130px' }}
+            style={{ minWidth: '110px' }}
           />
         );
       }
@@ -1245,13 +1269,14 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         <div
           style={{
             padding: '0.25rem 0.5rem',
-            minWidth: '100px',
+            width: '100px',
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
             background: '#f8f9fa',
             minHeight: '31px',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
           {original.supplierPaidDate || '-'}
@@ -1260,7 +1285,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '120px', minWidth: '120px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1300,13 +1328,14 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         <div
           style={{
             padding: '0.25rem 0.5rem',
-            minWidth: '60px',
+            width: '60px',
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
             background: '#f8f9fa',
             minHeight: '31px',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
           {original.leadTimeDays !== undefined ? original.leadTimeDays : '-'}
@@ -1315,7 +1344,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '80px', minWidth: '80px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1323,7 +1355,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     accessorKey: 'leadTimeDeadline',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '5%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '100px', minWidth: '100px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1350,7 +1385,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             size="sm"
             value={supplierValue}
             onChange={handleSupplierChange}
-            style={{ minWidth: '120px' }}
+            style={{ minWidth: '150px' }}
           />
         );
       }
@@ -1359,12 +1394,13 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         <div
           style={{
             padding: '0.25rem 0.5rem',
-            minWidth: '100px',
+            width: '150px',
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
             background: '#f8f9fa',
             minHeight: '31px',
             display: 'flex',
+            justifyContent: 'center',
             alignItems: 'center'
           }}
         >
@@ -1374,7 +1410,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '150px', minWidth: '150px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1382,7 +1421,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     accessorKey: '55---',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '120px', minWidth: '120px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1435,7 +1477,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     },
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
+      headerProps: {
+        style: { width: '150px', minWidth: '150px' },
+        className: 'ps-3'
+      }
     }
   },
   {
@@ -1472,7 +1517,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     },
     meta: {
       cellProps: { className: 'text-center py-2' },
-      headerProps: { style: { width: '5%' }, className: 'text-center' }
+      headerProps: {
+        style: { width: '100px', minWidth: '100px' },
+        className: 'text-center'
+      }
     }
   }
 ];
@@ -1703,9 +1751,9 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     searchColumns[0]
   );
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
-  const [actionsColumnWidth, setActionsColumnWidth] = useState(
-    window.innerWidth < 1500 ? '100%' : '30%'
-  );
+  // const [actionsColumnWidth, setActionsColumnWidth] = useState(
+  //   window.innerWidth < 1500 ? '80%' : '30%'
+  // );
   const [editingPiId, setEditingPiId] = useState<string | null>(null);
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
@@ -1716,16 +1764,16 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [loadingCurrencies, setLoadingCurrencies] = useState(false);
 
   // Add resize listener to update the Actions column width
-  useEffect(() => {
-    const handleResize = () => {
-      setActionsColumnWidth(window.innerWidth < 1500 ? '100%' : '40%');
-    };
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     setActionsColumnWidth(window.innerWidth < 2500 ? '80%' : '40%');
+  //   };
 
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  //   window.addEventListener('resize', handleResize);
+  //   return () => {
+  //     window.removeEventListener('resize', handleResize);
+  //   };
+  // }, []);
 
   // Function to handle edit mode
   const handleEditToggle = (piId: string) => {
@@ -1941,8 +1989,8 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         headerProps: {
           className: 'ps-3',
           style: {
-            width: actionsColumnWidth,
-            minWidth: '300px'
+            width: '300px'
+            // minWidth: '300px'
           }
         }
       }
@@ -2117,7 +2165,10 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           cellProps: {
             className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
           },
-          headerProps: { style: { width: '15%' }, className: 'ps-3' }
+          headerProps: {
+            style: { width: '130px', minWidth: '130px' },
+            className: 'ps-3'
+          }
         }
       };
     }
@@ -2291,7 +2342,14 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
           cellProps: {
             className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
           },
-          headerProps: { style: { width: '15%' }, className: 'ps-3' }
+          headerProps: {
+            style: {
+              width: '130px',
+              minWidth: '130px',
+              justifyContent: 'center'
+            },
+            className: 'ps-3'
+          }
         }
       };
     }
@@ -2300,7 +2358,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
     return modifiedColumns;
   }, [
-    actionsColumnWidth,
+    // actionsColumnWidth,
     editingPiId,
     isSaving,
     currencies,
@@ -2717,7 +2775,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
             }}
           >
             <div style={{ width: '100%', overflow: 'auto' }}>
-              <div style={{ width: '160%' }}>
+              <div style={{ minWidth: '2000px' }}>
                 <EditableAdvanceTable
                   tableProps={{
                     className:

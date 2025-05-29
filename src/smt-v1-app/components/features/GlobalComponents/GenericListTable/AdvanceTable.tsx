@@ -67,7 +67,12 @@ function AdvanceTable<T>({
             ) : (
               <tr key={row.id} className={rowClassName}>
                 {row.getVisibleCells().map(cell => (
-                  <td key={cell.id}>
+                  <td
+                    key={cell.id}
+                    className={classNames(
+                      cell.column.columnDef.meta?.cellProps?.className
+                    )}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
