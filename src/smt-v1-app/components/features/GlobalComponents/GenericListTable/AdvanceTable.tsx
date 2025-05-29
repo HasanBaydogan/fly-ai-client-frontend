@@ -18,6 +18,7 @@ interface AdvanceTableProps<T> {
   };
   hasFooter?: boolean;
   renderRow?: (row: T) => React.ReactNode;
+  getRowProps?: (row: any) => React.HTMLAttributes<HTMLTableRowElement>;
 }
 
 function AdvanceTable<T>({
@@ -26,7 +27,8 @@ function AdvanceTable<T>({
   rowClassName,
   tableProps,
   hasFooter,
-  renderRow
+  renderRow,
+  getRowProps
 }: AdvanceTableProps<T>) {
   const { data = [], columns, ...tablePropsWithoutCustom } = tableProps || {};
 
@@ -65,7 +67,11 @@ function AdvanceTable<T>({
             renderRow ? (
               renderRow(row.original)
             ) : (
-              <tr key={row.id} className={rowClassName}>
+              <tr
+                key={row.id}
+                className={rowClassName}
+                {...(getRowProps ? getRowProps(row) : {})}
+              >
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
