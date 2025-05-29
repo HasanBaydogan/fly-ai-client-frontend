@@ -70,18 +70,18 @@ declare module 'react-bootstrap' {
 }
 
 const piStatus: { [key: string]: string } = {
-  NONE: 'dark',
-  PENDING_PAYMENT: 'primary',
+  NONE: 'secondary',
+  PENDING_PAYMENT: 'success',
   PAYMENT_RECEIVED_PARTIALLY: 'success',
-  PAYMENT_RECEIVED: 'warning',
-  PAID_TO_SUPPLIER_PARTIALLY: 'warning',
-  PAID_TO_SUPPLIER: 'danger',
-  LOGISTIC_ON_PROGRESS: 'primary',
-  IN_TURKEY: 'info',
+  PAYMENT_RECEIVED: 'success',
+  PAID_TO_SUPPLIER_PARTIALLY: 'success',
+  PAID_TO_SUPPLIER: 'success',
+  LOGISTIC_ON_PROGRESS: 'success',
+  IN_TURKEY: 'success',
   PARTIALLY_SENT_TO_CLIENT: 'success',
-  SENT_TO_CLIENT: 'primary',
-  CLOSED: 'info',
-  REFUNDED: 'success',
+  SENT_TO_CLIENT: 'success',
+  CLOSED: 'warning',
+  REFUNDED: 'danger',
   CANCELED: 'danger'
 };
 
@@ -1545,7 +1545,30 @@ interface QuoteListTableProps {
   activeView: string;
 }
 
-// Add a custom AdvanceTable wrapper component for highlighting edited rows
+// Add this function before the EditableAdvanceTable component
+const getStatusBackgroundColor = (status: string): string => {
+  switch (status) {
+    case 'PENDING_PAYMENT':
+    case 'PAYMENT_RECEIVED_PARTIALLY':
+    case 'PAYMENT_RECEIVED':
+    case 'PAID_TO_SUPPLIER_PARTIALLY':
+    case 'PAID_TO_SUPPLIER':
+    case 'LOGISTIC_ON_PROGRESS':
+    case 'IN_TURKEY':
+    case 'PARTIALLY_SENT_TO_CLIENT':
+    case 'SENT_TO_CLIENT':
+      return 'rgba(108,208,83, 0.6)'; // Pastel light green
+    case 'CLOSED':
+      return 'rgba(174,210,85, 0.6)'; // Pastel light orange
+    case 'REFUNDED':
+    case 'CANCELED':
+      return 'rgba(235,144,131, 0.6)'; // Pastel light red
+    default:
+      return ''; // Default background for NONE
+  }
+};
+
+// Modify the EditableAdvanceTable component
 const EditableAdvanceTable = ({
   tableProps,
   editingId,
@@ -1555,71 +1578,35 @@ const EditableAdvanceTable = ({
   editingId: string | null;
   errorId: string | null;
 }) => {
-  // Use useEffect to apply styling directly to DOM elements after render
-  useEffect(() => {
-    if (editingId || errorId) {
-      // Small delay to ensure the table has rendered
-      setTimeout(() => {
-        // Find all rows and apply border to the one that matches editingId
-        const tableRows = document.querySelectorAll('table tr');
-        tableRows.forEach(element => {
-          // Cast Element to HTMLElement to access style property
-          const row = element as HTMLElement;
-
-          // Clear previous styling from all rows first
-          row.style.border = '';
-          row.style.boxShadow = '';
-          row.style.backgroundColor = '';
-
-          // Look for data-piid attribute or cell content that matches editingId
-          const rowContent = row.innerHTML;
-          if (rowContent.includes(editingId)) {
-            if (errorId && errorId === editingId) {
-              // Error state - show red styling
-              row.style.border = '2px solid #dc3545';
-              row.style.boxShadow = '0 0 8px rgba(220, 53, 69, 0.3)';
-              row.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
-            } else {
-              // Normal editing state - show orange styling
-              row.style.border = '2px solid #f3a21c';
-              row.style.boxShadow = '0 0 8px rgba(243, 162, 28, 0.3)';
-              row.style.backgroundColor = 'rgba(243, 162, 28, 0.05)';
-            }
-          }
-        });
-      }, 100);
-    } else {
-      // If no editing ID, clear all row styles
-      const tableRows = document.querySelectorAll('table tr');
-      tableRows.forEach(element => {
-        // Cast Element to HTMLElement
-        const row = element as HTMLElement;
-        row.style.border = '';
-        row.style.boxShadow = '';
-        row.style.backgroundColor = '';
-      });
-    }
-  }, [editingId, errorId]);
-
   return (
     <AdvanceTable
       tableProps={{
         ...tableProps,
-        getRowProps: (row: any) => {
-          if (row.original.piId === editingId) {
-            const isError = errorId && errorId === editingId;
-            return {
-              'data-piid': editingId, // Add a data attribute to identify the row
-              style: {
-                border: isError ? '2px solid #dc3545' : '2px solid #f3a21c', // Red border for error
-                backgroundColor: isError
-                  ? 'rgba(220, 53, 69, 0.05)' // Light red background for error
-                  : 'rgba(243, 162, 28, 0.05)' // Light orange for normal editing
-              }
-            };
-          }
-          return {};
+        className: 'phoenix-table border-top border-translucent fs-9'
+      }}
+      getRowProps={(row: any) => {
+        // Önce edit ve error durumu kontrolü
+        if (row.original.piId === editingId) {
+          const isError = errorId && errorId === editingId;
+          return {
+            'data-piid': editingId,
+            style: {
+              border: isError ? '2px solid #dc3545' : '2px solid #f3a21c',
+              backgroundColor: isError
+                ? 'rgba(220, 53, 69, 0.05)'
+                : 'rgba(243, 162, 28, 0.05)',
+              boxShadow: isError
+                ? '0 0 8px rgba(220, 53, 69, 0.3)'
+                : '0 0 8px rgba(255, 157, 0, 0.3)'
+            }
+          };
         }
+        // Statüye göre background
+        return {
+          style: {
+            backgroundColor: getStatusBackgroundColor(row.original.piStatus)
+          }
+        };
       }}
     />
   );
@@ -1985,7 +1972,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         />
       ),
       meta: {
-        cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+        cellProps: { className: 'ps-3 fs-9 text-body  py-2' },
         headerProps: {
           className: 'ps-3',
           style: {

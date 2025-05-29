@@ -82,7 +82,9 @@ const PartHistoryListSection = ({
       }
     },
     { accessorKey: 'partNumber', header: 'PN' },
-    { accessorKey: 'partDesc', header: 'PN Description' }
+    { accessorKey: 'partDesc', header: 'PN Description' },
+    { accessorKey: 'certificateType', header: 'Certificate' },
+    { accessorKey: 'tagDate', header: 'Tag Date' }
   ];
 
   // Pagination entegrasyonu: pagination true olarak ayarlanıp, sayfa başına 10 kayıt gösteriliyor.
