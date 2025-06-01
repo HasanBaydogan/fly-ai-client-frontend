@@ -79,6 +79,30 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 }) => {
   const oneRowHeight = 38;
   const suppliersRef = useRef<HTMLTextAreaElement>(null);
+  const [inputErrors, setInputErrors] = useState<{ [key: string]: string }>({});
+
+  // Türkçe karakter kontrolü için yardımcı fonksiyon
+  const hasTurkishCharacters = (text: string): boolean => {
+    const turkishChars = /[ğüşıöçĞÜŞİÖÇ]/;
+    return turkishChars.test(text);
+  };
+
+  // Input değerini kontrol eden fonksiyon
+  const validateInput = (value: string, fieldName: string): boolean => {
+    if (hasTurkishCharacters(value)) {
+      setInputErrors(prev => ({
+        ...prev,
+        [fieldName]: 'Türkçe karakter kullanılamaz!'
+      }));
+      return false;
+    }
+    setInputErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];
+      return newErrors;
+    });
+    return true;
+  };
 
   useEffect(() => {
     if (piResponseData) {
@@ -561,14 +585,26 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               </div>
             </td>
             <td colSpan={3}>
-              <div className="d-flex justify-content-center align-items-center">
-                {/* Burayı tek satırlı input bırakıyoruz */}
+              <div className="d-flex flex-column">
                 <Form.Control
                   type="text"
                   value={setupOtherProps.shipTo}
-                  onChange={e => setupOtherProps.setShipTo(e.target.value)}
+                  onChange={e => {
+                    if (validateInput(e.target.value, 'shipTo')) {
+                      setupOtherProps.setShipTo(e.target.value);
+                    }
+                  }}
                   style={{ width: '95%' }}
+                  isInvalid={!!inputErrors.shipTo}
                 />
+                {inputErrors.shipTo && (
+                  <div
+                    className="text-danger small mt-1"
+                    style={{ fontSize: '0.75rem' }}
+                  >
+                    {inputErrors.shipTo}
+                  </div>
+                )}
               </div>
             </td>
           </tr>
@@ -588,29 +624,53 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           </tr>
           <tr className="text-center align-middle">
             <td style={{ width: '25%' }}>
-              <div className="d-flex justify-content-center align-items-center">
+              <div className="d-flex flex-column">
                 <Form.Control
                   type="text"
                   value={setupOtherProps.requisitioner}
-                  onChange={e =>
-                    setupOtherProps.setRequisitioner(e.target.value)
-                  }
+                  onChange={e => {
+                    if (validateInput(e.target.value, 'requisitioner')) {
+                      setupOtherProps.setRequisitioner(e.target.value);
+                    }
+                  }}
                   style={{ width: '85%' }}
+                  isInvalid={!!inputErrors.requisitioner}
                 />
+                {inputErrors.requisitioner && (
+                  <div
+                    className="text-danger small mt-1"
+                    style={{ fontSize: '0.75rem' }}
+                  >
+                    {inputErrors.requisitioner}
+                  </div>
+                )}
               </div>
             </td>
             <td style={{ width: '25%' }}>
-              <div className="d-flex justify-content-center align-items-center">
+              <div className="d-flex flex-column">
                 <Form.Control
                   type="text"
                   value={setupOtherProps.shipVia}
-                  onChange={e => setupOtherProps.setShipVia(e.target.value)}
+                  onChange={e => {
+                    if (validateInput(e.target.value, 'shipVia')) {
+                      setupOtherProps.setShipVia(e.target.value);
+                    }
+                  }}
                   style={{ width: '85%' }}
+                  isInvalid={!!inputErrors.shipVia}
                 />
+                {inputErrors.shipVia && (
+                  <div
+                    className="text-danger small mt-1"
+                    style={{ fontSize: '0.75rem' }}
+                  >
+                    {inputErrors.shipVia}
+                  </div>
+                )}
               </div>
             </td>
             <td style={{ width: '25%' }}>
-              <div className="d-flex justify-content-center align-items-center">
+              <div className="d-flex flex-column">
                 <Form.Control
                   type="text"
                   value={'%100 Advance by USD'}
@@ -621,15 +681,26 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               </div>
             </td>
             <td style={{ width: '25%' }}>
-              <div className="d-flex justify-content-center align-items-center">
+              <div className="d-flex flex-column">
                 <Form.Control
                   type="text"
                   value={setupOtherProps.shippingTerms}
-                  onChange={e =>
-                    setupOtherProps.setShippingTerms(e.target.value)
-                  }
+                  onChange={e => {
+                    if (validateInput(e.target.value, 'shippingTerms')) {
+                      setupOtherProps.setShippingTerms(e.target.value);
+                    }
+                  }}
                   style={{ width: '85%' }}
+                  isInvalid={!!inputErrors.shippingTerms}
                 />
+                {inputErrors.shippingTerms && (
+                  <div
+                    className="text-danger small mt-1"
+                    style={{ fontSize: '0.75rem' }}
+                  >
+                    {inputErrors.shippingTerms}
+                  </div>
+                )}
               </div>
             </td>
           </tr>
@@ -671,32 +742,62 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               >
                 <td className="align-middle">{getRowNumber(index)}</td>
                 <td>
-                  <Form.Control
-                    as="textarea"
-                    rows={1}
-                    value={row.partNumber}
-                    onChange={e =>
-                      handlePartNumberChange(
-                        e.target.value,
-                        row.tempId != null ? row.tempId : row.id
-                      )
-                    }
-                    style={{ width: '100%', resize: 'vertical' }}
-                  />
+                  <div className="d-flex flex-column">
+                    <Form.Control
+                      as="textarea"
+                      rows={1}
+                      value={row.partNumber}
+                      onChange={e => {
+                        if (
+                          validateInput(e.target.value, `partNumber-${row.id}`)
+                        ) {
+                          handlePartNumberChange(
+                            e.target.value,
+                            row.tempId != null ? row.tempId : row.id
+                          );
+                        }
+                      }}
+                      style={{ width: '100%', resize: 'vertical' }}
+                      isInvalid={!!inputErrors[`partNumber-${row.id}`]}
+                    />
+                    {inputErrors[`partNumber-${row.id}`] && (
+                      <div
+                        className="text-danger small mt-1"
+                        style={{ fontSize: '0.75rem' }}
+                      >
+                        {inputErrors[`partNumber-${row.id}`]}
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    value={row.description}
-                    onChange={e =>
-                      handleDescriptionChange(
-                        e.target.value,
-                        row.tempId != null ? row.tempId : row.id
-                      )
-                    }
-                    style={{ width: '100%', resize: 'vertical' }}
-                  />
+                  <div className="d-flex flex-column">
+                    <Form.Control
+                      as="textarea"
+                      rows={2}
+                      value={row.description}
+                      onChange={e => {
+                        if (
+                          validateInput(e.target.value, `description-${row.id}`)
+                        ) {
+                          handleDescriptionChange(
+                            e.target.value,
+                            row.tempId != null ? row.tempId : row.id
+                          );
+                        }
+                      }}
+                      style={{ width: '100%', resize: 'vertical' }}
+                      isInvalid={!!inputErrors[`description-${row.id}`]}
+                    />
+                    {inputErrors[`description-${row.id}`] && (
+                      <div
+                        className="text-danger small mt-1"
+                        style={{ fontSize: '0.75rem' }}
+                      >
+                        {inputErrors[`description-${row.id}`]}
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td>
                   <Form.Control
