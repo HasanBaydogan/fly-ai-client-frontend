@@ -31,6 +31,46 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
   const { toEmails, subject, ccEmails, bccEmails, content, base64Files } =
     emailProps;
 
+  const handleDownload = (base64Data: string, fileName: string) => {
+    try {
+      // Remove any data URL prefix if present
+      const base64Content = base64Data.replace(/^data:.*?;base64,/, '');
+
+      // Convert base64 to blob
+      const byteCharacters = atob(base64Content);
+      const byteArrays = [];
+
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = new Array(slice.length);
+
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+
+      const blob = new Blob(byteArrays, { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+
+      // Create temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      alert('Error downloading file. Please try again.');
+    }
+  };
+
   // Collect all unique attachments from all supplier emails
   const getAllAttachments = () => {
     const allAttachments = [];
@@ -166,47 +206,87 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
           </div>
           <div>
             <strong>Attachments:</strong>
-            <ul>
-              {allAttachments.length > 0
-                ? allAttachments.map((file, index) => {
-                    // Get MIME type based on file name extension.
-                    const ext = file.name.split('.').pop()?.toLowerCase();
-                    const mimeType =
-                      ext === 'jpg' || ext === 'jpeg'
-                        ? 'image/jpeg'
-                        : ext === 'png'
-                        ? 'image/png'
-                        : ext === 'gif'
-                        ? 'image/gif'
-                        : ext === 'pdf'
-                        ? 'application/pdf'
-                        : 'application/octet-stream';
-
-                    // Use the base64 data directly
-                    const dataUrl = `data:${mimeType};base64,${file.base64}`;
-
-                    return (
-                      <li key={index}>
-                        {/* Show a preview if the file is an image */}
-                        {mimeType.startsWith('image/') && (
-                          <div
-                            style={{ marginBottom: '5px', marginTop: '30px' }}
-                          >
-                            <img
-                              src={dataUrl}
-                              alt={file.name}
-                              style={{ maxWidth: '200px', display: 'block' }}
-                            />
-                          </div>
-                        )}
-                        <a href={dataUrl} download={file.name}>
-                          {file.name}
-                        </a>
-                      </li>
-                    );
-                  })
-                : 'No Attachments'}
-            </ul>
+            {toEmails.length > 0 ? (
+              <div className="mt-3">
+                {toEmails.map((email, index) => {
+                  const supplierName =
+                    supplierNames[index] || `Supplier ${index + 1}`;
+                  // Prefer attachments from email, fallback to base64Files only if attachments are not present and only for the first supplier
+                  let allSupplierAttachments: {
+                    name: string;
+                    base64: string;
+                  }[] = [];
+                  if (email.attachments && email.attachments.length > 0) {
+                    allSupplierAttachments = email.attachments.map(att => ({
+                      name: att.filename,
+                      base64: att.data
+                    }));
+                  } else if (
+                    index === 0 &&
+                    base64Files &&
+                    base64Files.length > 0
+                  ) {
+                    allSupplierAttachments = base64Files.map(file => ({
+                      name: file.name,
+                      base64: file.base64
+                    }));
+                  }
+                  // Remove duplicates by filename
+                  const uniqueAttachments = allSupplierAttachments.filter(
+                    (file, idx, arr) =>
+                      arr.findIndex(f => f.name === file.name) === idx
+                  );
+                  if (uniqueAttachments.length === 0) return null;
+                  return (
+                    <div key={index} className="mb-3">
+                      <h6 className="mb-2">{supplierName}:</h6>
+                      <ul className="list-unstyled ms-3">
+                        {uniqueAttachments.map((file, fileIndex) => {
+                          const ext = file.name.split('.').pop()?.toLowerCase();
+                          const mimeType =
+                            ext === 'jpg' || ext === 'jpeg'
+                              ? 'image/jpeg'
+                              : ext === 'png'
+                              ? 'image/png'
+                              : ext === 'gif'
+                              ? 'image/gif'
+                              : ext === 'pdf'
+                              ? 'application/pdf'
+                              : 'application/octet-stream';
+                          return (
+                            <li key={fileIndex} className="mb-2">
+                              {mimeType.startsWith('image/') && (
+                                <div style={{ marginBottom: '5px' }}>
+                                  <img
+                                    src={`data:${mimeType};base64,${file.base64}`}
+                                    alt={file.name}
+                                    style={{
+                                      maxWidth: '200px',
+                                      display: 'block'
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              <Button
+                                variant="link"
+                                className="p-0 text-decoration-none"
+                                onClick={() =>
+                                  handleDownload(file.base64, file.name)
+                                }
+                              >
+                                {file.name}
+                              </Button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="mt-2">No Attachments</p>
+            )}
           </div>
         </>
       ) : (

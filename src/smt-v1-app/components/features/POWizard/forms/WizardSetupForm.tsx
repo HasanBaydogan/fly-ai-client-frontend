@@ -745,6 +745,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                   <div className="d-flex flex-column">
                     <Form.Control
                       as="textarea"
+                      disabled
                       rows={1}
                       value={row.partNumber}
                       onChange={e => {
@@ -1017,15 +1018,31 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                               min="0"
                               max="100"
                               step="1"
-                              value={percentageValue}
+                              value={
+                                percentageValue === 0 ? '' : percentageValue
+                              }
                               onChange={e => {
-                                const val = parseInt(e.target.value, 10);
-                                if (!isNaN(val)) {
+                                const val = e.target.value;
+                                if (val === '') {
+                                  setPercentageValue(0);
                                   setLastEdited('percentage');
-                                  setPercentageValue(val);
-                                  const subTotal = calculateSubTotal();
-                                  const computedTax = (subTotal * val) / 100;
-                                  setTaxAmount(computedTax);
+                                  setTaxAmount(0);
+                                } else {
+                                  const numVal = parseInt(val, 10);
+                                  if (!isNaN(numVal)) {
+                                    setLastEdited('percentage');
+                                    setPercentageValue(numVal);
+                                    const subTotal = calculateSubTotal();
+                                    const computedTax =
+                                      (subTotal * numVal) / 100;
+                                    setTaxAmount(computedTax);
+                                  }
+                                }
+                              }}
+                              onBlur={e => {
+                                if (e.target.value === '') {
+                                  setPercentageValue(0);
+                                  setTaxAmount(0);
                                 }
                               }}
                               style={{
