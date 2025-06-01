@@ -85,6 +85,32 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
   const [bankError, setBankError] = useState<boolean>(false);
   const { formatNumberWithDecimals } = useCurrencyFormatter();
 
+  // Add state for input errors
+  const [inputErrors, setInputErrors] = useState<{ [key: string]: string }>({});
+
+  // Türkçe karakter kontrolü için yardımcı fonksiyon
+  const hasTurkishCharacters = (text: string): boolean => {
+    const turkishChars = /[ğüşıöçĞÜŞİÖÇ]/;
+    return turkishChars.test(text);
+  };
+
+  // Input değerini kontrol eden fonksiyon
+  const validateInput = (value: string, fieldName: string): boolean => {
+    if (hasTurkishCharacters(value)) {
+      setInputErrors(prev => ({
+        ...prev,
+        [fieldName]: 'Türkçe karakter kullanılamaz!'
+      }));
+      return false;
+    }
+    setInputErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];
+      return newErrors;
+    });
+    return true;
+  };
+
   useEffect(() => {
     if (piResponseData) {
       // console.log(
@@ -704,18 +730,27 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               }
             </td>
             <td colSpan={3}>
-              {
-                <div className="d-flex justify-content-center align-items-center">
-                  <Form.Control
-                    type="text"
-                    value={setupOtherProps.clientLocation}
-                    onChange={e =>
-                      setupOtherProps.setClientLocation(e.target.value)
+              <div className="d-flex flex-column">
+                <Form.Control
+                  type="text"
+                  value={setupOtherProps.clientLocation}
+                  onChange={e => {
+                    if (validateInput(e.target.value, 'clientLocation')) {
+                      setupOtherProps.setClientLocation(e.target.value);
                     }
-                    style={{ width: '85%' }}
-                  />
-                </div>
-              }
+                  }}
+                  style={{ width: '85%' }}
+                  isInvalid={!!inputErrors.clientLocation}
+                />
+                {inputErrors.clientLocation && (
+                  <div
+                    className="text-danger small mt-1"
+                    style={{ fontSize: '0.75rem' }}
+                  >
+                    {inputErrors.clientLocation}
+                  </div>
+                )}
+              </div>
             </td>
           </tr>
         </tbody>
@@ -755,32 +790,62 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               >
                 <td className="align-middle">{getRowNumber(index)}</td>
                 <td>
-                  <Form.Control
-                    as="textarea"
-                    rows={1}
-                    value={row.partNumber}
-                    onChange={e =>
-                      handlePartNumberChange(
-                        e.target.value,
-                        row.tempId != null ? row.tempId : row.id
-                      )
-                    }
-                    style={{ width: '100%', resize: 'vertical' }}
-                  />
+                  <div className="d-flex flex-column">
+                    <Form.Control
+                      as="textarea"
+                      rows={1}
+                      value={row.partNumber}
+                      onChange={e => {
+                        if (
+                          validateInput(e.target.value, `partNumber-${row.id}`)
+                        ) {
+                          handlePartNumberChange(
+                            e.target.value,
+                            row.tempId != null ? row.tempId : row.id
+                          );
+                        }
+                      }}
+                      style={{ width: '100%', resize: 'vertical' }}
+                      isInvalid={!!inputErrors[`partNumber-${row.id}`]}
+                    />
+                    {inputErrors[`partNumber-${row.id}`] && (
+                      <div
+                        className="text-danger small mt-1"
+                        style={{ fontSize: '0.75rem' }}
+                      >
+                        {inputErrors[`partNumber-${row.id}`]}
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    value={row.description}
-                    onChange={e =>
-                      handleDescriptionChange(
-                        e.target.value,
-                        row.tempId != null ? row.tempId : row.id
-                      )
-                    }
-                    style={{ width: '100%', resize: 'vertical' }}
-                  />
+                  <div className="d-flex flex-column">
+                    <Form.Control
+                      as="textarea"
+                      rows={2}
+                      value={row.description}
+                      onChange={e => {
+                        if (
+                          validateInput(e.target.value, `description-${row.id}`)
+                        ) {
+                          handleDescriptionChange(
+                            e.target.value,
+                            row.tempId != null ? row.tempId : row.id
+                          );
+                        }
+                      }}
+                      style={{ width: '100%', resize: 'vertical' }}
+                      isInvalid={!!inputErrors[`description-${row.id}`]}
+                    />
+                    {inputErrors[`description-${row.id}`] && (
+                      <div
+                        className="text-danger small mt-1"
+                        style={{ fontSize: '0.75rem' }}
+                      >
+                        {inputErrors[`description-${row.id}`]}
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td style={{ width: '75px' }}>
                   <div className="d-flex align-items-center">
@@ -870,48 +935,80 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                       Contract No :
                     </td>
                     <td className="p-2">
-                      <div className="d-flex align-items-center ">
+                      <div className="d-flex flex-column">
                         <Form.Control
                           className="p-2"
                           type="text"
                           placeholder="Contract No"
                           value={setupOtherProps.contractNo || ''}
-                          onChange={e =>
-                            setupOtherProps.setContractNo(e.target.value)
-                          }
+                          onChange={e => {
+                            if (validateInput(e.target.value, 'contractNo')) {
+                              setupOtherProps.setContractNo(e.target.value);
+                            }
+                          }}
+                          isInvalid={!!inputErrors.contractNo}
                         />
-                        <Form.Check
-                          type="checkbox"
-                          label="International"
-                          className="ms-3 mx-2"
-                          checked={setupOtherProps.isInternational}
-                          onChange={e =>
-                            setupOtherProps.setIsInternational(e.target.checked)
-                          }
-                        />
+                        {inputErrors.contractNo && (
+                          <div
+                            className="text-danger small mt-1"
+                            style={{ fontSize: '0.75rem' }}
+                          >
+                            {inputErrors.contractNo}
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
                   <tr>
                     <td className="p-2">Payment Term :</td>
                     <td className="p-2">
-                      <Form.Control
-                        type="text"
-                        value={setupOtherProps.shippingTerms}
-                        onChange={e =>
-                          setupOtherProps.setShippingTerms(e.target.value)
-                        }
-                      />
+                      <div className="d-flex flex-column">
+                        <Form.Control
+                          type="text"
+                          value={setupOtherProps.shippingTerms}
+                          onChange={e => {
+                            if (
+                              validateInput(e.target.value, 'shippingTerms')
+                            ) {
+                              setupOtherProps.setShippingTerms(e.target.value);
+                            }
+                          }}
+                          isInvalid={!!inputErrors.shippingTerms}
+                        />
+                        {inputErrors.shippingTerms && (
+                          <div
+                            className="text-danger small mt-1"
+                            style={{ fontSize: '0.75rem' }}
+                          >
+                            {inputErrors.shippingTerms}
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                   <tr>
                     <td className="p-2">Delivery Term :</td>
                     <td className="p-2">
-                      <Form.Control
-                        type="text"
-                        value={setupOtherProps.CPT}
-                        onChange={e => setupOtherProps.setCPT(e.target.value)}
-                      />
+                      <div className="d-flex flex-column">
+                        <Form.Control
+                          type="text"
+                          value={setupOtherProps.CPT}
+                          onChange={e => {
+                            if (validateInput(e.target.value, 'CPT')) {
+                              setupOtherProps.setCPT(e.target.value);
+                            }
+                          }}
+                          isInvalid={!!inputErrors.CPT}
+                        />
+                        {inputErrors.CPT && (
+                          <div
+                            className="text-danger small mt-1"
+                            style={{ fontSize: '0.75rem' }}
+                          >
+                            {inputErrors.CPT}
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                   <tr>
