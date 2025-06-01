@@ -17,7 +17,8 @@ import CustomButton from '../../../components/base/Button';
 import {
   getBySupplierId,
   putBySupplierUpdate,
-  getbyCountryList
+  getbyCountryList,
+  patchOtherValues
 } from '../../services/SupplierServices';
 import {
   getbySegmentList,
@@ -27,6 +28,16 @@ import { TreeNode, Certypes } from 'smt-v1-app/types';
 
 import { FileAttachment } from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
 import AttachmentPreview from '../../components/features/SupplierDetail/SupplierDetailComponents/AttachmentPreview';
+
+interface Brand {
+  value: string;
+  isSelected: boolean;
+}
+
+interface AircraftType {
+  value: string;
+  isSelected: boolean;
+}
 
 const openFileInNewTab = (file: {
   data: string;
@@ -68,6 +79,9 @@ const SupplierEditContainer = () => {
   const [mailInput, setMailInput] = useState('');
   const [selectedCountryId, setSelectedCountryId] = useState('');
   const [pickUpAddress, setPickUpAddress] = useState('');
+  const [legalAddress, setLegalAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [contextNotes, setContextNotes] = useState('');
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
   const [countryList, setCountryList] = useState<any>([]);
@@ -105,6 +119,8 @@ const SupplierEditContainer = () => {
     null | (FileAttachment & { id: string; contentType: string })
   >(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [aircraftTypes, setAircraftTypes] = useState<AircraftType[]>([]);
 
   const handleRatingsChange = (updatedRatings: RatingData) => {
     setRatings(updatedRatings);
@@ -158,10 +174,13 @@ const SupplierEditContainer = () => {
         const response = await getBySupplierId(supplierId!);
         if (response && response.data) {
           const supplier = response.data;
-          // console.log('Supplier data:', supplier);
+          console.log('Supplier data:', supplier);
           setCompanyName(supplier.supplierCompanyName);
           setMailInput(supplier.mail);
           setTelephoneInput(supplier.telephone);
+          setLegalAddress(supplier.legalAddress);
+          setCity(supplier.city);
+          setContextNotes(supplier.contextNotes);
           const selectedSupplierSegmentIds = getInitialSelectedIds(
             supplier.segments
           );
@@ -175,6 +194,8 @@ const SupplierEditContainer = () => {
           setPassword(supplier.password);
           setContacts(supplier.contacts);
           setCertificateTypes(supplier.certificateTypes);
+          setBrands(supplier.brands || []);
+          setAircraftTypes(supplier.aircraftTypes || []);
           setRatings({
             dialogSpeed: supplier.dialogSpeed,
             dialogQuality: supplier.dialogQuality,
@@ -193,7 +214,7 @@ const SupplierEditContainer = () => {
             );
           }
         } else {
-          window.location.assign('/404');
+          // window.location.assign('/404');
         }
       } catch (error) {
         console.error('Error fetching supplier data:', error);
@@ -256,12 +277,14 @@ const SupplierEditContainer = () => {
       }))
     ];
 
+    // Get selected brand and aircraft type
+    const selectedBrand = brands.find(brand => brand.isSelected);
+    const selectedAircraft = aircraftTypes.find(type => type.isSelected);
+
     const payload = {
       supplierId,
       supplierCompanyName: companyName,
       segmentIds: segmentIds,
-      telephone: telephoneInput,
-      mail: mailInput,
       countryId: selectedCountryId,
       pickUpAddress: pickUpAddress,
       status: selectedStatus,
@@ -278,6 +301,17 @@ const SupplierEditContainer = () => {
         cellPhone: contact.cellPhone
       })),
       certificateTypes: certificateTypes,
+      legalAddress: legalAddress,
+      city: city,
+      mail: mailInput,
+      telephone: telephoneInput,
+      contextNotes: contextNotes,
+      brands: brands
+        .filter(brand => brand.isSelected)
+        .map(brand => brand.value),
+      aircraftTypes: aircraftTypes
+        .filter(type => type.isSelected)
+        .map(type => type.value),
       dialogSpeed: ratings.dialogSpeed,
       dialogQuality: ratings.dialogQuality,
       easeOfSupply: ratings.easeOfSupply,
@@ -285,12 +319,10 @@ const SupplierEditContainer = () => {
       euDemandParts: ratings.euDemandOfParts
     };
 
-    // console.log('Payload to be sent:', payload);
-
     setLoadingSave(true);
     try {
       const response = await putBySupplierUpdate(payload);
-      // console.log('Response from putBySupplierUpdate:', response);
+
       if (response && response.statusCode === 200) {
         setResultModalTitle('Supplier update successful');
         setResultModalMessage(
@@ -370,6 +402,24 @@ const SupplierEditContainer = () => {
     }
     setShowDeleteModal(false);
     setAttachmentToDelete(null);
+  };
+
+  const handleBrandsChange = (brand: string) => {
+    setBrands(prevBrands =>
+      prevBrands.map(b => ({
+        ...b,
+        isSelected: b.value === brand
+      }))
+    );
+  };
+
+  const handleAircraftTypesChange = (type: string) => {
+    setAircraftTypes(prevTypes =>
+      prevTypes.map(t => ({
+        ...t,
+        isSelected: t.value === type
+      }))
+    );
   };
 
   if (loadingSupplier) {
@@ -496,31 +546,25 @@ const SupplierEditContainer = () => {
         password={password}
         setPassword={setPassword}
         onCountryChange={setSelectedCountryId}
-      />
-      <SegmentSelection
-        data={segments}
-        setSegmentIds={setSegmentIds}
-        setSegments={setSegments}
+        brands={brands}
+        aircraftTypes={aircraftTypes}
+        onBrandsChange={handleBrandsChange}
+        onAircraftTypesChange={handleAircraftTypesChange}
       />
       <Row className="mt-3">
-        <Col md={7}>
-          <AddressDetails
-            onCountryChange={setSelectedCountryId}
-            onStatusChange={handleStatusChange}
-            getbyCountryList={countryList}
-            pickUpAddress={pickUpAddress}
-            setPickUpAddress={setPickUpAddress}
-            onCertificateTypes={handleCertificateTypesChange}
-            defaultCountry={selectedCountryId}
-            defaultStatus={selectedStatus}
-            defaultCertificateTypes={certificateTypes}
+        <Col md={8}>
+          <SegmentSelection
+            data={segments}
+            setSegmentIds={setSegmentIds}
+            setSegments={setSegments}
           />
         </Col>
-        <Col
-          md={5}
-          className="d-flex justify-content-center align-items-center"
-        >
-          <div>
+        <Col md={4}>
+          <div className="pt-6">
+            <WorkingDetails
+              workingDetails={workingDetails}
+              setWorkingDetails={setWorkingDetails}
+            />
             <h5> Existing Attachments</h5>
             {initialAttachments.map(att => (
               <div
@@ -538,18 +582,30 @@ const SupplierEditContainer = () => {
           </div>
         </Col>
       </Row>
-      <WorkingDetails
-        workingDetails={workingDetails}
-        setWorkingDetails={setWorkingDetails}
-      />
+      {/* <Row className="mt-3">
+        <Col md={12}>
+          <AddressDetails
+            onCountryChange={setSelectedCountryId}
+            onStatusChange={handleStatusChange}
+            getbyCountryList={countryList}
+            pickUpAddress={pickUpAddress}
+            setPickUpAddress={setPickUpAddress}
+            onCertificateTypes={handleCertificateTypesChange}
+            defaultCountry={selectedCountryId}
+            defaultStatus={selectedStatus}
+            defaultCertificateTypes={certificateTypes}
+          />
+        </Col>
+      </Row> */}
+
       <div className="d-flex flex-row gap-2">
-        <div className="mt-3" style={{ width: '60%' }}>
+        <div className="mt-3" style={{ width: '66%' }}>
           <ContactListSection
             onContactsChange={setContacts}
             initialContacts={contacts}
           />
         </div>
-        <div className="mt-3" style={{ width: '40%' }}>
+        <div className="mt-3" style={{ width: '33%' }}>
           <RatingSection
             onRatingsChange={handleRatingsChange}
             ratings={ratings}
