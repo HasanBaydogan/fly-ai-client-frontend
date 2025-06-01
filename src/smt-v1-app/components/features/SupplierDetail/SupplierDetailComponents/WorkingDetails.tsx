@@ -5,12 +5,12 @@ const WorkingDetails = ({ workingDetails, setWorkingDetails }) => {
     setWorkingDetails(event.target.value);
   };
   return (
-    <Form className="mt-5">
+    <Form className="mb-5">
       <FloatingLabel controlId="floatingTextarea2" label="Working Details">
         <Form.Control
           as="textarea"
           placeholder="Details"
-          style={{ height: '100px' }}
+          style={{ height: '200px' }}
           value={workingDetails}
           onChange={handleWorkingDetails}
         />

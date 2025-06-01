@@ -35,6 +35,7 @@ const AddressDetails = ({
   const [pickupCountryName, setPickupCountryName] = useState('');
   const [useSameAddress, setUseSameAddress] = useState(false);
   const [countryList, setCountryList] = useState<Country[]>([]);
+  const [legalAddress, setLegalAddress] = useState('');
 
   useEffect(() => {
     if (getbyCountryList?.data) {
@@ -54,9 +55,9 @@ const AddressDetails = ({
   ) => {
     const value = e.target.value;
     setLegalCountryName(value);
-    onCountryChange(value);
     if (useSameAddress) {
       setPickupCountryName(value);
+      onCountryChange(value);
     }
   };
 
@@ -65,7 +66,10 @@ const AddressDetails = ({
   ) => {
     const value = e.target.value;
     setPickupCountryName(value);
-    onCountryChange(value);
+    if (useSameAddress) {
+      setLegalCountryName(value);
+      onCountryChange(value);
+    }
   };
 
   const handleLegalCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,11 +93,21 @@ const AddressDetails = ({
     if (checked) {
       setPickupCityName(legalCityName);
       setPickupCountryName(legalCountryName);
+      setPickUpAddress(legalAddress);
+    }
+  };
+
+  const handleLegalAddress = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setLegalAddress(value);
+    if (useSameAddress) {
+      setPickUpAddress(value);
     }
   };
 
   const handlePickUpAddress = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setPickUpAddress(e.target.value);
+    const value = e.target.value;
+    setPickUpAddress(value);
   };
 
   return (
@@ -106,8 +120,8 @@ const AddressDetails = ({
                 as="textarea"
                 placeholder="Address"
                 style={{ height: '100px' }}
-                value={pickUpAddress}
-                onChange={handlePickUpAddress}
+                value={legalAddress}
+                onChange={handleLegalAddress}
               />
             </FloatingLabel>
           </Form.Group>
@@ -122,6 +136,7 @@ const AddressDetails = ({
                 style={{ height: '100px' }}
                 value={pickUpAddress}
                 onChange={handlePickUpAddress}
+                disabled={useSameAddress}
               />
             </FloatingLabel>
           </Form.Group>

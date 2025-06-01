@@ -1,10 +1,12 @@
 import {
   deleteRequest,
   getRequest,
+  patchRequest,
   postRequest,
   putRequest
 } from './ApiCore/GlobalApiCore';
 import {
+  BrandsAircraftTypes,
   CreateSupplier,
   transformSupplier,
   UpdateSupplierPayload
@@ -58,4 +60,10 @@ export const transformToSupplier = async (
 
 export const getAllSupplier = async () => {
   return await getRequest('/supplier/all');
+};
+
+export const patchOtherValues = async (
+  BrandsAircraftTypes: BrandsAircraftTypes
+) => {
+  return await patchRequest('/supplier/other-values', BrandsAircraftTypes);
 };

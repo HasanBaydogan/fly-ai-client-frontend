@@ -140,11 +140,6 @@ const ContactListSection = ({
       cell: ({ row }) => formatPhoneNumber(row.original.phone)
     },
     {
-      accessorKey: 'cellphone',
-      header: 'Cell Phone',
-      cell: ({ row }) => formatPhoneNumber(row.original.cellphone)
-    },
-    {
       id: 'actions',
       header: 'Actions',
       cell: ({ row: { original } }) => (

@@ -83,3 +83,8 @@ export interface transformSupplier {
   fromId: string;
   toId: string;
 }
+
+export interface BrandsAircraftTypes {
+  value: string;
+  status: string;
+}
