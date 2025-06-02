@@ -178,16 +178,24 @@ const SupplierEditContainer = () => {
           setCompanyName(supplier.supplierCompanyName);
           setMailInput(supplier.mail);
           setTelephoneInput(supplier.telephone);
-          setLegalAddress(supplier.legalAddress);
-          setCity(supplier.city);
+          setLegalAddress(
+            supplier.supplierLegalAddressResponse?.legalAddress || ''
+          );
+          setCity(supplier.supplierLegalAddressResponse?.city || '');
           setContextNotes(supplier.contextNotes);
           const selectedSupplierSegmentIds = getInitialSelectedIds(
             supplier.segments
           );
           setSegmentIds(selectedSupplierSegmentIds);
           setSegments(supplier.segments);
-          setSelectedCountryId(supplier.country.id);
-          setPickUpAddress(supplier.pickUpAddress);
+          setSelectedCountryId(
+            supplier.supplierLegalAddressResponse?.country?.id ||
+              supplier.supplierPickupAddressResponse?.country?.id ||
+              ''
+          );
+          setPickUpAddress(
+            supplier.supplierPickupAddressResponse?.pickUpAddress || ''
+          );
           setSelectedStatus(supplier.supplierStatus);
           setWorkingDetails(supplier.workingDetails);
           setUsername(supplier.username);
