@@ -47,23 +47,23 @@ export const projectListTableColumns: ColumnDef<SupplierData>[] = [
     }
   },
   {
-    header: 'Country Info',
-    accessorKey: 'countryInfo',
+    header: 'Legal Country',
+    accessorKey: 'legalCountry',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'pickupaddress',
-    header: 'Pick Up Address',
+    accessorKey: 'pickupAddress',
+    header: 'Pickup Address',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {
-    accessorKey: 'email',
+    accessorKey: 'mail',
     header: 'E-Mails',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
@@ -169,8 +169,11 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
               }))
             : [],
           brand: item.brand || '',
-          country: item.countryInfo || '',
-          address: item.pickupaddress || '',
+          country: item.supplierLegalAddressDetail?.country?.countryName || '',
+          address: item.supplierPickupAddressDetail?.pickUpAddress || '',
+          legalCountry:
+            item.supplierLegalAddressDetail?.country?.countryName || '',
+          pickupAddress: item.supplierPickupAddressDetail?.pickUpAddress || '',
           email: item.email || '',
           contacts: Array.isArray(item.contacts)
             ? item.contacts
