@@ -27,6 +27,7 @@ import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/Rf
 import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
 import PIWizard from 'smt-v1-app/components/features/PIWizard/PIWizard';
 import POWizard from 'smt-v1-app/components/features/POWizard/POWizard';
+import { getPoDetails } from 'smt-v1-app/services/PoServices';
 
 const QuoteContainer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,7 +57,7 @@ const QuoteContainer = () => {
   };
 
   const [searchParams] = useSearchParams();
-  const piId = searchParams.get('piId');
+  const poId = searchParams.get('poId');
 
   const [mailItemMoreDetailResponse, setMailItemMoreDetailResponse] =
     useState<MailItemMoreDetail>();
@@ -99,7 +100,7 @@ const QuoteContainer = () => {
   const fetchPIWizardData = async () => {
     setIsPIWizardLoading(true);
     try {
-      const response = await getPiWizard(piId);
+      const response = await getPiWizard(poId);
       if (response && response.statusCode === 200) {
         setPiWizardData(response.data);
         handleOpenPIWizard();
@@ -118,7 +119,7 @@ const QuoteContainer = () => {
     setIsPOWizardLoading(true);
     try {
       // Use the same data structure as PI Wizard initially
-      const response = await getPiWizard(piId);
+      const response = await getPiWizard(poId);
       if (response && response.statusCode === 200) {
         setPoWizardData(response.data);
         handleOpenPOWizard();
@@ -134,7 +135,7 @@ const QuoteContainer = () => {
 
   useEffect(() => {
     const fetchQuoteValues = async () => {
-      const response = await getPiDetails(piId);
+      const response = await getPoDetails(poId);
       if (response && response.statusCode == 200) {
         setIsLoading(true);
         setpiData(response.data);
@@ -161,7 +162,7 @@ const QuoteContainer = () => {
       }
     }
 
-    const response = await getRFQMailIdToGoToRFQMail(piId);
+    const response = await getRFQMailIdToGoToRFQMail(poId);
     if (response && response.statusCode === 200) {
       window.location.assign('/rfqs/rfq?rfqMailId=' + response.data.rfqMailId);
     }
@@ -296,7 +297,7 @@ const QuoteContainer = () => {
               showTabs={showPIWizard}
               selectedParts={selectedParts}
               selectedAlternativeParts={selectedAlternativeParts}
-              quoteId={piData?.quoteId || piId}
+              quoteId={piData?.quoteId || poId}
               quoteComment=""
               piResponseData={piWizardData}
             />
@@ -310,7 +311,7 @@ const QuoteContainer = () => {
               showTabs={showPOWizard}
               selectedParts={selectedParts}
               selectedAlternativeParts={selectedAlternativeParts}
-              quoteId={piData?.quoteId || piId}
+              quoteId={piData?.quoteId || poId}
               quoteComment=""
               piResponseData={poWizardData}
             />

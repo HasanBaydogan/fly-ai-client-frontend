@@ -72,3 +72,21 @@ export const getPreEmailSendingParameters = async (poId: string) => {
 export const sendQuoteEmail = async (sendEmailProps: POEmailProps) => {
   return await postRequest(`/po/send-email`, sendEmailProps);
 };
+
+export const searchByPoList = async (
+  term: string,
+  pageNo: number,
+  pageSize: number | 'all' = 10
+) => {
+  let url = '';
+  if (pageSize === 'all') {
+    url = `/po/filter?${term}`;
+  } else {
+    url = `/po/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`;
+  }
+  return await getRequest(url);
+};
+
+export const getPoDetails = async (poId: string) => {
+  return await getRequest(`/po/po-detail?poId=${poId}`);
+};

@@ -2,24 +2,24 @@ import { useEffect, useState } from 'react';
 import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { ColumnDef } from '@tanstack/react-table';
-import { searchByPiList } from 'smt-v1-app/services/PIServices';
-import { PiData } from 'smt-v1-app/types/PiTypes';
 import PiListTable, {
   PiTableColumns
 } from 'smt-v1-app/components/features/PoList/PoListTable';
 import GeneralTopSection from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/ListTopSection';
+import { searchByPoList } from 'smt-v1-app/services/PoServices';
+import { PoData } from 'smt-v1-app/types/PoTypes';
 
 const PiListContainer = () => {
-  const [data] = useState<PiData[]>([]);
+  const [data] = useState<PoData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [pageIndex] = useState<number>(1);
-  const [clientData, setClientData] = useState<PiData[]>([]);
+  const [clientData, setClientData] = useState<PoData[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await searchByPiList('', pageIndex);
+        const response = await searchByPoList('', pageIndex);
         if (response && response.data && response.data.clients) {
         }
       } catch (error) {
@@ -33,7 +33,7 @@ const PiListContainer = () => {
 
   const table = useAdvanceTable({
     data: data,
-    columns: PiTableColumns as ColumnDef<PiData>[],
+    columns: PiTableColumns as ColumnDef<PoData>[],
     pageSize: 6,
     pagination: true,
     sortable: true
