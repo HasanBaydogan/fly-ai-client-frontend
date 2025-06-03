@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile-qa
     ports:
+      - '443:443' # HTTPS
       - '80:80' # serve QA over HTTP only
     restart: always
     healthcheck:

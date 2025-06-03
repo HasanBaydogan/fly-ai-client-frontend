@@ -26,6 +26,40 @@ import {
   Certypes
 } from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
 import { Attachment } from 'data/project-management/todoListData';
+import AttachmentPreview, {
+  FileAttachment
+} from 'components/common/AttachmentPreview';
+import { getAttachedFile } from 'smt-v1-app/services/GlobalServices';
+
+const openFileInNewTab = (file: {
+  data: string;
+  contentType: string;
+  fileName: string;
+}) => {
+  try {
+    const base64Index = file.data.indexOf('base64,');
+    const base64String =
+      base64Index !== -1 ? file.data.substring(base64Index + 7) : file.data;
+    const binaryData = atob(base64String);
+    const length = binaryData.length;
+    const bytes = new Uint8Array(length);
+    for (let i = 0; i < length; i++) {
+      bytes[i] = binaryData.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: file.contentType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.fileName;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch (error) {
+    console.error('Error opening file:', error);
+  }
+};
 
 const SupplierDetailContainer = () => {
   const navigate = useNavigate();
@@ -71,9 +105,57 @@ const SupplierDetailContainer = () => {
   const [resultModalTitle, setResultModalTitle] = useState('');
   const [resultModalMessage, setResultModalMessage] = useState('');
   const [loadingSave, setLoadingSave] = useState<boolean>(false);
+  const [initialAttachments, setInitialAttachments] = useState<
+    (FileAttachment & { id: string; contentType: string })[]
+  >([]);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<
+    null | (FileAttachment & { id: string; contentType: string })
+  >(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [legalAddress, setLegalAddress] = useState('');
+  const [legalCity, setLegalCity] = useState('');
+  const [legalCountryId, setLegalCountryId] = useState('');
+  const [pickupCity, setPickupCity] = useState('');
+  const [pickupCountryId, setPickupCountryId] = useState('');
 
   const handleRatingsChange = (updatedRatings: RatingData) => {
     setRatings(updatedRatings);
+  };
+  const attachmentsPayload = [
+    ...initialAttachments.map(att => ({
+      id: att.id,
+      fileName: att.name,
+      data: (att as any).url
+    })),
+    ...base64Files.map(file => ({
+      id: null,
+      fileName: file.name,
+      data: file.base64
+    }))
+  ];
+  const handleDeleteClick = (att: any) => {
+    setAttachmentToDelete(att);
+    setShowDeleteModal(true);
+  };
+
+  const handleAttachmentClick = async (att: any) => {
+    try {
+      const fileResponse = await getAttachedFile(att.id);
+      if (fileResponse && fileResponse.data) {
+        const fileData = fileResponse.data.data;
+        const fileContentType =
+          fileResponse.data.contentType || att.contentType;
+        const fileName = fileResponse.data.fileName || att.name;
+        openFileInNewTab({
+          data: fileData,
+          contentType: fileContentType,
+          fileName: fileName
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching attachment for id:', att.id, error);
+    }
   };
 
   useEffect(() => {
@@ -216,6 +298,26 @@ const SupplierDetailContainer = () => {
     );
   };
 
+  const handleLegalCountryChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setLegalCountryId(e.target.value);
+  };
+
+  const handlePickupCountryChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setPickupCountryId(e.target.value);
+  };
+
+  const handleLegalCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLegalCity(e.target.value);
+  };
+
+  const handlePickupCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPickupCity(e.target.value);
+  };
+
   return (
     <>
       {/* Alert */}
@@ -297,8 +399,63 @@ const SupplierDetailContainer = () => {
         mailInput={mailInput}
         setMailInput={setMailInput}
       />
+      <AddressDetails
+        onStatusChange={handleStatusChange}
+        getbyCountryList={countryList}
+        pickUpAddress={pickUpAddress}
+        setPickUpAddress={setPickUpAddress}
+        legalAddress={legalAddress}
+        setLegalAddress={setLegalAddress}
+        legalCity={legalCity}
+        setLegalCity={setLegalCity}
+        legalCountryId={legalCountryId}
+        setLegalCountryId={setLegalCountryId}
+        pickupCity={pickupCity}
+        setPickupCity={setPickupCity}
+        pickupCountryId={pickupCountryId}
+        setPickupCountryId={setPickupCountryId}
+        onCertificateTypes={handleCertificateTypesChange}
+      />
+      <AccountInfo
+        username={username}
+        setUsername={setUsername}
+        password={password}
+        setPassword={setPassword}
+      />
 
-      {/* Segment Selection */}
+      <Row className="mt-3">
+        <Col md={8}>
+          <SegmentSelection
+            data={segments}
+            setSegmentIds={setSegmentIds}
+            setSegments={setSegments}
+          />
+        </Col>
+        <Col md={4}>
+          <div className="pt-6">
+            <WorkingDetails
+              workingDetails={workingDetails}
+              setWorkingDetails={setWorkingDetails}
+            />
+            <h5> Existing Attachments</h5>
+            {initialAttachments.map(att => (
+              <div
+                key={att.id}
+                onClick={() => handleAttachmentClick(att)}
+                style={{ cursor: 'pointer', position: 'relative' }}
+              >
+                <AttachmentPreview
+                  handleRemove={() => handleDeleteClick(att)}
+                  attachment={att}
+                />
+              </div>
+            ))}
+            <FileUpload onFilesUpload={handleFilesUpload} />
+          </div>
+        </Col>
+      </Row>
+
+      {/* Segment Selection
       {loadingSegments ? (
         <p>Loading segments...</p>
       ) : errorSegments ? (
@@ -309,19 +466,10 @@ const SupplierDetailContainer = () => {
           setSegmentIds={setSegmentIds}
           setSegments={setSegments}
         />
-      )}
+      )} */}
       {/* Other Sections */}
       <Row className="mt-3">
-        <Col md={7}>
-          <AddressDetails
-            onCountryChange={setSelectedCountryId}
-            onStatusChange={handleStatusChange}
-            getbyCountryList={countryList}
-            pickUpAddress={pickUpAddress}
-            setPickUpAddress={setPickUpAddress}
-            onCertificateTypes={handleCertificateTypesChange}
-          />
-        </Col>
+        <Col md={7}></Col>
         <Col
           md={5}
           className="d-flex justify-content-center align-items-center"
@@ -337,13 +485,7 @@ const SupplierDetailContainer = () => {
         setWorkingDetails={setWorkingDetails}
       />
       <FileUpload onFilesUpload={handleFilesUpload} />
-      <AccountInfo
-        username={username}
-        setUsername={setUsername}
-        password={password}
-        setPassword={setPassword}
-        onCountryChange={setSelectedCountryId}
-      />
+
       <ContactListSection onContactsChange={setContacts} />
       {/* Buttons ve Loading Overlay */}
       <div style={{ position: 'relative', minHeight: '70px' }}>

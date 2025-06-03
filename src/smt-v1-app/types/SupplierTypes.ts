@@ -61,13 +61,21 @@ export interface UpdateSupplierPayload {
   supplierId: string;
   supplierCompanyName: string;
   segmentIds: string[];
-  countryId: string;
-  pickUpAddress: string;
   status: string;
   attachments: { id: string | null; fileName: string; data: string }[];
   workingDetails: string;
   username: string;
   password: string;
+  supplierPickupAddress: {
+    pickUpAddress: string;
+    city: string;
+    countryId: string;
+  };
+  supplierLegalAddress: {
+    legalAddress: string;
+    city: string;
+    countryId: string;
+  };
   contacts: {
     id: string;
     fullName: string;
@@ -77,13 +85,11 @@ export interface UpdateSupplierPayload {
     cellPhone: string;
   }[];
   certificateTypes: string[];
-  legalAddress: string;
-  city: string;
   mail: string;
   telephone: string;
+  aircraftTypes: string[];
   contextNotes: string;
   brands: string[];
-  aircraftTypes: string[];
   dialogSpeed: number;
   dialogQuality: number;
   easeOfSupply: number;
