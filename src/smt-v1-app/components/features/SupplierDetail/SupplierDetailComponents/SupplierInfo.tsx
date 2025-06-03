@@ -48,6 +48,17 @@ const SupplierInfo = ({
     setMailInput(event.target.value);
   };
 
+  const formatPhoneNumber = (phone: string) => {
+    if (!phone) return '';
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('90')) {
+      return `+90 ${cleaned.slice(2, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(
+        8
+      )}`;
+    }
+    return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`;
+  };
+
   return (
     <div>
       <Form>
@@ -81,9 +92,11 @@ const SupplierInfo = ({
             <Form.Group className="flex-grow-1">
               <Form.Control
                 type="text"
-                placeholder="Telephone"
+                placeholder="Phone"
                 value={telephoneInput}
-                onChange={handleTelephoneChange}
+                onChange={e =>
+                  setTelephoneInput(formatPhoneNumber(e.target.value))
+                }
               />
             </Form.Group>
           </div>

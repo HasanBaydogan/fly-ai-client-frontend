@@ -7,35 +7,45 @@ interface Country {
 }
 
 interface AddressDetailsProps {
-  onCountryChange: (value: string) => void;
   onStatusChange: (value: string) => void;
   onCertificateTypes: (value: string[]) => void;
   getbyCountryList?: { data: Country[] };
   setPickUpAddress: (value: string) => void;
   pickUpAddress: string;
+  legalAddress: string;
+  setLegalAddress: (value: string) => void;
+  legalCity: string;
+  setLegalCity: (value: string) => void;
+  legalCountryId: string;
+  setLegalCountryId: (value: string) => void;
+  pickupCity: string;
+  setPickupCity: (value: string) => void;
+  pickupCountryId: string;
+  setPickupCountryId: (value: string) => void;
   defaultCountry?: string;
   defaultStatus?: string;
   defaultCertificateTypes?: string[];
 }
 
 const AddressDetails = ({
-  onCountryChange,
   onStatusChange,
-  onCertificateTypes,
   getbyCountryList,
   setPickUpAddress,
   pickUpAddress,
-  defaultCountry,
-  defaultStatus,
-  defaultCertificateTypes
+  legalAddress,
+  setLegalAddress,
+  legalCity,
+  setLegalCity,
+  legalCountryId,
+  setLegalCountryId,
+  pickupCity,
+  setPickupCity,
+  pickupCountryId,
+  setPickupCountryId,
+  defaultCountry
 }: AddressDetailsProps) => {
-  const [legalCityName, setLegalCityName] = useState('');
-  const [legalCountryName, setLegalCountryName] = useState('');
-  const [pickupCityName, setPickupCityName] = useState('');
-  const [pickupCountryName, setPickupCountryName] = useState('');
   const [useSameAddress, setUseSameAddress] = useState(false);
   const [countryList, setCountryList] = useState<Country[]>([]);
-  const [legalAddress, setLegalAddress] = useState('');
 
   useEffect(() => {
     if (getbyCountryList?.data) {
@@ -45,44 +55,34 @@ const AddressDetails = ({
 
   useEffect(() => {
     if (defaultCountry) {
-      setLegalCountryName(defaultCountry);
-      setPickupCountryName(defaultCountry);
+      setLegalCountryId(defaultCountry);
+      setPickupCountryId(defaultCountry);
     }
-  }, [defaultCountry]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Sadece ilk render'da çalışsın
 
   const handleLegalCountryChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const value = e.target.value;
-    setLegalCountryName(value);
-    if (useSameAddress) {
-      setPickupCountryName(value);
-      onCountryChange(value);
-    }
+    setLegalCountryId(value);
   };
 
   const handlePickupCountryChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const value = e.target.value;
-    setPickupCountryName(value);
-    if (useSameAddress) {
-      setLegalCountryName(value);
-      onCountryChange(value);
-    }
+    setPickupCountryId(value);
   };
 
   const handleLegalCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setLegalCityName(value);
-    if (useSameAddress) {
-      setPickupCityName(value);
-    }
+    setLegalCity(value);
   };
 
   const handlePickupCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setPickupCityName(value);
+    setPickupCity(value);
   };
 
   const handleUseSameAddressChange = (
@@ -91,8 +91,6 @@ const AddressDetails = ({
     const checked = e.target.checked;
     setUseSameAddress(checked);
     if (checked) {
-      setPickupCityName(legalCityName);
-      setPickupCountryName(legalCountryName);
       setPickUpAddress(legalAddress);
     }
   };
@@ -148,14 +146,14 @@ const AddressDetails = ({
           <Form.Control
             type="text"
             placeholder="Enter City"
-            value={legalCityName}
+            value={legalCity}
             onChange={handleLegalCityChange}
           />
         </Form.Group>
         <Form.Group style={{ width: '25%' }}>
           <Form.Label>Legal Country</Form.Label>
           <Form.Select
-            value={legalCountryName}
+            value={legalCountryId}
             onChange={handleLegalCountryChange}
           >
             <option value="">Select Country</option>
@@ -171,7 +169,7 @@ const AddressDetails = ({
           <Form.Control
             type="text"
             placeholder="Enter City"
-            value={pickupCityName}
+            value={pickupCity}
             onChange={handlePickupCityChange}
             disabled={useSameAddress}
           />
@@ -179,7 +177,7 @@ const AddressDetails = ({
         <Form.Group style={{ width: '25%' }}>
           <Form.Label>Pickup Country</Form.Label>
           <Form.Select
-            value={pickupCountryName}
+            value={pickupCountryId}
             onChange={handlePickupCountryChange}
             disabled={useSameAddress}
           >

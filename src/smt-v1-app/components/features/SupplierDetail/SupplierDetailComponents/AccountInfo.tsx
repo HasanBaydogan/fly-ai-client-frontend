@@ -17,7 +17,6 @@ interface AccountInfoProps {
   setUsername: (value: string) => void;
   password: string;
   setPassword: (value: string) => void;
-  onCountryChange: (value: string) => void;
   brands?: Brand[];
   aircraftTypes?: AircraftType[];
   onBrandsChange?: (brand: string) => void;
@@ -29,7 +28,6 @@ const AccountInfo = ({
   setUsername,
   password,
   setPassword,
-  onCountryChange,
   brands = [],
   aircraftTypes = [],
   onBrandsChange,
