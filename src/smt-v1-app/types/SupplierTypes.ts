@@ -8,10 +8,10 @@ export interface SupplierData {
   id: string;
   companyName: string;
   segments: { segmentName: string }[];
-  brand: string;
+  brands: string;
   country: string;
   address: string;
-  email?: string;
+  mail: string;
   contacts: { email: string }[];
   status: SupplierStatus;
   quoteID: string | null;
@@ -36,11 +36,8 @@ export interface SupplierData {
 export interface CreateSupplier {
   supplierCompanyName: string;
   segmentIds: string[];
-  telephone: string;
-  mail: string;
-  countryId: string;
-  pickUpAddress: string;
-  supplierStatus: SupplierStatus;
+  // brand: string;
+  supplierStatus: string;
   attachments: {
     fileName: string;
     data: string;
@@ -50,6 +47,21 @@ export interface CreateSupplier {
   password: string;
   contacts: FormattedContactData[];
   certificateTypes: Certypes[];
+  supplierPickupAddress: {
+    pickUpAddress: string;
+    city: string;
+    countryId: string;
+  };
+  supplierLegalAddress: {
+    legalAddress: string;
+    city: string;
+    countryId: string;
+  };
+  telephone: string;
+  mail: string;
+  contextNotes: string;
+  aircraftTypes: string[];
+  brands: string[];
   dialogSpeed: number;
   dialogQuality: number;
   easeOfSupply: number;

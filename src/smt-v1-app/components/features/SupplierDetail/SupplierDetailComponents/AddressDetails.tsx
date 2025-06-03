@@ -46,7 +46,6 @@ const AddressDetails = ({
 }: AddressDetailsProps) => {
   const [useSameAddress, setUseSameAddress] = useState(false);
   const [countryList, setCountryList] = useState<Country[]>([]);
-  const [legalAddress, setLegalAddress] = useState('');
 
   useEffect(() => {
     if (getbyCountryList?.data) {

@@ -12,7 +12,7 @@ interface SupplierDetailModalProps {
     id: string;
     companyName: string;
     segments: { segmentName: string }[];
-    brand: string;
+    brands: string;
     country: string;
     address: string;
     email?: string;
@@ -143,7 +143,7 @@ const SupplierDetailModal = ({
                 </tr>
                 <tr>
                   <td className="fw-bold">Brand:</td>
-                  <td>{supplierData.brand}</td>
+                  <td>{supplierData.brands}</td>
                 </tr>
                 <tr>
                   <td className="fw-bold">Country:</td>

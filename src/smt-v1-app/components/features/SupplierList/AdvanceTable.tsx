@@ -219,10 +219,10 @@ const AdvanceTable = ({
                   </a>
                 </td>
                 <td>{renderSegments(row.segments)}</td>
-                <td>{row.brand}</td>
+                <td>{row.brands}</td>
                 <td>{row.country}</td>
                 <td>{row.address}</td>
-                <td>{row.contacts?.[0]?.email || row.email}</td>
+                <td>{row.mail || row.mail}</td>
                 <td>
                   <Badge
                     bg={

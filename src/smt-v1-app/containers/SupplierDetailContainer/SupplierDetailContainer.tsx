@@ -21,15 +21,23 @@ import {
   postSupplierCreate
 } from '../../services/SupplierServices';
 import { TreeNode } from 'smt-v1-app/types/index';
-import {
-  SupplierStatus,
-  Certypes
-} from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
+import { Certypes } from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
 import { Attachment } from 'data/project-management/todoListData';
 import AttachmentPreview, {
   FileAttachment
 } from 'components/common/AttachmentPreview';
 import { getAttachedFile } from 'smt-v1-app/services/GlobalServices';
+import ContactStatusSection from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/ContactStatusSection';
+
+interface Brand {
+  value: string;
+  isSelected: boolean;
+}
+
+interface AircraftType {
+  value: string;
+  isSelected: boolean;
+}
 
 const openFileInNewTab = (file: {
   data: string;
@@ -71,7 +79,6 @@ const SupplierDetailContainer = () => {
   const [mailInput, setMailInput] = useState('');
   const [selectedCountryId, setSelectedCountryId] = useState('');
   const [pickUpAddress, setPickUpAddress] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<SupplierStatus | ''>('');
   const [base64Files, setBase64Files] = useState<
     { name: string; base64: string }[]
   >([]);
@@ -80,6 +87,7 @@ const SupplierDetailContainer = () => {
   const [password, setPassword] = useState('');
   const [contacts, setContacts] = useState<FormattedContactData[]>([]);
   const [certificateTypes, setCertificateTypes] = useState<Certypes[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
 
   const [ratings, setRatings] = useState<RatingData>({
     easeOfSupply: 0,
@@ -114,10 +122,14 @@ const SupplierDetailContainer = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [legalAddress, setLegalAddress] = useState('');
-  const [legalCity, setLegalCity] = useState('');
   const [legalCountryId, setLegalCountryId] = useState('');
-  const [pickupCity, setPickupCity] = useState('');
-  const [pickupCountryId, setPickupCountryId] = useState('');
+  const [selectedPickupCountryId, setSelectedPickupCountryId] = useState('');
+
+  const [pickupcity, setPickupCity] = useState('');
+  const [legalcity, setLegalCity] = useState('');
+  const [contextNotes, setContextNotes] = useState('');
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [aircraftTypes, setAircraftTypes] = useState<AircraftType[]>([]);
 
   const handleRatingsChange = (updatedRatings: RatingData) => {
     setRatings(updatedRatings);
@@ -218,13 +230,6 @@ const SupplierDetailContainer = () => {
       return;
     }
 
-    if (!selectedCountryId) {
-      setAlertMessage('Please select a Country.');
-      setIsSuccess(false);
-      setShowAlert(true);
-      return;
-    }
-
     if (!selectedStatus) {
       setAlertMessage('Please select a Status.');
       setIsSuccess(false);
@@ -235,20 +240,49 @@ const SupplierDetailContainer = () => {
     const payload = {
       supplierCompanyName: companyName,
       segmentIds: segmentIds,
-      telephone: telephoneInput,
-      mail: mailInput,
-      countryId: selectedCountryId,
-      pickUpAddress: pickUpAddress,
       supplierStatus: selectedStatus,
-      attachments: base64Files.map(file => ({
-        fileName: file.name,
-        data: file.base64
-      })),
+      attachments: attachmentsPayload,
       workingDetails: workingDetails,
       username: username,
       password: password,
-      contacts: contacts,
+      // countryId: selectedCountryId,
+      // pickUpAddress: pickUpAddress,
+      // supplierStatus: {
+      //   label: selectedStatus as 'CONTACTED' | 'NOT_CONTACTED' | 'BLACK_LISTED',
+      //   type: (selectedStatus === 'CONTACTED'
+      //     ? 'success'
+      //     : selectedStatus === 'NOT_CONTACTED'
+      //     ? 'warning'
+      //     : 'danger') as 'success' | 'warning' | 'danger'
+      // },
+      supplierPickupAddress: {
+        pickUpAddress,
+        city: pickupcity,
+        countryId: selectedPickupCountryId
+      },
+      supplierLegalAddress: {
+        legalAddress,
+        city: legalcity,
+        countryId: legalCountryId
+      },
+      contacts: contacts.map(contact => ({
+        id: contact.id,
+        fullName: contact.fullName,
+        email: contact.email,
+        title: contact.title,
+        phone: contact.phone,
+        cellPhone: contact.cellPhone
+      })),
       certificateTypes: certificateTypes,
+      mail: mailInput,
+      telephone: telephoneInput,
+      contextNotes: contextNotes,
+      brands: brands
+        .filter(brand => brand.isSelected)
+        .map(brand => brand.value),
+      aircraftTypes: aircraftTypes
+        .filter(type => type.isSelected)
+        .map(type => type.value),
       dialogSpeed: ratings.dialogSpeed,
       dialogQuality: ratings.dialogQuality,
       easeOfSupply: ratings.easeOfSupply,
@@ -284,7 +318,7 @@ const SupplierDetailContainer = () => {
   };
 
   const handleStatusChange = (value: string) => {
-    setSelectedStatus(value as unknown as SupplierStatus);
+    setSelectedStatus(value as unknown as string);
   };
 
   const handleCertificateTypesChange = (values: string[]) => {
@@ -307,7 +341,7 @@ const SupplierDetailContainer = () => {
   const handlePickupCountryChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setPickupCountryId(e.target.value);
+    setSelectedPickupCountryId(e.target.value);
   };
 
   const handleLegalCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -316,6 +350,24 @@ const SupplierDetailContainer = () => {
 
   const handlePickupCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPickupCity(e.target.value);
+  };
+
+  const handleBrandsChange = (brand: string) => {
+    setBrands(prevBrands =>
+      prevBrands.map((b: Brand) => ({
+        ...b,
+        isSelected: b.value === brand
+      }))
+    );
+  };
+
+  const handleAircraftTypesChange = (type: string) => {
+    setAircraftTypes(prevTypes =>
+      prevTypes.map((t: AircraftType) => ({
+        ...t,
+        isSelected: t.value === type
+      }))
+    );
   };
 
   return (
@@ -406,21 +458,25 @@ const SupplierDetailContainer = () => {
         setPickUpAddress={setPickUpAddress}
         legalAddress={legalAddress}
         setLegalAddress={setLegalAddress}
-        legalCity={legalCity}
+        legalCity={legalcity}
         setLegalCity={setLegalCity}
         legalCountryId={legalCountryId}
         setLegalCountryId={setLegalCountryId}
-        pickupCity={pickupCity}
+        pickupCity={pickupcity}
         setPickupCity={setPickupCity}
-        pickupCountryId={pickupCountryId}
-        setPickupCountryId={setPickupCountryId}
         onCertificateTypes={handleCertificateTypesChange}
+        pickupCountryId={selectedPickupCountryId}
+        setPickupCountryId={setSelectedPickupCountryId}
       />
       <AccountInfo
         username={username}
         setUsername={setUsername}
         password={password}
         setPassword={setPassword}
+        brands={brands}
+        aircraftTypes={aircraftTypes}
+        onBrandsChange={handleBrandsChange}
+        onAircraftTypesChange={handleAircraftTypesChange}
       />
 
       <Row className="mt-3">
@@ -468,25 +524,31 @@ const SupplierDetailContainer = () => {
         />
       )} */}
       {/* Other Sections */}
-      <Row className="mt-3">
-        <Col md={7}></Col>
-        <Col
-          md={5}
-          className="d-flex justify-content-center align-items-center"
-        >
+      <div className="d-flex flex-row gap-2">
+        <div className="mt-3" style={{ width: '66%' }}>
+          <ContactListSection onContactsChange={setContacts} />
+          <div className="mt-3 ">
+            <ContactStatusSection
+              selectedStatus={selectedStatus}
+              setContactStatus={handleStatusChange}
+              contactNotes=""
+              setContactNotes={() => {}} // Placeholder, not used
+            />
+          </div>
+        </div>
+        <div className="mt-3" style={{ width: '33%' }}>
           <RatingSection
             onRatingsChange={handleRatingsChange}
             ratings={ratings}
           />
-        </Col>
-      </Row>
-      <WorkingDetails
+        </div>
+      </div>
+      {/* <WorkingDetails
         workingDetails={workingDetails}
         setWorkingDetails={setWorkingDetails}
       />
-      <FileUpload onFilesUpload={handleFilesUpload} />
+      <FileUpload onFilesUpload={handleFilesUpload} /> */}
 
-      <ContactListSection onContactsChange={setContacts} />
       {/* Buttons ve Loading Overlay */}
       <div style={{ position: 'relative', minHeight: '70px' }}>
         {loadingSave && (
