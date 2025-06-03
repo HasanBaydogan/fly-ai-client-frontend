@@ -531,8 +531,8 @@ const SupplierDetailContainer = () => {
             <ContactStatusSection
               selectedStatus={selectedStatus}
               setContactStatus={handleStatusChange}
-              contactNotes=""
-              setContactNotes={() => {}} // Placeholder, not used
+              contactNotes={contextNotes}
+              setContactNotes={setContextNotes}
             />
           </div>
         </div>
