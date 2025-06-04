@@ -18,7 +18,8 @@ import {
   getBySupplierId,
   putBySupplierUpdate,
   getbyCountryList,
-  patchOtherValues
+  patchOtherValues,
+  getOtherValues
 } from '../../services/SupplierServices';
 import {
   getbySegmentList,
@@ -123,6 +124,8 @@ const SupplierEditContainer = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [aircraftTypes, setAircraftTypes] = useState<AircraftType[]>([]);
+  const [brandOptions, setBrandOptions] = useState<string[]>([]);
+  const [aircraftTypeOptions, setAircraftTypeOptions] = useState<string[]>([]);
   const [selectedLegalCountryId, setSelectedLegalCountryId] = useState('');
 
   const handleRatingsChange = (updatedRatings: RatingData) => {
@@ -168,6 +171,33 @@ const SupplierEditContainer = () => {
       }
     };
     fetchCountries();
+  }, []);
+
+  useEffect(() => {
+    const fetchOtherValues = async () => {
+      try {
+        const response = await getOtherValues();
+        if (response?.data) {
+          setBrandOptions(response.data.brands || []);
+          setAircraftTypeOptions(response.data.aircraftTypes || []);
+          setBrands(prev =>
+            (response.data.brands || []).map(b => ({
+              value: b,
+              isSelected: false
+            }))
+          );
+          setAircraftTypes(prev =>
+            (response.data.aircraftTypes || []).map(a => ({
+              value: a,
+              isSelected: false
+            }))
+          );
+        }
+      } catch (error) {
+        // handle error if needed
+      }
+    };
+    fetchOtherValues();
   }, []);
 
   useEffect(() => {
@@ -265,19 +295,27 @@ const SupplierEditContainer = () => {
       return;
     }
     if (!selectedLegalCountryId) {
-      setAlertMessage('Please select a Legal Country.');
+      setAlertMessage('Legal Country cannot be empty.');
       setIsSuccess(false);
       setShowAlert(true);
       return;
     }
     if (!selectedPickupCountryId) {
-      setAlertMessage('Please select a Pickup Country.');
+      setAlertMessage('Pickup Country cannot be empty.');
       setIsSuccess(false);
       setShowAlert(true);
       return;
     }
     if (!selectedStatus) {
       setAlertMessage('Please select a Status.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
+    if (selectedStatus === 'CONTACTED' && contacts.length === 0) {
+      setAlertMessage(
+        'You must add at least one contact to select Contacted status.'
+      );
       setIsSuccess(false);
       setShowAlert(true);
       return;
@@ -583,6 +621,20 @@ const SupplierEditContainer = () => {
         aircraftTypes={aircraftTypes}
         onBrandsChange={handleBrandsChange}
         onAircraftTypesChange={handleAircraftTypesChange}
+        brandOptions={brandOptions}
+        aircraftTypeOptions={aircraftTypeOptions}
+        onBrandAdded={newBrand =>
+          setBrands(prev => [
+            ...prev.map(b => ({ ...b, isSelected: false })),
+            { value: newBrand, isSelected: true }
+          ])
+        }
+        onAircraftTypeAdded={newType =>
+          setAircraftTypes(prev => [
+            ...prev.map(a => ({ ...a, isSelected: false })),
+            { value: newType, isSelected: true }
+          ])
+        }
       />
 
       <Row className="mt-3">
@@ -644,6 +696,7 @@ const SupplierEditContainer = () => {
               setContactStatus={setSelectedStatus}
               contactNotes={contextNotes}
               setContactNotes={setContextNotes}
+              contactsCount={contacts.length}
             />
           </div>
         </div>

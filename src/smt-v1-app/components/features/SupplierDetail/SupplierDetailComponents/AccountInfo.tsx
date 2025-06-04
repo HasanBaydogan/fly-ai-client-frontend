@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Col } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
+import { patchOtherValues } from 'smt-v1-app/services/SupplierServices';
 
 interface Brand {
   value: string;
@@ -21,6 +22,10 @@ interface AccountInfoProps {
   aircraftTypes?: AircraftType[];
   onBrandsChange?: (brand: string) => void;
   onAircraftTypesChange?: (type: string) => void;
+  brandOptions?: string[];
+  aircraftTypeOptions?: string[];
+  onBrandAdded?: (brand: string) => void;
+  onAircraftTypeAdded?: (aircraftType: string) => void;
 }
 
 const AccountInfo = ({
@@ -31,12 +36,26 @@ const AccountInfo = ({
   brands = [],
   aircraftTypes = [],
   onBrandsChange,
-  onAircraftTypesChange
+  onAircraftTypesChange,
+  brandOptions = [],
+  aircraftTypeOptions = [],
+  onBrandAdded,
+  onAircraftTypeAdded
 }: AccountInfoProps) => {
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [selectedAircraftType, setSelectedAircraftType] = useState<string>('');
   const [isBrandInput, setIsBrandInput] = useState(false);
   const [isAircraftInput, setIsAircraftInput] = useState(false);
+  const [brandInputStatus, setBrandInputStatus] = useState<
+    'idle' | 'success' | 'error'
+  >('idle');
+  const [aircraftInputStatus, setAircraftInputStatus] = useState<
+    'idle' | 'success' | 'error'
+  >('idle');
+  const [localBrandOptions, setLocalBrandOptions] =
+    useState<string[]>(brandOptions);
+  const [localAircraftTypeOptions, setLocalAircraftTypeOptions] =
+    useState<string[]>(aircraftTypeOptions);
 
   // Initial data setup
   useEffect(() => {
@@ -85,6 +104,14 @@ const AccountInfo = ({
     }
   }, [aircraftTypes]);
 
+  // Sync with parent options if they change
+  useEffect(() => {
+    setLocalBrandOptions(brandOptions);
+  }, [brandOptions]);
+  useEffect(() => {
+    setLocalAircraftTypeOptions(aircraftTypeOptions);
+  }, [aircraftTypeOptions]);
+
   const handleBrandsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     if (value === 'new') {
@@ -115,6 +142,7 @@ const AccountInfo = ({
     const value = e.target.value;
     setSelectedBrand(value);
     onBrandsChange?.(value);
+    setBrandInputStatus('idle');
   };
 
   const handleAircraftInputChange = (
@@ -123,6 +151,50 @@ const AccountInfo = ({
     const value = e.target.value;
     setSelectedAircraftType(value);
     onAircraftTypesChange?.(value);
+    setAircraftInputStatus('idle');
+  };
+
+  // Yeni brand ekleme işlemi
+  const handleBrandInputBlur = async () => {
+    if (selectedBrand.trim() && !localBrandOptions.includes(selectedBrand)) {
+      try {
+        await patchOtherValues({ value: selectedBrand, status: 'BRAND' });
+        setLocalBrandOptions(prev => [...prev, selectedBrand]);
+        setBrandInputStatus('success');
+        onBrandAdded?.(selectedBrand);
+      } catch (e) {
+        setBrandInputStatus('error');
+        // Hata yönetimi eklenebilir
+      }
+    }
+    if (!selectedBrand.trim()) {
+      setIsBrandInput(false);
+      setBrandInputStatus('idle');
+    }
+  };
+  // Yeni aircraft type ekleme işlemi
+  const handleAircraftInputBlur = async () => {
+    if (
+      selectedAircraftType.trim() &&
+      !localAircraftTypeOptions.includes(selectedAircraftType)
+    ) {
+      try {
+        await patchOtherValues({
+          value: selectedAircraftType,
+          status: 'AIRCRAFT'
+        });
+        setLocalAircraftTypeOptions(prev => [...prev, selectedAircraftType]);
+        setAircraftInputStatus('success');
+        onAircraftTypeAdded?.(selectedAircraftType);
+      } catch (e) {
+        setAircraftInputStatus('error');
+        // Hata yönetimi eklenebilir
+      }
+    }
+    if (!selectedAircraftType.trim()) {
+      setIsAircraftInput(false);
+      setAircraftInputStatus('idle');
+    }
   };
 
   const handleUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,18 +238,22 @@ const AccountInfo = ({
                 placeholder="Enter new brand"
                 value={selectedBrand}
                 onChange={handleBrandInputChange}
-                onBlur={() => {
-                  if (!selectedBrand.trim()) {
-                    setIsBrandInput(false);
-                  }
+                onBlur={handleBrandInputBlur}
+                style={{
+                  borderColor:
+                    brandInputStatus === 'success'
+                      ? 'green'
+                      : brandInputStatus === 'error'
+                      ? 'red'
+                      : undefined
                 }}
               />
             ) : (
               <Form.Select value={selectedBrand} onChange={handleBrandsChange}>
                 <option value="">Select Brand</option>
-                {brands.map(brand => (
-                  <option key={brand.value} value={brand.value}>
-                    {brand.value}
+                {localBrandOptions.map(option => (
+                  <option key={option} value={option}>
+                    {option}
                   </option>
                 ))}
                 <option value="new">+ Add New Brand</option>
@@ -191,10 +267,14 @@ const AccountInfo = ({
                 placeholder="Enter new aircraft type"
                 value={selectedAircraftType}
                 onChange={handleAircraftInputChange}
-                onBlur={() => {
-                  if (!selectedAircraftType.trim()) {
-                    setIsAircraftInput(false);
-                  }
+                onBlur={handleAircraftInputBlur}
+                style={{
+                  borderColor:
+                    aircraftInputStatus === 'success'
+                      ? 'green'
+                      : aircraftInputStatus === 'error'
+                      ? 'red'
+                      : undefined
                 }}
               />
             ) : (
@@ -203,9 +283,9 @@ const AccountInfo = ({
                 onChange={handleAircraftTypesChange}
               >
                 <option value="">Select Aircraft Type</option>
-                {aircraftTypes.map(type => (
-                  <option key={type.value} value={type.value}>
-                    {type.value}
+                {localAircraftTypeOptions.map(option => (
+                  <option key={option} value={option}>
+                    {option}
                   </option>
                 ))}
                 <option value="new">+ Add New Aircraft Type</option>

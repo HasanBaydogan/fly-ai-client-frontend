@@ -5,13 +5,15 @@ interface ContactStatusSectionProps {
   setContactStatus: (value: string) => void;
   contactNotes: string;
   setContactNotes: (value: string) => void;
+  contactsCount: number;
 }
 
 const ContactStatusSection = ({
   selectedStatus,
   setContactStatus,
   contactNotes,
-  setContactNotes
+  setContactNotes,
+  contactsCount
 }: ContactStatusSectionProps) => {
   return (
     <Form className="mb-5">
@@ -22,7 +24,9 @@ const ContactStatusSection = ({
             onChange={e => setContactStatus(e.target.value)}
           >
             <option value="">Select Status</option>
-            <option value="CONTACTED">Contacted</option>
+            <option value="CONTACTED" disabled={contactsCount === 0}>
+              Contacted
+            </option>
             <option value="NOT_CONTACTED">Not Contacted</option>
             <option value="BLACK_LISTED">Black List</option>
           </Form.Select>

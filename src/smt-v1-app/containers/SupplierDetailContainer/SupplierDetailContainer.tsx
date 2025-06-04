@@ -18,7 +18,8 @@ import './SupplierDetailContainer.css';
 import {
   getbySegmentList,
   getbyCountryList,
-  postSupplierCreate
+  postSupplierCreate,
+  getOtherValues
 } from '../../services/SupplierServices';
 import { TreeNode } from 'smt-v1-app/types/index';
 import { Certypes } from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
@@ -130,6 +131,8 @@ const SupplierDetailContainer = () => {
   const [contextNotes, setContextNotes] = useState('');
   const [brands, setBrands] = useState<Brand[]>([]);
   const [aircraftTypes, setAircraftTypes] = useState<AircraftType[]>([]);
+  const [brandOptions, setBrandOptions] = useState<string[]>([]);
+  const [aircraftTypeOptions, setAircraftTypeOptions] = useState<string[]>([]);
 
   const handleRatingsChange = (updatedRatings: RatingData) => {
     setRatings(updatedRatings);
@@ -198,6 +201,33 @@ const SupplierDetailContainer = () => {
     fetchCountries();
   }, []);
 
+  useEffect(() => {
+    const fetchOtherValues = async () => {
+      try {
+        const response = await getOtherValues();
+        if (response?.data) {
+          setBrandOptions(response.data.brands || []);
+          setAircraftTypeOptions(response.data.aircraftTypes || []);
+          setBrands(prev =>
+            (response.data.brands || []).map(b => ({
+              value: b,
+              isSelected: false
+            }))
+          );
+          setAircraftTypes(prev =>
+            (response.data.aircraftTypes || []).map(a => ({
+              value: a,
+              isSelected: false
+            }))
+          );
+        }
+      } catch (error) {
+        // handle error if needed
+      }
+    };
+    fetchOtherValues();
+  }, []);
+
   const handleFilesUpload = (files: { name: string; base64: string }[]) => {
     setBase64Files(files);
   };
@@ -229,9 +259,28 @@ const SupplierDetailContainer = () => {
       setShowAlert(true);
       return;
     }
-
+    if (!legalCountryId) {
+      setAlertMessage('Legal Country cannot be empty.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
+    if (!selectedPickupCountryId) {
+      setAlertMessage('Pickup Country cannot be empty.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
     if (!selectedStatus) {
       setAlertMessage('Please select a Status.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
+    if (selectedStatus === 'CONTACTED' && contacts.length === 0) {
+      setAlertMessage(
+        'You must add at least one contact to select Contacted status.'
+      );
       setIsSuccess(false);
       setShowAlert(true);
       return;
@@ -245,16 +294,6 @@ const SupplierDetailContainer = () => {
       workingDetails: workingDetails,
       username: username,
       password: password,
-      // countryId: selectedCountryId,
-      // pickUpAddress: pickUpAddress,
-      // supplierStatus: {
-      //   label: selectedStatus as 'CONTACTED' | 'NOT_CONTACTED' | 'BLACK_LISTED',
-      //   type: (selectedStatus === 'CONTACTED'
-      //     ? 'success'
-      //     : selectedStatus === 'NOT_CONTACTED'
-      //     ? 'warning'
-      //     : 'danger') as 'success' | 'warning' | 'danger'
-      // },
       supplierPickupAddress: {
         pickUpAddress,
         city: pickupcity,
@@ -477,6 +516,20 @@ const SupplierDetailContainer = () => {
         aircraftTypes={aircraftTypes}
         onBrandsChange={handleBrandsChange}
         onAircraftTypesChange={handleAircraftTypesChange}
+        brandOptions={brandOptions}
+        aircraftTypeOptions={aircraftTypeOptions}
+        onBrandAdded={newBrand =>
+          setBrands(prev => [
+            ...prev.map(b => ({ ...b, isSelected: false })),
+            { value: newBrand, isSelected: true }
+          ])
+        }
+        onAircraftTypeAdded={newType =>
+          setAircraftTypes(prev => [
+            ...prev.map(a => ({ ...a, isSelected: false })),
+            { value: newType, isSelected: true }
+          ])
+        }
       />
 
       <Row className="mt-3">
@@ -533,6 +586,7 @@ const SupplierDetailContainer = () => {
               setContactStatus={handleStatusChange}
               contactNotes={contextNotes}
               setContactNotes={setContextNotes}
+              contactsCount={contacts.length}
             />
           </div>
         </div>

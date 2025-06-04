@@ -67,3 +67,7 @@ export const patchOtherValues = async (
 ) => {
   return await patchRequest('/supplier/other-values', BrandsAircraftTypes);
 };
+
+export const getOtherValues = async () => {
+  return await getRequest('/supplier/other-values/all');
+};
