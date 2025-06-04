@@ -281,7 +281,7 @@ const ClientEditContainer = () => {
       return;
     }
 
-    if (selectedStatus === 'NOT_CONTACTED' && contacts.length === 0) {
+    if (selectedStatus === 'CONTACTED' && contacts.length === 0) {
       setAlertMessage(
         'When status is CONTACTED, you must add at least one contact.'
       );
