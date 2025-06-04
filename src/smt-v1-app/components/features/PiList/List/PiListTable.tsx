@@ -1530,7 +1530,14 @@ export const PiTableColumns = PiTableColumnsStatic;
 
 type SearchColumn = {
   label: string;
-  value: 'all' | 'piId' | 'quoteID' | 'contractNo' | 'company';
+  value:
+    | 'all'
+    | 'piId'
+    | 'quoteID'
+    | 'contractNo'
+    | 'company'
+    | 'partNumber'
+    | 'partName';
 };
 
 const searchColumns: SearchColumn[] = [
@@ -1538,7 +1545,9 @@ const searchColumns: SearchColumn[] = [
   { label: 'PI ID', value: 'piId' },
   { label: 'Quote ID', value: 'quoteID' },
   { label: 'Contract No', value: 'contractNo' },
-  { label: 'Company', value: 'company' }
+  { label: 'Company', value: 'company' },
+  { label: 'Part Number', value: 'partNumber' },
+  { label: 'Part Name', value: 'partName' }
 ];
 
 interface QuoteListTableProps {
