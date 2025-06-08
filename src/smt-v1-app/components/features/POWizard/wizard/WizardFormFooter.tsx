@@ -51,7 +51,8 @@ const WizardFormFooter = ({
       <Button
         variant="primary"
         className={classNames('px-6', {
-          'ms-auto': !hidePrevBtn
+          'ms-auto': !hidePrevBtn,
+          'd-none': selectedStep === 4
         })}
         endIcon={<FontAwesomeIcon icon={faChevronRight} className="fs-10" />}
         onClick={async () => {
