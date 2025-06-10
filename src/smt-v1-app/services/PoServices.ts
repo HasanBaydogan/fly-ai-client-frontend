@@ -89,5 +89,5 @@ export const searchByPoList = async (
 };
 
 export const getPoDetails = async (poId: string) => {
-  return await getRequest(`/po/po-detail?poId=${poId}`);
+  return await getRequest(`/po/detail?poId=${poId}`);
 };

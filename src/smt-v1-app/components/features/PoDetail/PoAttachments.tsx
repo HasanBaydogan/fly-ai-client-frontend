@@ -341,12 +341,12 @@ const PiAttachments = ({
       </div>
       {/* <hr className="custom-line w-100 m-0" /> */}
       <div className="d-flex justify-content-start rfq-mail-attachments-container mt-3">
-        {attachments?.map(mailAttach => {
+        {attachments?.map((mailAttach, index) => {
           const ext = mailAttach.fileName.split('.').pop()?.toLowerCase() || '';
           const isAllowed = allowedExtensions.includes(ext);
           return (
             <a
-              key={mailAttach.attachmentId}
+              key={`${mailAttach.attachmentId}-${index}`}
               rel="noopener noreferrer"
               className="d-flex flex-column justify-content-center align-items-center mx-3"
               onClick={

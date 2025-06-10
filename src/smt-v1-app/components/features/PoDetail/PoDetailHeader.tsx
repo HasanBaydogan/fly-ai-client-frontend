@@ -9,8 +9,8 @@ import { MailItemAttachment } from 'smt-v1-app/containers/RFQContainer/RfqContai
 
 interface HeaderProps {
   poRequestedDate: string;
-  piNumberId: string;
-  quoteNumberId: string;
+  poNumberId: string;
+  quoteReferenceId: string;
   clientName: string;
   clientRFQId: string;
   revisionNumber: number;
@@ -21,13 +21,14 @@ interface HeaderProps {
   fob?: string;
   shippingTerms?: string;
   attachments?: MailItemAttachment[];
+  poStatus?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({
   poRequestedDate,
-  quoteNumberId,
-  piNumberId,
-  quoteNumberId: initialQuoteId,
+  quoteReferenceId,
+  poNumberId,
+  quoteReferenceId: initialQuoteId,
   clientName,
   clientRFQId,
   revisionNumber,
@@ -37,16 +38,17 @@ const Header: React.FC<HeaderProps> = ({
   shipVia = '',
   fob = '',
   shippingTerms = '',
-  attachments
+  attachments,
+  poStatus = ''
 }) => {
   // useLocation ile URL'e erişip query parametrelerini alıyoruz.
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const urlQuoteId = queryParams.get('quoteNumberId');
+  const urlQuoteId = queryParams.get('quoteReferenceId');
   const [mailItemMoreDetailResponse, setMailItemMoreDetailResponse] =
     useState<MailItemMoreDetail>();
 
-  // Eğer URL'den quoteNumberId varsa onu state'e atıyoruz, yoksa parent'dan gelen değeri kullanıyoruz.
+  // Eğer URL'den quoteReferenceId varsa onu state'e atıyoruz, yoksa parent'dan gelen değeri kullanıyoruz.
   const [currentQuoteId, setCurrentQuoteId] = useState<string>(
     urlQuoteId ?? initialQuoteId
   );
@@ -75,18 +77,11 @@ const Header: React.FC<HeaderProps> = ({
         >
           <div className="flex-column" style={{ gap: '50px' }}>
             <h4 className="mb-3">
-              PO Id:{' '}
-              <span className="valueRFQ-id">
-                {' '}
-                {' ' +
-                  {
-                    /*piNumberId*/
-                  }}
-              </span>
+              PO Id: <span className="valueRFQ-id">{poNumberId}</span>
             </h4>
             <h4 className="mb-3 ">
               Quote Id:{' '}
-              <span className="valueRFQ-id">{' ' + quoteNumberId}</span>
+              <span className="valueRFQ-id">{' ' + quoteReferenceId}</span>
             </h4>
           </div>
           <div>
@@ -94,12 +89,12 @@ const Header: React.FC<HeaderProps> = ({
               {/* <h5 className="last-modified-poRequestedDate mb-3">
                 PO Requested Date:{' ' + poRequestedDate}
               </h5> */}
-              <h4>
+              {/* <h4>
                 Revision:{' '}
                 <Badge bg="primary" className="small mb-3">
                   REVISION {revisionNumber}
                 </Badge>
-              </h4>
+              </h4> */}
               <h4 className="status">
                 <span
                   className="fw-bold"
@@ -112,7 +107,7 @@ const Header: React.FC<HeaderProps> = ({
                   className="small mb-3"
                   style={{ fontSize: '14px' }}
                 >
-                  {'PI Sent to Client'}
+                  {poStatus || 'PI Sent to Client'}
                 </Badge>
               </h4>
               {/* <span
@@ -131,7 +126,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="">
           <div>
             <h3 className="mb-4">
-              Client: <span className="valueRFQ-id">{' ' + clientName}</span>
+              Supplier: <span className="valueRFQ-id">{' ' + clientName}</span>
             </h3>
 
             <div className="row g-4">
@@ -173,9 +168,9 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
           </div>
-          <div className="mt-3">
+          {/* <div className="mt-3">
             {attachments && <PiAttachments attachments={attachments} />}
-          </div>
+          </div> */}
         </div>
       </div>
     </>
