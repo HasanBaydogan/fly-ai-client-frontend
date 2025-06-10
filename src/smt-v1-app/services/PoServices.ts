@@ -15,6 +15,7 @@ export interface POEmailRequest {
     data: string;
   }[];
   body: string;
+  supplierName: string;
 }
 
 export interface POEmailProps {

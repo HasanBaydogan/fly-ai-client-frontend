@@ -142,6 +142,7 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
         filename: string;
         data: string;
       }[];
+      supplierName: string;
     }[]
   >([]);
   const [ccEmails, setCcEmails] = useState<string[]>([]);
@@ -238,7 +239,10 @@ const POWizardTabs: React.FC<POWizardTabsProps> = ({
             cc: email.cc,
             subject: email.subject,
             body: email.body,
-            attachments: updatedAttachments
+            attachments: updatedAttachments,
+            supplierName:
+              preEmailParams[emailIndex]?.poSupplier?.supplier ||
+              'Unknown Supplier'
           };
         }),
         POId: poResponseData.poId,
