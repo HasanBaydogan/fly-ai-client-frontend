@@ -66,8 +66,8 @@ const SupplierInfo = ({
           <Form.Label className="fw-bold fs-8">Supplier Information</Form.Label>
         </Form.Group>
 
-        <div className="d-flex gap-4 mt-2">
-          <Form.Group className="flex-grow-1">
+        <div className="d-flex mt-2">
+          <Form.Group className="flex-grow-1" style={{ width: '50%' }}>
             <Form.Control
               type="text"
               placeholder="Company Name*"
@@ -80,26 +80,28 @@ const SupplierInfo = ({
               {error}
             </Form.Control.Feedback>
           </Form.Group>
-          <div className="d-flex gap-4 flex-grow-1">
-            <Form.Group className="flex-grow-1">
-              <Form.Control
-                type="text"
-                placeholder="Mail"
-                value={mailInput}
-                onChange={handleMailChange}
-              />
-            </Form.Group>
-            <Form.Group className="flex-grow-1">
-              <Form.Control
-                type="text"
-                placeholder="Phone"
-                value={telephoneInput}
-                onChange={e =>
-                  setTelephoneInput(formatPhoneNumber(e.target.value))
-                }
-              />
-            </Form.Group>
-          </div>
+
+          <Form.Group
+            className="flex-grow-1 "
+            style={{ width: '23%', marginLeft: '25px', marginRight: '25px' }}
+          >
+            <Form.Control
+              type="text"
+              placeholder="Mail"
+              value={mailInput}
+              onChange={handleMailChange}
+            />
+          </Form.Group>
+          <Form.Group className="flex-grow-1" style={{ width: '25%' }}>
+            <Form.Control
+              type="text"
+              placeholder="Phone"
+              value={telephoneInput}
+              onChange={e =>
+                setTelephoneInput(formatPhoneNumber(e.target.value))
+              }
+            />
+          </Form.Group>
         </div>
       </Form>
     </div>
