@@ -224,7 +224,7 @@ const PoDetailContainer = () => {
             </div>
 
             <div>
-              <PiComments
+              {/* <PiComments
                 piData={piData}
                 userComments={
                   piData?.comments
@@ -247,7 +247,7 @@ const PoDetailContainer = () => {
                     });
                   }
                 }}
-              />
+              /> */}
             </div>
 
             <div
@@ -267,9 +267,10 @@ const PoDetailContainer = () => {
                 </CustomButton>
               </div>
               <div>
-                {/* <div>
+                <div>
                   <CustomButton
                     variant="secondary"
+                    disabled
                     onClick={() => {
                       fetchPOWizardData();
                     }}
@@ -280,13 +281,14 @@ const PoDetailContainer = () => {
 
                   <CustomButton
                     variant="info"
+                    disabled
                     onClick={() => {
                       fetchPIWizardData();
                     }}
                   >
-                    PI Wizard
+                    LOT Form
                   </CustomButton>
-                </div> */}
+                </div>
               </div>
             </div>
           </div>

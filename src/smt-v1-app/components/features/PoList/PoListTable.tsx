@@ -85,7 +85,6 @@ export const PiTableColumns: ColumnDef<PiListData>[] = [
           style={{ textDecoration: 'none' }}
         >
           <Button
-            disabled
             variant="outline-primary"
             size="sm"
             title="PO Detail"

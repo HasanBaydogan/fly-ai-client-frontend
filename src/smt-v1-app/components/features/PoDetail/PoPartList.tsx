@@ -37,13 +37,9 @@ const PoPartList: React.FC<PiPartListProps> = ({
         : [...prev, piPartId];
     });
   };
-  const formatPrice = (
-    price: number | { price: number | null; currency: string } | undefined,
-    currency: string | undefined
-  ) => {
-    if (price === undefined) return '-';
 
-    // Handle case where price is an object
+  const formatPrice = (price: any): string => {
+    if (!price) return '-';
     if (typeof price === 'object' && price !== null) {
       if (price.price === null) return '-';
       return new Intl.NumberFormat('en-US', {
@@ -51,27 +47,15 @@ const PoPartList: React.FC<PiPartListProps> = ({
         currency: price.currency
       }).format(price.price);
     }
-
-    // Handle case where price is a number
-    if (currency === undefined) return '-';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency
-    }).format(Number(price));
+    return '-';
   };
 
-  const formatCurrency = (
-    currency: string | { currency: string } | undefined
-  ): string => {
-    if (currency === undefined) return '-';
-    if (
-      typeof currency === 'object' &&
-      currency !== null &&
-      'currency' in currency
-    ) {
-      return currency.currency || '-';
+  const formatCurrency = (price: any): string => {
+    if (!price) return '-';
+    if (typeof price === 'object' && price !== null) {
+      return price.currency || '-';
     }
-    return typeof currency === 'string' ? currency : '-';
+    return '-';
   };
 
   return (
@@ -149,8 +133,8 @@ const PoPartList: React.FC<PiPartListProps> = ({
                 <td>{part.fndCND}</td>
                 <td>{part.supplierLT}</td>
                 <td>{part.clientLT}</td>
-                <td>{formatPrice(part.price, part.currency)}</td>
-                <td>{formatCurrency(part.currency)}</td>
+                <td>{formatPrice(part.price)}</td>
+                <td>{formatCurrency(part.price)}</td>
                 <td>{String(part.supplier)}</td>
                 <td>{part.comment}</td>
                 <td>{part.dgPackagingCost ? 'Yes' : 'No'}</td>
