@@ -15,6 +15,7 @@ export interface POEmailRequest {
     data: string;
   }[];
   body: string;
+  supplierName: string;
 }
 
 export interface POEmailProps {
@@ -88,5 +89,5 @@ export const searchByPoList = async (
 };
 
 export const getPoDetails = async (poId: string) => {
-  return await getRequest(`/po/po-detail?poId=${poId}`);
+  return await getRequest(`/po/detail?poId=${poId}`);
 };

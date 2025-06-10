@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../../components/features/PoDetail/PoDetailHeader';
-import PiOthers from '../../components/features/PiDetail/PiOthers';
 import PiComments from '../../components/features/PiDetail/PiComments';
 
 import {
@@ -11,25 +10,19 @@ import {
   PiParts
 } from './QuoteContainerTypes';
 
-import QuoteContactsList from '../../components/features/QuoteList/QuoteListRightComponents/QuoteContactList/QuoteContactsList';
-import PiPartList from 'smt-v1-app/components/features/PiDetail/PiPartList';
-import QuoteListAlternativeParts from 'smt-v1-app/components/features/PiDetail/PiDetailAlternativeParts/PiAlternativeParts';
+import PiPartList from 'smt-v1-app/components/features/PoDetail/PoPartList';
+import QuoteListAlternativeParts from 'smt-v1-app/components/features/PoDetail/PoDetailAlternativeParts/PoListAlternativeParts';
 import CustomButton from '../../../components/base/Button';
-import QuoteWizard from '../../components/features/QuoteWizard/QuoteWizard';
-import {
-  getQuoteDetailsById,
-  getRFQMailIdToGoToRFQMail
-} from 'smt-v1-app/services/QuoteService';
-import { getPiDetails, getPiWizard } from 'smt-v1-app/services/PIServices';
+import { getRFQMailIdToGoToRFQMail } from 'smt-v1-app/services/QuoteService';
+import { getPiWizard } from 'smt-v1-app/services/PIServices';
 import { useSearchParams } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import { getColorStyles } from 'smt-v1-app/components/features/RfqMailRowItem/RfqMailRowHelper';
-import POModal from 'smt-v1-app/components/features/PıModal/PIModal';
 import PIWizard from 'smt-v1-app/components/features/PIWizard/PIWizard';
 import POWizard from 'smt-v1-app/components/features/POWizard/POWizard';
 import { getPoDetails } from 'smt-v1-app/services/PoServices';
+import { PODetailData } from 'smt-v1-app/types/PoTypes';
 
-const QuoteContainer = () => {
+const PoDetailContainer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openModalOnSecondPage, setOpenModalOnSecondPage] = useState(false);
 
@@ -65,7 +58,7 @@ const QuoteContainer = () => {
   const [alternativeParts, setAlternativeParts] = useState<AlternativePiPart[]>(
     []
   );
-  const [piData, setpiData] = useState<Pi>();
+  const [piData, setpiData] = useState<PODetailData>();
   const [contacts, setContacts] = useState<Contact[]>([]);
 
   const [companyNameAddress, setCompanyNameAddress] = useState('');
@@ -136,16 +129,16 @@ const QuoteContainer = () => {
   useEffect(() => {
     const fetchQuoteValues = async () => {
       const response = await getPoDetails(poId);
-      if (response && response.statusCode == 200) {
+      if (response && response.statusCode === 200) {
         setIsLoading(true);
         setpiData(response.data);
-        setParts(response.data.piParts);
-        setAlternativeParts(response.data.piAlternativeParts);
+        setParts(response.data.poParts || []);
+        setAlternativeParts(response.data.alternativePOParts || []);
         setIsLoading(false);
       }
     };
     fetchQuoteValues();
-  }, []);
+  }, [poId]);
 
   const handleQuoteWizardTabs = () => {
     setShowQuoteWizardTabs(true);
@@ -194,18 +187,22 @@ const QuoteContainer = () => {
             <div>
               {
                 <Header
-                  poRequestedDate={piData && piData.poRequestedDate}
-                  revisionNumber={piData.revisionNumber}
-                  piNumberId={piData && piData.piNumberId}
-                  quoteNumberId={piData && piData.quoteNumberId}
-                  clientRFQId={piData && piData.clientRFQId}
-                  clientName={piData && piData.clientName}
-                  companyNameAddress={piData.companyNameAddress}
+                  poRequestedDate={piData?.poRequestedDate || ''}
+                  poNumberId={piData?.poNumberId || ''}
+                  quoteReferenceId={piData?.quoteReferenceId || ''}
+                  clientName={piData?.selectedCompany || ''}
+                  clientRFQId={piData?.quoteReferenceId || ''}
+                  revisionNumber={piData?.revisionNumber || 0}
+                  companyNameAddress={piData?.shipTo || ''}
                   setCompanyNameAddress={setCompanyNameAddress}
+                  requisitioner={piData?.requsitioner}
+                  shipVia={piData?.shipVia}
+                  fob={piData?.fob}
+                  shippingTerms={piData?.shippingTerms}
                   attachments={
-                    mailItemMoreDetailResponse &&
-                    mailItemMoreDetailResponse.mailItemAttachmentResponses
+                    mailItemMoreDetailResponse?.mailItemAttachmentResponses
                   }
+                  poStatus={piData?.poStatus}
                 />
               }
             </div>
@@ -214,12 +211,12 @@ const QuoteContainer = () => {
             </div> */}
             <div>
               <PiPartList
-                parts={parts}
+                parts={parts || []}
                 selectedParts={selectedParts}
                 setSelectedParts={setSelectedParts}
               />
               <QuoteListAlternativeParts
-                alternativeParts={alternativeParts}
+                alternativeParts={alternativeParts || []}
                 selectedAlternativeParts={selectedAlternativeParts}
                 setSelectedAlternativeParts={setSelectedAlternativeParts}
               />
@@ -227,8 +224,13 @@ const QuoteContainer = () => {
             </div>
 
             <div>
-              <PiComments
+              {/* <PiComments
                 piData={piData}
+                userComments={
+                  piData?.comments
+                    ? [{ comment: piData.comments, severity: 'info' }]
+                    : []
+                }
                 onCommentsChange={updatedComments => {
                   if (piData) {
                     const hasUnsaved = updatedComments.some(
@@ -240,12 +242,12 @@ const QuoteContainer = () => {
                       if (!prevPiData) return prevPiData;
                       return {
                         ...prevPiData,
-                        userComments: updatedComments
+                        comments: updatedComments[0]?.comment || ''
                       };
                     });
                   }
                 }}
-              />
+              /> */}
             </div>
 
             <div
@@ -268,6 +270,7 @@ const QuoteContainer = () => {
                 <div>
                   <CustomButton
                     variant="secondary"
+                    disabled
                     onClick={() => {
                       fetchPOWizardData();
                     }}
@@ -278,11 +281,12 @@ const QuoteContainer = () => {
 
                   <CustomButton
                     variant="info"
+                    disabled
                     onClick={() => {
                       fetchPIWizardData();
                     }}
                   >
-                    PI Wizard
+                    LOT Form
                   </CustomButton>
                 </div>
               </div>
@@ -297,7 +301,7 @@ const QuoteContainer = () => {
               showTabs={showPIWizard}
               selectedParts={selectedParts}
               selectedAlternativeParts={selectedAlternativeParts}
-              quoteId={piData?.quoteId || poId}
+              quoteId={piData?.quoteReferenceId || poId}
               quoteComment=""
               piResponseData={piWizardData}
             />
@@ -311,7 +315,7 @@ const QuoteContainer = () => {
               showTabs={showPOWizard}
               selectedParts={selectedParts}
               selectedAlternativeParts={selectedAlternativeParts}
-              quoteId={piData?.quoteId || poId}
+              quoteId={piData?.quoteReferenceId || poId}
               quoteComment=""
               piResponseData={poWizardData}
             />
@@ -331,4 +335,4 @@ const QuoteContainer = () => {
   );
 };
 
-export default QuoteContainer;
+export default PoDetailContainer;

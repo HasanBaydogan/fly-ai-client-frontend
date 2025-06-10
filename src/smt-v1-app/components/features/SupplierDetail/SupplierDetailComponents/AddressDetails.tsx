@@ -46,6 +46,11 @@ const AddressDetails = ({
 }: AddressDetailsProps) => {
   const [useSameAddress, setUseSameAddress] = useState(false);
   const [countryList, setCountryList] = useState<Country[]>([]);
+  const [previousPickupData, setPreviousPickupData] = useState({
+    address: '',
+    city: '',
+    countryId: ''
+  });
 
   useEffect(() => {
     if (getbyCountryList?.data) {
@@ -61,40 +66,6 @@ const AddressDetails = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Sadece ilk render'da çalışsın
 
-  const handleLegalCountryChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = e.target.value;
-    setLegalCountryId(value);
-  };
-
-  const handlePickupCountryChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = e.target.value;
-    setPickupCountryId(value);
-  };
-
-  const handleLegalCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setLegalCity(value);
-  };
-
-  const handlePickupCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPickupCity(value);
-  };
-
-  const handleUseSameAddressChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const checked = e.target.checked;
-    setUseSameAddress(checked);
-    if (checked) {
-      setPickUpAddress(legalAddress);
-    }
-  };
-
   const handleLegalAddress = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setLegalAddress(value);
@@ -103,9 +74,64 @@ const AddressDetails = ({
     }
   };
 
+  const handleLegalCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLegalCity(value);
+    if (useSameAddress) {
+      setPickupCity(value);
+    }
+  };
+
+  const handleLegalCountryChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = e.target.value;
+    setLegalCountryId(value);
+    if (useSameAddress) {
+      setPickupCountryId(value);
+    }
+  };
+
+  const handleUseSameAddressChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const checked = e.target.checked;
+    setUseSameAddress(checked);
+
+    if (checked) {
+      // Store current pickup data before overwriting
+      setPreviousPickupData({
+        address: pickUpAddress,
+        city: pickupCity,
+        countryId: pickupCountryId
+      });
+      // Set pickup address same as legal address
+      setPickUpAddress(legalAddress);
+      setPickupCity(legalCity);
+      setPickupCountryId(legalCountryId);
+    } else {
+      // Restore previous pickup data
+      setPickUpAddress(previousPickupData.address);
+      setPickupCity(previousPickupData.city);
+      setPickupCountryId(previousPickupData.countryId);
+    }
+  };
+
   const handlePickUpAddress = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setPickUpAddress(value);
+  };
+
+  const handlePickupCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPickupCity(value);
+  };
+
+  const handlePickupCountryChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = e.target.value;
+    setPickupCountryId(value);
   };
 
   return (
@@ -134,7 +160,7 @@ const AddressDetails = ({
                 style={{ height: '100px' }}
                 value={pickUpAddress}
                 onChange={handlePickUpAddress}
-                disabled={useSameAddress}
+                disabled={useSameAddress || !legalAddress}
               />
             </FloatingLabel>
           </Form.Group>
@@ -171,7 +197,7 @@ const AddressDetails = ({
             placeholder="Enter City"
             value={pickupCity}
             onChange={handlePickupCityChange}
-            disabled={useSameAddress}
+            disabled={useSameAddress || !legalCity || !legalCountryId}
           />
         </Form.Group>
         <Form.Group style={{ width: '25%' }}>
@@ -179,7 +205,7 @@ const AddressDetails = ({
           <Form.Select
             value={pickupCountryId}
             onChange={handlePickupCountryChange}
-            disabled={useSameAddress}
+            disabled={useSameAddress || !legalCity || !legalCountryId}
           >
             <option value="">Select Country</option>
             {countryList.map(country => (

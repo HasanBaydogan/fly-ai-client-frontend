@@ -55,11 +55,12 @@ export interface PiParts {
   MSDS: string;
   airlineCompany: string;
   certificateType: string;
+  dgPackagingCost: boolean;
   clientLT: number;
   comment: string;
   currency: string;
-  fndCondition: string;
-  fndQuantity: number;
+  fndCND: string;
+  fndQTY: number;
   isSelected: boolean;
   partDescription: string;
   partName: string;
@@ -68,8 +69,8 @@ export interface PiParts {
   price: number;
   pricedUpdatedDate: string;
   stageOfPIPart: string;
-  reqQuantity: number;
-  reqCondition: string;
+  reqQTY: number;
+  reqCND: string;
   stock: number;
   stockLocation: string;
   supplier: string;
@@ -90,10 +91,10 @@ export interface AlternativePiPart {
   price: number;
   currency: string;
   pricedUpdatedDate: string;
-  reqCondition: string;
-  fndCondition: string;
-  reqQuantity: number;
-  fndQuantity: number;
+  fndCND: string;
+  fndQTY: number;
+  reqQTY: number;
+  reqCND: string;
   supplier: string;
   DGPackagingCost: boolean;
   comment: string;
@@ -120,7 +121,7 @@ export interface Pi {
   mailItemMoreDetailResponse: MailItemMoreDetail;
   piParts: PiParts[];
   revisionNumber: number;
-  piNumberId: string;
+  poNumberId: string;
   poRequestedDate: string;
   userComments?: any[];
   rfqMailStatus:
@@ -132,4 +133,26 @@ export interface Pi {
     | 'NOT_RFQ'
     | 'NO_QUOTE'
     | 'SPAM';
+  requsitioner?: string;
+  shipVia?: string;
+  fob?: string;
+  shippingTerms?: string;
+  poStatus?: string;
+  poTax?: {
+    taxRate: number;
+    isIncluded: boolean;
+  };
+  airCargoToX?: {
+    airCargoToX: number;
+    isIncluded: boolean;
+  };
+  sealineToX?: {
+    sealineToX: number;
+    isIncluded: boolean;
+  };
+  truckCarriageToX?: {
+    truckCarriageToX: number;
+    isIncluded: boolean;
+  };
+  shipTo?: string;
 }

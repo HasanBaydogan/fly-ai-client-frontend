@@ -49,3 +49,67 @@ export interface PoData {
   createdAt: string;
   lastModifiedAt: string;
 }
+
+export interface PODetailData {
+  aircargoToX: {
+    airCargoToX: number;
+    isIncluded: boolean;
+  };
+  sealineToX: {
+    sealineToX: number;
+    isIncluded: boolean;
+  };
+  truckCarriageToX: {
+    truckCarriageToX: number;
+    isIncluded: boolean;
+  };
+  poParts: {
+    poPartId: string;
+    partNumber: string;
+    description: string;
+    qty: number;
+    leadTime: number;
+    price: number;
+    total: number;
+    taxRate: number;
+    isTaxIncluded: boolean;
+    taxAmount: number;
+    totalWithTax: number;
+  }[];
+  poId: string;
+  poNumberId: string;
+  piNumberId: string;
+  piId: string;
+  alternativePOParts: {
+    poPartId: string;
+    partNumber: string;
+    description: string;
+    qty: number;
+    leadTime: number;
+    price: number;
+    total: number;
+    taxRate: number;
+    isTaxIncluded: boolean;
+    taxAmount: number;
+    totalWithTax: number;
+  }[];
+  attachments: {
+    filename: string;
+    data: string;
+  }[];
+  poStatus: string;
+  comments: string;
+  fob: string;
+  shippingTerms: string;
+  shipTo: string;
+  requsitioner: string;
+  shipVia: string;
+  poTax: {
+    taxRate: number;
+    isIncluded: boolean;
+  };
+  selectedCompany: string;
+  quoteReferenceId: string;
+  poRequestedDate?: string;
+  revisionNumber?: number;
+}

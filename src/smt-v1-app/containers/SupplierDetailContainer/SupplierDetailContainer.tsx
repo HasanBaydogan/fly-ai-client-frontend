@@ -259,6 +259,12 @@ const SupplierDetailContainer = () => {
       setShowAlert(true);
       return;
     }
+    if (!mailInput) {
+      setAlertMessage('Mail cannot be empty.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
     if (!legalCountryId) {
       setAlertMessage('Legal Country cannot be empty.');
       setIsSuccess(false);
@@ -271,12 +277,12 @@ const SupplierDetailContainer = () => {
       setShowAlert(true);
       return;
     }
-    if (!selectedStatus) {
-      setAlertMessage('Please select a Status.');
-      setIsSuccess(false);
-      setShowAlert(true);
-      return;
-    }
+    // if (!selectedStatus) {
+    //   setAlertMessage('Please select a Status.');
+    //   setIsSuccess(false);
+    //   setShowAlert(true);
+    //   return;
+    // }
     if (selectedStatus === 'CONTACTED' && contacts.length === 0) {
       setAlertMessage(
         'You must add at least one contact to select Contacted status.'
@@ -289,7 +295,7 @@ const SupplierDetailContainer = () => {
     const payload = {
       supplierCompanyName: companyName,
       segmentIds: segmentIds,
-      supplierStatus: selectedStatus,
+      supplierStatus: selectedStatus || 'NOT_CONTACTED',
       attachments: attachmentsPayload,
       workingDetails: workingDetails,
       username: username,
