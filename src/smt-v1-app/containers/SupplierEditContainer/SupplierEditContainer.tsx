@@ -88,7 +88,7 @@ const SupplierEditContainer = () => {
   const [loadingSegments, setLoadingSegments] = useState<boolean>(true);
   const [errorSegments, setErrorSegments] = useState<string | null>(null);
   const [countryList, setCountryList] = useState<any>([]);
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('NOT_CONTACTED');
   const [base64Files, setBase64Files] = useState<
     { id: string; name: string; base64: string }[]
   >([]);
@@ -294,6 +294,12 @@ const SupplierEditContainer = () => {
       setShowAlert(true);
       return;
     }
+    if (!mailInput) {
+      setAlertMessage('Mail cannot be empty.');
+      setIsSuccess(false);
+      setShowAlert(true);
+      return;
+    }
     if (!selectedLegalCountryId) {
       setAlertMessage('Legal Country cannot be empty.');
       setIsSuccess(false);
@@ -306,12 +312,12 @@ const SupplierEditContainer = () => {
       setShowAlert(true);
       return;
     }
-    if (!selectedStatus) {
-      setAlertMessage('Please select a Status.');
-      setIsSuccess(false);
-      setShowAlert(true);
-      return;
-    }
+    // if (!selectedStatus) {
+    //   setAlertMessage('Please select a Status.');
+    //   setIsSuccess(false);
+    //   setShowAlert(true);
+    //   return;
+    // }
     if (selectedStatus === 'CONTACTED' && contacts.length === 0) {
       setAlertMessage(
         'You must add at least one contact to select Contacted status.'
@@ -342,7 +348,7 @@ const SupplierEditContainer = () => {
       supplierId,
       supplierCompanyName: companyName,
       segmentIds: segmentIds,
-      status: selectedStatus,
+      status: selectedStatus || 'NOT_CONTACTED',
       attachments: attachmentsPayload,
       workingDetails: workingDetails,
       username: username,

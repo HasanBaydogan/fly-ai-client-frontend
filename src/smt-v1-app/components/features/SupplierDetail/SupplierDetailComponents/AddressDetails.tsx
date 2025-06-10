@@ -66,28 +66,30 @@ const AddressDetails = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Sadece ilk render'da çalışsın
 
-  const handleLegalCountryChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleLegalAddress = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
-    setLegalCountryId(value);
-  };
-
-  const handlePickupCountryChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const value = e.target.value;
-    setPickupCountryId(value);
+    setLegalAddress(value);
+    if (useSameAddress) {
+      setPickUpAddress(value);
+    }
   };
 
   const handleLegalCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLegalCity(value);
+    if (useSameAddress) {
+      setPickupCity(value);
+    }
   };
 
-  const handlePickupCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLegalCountryChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const value = e.target.value;
-    setPickupCity(value);
+    setLegalCountryId(value);
+    if (useSameAddress) {
+      setPickupCountryId(value);
+    }
   };
 
   const handleUseSameAddressChange = (
@@ -115,17 +117,21 @@ const AddressDetails = ({
     }
   };
 
-  const handleLegalAddress = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setLegalAddress(value);
-    if (useSameAddress) {
-      setPickUpAddress(value);
-    }
-  };
-
   const handlePickUpAddress = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setPickUpAddress(value);
+  };
+
+  const handlePickupCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPickupCity(value);
+  };
+
+  const handlePickupCountryChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = e.target.value;
+    setPickupCountryId(value);
   };
 
   return (

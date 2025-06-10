@@ -87,7 +87,7 @@ const SupplierInfo = ({
           >
             <Form.Control
               type="text"
-              placeholder="Mail"
+              placeholder="Mail*"
               value={mailInput}
               onChange={handleMailChange}
             />

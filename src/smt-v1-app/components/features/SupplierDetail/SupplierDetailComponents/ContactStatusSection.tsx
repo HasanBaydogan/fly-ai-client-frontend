@@ -20,14 +20,13 @@ const ContactStatusSection = ({
       <Row className="align-items-center">
         <Col md={4} sm={12} className="mb-2 mb-md-0">
           <Form.Select
-            value={selectedStatus}
+            value={selectedStatus || 'NOT_CONTACTED'}
             onChange={e => setContactStatus(e.target.value)}
           >
-            <option value="">Select Status</option>
+            <option value="NOT_CONTACTED">Not Contacted</option>
             <option value="CONTACTED" disabled={contactsCount === 0}>
               Contacted
             </option>
-            <option value="NOT_CONTACTED">Not Contacted</option>
             <option value="BLACK_LISTED">Black List</option>
           </Form.Select>
         </Col>
