@@ -50,6 +50,7 @@ interface PartListProps {
   setPartName: React.Dispatch<React.SetStateAction<string>>;
   partNumber: string;
   setPartNumber: React.Dispatch<React.SetStateAction<string>>;
+  attachmentId?: string;
 }
 
 interface PartSuggestion {
@@ -120,7 +121,8 @@ const PartList: React.FC<PartListProps> = ({
   setPartName,
   // partDescription,
   partNumber,
-  setPartNumber
+  setPartNumber,
+  attachmentId
 }) => {
   // Genel state'ler
   const [isShowToast, setIsShowToast] = useState(false);
@@ -590,6 +592,7 @@ const PartList: React.FC<PartListProps> = ({
           handleNewPartAddition={handleNewPartAddition}
           handlePartSearch={handlePartSearch}
           setTagDate={setTagDate}
+          attachmentId={attachmentId}
         />
       )}
       {showPartModal && (

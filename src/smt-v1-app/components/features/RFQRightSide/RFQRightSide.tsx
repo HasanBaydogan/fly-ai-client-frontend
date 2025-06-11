@@ -781,6 +781,10 @@ const RFQRightSide = ({
         setPartName={setPartName}
         partNumber={partNumber}
         setPartNumber={setPartNumber}
+        attachmentId={
+          rfq.mailItemMoreDetailResponse?.mailItemAttachmentResponses?.[0]
+            ?.attachmentId
+        }
       />
       <AlternativePartList
         alternativeParts={alternativeParts}

@@ -4,7 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowRotateRight,
   faInfoCircle,
-  faPlus
+  faPlus,
+  faFileExcel
 } from '@fortawesome/free-solid-svg-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
@@ -18,6 +19,13 @@ import { OverlayTrigger } from 'react-bootstrap';
 import { Alert } from 'react-bootstrap';
 import debounce from 'lodash/debounce';
 import { createPortal } from 'react-dom';
+import { openAttachment } from 'smt-v1-app/services/AttachmentService';
+import {
+  convertBase64ToBlob,
+  logBlobDetails,
+  convertBlobToJSON
+} from 'smt-v1-app/components/features/GlobalComponents/BlobConverter';
+import * as XLSX from 'xlsx';
 
 type Supplier = any;
 
@@ -110,6 +118,7 @@ interface PartListTableProps {
   handleNewPartAddition: () => void;
   handlePartSearch: (searchTerm: string) => Promise<PartSuggestion[]>;
   setTagDate: React.Dispatch<React.SetStateAction<string>>;
+  attachmentId?: string;
 }
 
 const headerCellStyle: React.CSSProperties = {
@@ -195,7 +204,8 @@ const PartListTable: React.FC<PartListTableProps> = ({
   handleOpenPartModal,
   handleNewPartAddition,
   handlePartSearch,
-  setTagDate
+  setTagDate,
+  attachmentId
 }) => {
   const [showMultiAddModal, setShowMultiAddModal] = useState(false);
   const [multiPartNumbers, setMultiPartNumbers] = useState('');
@@ -402,6 +412,89 @@ const PartListTable: React.FC<PartListTableProps> = ({
       window.removeEventListener('resize', updatePosition);
     };
   }, [showSuggestions]);
+
+  const handleExcelImport = async () => {
+    try {
+      if (!attachmentId) {
+        alert('No attachment ID provided');
+        return;
+      }
+
+      const response = await openAttachment(attachmentId);
+      const excelData = convertBase64ToBlob(response);
+      logBlobDetails(excelData.blob);
+
+      // Excel dosyasını oku ve Part Number verilerini ayıkla
+      const arrayBuffer = await excelData.blob.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const sheetJson: any[][] = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1
+      });
+
+      // 'Part Number' başlığının olduğu sütunu bul
+      const headerRow = sheetJson.find(
+        row => Array.isArray(row) && row.includes('Part Number')
+      ) as any[];
+
+      // Sütun başlıklarını normalize eden yardımcı fonksiyon
+      const normalize = (str: any) =>
+        typeof str === 'string' ? str.trim().toLowerCase() : str;
+
+      // Sütun indexlerini normalize ederek bul
+      const partNumberColIndex = headerRow
+        ? headerRow.findIndex(col => normalize(col) === 'part number')
+        : -1;
+      const descriptionColIndex = headerRow
+        ? headerRow.findIndex(col => normalize(col) === 'description')
+        : -1;
+      const qtyColIndex = headerRow
+        ? headerRow.findIndex(col => normalize(col) === 'qty')
+        : -1;
+
+      if (partNumberColIndex === -1) {
+        console.error('Part Number sütunu bulunamadı!');
+      }
+      if (descriptionColIndex === -1) {
+        console.error('Description sütunu bulunamadı!');
+      }
+      if (qtyColIndex === -1) {
+        console.error('Qty sütunu bulunamadı!');
+      }
+
+      const headerRowIndex = sheetJson.findIndex(row => row === headerRow);
+
+      // Part Number verileri
+      const partNumbers: string[] = [];
+      // Description verileri
+      const partNames: string[] = [];
+      // Qty verileri
+      const qtyValues: string[] = [];
+      for (let i = headerRowIndex + 1; i < sheetJson.length; i++) {
+        const row = sheetJson[i];
+        if (row) {
+          if (partNumberColIndex !== -1 && row[partNumberColIndex]) {
+            partNumbers.push(row[partNumberColIndex]);
+          }
+          if (descriptionColIndex !== -1 && row[descriptionColIndex]) {
+            partNames.push(row[descriptionColIndex]);
+          }
+          if (qtyColIndex !== -1 && row[qtyColIndex]) {
+            qtyValues.push(row[qtyColIndex]);
+          }
+        }
+      }
+      setMultiPartNumbers(partNumbers.join('\n'));
+      setMultiPartNames(partNames.join('\n'));
+      setMultiQty(qtyValues.join('\n'));
+
+      alert('Excel file imported and Part Numbers extracted successfully');
+    } catch (error) {
+      console.error('Error importing Excel file:', error);
+      alert('Error importing Excel file. Please try again.');
+    }
+  };
 
   return (
     <div>
@@ -1036,6 +1129,14 @@ const PartListTable: React.FC<PartListTableProps> = ({
               </span>
             </OverlayTrigger>
           </Modal.Title>
+          <Button
+            variant="outline-success"
+            className="ms-2"
+            onClick={handleExcelImport}
+          >
+            <FontAwesomeIcon icon={faFileExcel} className="me-2" />
+            Import Excel Parts
+          </Button>
         </Modal.Header>
         <Modal.Body style={{ position: 'relative' }}>
           {errorMessage && (
