@@ -172,7 +172,7 @@ const PoDetailContainer = () => {
       }
     }
 
-    window.location.assign('/pi/list');
+    window.location.assign('/po/list');
   };
 
   return (

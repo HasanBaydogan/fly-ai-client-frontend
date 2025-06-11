@@ -70,19 +70,49 @@ declare module 'react-bootstrap' {
 }
 
 const piStatus: { [key: string]: string } = {
-  NONE: 'secondary',
-  PENDING_PAYMENT: 'success',
-  PAYMENT_RECEIVED_PARTIALLY: 'success',
-  PAYMENT_RECEIVED: 'success',
-  PAID_TO_SUPPLIER_PARTIALLY: 'success',
-  PAID_TO_SUPPLIER: 'success',
-  LOGISTIC_ON_PROGRESS: 'success',
-  IN_TURKEY: 'success',
-  PARTIALLY_SENT_TO_CLIENT: 'success',
-  SENT_TO_CLIENT: 'success',
-  CLOSED: 'warning',
-  REFUNDED: 'danger',
-  CANCELED: 'danger'
+  // TRADE Confirmation Stages (WHITE)
+  PI_CREATED: 'secondary',
+  PO_SENT_TO_SUPPLIER: 'secondary',
+  PO_APPROVED_BY_SUPPLIER: 'secondary',
+  PI_SENT_TO_CLIENT: 'secondary',
+  // PAYMENT STAGES (BLUE)
+  PENDING_PAYMENT_FROM_CLIENT: 'info',
+  PAYMENT_TRANSFERRED_FROM_CLIENT: 'info',
+  PAYMENT_RECEIVED_FROM_CLIENT_FULLY: 'info',
+  PAYMENT_RECEIVED_FROM_CLIENT_PARTIALLY: 'info',
+  PAYMENT_REQUEST_SENT_TO_ACCOUNTING: 'info',
+  PAID_TO_SUPPLIER_FULLY: 'info',
+  PAID_TO_SUPPLIER_PARTIALLY: 'info',
+  PAYMENT_CONFIRMED_BY_SUPPLIER: 'info',
+
+  // Delivery To Transit Stages (YELLOW)
+  LT_PENDING_BY_SUPPLIER: 'warning',
+  LOT_CREATED: 'warning',
+  LOT_SENT_TO_FFs: 'warning',
+  FF_ARRANGED_FOR_LOT: 'warning',
+  READY_FOR_PICKUP_AT_SUPPLIER: 'warning',
+  SUPPLIER_PREPARING_TO_SEND_BY_OWN_FFs: 'warning',
+  SUPPLIER_CONTACT_SENT_TO_OUR_FF: 'warning',
+  PICK_UP_PENDING_BY_OUR_FF: 'warning',
+  PART_ON_THE_WAY_TO_TRANSIT: 'warning',
+  // Custom Stages (LIGHT GREEN)
+  OFFICIAL_INVOICE_REQUESTED_SENT_TO_ACCOUNTING: 'success',
+  AWB_TO_TRANSIT_AND_INVOICES_SENT_TO_CUSTOMS_AGENT: 'success',
+  PART_IN_TURKEY: 'success', // IN_TURKEY,
+  CUSTOMS_PROCEDURE_STARTED: 'success',
+  AWB_TO_DESTINATION_SENT_TO_CLIENT_FOR_APPROVAL: 'success',
+  AWB_APPROVED_BY_CLIENT: 'success',
+  ORDER_ON_THE_WAY_TO_DESTINATION: 'success',
+
+  // Delivery to Client Stages (DARK GREEN)
+  FINAL_AWB_AND_OFFICIAL_INVOICE_SENT_TO_CLIENT: 'success',
+  SENT_TO_CLIENT_PARTIALLY: 'success', // PARTIALLY_SENT_TO_CLIENT,
+  SENT_TO_CLIENT_FULLY: 'success',
+  DELIVERY_CONFIRMED_BY_CLIENT: 'success',
+  // Cancellation and Refund Stages (RED)
+  CANCELED_PO_BEFORE_PAYMENT_BY_CLIENT: 'danger', // CANCELED
+  CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_ACCOUNT: 'danger', // CLOSED,
+  CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_BALANCE: 'danger' // REFUNDED,
 };
 
 export interface PiListData {
@@ -621,19 +651,41 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       }, [original.piStatus, isEditing]);
 
       const statusOptions = [
-        'NONE',
-        'PENDING_PAYMENT',
-        'PAYMENT_RECEIVED_PARTIALLY',
-        'PAYMENT_RECEIVED',
+        'PI_CREATED',
+        'PO_SENT_TO_SUPPLIER',
+        'PO_APPROVED_BY_SUPPLIER',
+        'PI_SENT_TO_CLIENT',
+        'PENDING_PAYMENT_FROM_CLIENT',
+        'PAYMENT_TRANSFERRED_FROM_CLIENT',
+        'PAYMENT_RECEIVED_FROM_CLIENT_FULLY',
+        'PAYMENT_RECEIVED_FROM_CLIENT_PARTIALLY',
+        'PAYMENT_REQUEST_SENT_TO_ACCOUNTING',
+        'PAID_TO_SUPPLIER_FULLY',
         'PAID_TO_SUPPLIER_PARTIALLY',
-        'PAID_TO_SUPPLIER',
-        'LOGISTIC_ON_PROGRESS',
-        'IN_TURKEY',
-        'PARTIALLY_SENT_TO_CLIENT',
-        'SENT_TO_CLIENT',
-        'CLOSED',
-        'REFUNDED',
-        'CANCELED'
+        'PAYMENT_CONFIRMED_BY_SUPPLIER',
+        'LT_PENDING_BY_SUPPLIER',
+        'LOT_CREATED',
+        'LOT_SENT_TO_FFs',
+        'FF_ARRANGED_FOR_LOT',
+        'READY_FOR_PICKUP_AT_SUPPLIER',
+        'SUPPLIER_PREPARING_TO_SEND_BY_OWN_FFs',
+        'SUPPLIER_CONTACT_SENT_TO_OUR_FF',
+        'PICK_UP_PENDING_BY_OUR_FF',
+        'PART_ON_THE_WAY_TO_TRANSIT',
+        'OFFICIAL_INVOICE_REQUESTED_SENT_TO_ACCOUNTING',
+        'AWB_TO_TRANSIT_AND_INVOICES_SENT_TO_CUSTOMS_AGENT',
+        'PART_IN_TURKEY',
+        'CUSTOMS_PROCEDURE_STARTED',
+        'AWB_TO_DESTINATION_SENT_TO_CLIENT_FOR_APPROVAL',
+        'AWB_APPROVED_BY_CLIENT',
+        'ORDER_ON_THE_WAY_TO_DESTINATION',
+        'FINAL_AWB_AND_OFFICIAL_INVOICE_SENT_TO_CLIENT',
+        'SENT_TO_CLIENT_PARTIALLY',
+        'SENT_TO_CLIENT_FULLY',
+        'DELIVERY_CONFIRMED_BY_CLIENT',
+        'CANCELED_PO_BEFORE_PAYMENT_BY_CLIENT',
+        'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_ACCOUNT',
+        'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_BALANCE'
       ];
 
       const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -1557,23 +1609,50 @@ interface QuoteListTableProps {
 // Add this function before the EditableAdvanceTable component
 const getStatusBackgroundColor = (status: string): string => {
   switch (status) {
-    case 'PENDING_PAYMENT':
-    case 'PAYMENT_RECEIVED_PARTIALLY':
-    case 'PAYMENT_RECEIVED':
+    case 'PI_CREATED':
+    case 'PO_SENT_TO_CLIENT':
+    case 'PO_APPROVED_BY_SUPPLIER':
+    case 'PI_SENT_TO_CLIENT':
+      return 'rgba(255, 255, 255, 1)';
+    case 'PENDING_PAYMENT_FROM_CLIENT':
+    case 'PAYMENT_TRANSFERRED_TO_CLIENT':
+    case 'PAYMENT_RECEIVED_FROM_CLIENT_FULLY':
+    case 'PAYMENT_RECEIVED_FROM_CLIENT_PARTIALLY':
+    case 'PAYMENT_REQUESTED_SENT_TO_ACCOUNTING':
+    case 'PAID_TO_SUPPLIER_FULLY':
     case 'PAID_TO_SUPPLIER_PARTIALLY':
-    case 'PAID_TO_SUPPLIER':
-    case 'LOGISTIC_ON_PROGRESS':
-    case 'IN_TURKEY':
-    case 'PARTIALLY_SENT_TO_CLIENT':
-    case 'SENT_TO_CLIENT':
-      return 'rgba(108,208,83, 0.6)'; // Pastel light green
-    case 'CLOSED':
-      return 'rgba(174,210,85, 0.6)'; // Pastel light orange
-    case 'REFUNDED':
-    case 'CANCELED':
-      return 'rgba(235,144,131, 0.6)'; // Pastel light red
+    case 'PAYMENT_CONFIRMED_BY_SUPPLIER':
+      return 'rgba(0,151,235, 0.3)';
+    case 'LT_PENDING_BY_SUPPLIER':
+    case 'LOT_CREATED':
+    case 'LOT_SENT_TO_FFs':
+    case 'FF_ARRANGED_FOR_LOT':
+    case 'READY_FOR_PICKUP_AT_SUPPLIER':
+    case 'SUPPLIER_PREPARING_TO_SEND_BY_OWN_FFs':
+    case 'SUPPLIER_CONTACT_SENT_TO_OUR_FF':
+    case 'PICK_UP_PENDING_BY_OUR_FF':
+    case 'PART_ON_THE_WAY_TO_TRANSIT':
+      return 'rgba(229,120,11, 0.3)';
+    case 'OFFICIAL_INVOICE_REQUESTED_SENT_TO_ACCOUNTING':
+    case 'AWB_TO_TRANSIT_AND_INVOICES_SENT_TO_CUSTOMS_AGENT':
+    case 'PART_IN_TURKEY, // IN_TURKEY':
+    case 'CUSTOMS_PROCEDURE_STARTED':
+    case 'AWB_TO_DESTINATION_SENT_TO_CLIENT_FOR_APPROVAL':
+    case 'AWB_APPROVED_BY_CLIENT':
+    case 'ORDER_ON_THE_WAY_TO_DESTINATION':
+    case 'PART_IN_TURKEY':
+      return 'rgba(45, 219, 2, 0.3)';
+    case 'FINAL_AWB_AND_OFFICIAL_INVOICE_SENT_TO_CLIENT':
+    case 'SENT_TO_CLIENT_PARTIALLY, // PARTIALLY_SENT_TO_CLIENT':
+    case 'SENT_TO_CLIENT_FULLY':
+    case 'DELIVERY_CONFIRMED_BY_CLIENT':
+      return 'rgba(68, 218, 31, 0.64)';
+    case 'CANCELED_PO_BEFORE_PAYMENT_BY_CLIENT':
+    case 'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_ACCOUNT':
+    case 'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_BALANCE':
+      return 'rgba(236,31,0, 0.3)';
     default:
-      return ''; // Default background for NONE
+      return '';
   }
 };
 
