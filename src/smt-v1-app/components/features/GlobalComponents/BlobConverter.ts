@@ -8,7 +8,8 @@ interface ExcelData {
 }
 
 // Sütun başlıklarını normalize eden yardımcı fonksiyon
-const normalize = (str: any) => typeof str === 'string' ? str.trim().toLowerCase() : str;
+const normalize = (str: any) =>
+  typeof str === 'string' ? str.trim().toLowerCase() : str;
 
 export const convertBase64ToBlob = (response: any): ExcelData => {
   try {
@@ -17,11 +18,11 @@ export const convertBase64ToBlob = (response: any): ExcelData => {
     // Convert base64 to Blob
     const byteCharacters = atob(response.data.data);
     const byteNumbers = new Array(byteCharacters.length);
-    
+
     for (let i = 0; i < byteCharacters.length; i++) {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
-    
+
     const byteArray = new Uint8Array(byteNumbers);
     const blob = new Blob([byteArray], { type: response.data.contentType });
 
@@ -60,18 +61,18 @@ export const convertBlobToJSON = async (blob: Blob): Promise<any> => {
   try {
     // Convert Blob to ArrayBuffer
     const arrayBuffer = await blob.arrayBuffer();
-    
+
     // Convert ArrayBuffer to Uint8Array
     const uint8Array = new Uint8Array(arrayBuffer);
-    
+
     // Convert Uint8Array to string
     const binaryString = Array.from(uint8Array)
       .map(byte => String.fromCharCode(byte))
       .join('');
-    
+
     // Convert binary string to base64
     const base64String = btoa(binaryString);
-    
+
     // Create JSON structure
     const jsonData = {
       data: base64String,
@@ -86,4 +87,4 @@ export const convertBlobToJSON = async (blob: Blob): Promise<any> => {
     console.error('Error converting Blob to JSON:', error);
     throw error;
   }
-}; 
+};
