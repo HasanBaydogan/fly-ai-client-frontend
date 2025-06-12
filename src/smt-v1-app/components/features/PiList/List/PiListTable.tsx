@@ -1610,15 +1610,15 @@ interface QuoteListTableProps {
 const getStatusBackgroundColor = (status: string): string => {
   switch (status) {
     case 'PI_CREATED':
-    case 'PO_SENT_TO_CLIENT':
+    case 'PO_SENT_TO_SUPPLIER':
     case 'PO_APPROVED_BY_SUPPLIER':
     case 'PI_SENT_TO_CLIENT':
       return 'rgba(255, 255, 255, 1)';
     case 'PENDING_PAYMENT_FROM_CLIENT':
-    case 'PAYMENT_TRANSFERRED_TO_CLIENT':
+    case 'PAYMENT_TRANSFERRED_FROM_CLIENT':
     case 'PAYMENT_RECEIVED_FROM_CLIENT_FULLY':
     case 'PAYMENT_RECEIVED_FROM_CLIENT_PARTIALLY':
-    case 'PAYMENT_REQUESTED_SENT_TO_ACCOUNTING':
+    case 'PAYMENT_REQUEST_SENT_TO_ACCOUNTING':
     case 'PAID_TO_SUPPLIER_FULLY':
     case 'PAID_TO_SUPPLIER_PARTIALLY':
     case 'PAYMENT_CONFIRMED_BY_SUPPLIER':
@@ -1635,15 +1635,14 @@ const getStatusBackgroundColor = (status: string): string => {
       return 'rgba(229,120,11, 0.3)';
     case 'OFFICIAL_INVOICE_REQUESTED_SENT_TO_ACCOUNTING':
     case 'AWB_TO_TRANSIT_AND_INVOICES_SENT_TO_CUSTOMS_AGENT':
-    case 'PART_IN_TURKEY, // IN_TURKEY':
+    case 'PART_IN_TURKEY':
     case 'CUSTOMS_PROCEDURE_STARTED':
     case 'AWB_TO_DESTINATION_SENT_TO_CLIENT_FOR_APPROVAL':
     case 'AWB_APPROVED_BY_CLIENT':
     case 'ORDER_ON_THE_WAY_TO_DESTINATION':
-    case 'PART_IN_TURKEY':
       return 'rgba(45, 219, 2, 0.3)';
     case 'FINAL_AWB_AND_OFFICIAL_INVOICE_SENT_TO_CLIENT':
-    case 'SENT_TO_CLIENT_PARTIALLY, // PARTIALLY_SENT_TO_CLIENT':
+    case 'SENT_TO_CLIENT_PARTIALLY':
     case 'SENT_TO_CLIENT_FULLY':
     case 'DELIVERY_CONFIRMED_BY_CLIENT':
       return 'rgba(68, 218, 31, 0.64)';
