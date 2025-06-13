@@ -47,6 +47,12 @@ const ProfileDropdownMenu = ({
       url: ''
     }
   ]);
+
+  const handleLogout = async () => {
+    removeCookies();
+    window.location.assign('/');
+  };
+
   return (
     <Dropdown.Menu
       align="end"
@@ -103,7 +109,7 @@ const ProfileDropdownMenu = ({
           <div className="px-3">
             <Link
               to={'/'}
-              onClick={() => removeCookies()}
+              onClick={handleLogout}
               className="btn btn-phoenix-secondary d-flex flex-center w-100"
             >
               <FeatherIcon icon="log-out" className="me-2" size={16} />
