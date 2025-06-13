@@ -76,3 +76,20 @@ export const getUserInfo = async () => {
     console.log('RFQMail Permission Error');
   }
 };
+
+export const sendHeartbeatRequest = async (url: string) => {
+  try {
+    const access_token = Cookies.get('access_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    if (access_token) {
+      headers['Authorization'] = `Bearer ${access_token}`;
+    }
+    const response = await api().post('/user/heartbeat', { url }, { headers });
+    return response;
+  } catch (error) {
+    console.error('Heartbeat API request failed:', error);
+    throw error;
+  }
+};

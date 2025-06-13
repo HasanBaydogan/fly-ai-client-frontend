@@ -32,6 +32,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import SupplierActions from './SupplierActions';
+import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/useAdvanceTable';
+import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 
 /* ***********************
    TABLO KOLON TANIMLAMALARI
@@ -390,16 +392,26 @@ const handleNullValue = (value: string) => {
 
 type SearchColumn = {
   label: string;
-  value: keyof SupplierData | 'all';
+  value:
+    | 'companyName'
+    | 'brand'
+    | 'pickUpCountry'
+    | 'legalCountry'
+    | 'pickUpAddress'
+    | 'legalAddress'
+    | 'email'
+    | 'all';
 };
 
 const searchColumns: SearchColumn[] = [
   // { label: 'No Filter', value: 'all' },
   { label: 'Company Name', value: 'companyName' },
-  { label: 'Brand', value: 'brands' },
-  { label: 'Country', value: 'country' },
-  { label: 'Email', value: 'mail' },
-  { label: 'Address', value: 'address' }
+  { label: 'Brand', value: 'brand' },
+  { label: 'Pick Up Country', value: 'pickUpCountry' },
+  { label: 'Legal Country', value: 'legalCountry' },
+  { label: 'Pick Up Address', value: 'pickUpAddress' },
+  { label: 'Legal Address', value: 'legalAddress' },
+  { label: 'Email', value: 'email' }
 ];
 
 /* ***********************
@@ -449,8 +461,39 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
   const [searchTermTransfer, setSearchTermTransfer] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const { setGlobalFilter, setColumnFilters } =
-    useAdvanceTableContext<SupplierData>();
+  // Transfer işlemi fonksiyonları
+  const handleTransferClick = (supplierId: string, companyName: string) => {
+    setSelectedSupplierId(supplierId);
+    setFromSupplierName(companyName);
+    setShowTransferModal(true);
+    setTransferModalState('select');
+    setTransferResult(null);
+    setSearchTermTransfer('');
+    setSelectedToSupplierId('');
+  };
+
+  // Silme işlemi fonksiyonları
+  const handleDeleteClick = (supplierId: string) => {
+    setSelectedSupplierId(supplierId);
+    setModalState('confirm');
+    setShowDeleteModal(true);
+    setResultSuccess(null);
+  };
+
+  // Columns'u tanımla
+  const columns = useMemo(
+    () => getProjectListTableColumns(handleTransferClick, handleDeleteClick),
+    [handleTransferClick, handleDeleteClick]
+  );
+
+  // Tablo instance'ını oluştur
+  const table = useAdvanceTable({
+    data,
+    columns,
+    pageSize: pageSize === 'all' ? data.length : pageSize,
+    pagination: true,
+    sortable: true
+  });
 
   const fetchData = async (
     term: string,
@@ -537,20 +580,17 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
     () =>
       debounce((term: string, column: SearchColumn) => {
         const effectiveTerm = term.trim();
-        const searchParam = effectiveTerm
-          ? `${column.value}=${effectiveTerm}`
-          : '';
         if (pageSize !== 'all') {
-          setGlobalFilter(undefined);
-          setColumnFilters([{ id: column.value, value: effectiveTerm }]);
+          table.setGlobalFilter(undefined);
+          table.setColumnFilters([{ id: column.value, value: effectiveTerm }]);
         } else {
-          setGlobalFilter(effectiveTerm || undefined);
-          setColumnFilters([]);
+          table.setGlobalFilter(effectiveTerm || undefined);
+          table.setColumnFilters([]);
         }
         setPageIndex(0);
         fetchData(term, 0, column);
       }, 300),
-    [setGlobalFilter, setColumnFilters, pageSize]
+    [table, pageSize]
   );
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
@@ -577,25 +617,6 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
       console.error('Error deleting supplier:', error);
       return false;
     }
-  };
-
-  // Transfer işlemi fonksiyonları
-  const handleTransferClick = (supplierId: string, companyName: string) => {
-    setSelectedSupplierId(supplierId);
-    setFromSupplierName(companyName);
-    setShowTransferModal(true);
-    setTransferModalState('select');
-    setTransferResult(null);
-    setSearchTermTransfer('');
-    setSelectedToSupplierId('');
-  };
-
-  // Silme işlemi fonksiyonları
-  const handleDeleteClick = (supplierId: string) => {
-    setSelectedSupplierId(supplierId);
-    setModalState('confirm');
-    setShowDeleteModal(true);
-    setResultSuccess(null);
   };
 
   const handleConfirmDelete = async () => {
@@ -685,130 +706,129 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
       s.supplierName.toLowerCase().includes(searchTermTransfer.toLowerCase())
     );
 
-  const columns = useMemo(
-    () => getProjectListTableColumns(handleTransferClick, handleDeleteClick),
-    [handleTransferClick, handleDeleteClick]
-  );
-
   useEffect(() => {
     fetchData(searchTerm, pageIndex, selectedColumn);
   }, [pageIndex, pageSize]);
 
   return (
-    <div>
-      <div className="mb-4">
-        <Row className="g-3 align-items-center">
-          <Col xs={12} md={5}>
-            <div className="d-flex gap-2">
-              <SearchBox
-                placeholder={`Search in ${selectedColumn.label.toLowerCase()}...`}
-                value={searchTerm}
-                onChange={handleSearch}
-                disabled={selectedColumn.value === 'all'}
-                className="flex-grow-1"
-              />
+    <AdvanceTableProvider {...table}>
+      <div>
+        <div className="mb-4">
+          <Row className="g-3 align-items-center">
+            <Col xs={12} md={5}>
+              <div className="d-flex gap-2">
+                <SearchBox
+                  placeholder={`Search in ${selectedColumn.label.toLowerCase()}...`}
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  disabled={selectedColumn.value === 'all'}
+                  className="flex-grow-1"
+                />
+                <Dropdown>
+                  <Dropdown.Toggle
+                    variant="outline-secondary"
+                    className="text-start"
+                    style={{ minWidth: '150px' }}
+                  >
+                    {selectedColumn.label}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    {searchColumns.map(column => (
+                      <Dropdown.Item
+                        key={column.value.toString()}
+                        onClick={() => handleColumnSelect(column)}
+                      >
+                        {column.label}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+            </Col>
+            <Col xs="auto" className="d-flex gap-2 ms-auto">
               <Dropdown>
                 <Dropdown.Toggle
                   variant="outline-secondary"
-                  className="text-start"
-                  style={{ minWidth: '150px' }}
+                  size="sm"
+                  id="dropdown-items-per-page"
+                  style={{ minWidth: '100px' }}
                 >
-                  {selectedColumn.label}
+                  {pageSize === 'all'
+                    ? 'All Suppliers'
+                    : `${pageSize} Suppliers`}
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  {searchColumns.map(column => (
-                    <Dropdown.Item
-                      key={column.value.toString()}
-                      onClick={() => handleColumnSelect(column)}
-                    >
-                      {column.label}
-                    </Dropdown.Item>
-                  ))}
+                  {([5, 10, 25, 50, 100, 'all'] as (number | 'all')[]).map(
+                    size => (
+                      <Dropdown.Item
+                        key={size.toString()}
+                        active={pageSize === size}
+                        onClick={() => {
+                          setPageSize(size);
+                          setPageIndex(0);
+                        }}
+                      >
+                        {size === 'all' ? 'All Suppliers' : `${size} Suppliers`}
+                      </Dropdown.Item>
+                    )
+                  )}
                 </Dropdown.Menu>
               </Dropdown>
-            </div>
-          </Col>
-          <Col xs="auto" className="d-flex gap-2 ms-auto">
-            <Dropdown>
-              <Dropdown.Toggle
-                variant="outline-secondary"
-                size="sm"
-                id="dropdown-items-per-page"
-                style={{ minWidth: '100px' }}
-              >
-                {pageSize === 'all' ? 'All Suppliers' : `${pageSize} Suppliers`}
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                {([5, 10, 25, 50, 100, 'all'] as (number | 'all')[]).map(
-                  size => (
-                    <Dropdown.Item
-                      key={size.toString()}
-                      active={pageSize === size}
-                      onClick={() => {
-                        setPageSize(size);
-                        setPageIndex(0);
-                      }}
-                    >
-                      {size === 'all' ? 'All Suppliers' : `${size} Suppliers`}
-                    </Dropdown.Item>
-                  )
-                )}
-              </Dropdown.Menu>
-            </Dropdown>
-          </Col>
-        </Row>
-      </div>
+            </Col>
+          </Row>
+        </div>
 
-      <div className="border-bottom border-translucent">
-        {loading ? (
-          <div>
-            <LoadingAnimation />
-          </div>
-        ) : (
-          <>
-            <AdvanceTable
-              tableProps={{
-                className: 'phoenix-table border-top border-translucent fs-9',
-                data: data,
-                columns: columns
-              }}
-            />
-            <SupplierActions
-              showDeleteModal={showDeleteModal}
-              setShowDeleteModal={setShowDeleteModal}
-              selectedSupplierId={selectedSupplierId}
-              modalState={modalState}
-              resultSuccess={resultSuccess}
-              handleCloseModal={handleCloseModal}
-              handleConfirmDelete={handleConfirmDelete}
-              showTransferModal={showTransferModal}
-              setShowTransferModal={setShowTransferModal}
-              transferModalState={transferModalState}
-              setTransferModalState={setTransferModalState}
-              fromSupplierName={fromSupplierName}
-              searchTermTransfer={searchTermTransfer}
-              setSearchTermTransfer={setSearchTermTransfer}
-              isDropdownOpen={isDropdownOpen}
-              setIsDropdownOpen={setIsDropdownOpen}
-              filteredSuppliers={filteredSuppliers}
-              selectedToSupplierId={selectedToSupplierId}
-              setSelectedToSupplierId={setSelectedToSupplierId}
-              handleTransferConfirm={handleTransferConfirm}
-              transferResult={transferResult}
-            />
-            <AdvanceTableFooter
-              pagination
-              className="py-1"
-              totalItems={totalItems}
-              pageIndex={pageIndex}
-              setPageIndex={setPageIndex}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-            />
-          </>
-        )}
+        <div className="border-bottom border-translucent">
+          {loading ? (
+            <div>
+              <LoadingAnimation />
+            </div>
+          ) : (
+            <>
+              <AdvanceTable
+                tableProps={{
+                  className: 'phoenix-table border-top border-translucent fs-9',
+                  data: data,
+                  columns: columns
+                }}
+              />
+              <SupplierActions
+                showDeleteModal={showDeleteModal}
+                setShowDeleteModal={setShowDeleteModal}
+                selectedSupplierId={selectedSupplierId}
+                modalState={modalState}
+                resultSuccess={resultSuccess}
+                handleCloseModal={handleCloseModal}
+                handleConfirmDelete={handleConfirmDelete}
+                showTransferModal={showTransferModal}
+                setShowTransferModal={setShowTransferModal}
+                transferModalState={transferModalState}
+                setTransferModalState={setTransferModalState}
+                fromSupplierName={fromSupplierName}
+                searchTermTransfer={searchTermTransfer}
+                setSearchTermTransfer={setSearchTermTransfer}
+                isDropdownOpen={isDropdownOpen}
+                setIsDropdownOpen={setIsDropdownOpen}
+                filteredSuppliers={filteredSuppliers}
+                selectedToSupplierId={selectedToSupplierId}
+                setSelectedToSupplierId={setSelectedToSupplierId}
+                handleTransferConfirm={handleTransferConfirm}
+                transferResult={transferResult}
+              />
+              <AdvanceTableFooter
+                pagination
+                className="py-1"
+                totalItems={totalItems}
+                pageIndex={pageIndex}
+                setPageIndex={setPageIndex}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+              />
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </AdvanceTableProvider>
   );
 };
 
