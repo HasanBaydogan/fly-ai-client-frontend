@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ProjectsTopSection from '../../../components/features/Client/ClientList/ClientTopSection';
@@ -8,32 +8,11 @@ import ClientList, {
 import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/useAdvanceTable';
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
-import { searchByClientList } from 'smt-v1-app/services/ClientServices';
 import { ClientData } from 'smt-v1-app/types/ClientTypes';
-
 import { ColumnDef } from '@tanstack/react-table';
 
 const ClientListContainer = () => {
   const [data] = useState<ClientData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [pageIndex] = useState<number>(1);
-  const [clientData, setClientData] = useState<ClientData[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await searchByClientList('', pageIndex);
-        if (response && response.data && response.data.clients) {
-        }
-      } catch (error) {
-        console.error('Error fetching client data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [pageIndex]);
 
   const table = useAdvanceTable({
     data: data,
@@ -42,10 +21,6 @@ const ClientListContainer = () => {
     pagination: true,
     sortable: true
   });
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div>

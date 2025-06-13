@@ -610,12 +610,7 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
   const fetchData = async (currentPage: number, searchParam: string = '') => {
     setLoading(true);
     try {
-      console.log('CompanyListTable - Fetching data...');
       const response = await getCompanyAll();
-      console.log('CompanyListTable - Full Response:', response);
-      console.log('CompanyListTable - Status Code:', response?.statusCode);
-      console.log('CompanyListTable - Data:', response?.data);
-      console.log('CompanyListTable - Success:', response?.success);
 
       if (
         response?.statusCode === 451 ||
@@ -629,8 +624,6 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
       }
 
       const companyList = response?.data || [];
-      console.log('CompanyListTable - Company List:', companyList);
-
       const mappedData: CompanyData[] = companyList.map((item: any) => {
         let clientNames = '';
         if (Array.isArray(item.clientsResponse)) {
@@ -649,7 +642,6 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
         };
       });
 
-      console.log('CompanyListTable - Mapped Data:', mappedData);
       setData(mappedData);
       setTotalItems(response?.data?.totalElements || 0);
     } catch (error) {
@@ -679,14 +671,14 @@ const CompanyListTable: FC<CompanyListTableProps> = ({ activeView }) => {
     [setGlobalFilter, setColumnFilters, pageSize]
   );
 
-  useEffect(() => {
-    const effectivePageIndex = pageSize === 'all' ? 0 : pageIndex;
-    const effectiveTerm = searchTerm.trim();
-    const searchParam = effectiveTerm
-      ? `${selectedColumn.value}=${effectiveTerm}`
-      : '';
-    fetchData(effectivePageIndex, searchParam);
-  }, [pageIndex, pageSize]);
+  // useEffect(() => {
+  //   const effectivePageIndex = pageSize === 'all' ? 0 : pageIndex;
+  //   const effectiveTerm = searchTerm.trim();
+  //   const searchParam = effectiveTerm
+  //     ? `${selectedColumn.value}=${effectiveTerm}`
+  //     : '';
+  //   fetchData(effectivePageIndex, searchParam);
+  // }, [pageIndex, pageSize]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

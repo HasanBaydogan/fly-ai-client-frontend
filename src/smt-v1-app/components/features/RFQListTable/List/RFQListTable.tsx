@@ -355,14 +355,14 @@ const RFQListTable: FC<RFQListTableProps> = ({ activeView }) => {
     [setGlobalFilter, setColumnFilters, pageSize]
   );
 
-  useEffect(() => {
-    const effectivePageIndex = pageSize === 'all' ? 0 : pageIndex;
-    const effectiveTerm = searchTerm.trim();
-    const searchParam = effectiveTerm
-      ? `${selectedColumn.value}=${effectiveTerm}`
-      : '';
-    fetchData(effectivePageIndex, searchParam);
-  }, [pageIndex, pageSize]);
+  // useEffect(() => {
+  //   const effectivePageIndex = pageSize === 'all' ? 0 : pageIndex;
+  //   const effectiveTerm = searchTerm.trim();
+  //   const searchParam = effectiveTerm
+  //     ? `${selectedColumn.value}=${effectiveTerm}`
+  //     : '';
+  //   fetchData(effectivePageIndex, searchParam);
+  // }, [pageIndex, pageSize]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

@@ -16,13 +16,6 @@ import greenPin from 'assets/icons/greenPin.svg';
 import skybluePin from 'assets/icons/skybluePin.svg';
 import brownPin from 'assets/icons/brownPin.svg';
 import violetPin from 'assets/icons/violetPin.svg';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faAngleLeft,
-  faAngleRight,
-  faAnglesLeft,
-  faAnglesRight
-} from '@fortawesome/free-solid-svg-icons';
 import {
   searchByNoteList,
   postNewNotes,
@@ -156,9 +149,9 @@ const PartWizardNotesForm: React.FC<PartWizardNotesFormProps> = ({
     [partId, pageSize]
   );
 
-  useEffect(() => {
-    fetchNotes(currentPage);
-  }, [currentPage, fetchNotes]);
+  // useEffect(() => {
+  //   fetchNotes(currentPage);
+  // }, [currentPage, fetchNotes]);
 
   const filteredNotes =
     filterCategory === 'all'

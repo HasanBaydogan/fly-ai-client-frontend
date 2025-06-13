@@ -11,10 +11,7 @@ import PartListTable, {
   PartTableColumns
 } from 'smt-v1-app/components/features/Parts/PartList/PartListTable';
 import { ColumnDef } from '@tanstack/react-table';
-import {
-  searchByPartList,
-  getByItemFields
-} from 'smt-v1-app/services/PartServices';
+import { getByItemFields } from 'smt-v1-app/services/PartServices';
 import { PartData } from 'smt-v1-app/types/PartTypes';
 
 import WizardNav from 'smt-v1-app/components/features/Parts/PartWizardNav';
@@ -36,20 +33,6 @@ const PartManagementContainer = () => {
   const [data, setData] = useState<PartData[]>([]);
   const [loadingList, setLoadingList] = useState<boolean>(true);
   const [pageIndex, setPageIndex] = useState<number>(1);
-
-  useEffect(() => {
-    const fetchListData = async () => {
-      setLoadingList(true);
-      try {
-        const response = await searchByPartList('', pageIndex, 10);
-      } catch (error) {
-        console.error('Error fetching list data:', error);
-      } finally {
-        setLoadingList(false);
-      }
-    };
-    fetchListData();
-  }, [pageIndex]);
 
   // Fetching Part Detail From Backend
   useEffect(() => {
@@ -84,13 +67,6 @@ const PartManagementContainer = () => {
   const form = useWizardForm({ totalStep: 5 });
   const isEditMode = partData && partData.partId;
 
-  if (loadingList) {
-    return (
-      <div>
-        <LoadingAnimation></LoadingAnimation>
-      </div>
-    );
-  }
   const handlePartSelect = (partId: string) => {
     setSelectedPartId(partId);
     setLgShow(true);

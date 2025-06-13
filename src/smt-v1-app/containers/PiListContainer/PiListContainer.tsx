@@ -7,7 +7,6 @@ import useAdvanceTable from 'smt-v1-app/components/features/GlobalComponents/Gen
 import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
-import { searchByPiList } from 'smt-v1-app/services/PIServices';
 import { PiData } from 'smt-v1-app/types/PiTypes';
 import PiListTable, {
   PiTableColumns
@@ -16,25 +15,6 @@ import GeneralTopSection from 'smt-v1-app/components/features/GlobalComponents/G
 
 const PiListContainer = () => {
   const [data] = useState<PiData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [pageIndex] = useState<number>(1);
-  const [clientData, setClientData] = useState<PiData[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await searchByPiList('', pageIndex);
-        if (response && response.data && response.data.clients) {
-        }
-      } catch (error) {
-        console.error('Error fetching client data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [pageIndex]);
 
   const table = useAdvanceTable({
     data: data,
@@ -43,10 +23,6 @@ const PiListContainer = () => {
     pagination: true,
     sortable: true
   });
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div>

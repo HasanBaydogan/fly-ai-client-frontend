@@ -6,30 +6,10 @@ import PiListTable, {
   PiTableColumns
 } from 'smt-v1-app/components/features/PoList/PoListTable';
 import GeneralTopSection from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/ListTopSection';
-import { searchByPoList } from 'smt-v1-app/services/PoServices';
 import { PoData } from 'smt-v1-app/types/PoTypes';
 
 const PiListContainer = () => {
   const [data] = useState<PoData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [pageIndex] = useState<number>(1);
-  const [clientData, setClientData] = useState<PoData[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await searchByPoList('', pageIndex);
-        if (response && response.data && response.data.clients) {
-        }
-      } catch (error) {
-        console.error('Error fetching client data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [pageIndex]);
 
   const table = useAdvanceTable({
     data: data,
@@ -38,10 +18,6 @@ const PiListContainer = () => {
     pagination: true,
     sortable: true
   });
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div>
