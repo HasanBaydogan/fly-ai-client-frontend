@@ -3,8 +3,8 @@ import Cookies from 'js-cookie';
 import { sendHeartbeatRequest } from 'smt-v1-app/services/UserService';
 
 // Constants
-const HEARTBEAT_INTERVAL = 30 * 1000; // 30 seconds default
-const MIN_REQUEST_INTERVAL = 5000; // 5 seconds minimum between requests
+const HEARTBEAT_INTERVAL = 30 * 60 * 1000;
+const MIN_REQUEST_INTERVAL = 20 * 60 * 1000;
 const CHANNEL_NAME = 'heartbeat_channel';
 const LEADER_MESSAGE = 'leader';
 const FOLLOWER_MESSAGE = 'follower';
@@ -116,6 +116,15 @@ export const useHeartbeat = (options: HeartbeatOptions = {}) => {
       if (event.data === LEADER_MESSAGE) {
         console.log('🔵 [Channel] Another tab became leader');
         isLeaderRef.current = false;
+      } else if (event.data === FOLLOWER_MESSAGE) {
+        if (!getLeaderTab()) {
+          console.log(
+            '🔵 [Channel] No leader, becoming leader after follower message'
+          );
+          updateLeaderTab(tabIdRef.current);
+          isLeaderRef.current = true;
+          channel.postMessage(LEADER_MESSAGE);
+        }
       } else if (event.data === TIMER_TICK_MESSAGE) {
         console.log(
           '🔵 [Channel] Timer tick received, isLeader:',
