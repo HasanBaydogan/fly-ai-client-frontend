@@ -2,6 +2,7 @@ import axios from 'axios';
 import { baseURL } from './ApiConstants';
 import Cookies from 'js-cookie';
 import { setCookie } from './CookieService';
+import { getRequest } from './ApiCore/GlobalApiCore';
 
 const api = () => {
   return axios.create({
@@ -77,19 +78,23 @@ export const getUserInfo = async () => {
   }
 };
 
-export const sendHeartbeatRequest = async (url: string) => {
-  try {
-    const access_token = Cookies.get('access_token');
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
-    if (access_token) {
-      headers['Authorization'] = `Bearer ${access_token}`;
-    }
-    const response = await api().post('/user/heartbeat', { url }, { headers });
-    return response;
-  } catch (error) {
-    console.error('Heartbeat API request failed:', error);
-    throw error;
-  }
-};
+// export const sendHeartbeatRequest = async (url: string) => {
+//   try {
+//     const access_token = Cookies.get('access_token');
+//     const headers: Record<string, string> = {
+//       'Content-Type': 'application/json'
+//     };
+//     if (access_token) {
+//       headers['Authorization'] = `Bearer ${access_token}`;
+//     }
+//     const response = await api().get('/user/heartbeat', { url });
+//     return response;
+//   } catch (error) {
+//     console.error('Heartbeat API request failed:', error);
+//     throw error;
+//   }
+// };
+
+// export const sendHeartbeatRequest = async (url: string) => {
+//   return await getRequest(`/user/heartbeat`);
+// };
