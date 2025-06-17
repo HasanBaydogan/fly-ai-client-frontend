@@ -651,6 +651,9 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       }, [original.piStatus, isEditing]);
 
       const statusOptions = [
+        'ALL',
+        'ACTIVE',
+        'MY_ISSUES',
         'PI_CREATED',
         'PO_SENT_TO_SUPPLIER',
         'PO_APPROVED_BY_SUPPLIER',
@@ -1825,9 +1828,6 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     searchColumns[0]
   );
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
-  // const [actionsColumnWidth, setActionsColumnWidth] = useState(
-  //   window.innerWidth < 1500 ? '80%' : '30%'
-  // );
   const [editingPiId, setEditingPiId] = useState<string | null>(null);
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
@@ -1836,6 +1836,49 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [currencies, setCurrencies] = useState<string[]>([]);
   const [loadingCurrencies, setLoadingCurrencies] = useState(false);
+  const [filterOption, setFilterOption] = useState<
+    'all' | 'active' | 'my-issues'
+  >('all');
+  const [dropdownOption, setDropdownOption] = useState<string>('ALL');
+
+  // Status options for dropdown (must be inside the component)
+  const statusOptions = [
+    'PI_CREATED',
+    'PO_SENT_TO_SUPPLIER',
+    'PO_APPROVED_BY_SUPPLIER',
+    'PI_SENT_TO_CLIENT',
+    'PENDING_PAYMENT_FROM_CLIENT',
+    'PAYMENT_TRANSFERRED_FROM_CLIENT',
+    'PAYMENT_RECEIVED_FROM_CLIENT_FULLY',
+    'PAYMENT_RECEIVED_FROM_CLIENT_PARTIALLY',
+    'PAYMENT_REQUEST_SENT_TO_ACCOUNTING',
+    'PAID_TO_SUPPLIER_FULLY',
+    'PAID_TO_SUPPLIER_PARTIALLY',
+    'PAYMENT_CONFIRMED_BY_SUPPLIER',
+    'LT_PENDING_BY_SUPPLIER',
+    'LOT_CREATED',
+    'LOT_SENT_TO_FFs',
+    'FF_ARRANGED_FOR_LOT',
+    'READY_FOR_PICKUP_AT_SUPPLIER',
+    'SUPPLIER_PREPARING_TO_SEND_BY_OWN_FFs',
+    'SUPPLIER_CONTACT_SENT_TO_OUR_FF',
+    'PICK_UP_PENDING_BY_OUR_FF',
+    'PART_ON_THE_WAY_TO_TRANSIT',
+    'OFFICIAL_INVOICE_REQUESTED_SENT_TO_ACCOUNTING',
+    'AWB_TO_TRANSIT_AND_INVOICES_SENT_TO_CUSTOMS_AGENT',
+    'PART_IN_TURKEY',
+    'CUSTOMS_PROCEDURE_STARTED',
+    'AWB_TO_DESTINATION_SENT_TO_CLIENT_FOR_APPROVAL',
+    'AWB_APPROVED_BY_CLIENT',
+    'ORDER_ON_THE_WAY_TO_DESTINATION',
+    'FINAL_AWB_AND_OFFICIAL_INVOICE_SENT_TO_CLIENT',
+    'SENT_TO_CLIENT_PARTIALLY',
+    'SENT_TO_CLIENT_FULLY',
+    'DELIVERY_CONFIRMED_BY_CLIENT',
+    'CANCELED_PO_BEFORE_PAYMENT_BY_CLIENT',
+    'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_ACCOUNT',
+    'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_BALANCE'
+  ];
 
   // Add resize listener to update the Actions column width
   // useEffect(() => {
@@ -2519,7 +2562,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         ? ''
         : `${selectedColumn.value}=${searchTerm}`;
     fetchData(pageIndex, searchParam);
-  }, [pageIndex, pageSize]);
+  }, [pageIndex, pageSize, filterOption, dropdownOption]);
 
   // Initialize tooltips after rendering
   useEffect(() => {
@@ -2817,6 +2860,70 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
                     </Dropdown.Item>
                   )
                 )}
+              </Dropdown.Menu>
+            </Dropdown>
+          </Col>
+        </Row>
+        {/* Yeni: Filtre butonları ve dropdown */}
+        <Row className="g-2 mt-2 align-items-center">
+          <Col xs="auto">
+            <Button
+              variant={filterOption === 'all' ? 'primary' : 'outline-primary'}
+              size="sm"
+              onClick={() => setFilterOption('all')}
+            >
+              All
+            </Button>
+          </Col>
+          <Col xs="auto">
+            <Button
+              variant={
+                filterOption === 'active' ? 'primary' : 'outline-primary'
+              }
+              size="sm"
+              onClick={() => setFilterOption('active')}
+            >
+              Active
+            </Button>
+          </Col>
+          <Col xs="auto">
+            <Button
+              variant={
+                filterOption === 'my-issues' ? 'primary' : 'outline-primary'
+              }
+              size="sm"
+              onClick={() => setFilterOption('my-issues')}
+            >
+              My Issues
+            </Button>
+          </Col>
+          <Col xs="auto">
+            <Dropdown onSelect={key => setDropdownOption(key as string)}>
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                size="sm"
+                id="dropdown-filter"
+              >
+                {formatStatus(dropdownOption)}
+              </Dropdown.Toggle>
+              <Dropdown.Menu style={{ maxHeight: 400, overflowY: 'auto' }}>
+                {statusOptions.map(option => {
+                  const isCanceled = [
+                    'CANCELED_PO_BEFORE_PAYMENT_BY_CLIENT',
+                    'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_ACCOUNT',
+                    'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_BALANCE'
+                  ].includes(option);
+                  return (
+                    <Dropdown.Item
+                      eventKey={option}
+                      active={dropdownOption === option}
+                      key={option}
+                      disabled={filterOption === 'active' && isCanceled}
+                    >
+                      {formatStatus(option)}
+                    </Dropdown.Item>
+                  );
+                })}
               </Dropdown.Menu>
             </Dropdown>
           </Col>

@@ -36,6 +36,7 @@ export interface SupplierData {
   numOfProduct: number;
   quoteStatus: any;
   formStatus: any;
+  rfqCost: number;
   finalCost: number;
   lastValidDate: string;
   client?: string;
@@ -137,7 +138,7 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
     accessorKey: 'rfqCost',
     cell: ({ row: { original } }) => {
       return (
-        original.finalCost?.toLocaleString('en-US', {
+        original.rfqCost?.toLocaleString('en-US', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
         }) ?? '0.00'

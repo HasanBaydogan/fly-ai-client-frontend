@@ -120,3 +120,11 @@ export const postCloseEditMode = async (piId: string) => {
 export const patchPiPart = async (piPartStatuses: PIStage) => {
   return await patchRequest('/pi-part', piPartStatuses);
 };
+
+// export const sendHeartbeatRequest = async () => {
+//   return await getRequest(`/user/heartbeat`);
+// };
+
+export const getPiActionLogs = async (piId: string) => {
+  return await getRequest(`/pi/all-action-logs?piId=${piId}`);
+};

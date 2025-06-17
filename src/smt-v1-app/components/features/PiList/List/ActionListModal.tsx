@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Modal, Button, Form, Card } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Form, Card, Collapse } from 'react-bootstrap';
 import {
   postPiActionCreate,
-  postPiActionUpdate
+  postPiActionUpdate,
+  getPiActionLogs
 } from 'smt-v1-app/services/PIServices';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -10,7 +11,9 @@ import {
   faSave,
   faTimes,
   faTrash,
-  faPlus
+  faPlus,
+  faEye,
+  faEyeSlash
 } from '@fortawesome/free-solid-svg-icons';
 
 // Function to parse date string in format "15:04 13.05.2025"
@@ -57,6 +60,12 @@ const ActionListModal = ({
   const [confirmState, setConfirmState] = useState({ type: '', target: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsError, setLogsError] = useState('');
 
   const confirmCreate = async () => {
     try {
@@ -129,6 +138,13 @@ const ActionListModal = ({
     setConfirmState({ type: '', target: null });
   };
 
+  const handleShowDetails = action => {
+    setSelectedAction(action);
+    setShowDetails(
+      prev => !prev || selectedAction?.piActionId !== action.piActionId
+    );
+  };
+
   // Sort actions by date (newest first) using our custom date parser
   const sortedActions = [...(actions || [])].sort((a, b) => {
     if (!a || !a.createdAt) return 1;
@@ -136,8 +152,24 @@ const ActionListModal = ({
     return parseDateString(b.createdAt) - parseDateString(a.createdAt);
   });
 
+  // Details paneli açıldığında logları çek
+  useEffect(() => {
+    if (detailsOpen && piId) {
+      setLogsLoading(true);
+      setLogsError('');
+      getPiActionLogs(piId)
+        .then(res => {
+          setLogs(res?.data || res || []);
+        })
+        .catch(err => {
+          setLogsError('Logs could not be loaded.');
+        })
+        .finally(() => setLogsLoading(false));
+    }
+  }, [detailsOpen, piId]);
+
   return (
-    <Modal show={show} onHide={onHide} size="lg" centered>
+    <Modal show={show} onHide={onHide} size="xl" centered>
       <Modal.Header closeButton>
         <Modal.Title>PI Actions</Modal.Title>
       </Modal.Header>
@@ -220,152 +252,225 @@ const ActionListModal = ({
         </Card>
 
         {/* Mevcut aksiyon listesi */}
-        <h6 className="mb-3">Existing Actions</h6>
-        <div
-          style={{
-            maxHeight: '400px',
-            overflowY: 'auto',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(1, 1fr)',
-            gap: '12px'
-          }}
-        >
-          {sortedActions.length === 0 ? (
-            <div className="text-center py-4 text-muted">No actions yet.</div>
-          ) : (
-            sortedActions
-              .filter(action => action && action.piActionId)
-              .map(action => (
-                <Card key={action.piActionId} className="w-100">
-                  {editId === action.piActionId ? (
-                    <Card.Body>
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        value={editValue}
-                        onChange={e => setEditValue(e.target.value)}
-                        className="mb-2"
-                      />
-                      <div className="d-flex gap-2 justify-content-end">
-                        {confirmState.type === 'update' &&
-                        confirmState.target === editId ? (
-                          <>
-                            <Button
-                              variant="success"
-                              size="sm"
-                              onClick={confirmUpdate}
-                            >
-                              Confirm
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() =>
-                                setConfirmState({ type: '', target: null })
-                              }
-                            >
-                              Cancel
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() =>
-                                setConfirmState({
-                                  type: 'update',
-                                  target: editId
-                                })
-                              }
-                            >
-                              <FontAwesomeIcon icon={faSave} className="me-1" />
-                              Save
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={handleCancelEdit}
-                            >
-                              <FontAwesomeIcon
-                                icon={faTimes}
-                                className="me-1"
-                              />
-                              Cancel
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </Card.Body>
-                  ) : (
-                    <Card.Body style={{ padding: '10px' }}>
-                      <div
-                        className="d-flex"
-                        style={{ minHeight: '90px', position: 'relative' }}
-                      >
+        <div className="d-flex">
+          <h6 className="d-flex align-items-center mb-0">Existing Actions</h6>
+          <Button
+            variant={detailsOpen ? 'outline-info' : 'info'}
+            size="sm"
+            className="ms-auto mb-3 d-flex align-items-center gap-2 shadow-sm"
+            style={{
+              borderRadius: 20,
+              fontWeight: 500,
+              padding: '6px 16px',
+              fontSize: 15,
+              transition: 'background 0.2s, color 0.2s'
+            }}
+            onClick={() => setDetailsOpen(open => !open)}
+          >
+            <FontAwesomeIcon
+              icon={detailsOpen ? faEye : faEyeSlash}
+              style={{ fontSize: 17 }}
+            />
+            <span style={{ fontSize: 14, letterSpacing: 0.5 }}>Details</span>
+          </Button>
+        </div>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <div
+            style={{
+              maxHeight: '400px',
+              overflowY: 'auto',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(1, 1fr)',
+              gap: '12px',
+              flex: 1
+            }}
+          >
+            {sortedActions.length === 0 ? (
+              <div className="text-center py-4 text-muted">No actions yet.</div>
+            ) : (
+              sortedActions
+                .filter(action => action && action.piActionId)
+                .map(action => (
+                  <Card key={action.piActionId} className="w-100">
+                    {editId === action.piActionId ? (
+                      <Card.Body>
+                        <Form.Control
+                          as="textarea"
+                          rows={3}
+                          value={editValue}
+                          onChange={e => setEditValue(e.target.value)}
+                          className="mb-2"
+                        />
+                        <div className="d-flex gap-2 justify-content-end">
+                          {confirmState.type === 'update' &&
+                          confirmState.target === editId ? (
+                            <>
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={confirmUpdate}
+                              >
+                                Confirm
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() =>
+                                  setConfirmState({ type: '', target: null })
+                                }
+                              >
+                                Cancel
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() =>
+                                  setConfirmState({
+                                    type: 'update',
+                                    target: editId
+                                  })
+                                }
+                              >
+                                <FontAwesomeIcon
+                                  icon={faSave}
+                                  className="me-1"
+                                />
+                                Save
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faTimes}
+                                  className="me-1"
+                                />
+                                Cancel
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </Card.Body>
+                    ) : (
+                      <Card.Body style={{ padding: '10px' }}>
                         <div
-                          style={{
-                            flex: '1 1 auto',
-                            maxWidth: 'calc(100% - 90px)',
-                            paddingRight: '10px'
-                          }}
+                          className="d-flex"
+                          style={{ minHeight: '90px', position: 'relative' }}
                         >
                           <div
                             style={{
-                              whiteSpace: 'pre-wrap',
-                              wordBreak: 'break-word',
-                              marginBottom: '20px'
+                              flex: '1 1 auto',
+                              maxWidth: 'calc(100% - 90px)',
+                              paddingRight: '10px'
                             }}
                           >
-                            {action.description || 'Action details not found'}
+                            <div
+                              style={{
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word',
+                                marginBottom: '20px'
+                              }}
+                            >
+                              {action.description || 'Action details not found'}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              flex: '0 0 80px',
+                              display: 'flex',
+                              gap: '5px',
+                              justifyContent: 'flex-end',
+                              alignItems: 'flex-start'
+                            }}
+                          >
+                            <Button
+                              size="sm"
+                              variant="outline-primary"
+                              onClick={() =>
+                                startEdit(
+                                  action.piActionId,
+                                  action.description || ''
+                                )
+                              }
+                            >
+                              <FontAwesomeIcon icon={faEdit} />
+                            </Button>
+                            <Button size="sm" variant="outline-danger" disabled>
+                              <FontAwesomeIcon icon={faTrash} />
+                            </Button>
+                          </div>
+                          <div
+                            className="text-muted"
+                            style={{
+                              fontSize: '0.8rem',
+                              position: 'absolute',
+                              bottom: '0',
+                              right: '0'
+                            }}
+                          >
+                            {action.createdBy || 'Unknown'} ·{' '}
+                            {action.createdAt || ''}
                           </div>
                         </div>
-
-                        <div
-                          style={{
-                            flex: '0 0 80px',
-                            display: 'flex',
-                            gap: '5px',
-                            justifyContent: 'flex-end',
-                            alignItems: 'flex-start'
-                          }}
-                        >
-                          <Button
-                            size="sm"
-                            variant="outline-primary"
-                            onClick={() =>
-                              startEdit(
-                                action.piActionId,
-                                action.description || ''
-                              )
-                            }
-                          >
-                            <FontAwesomeIcon icon={faEdit} />
-                          </Button>
-
-                          <Button size="sm" variant="outline-danger" disabled>
-                            <FontAwesomeIcon icon={faTrash} />
-                          </Button>
-                        </div>
-
-                        <div
-                          className="text-muted"
-                          style={{
-                            fontSize: '0.8rem',
-                            position: 'absolute',
-                            bottom: '0',
-                            right: '0'
-                          }}
-                        >
-                          {action.createdBy || 'Unknown'} ·{' '}
-                          {action.createdAt || ''}
-                        </div>
-                      </div>
-                    </Card.Body>
-                  )}
-                </Card>
-              ))
-          )}
+                      </Card.Body>
+                    )}
+                  </Card>
+                ))
+            )}
+          </div>
+          {/* Action Details Panel: Slide ile açılıp kapanan */}
+          <div
+            style={{
+              flex: detailsOpen ? 1 : 'unset',
+              minWidth: detailsOpen ? 300 : 0,
+              maxWidth: detailsOpen ? 400 : 0,
+              transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)',
+              overflow: 'hidden',
+              marginLeft: detailsOpen ? 0 : -32,
+              opacity: detailsOpen ? 1 : 0,
+              pointerEvents: detailsOpen ? 'auto' : 'none',
+              position: 'relative'
+            }}
+          >
+            <div
+              className="border rounded p-3 bg-light"
+              style={{ minHeight: 100 }}
+            >
+              <h5>Action Details</h5>
+              <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+                {logsLoading ? (
+                  <div className="text-muted">Loading logs...</div>
+                ) : logsError ? (
+                  <div className="text-danger">{logsError}</div>
+                ) : logs.length === 0 ? (
+                  <div className="text-muted">No logs yet.</div>
+                ) : (
+                  logs.map(action => (
+                    <pre
+                      key={action.piActionId}
+                      style={{
+                        fontSize: 13,
+                        background: 'none',
+                        border: 'none',
+                        textWrap: 'wrap',
+                        padding: 0,
+                        marginBottom: 16
+                      }}
+                    >
+                      {`${action.description}
+${action.createdBy}-${action.createdAt}
+------------------------------------------
+`}
+                    </pre>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </Modal.Body>
     </Modal>

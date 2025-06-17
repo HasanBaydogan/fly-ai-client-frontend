@@ -12,7 +12,7 @@ import { Container } from 'react-bootstrap';
 import { Outlet } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { getUserInfo } from 'smt-v1-app/services/UserService';
-import { useHeartbeat } from 'smt-v1-app/hooks/useHeartbeat';
+// import { useHeartbeat } from 'smt-v1-app/hooks/useHeartbeat';
 
 interface UserNavbarInfo {
   logo: string;
@@ -38,7 +38,7 @@ const MainLayout = () => {
     getUserInfoFromDB();
   }, []);
 
-  useHeartbeat();
+  // useHeartbeat();
 
   const { contentClass, footerClass } = useMainLayoutContext();
 

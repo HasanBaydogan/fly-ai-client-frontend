@@ -22,7 +22,7 @@ const MailTrackingItemsBody = ({
         <thead className="sticky-top-table-header-rfq">
           <tr>
             <th style={{ width: '2%' }}></th>
-            <th style={{ width: '6%' }}>RFQ Id</th>
+            <th style={{ width: '6%' }}>ID</th>
             <th style={{ width: '7%' }}>Actions</th>
             <th style={{ width: '35%' }}>Mails</th>
             <th style={{ width: '8%' }}>Status</th>
