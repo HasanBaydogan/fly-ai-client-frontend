@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Card, Collapse } from 'react-bootstrap';
 import {
   postPiActionCreate,
-  postPiActionUpdate
+  postPiActionUpdate,
+  getPiActionLogs
 } from 'smt-v1-app/services/PIServices';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -62,6 +63,9 @@ const ActionListModal = ({
   const [showDetails, setShowDetails] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsError, setLogsError] = useState('');
 
   const confirmCreate = async () => {
     try {
@@ -147,6 +151,22 @@ const ActionListModal = ({
     if (!b || !b.createdAt) return -1;
     return parseDateString(b.createdAt) - parseDateString(a.createdAt);
   });
+
+  // Details paneli açıldığında logları çek
+  useEffect(() => {
+    if (detailsOpen && piId) {
+      setLogsLoading(true);
+      setLogsError('');
+      getPiActionLogs(piId)
+        .then(res => {
+          setLogs(res?.data || res || []);
+        })
+        .catch(err => {
+          setLogsError('Logs could not be loaded.');
+        })
+        .finally(() => setLogsLoading(false));
+    }
+  }, [detailsOpen, piId]);
 
   return (
     <Modal show={show} onHide={onHide} size="xl" centered>
@@ -422,10 +442,14 @@ const ActionListModal = ({
             >
               <h5>Action Details</h5>
               <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-                {sortedActions.length === 0 ? (
-                  <div className="text-muted">No actions yet.</div>
+                {logsLoading ? (
+                  <div className="text-muted">Loading logs...</div>
+                ) : logsError ? (
+                  <div className="text-danger">{logsError}</div>
+                ) : logs.length === 0 ? (
+                  <div className="text-muted">No logs yet.</div>
                 ) : (
-                  sortedActions.map(action => (
+                  logs.map(action => (
                     <pre
                       key={action.piActionId}
                       style={{
