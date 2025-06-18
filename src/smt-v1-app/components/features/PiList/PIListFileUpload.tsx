@@ -805,14 +805,15 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
   }
 
   // Function to handle file view
-  const handleViewFile = async (fileId: string, fileType: string) => {
+  const handleViewFile = async (
+    fileId: string,
+    ext: string,
+    previewOnly = false
+  ) => {
     try {
       setViewingFile(fileId);
-
-      // Get the attachment type for this file
       let attachmentType = '';
       let fileName = '';
-
       data.forEach(main => {
         main.categories.forEach(category => {
           if (category.files) {
@@ -822,7 +823,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
               fileName = foundFile.name;
             }
           }
-
           category.subCategories?.forEach(subCategory => {
             const foundFile = subCategory.files.find(
               file => file.id === fileId
@@ -834,51 +834,34 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
           });
         });
       });
-
       if (!attachmentType) {
         console.error('Could not determine attachment type for file:', fileId);
         return;
       }
-
-      // Fetch the file data by passing the attachment ID and type
       const response = await getPiSelectedAttachments(fileId, attachmentType);
-
       if (response && response.success && response.data) {
         const dataUrl = response.data.data;
         let downloadName = response.data.fileName || fileName || 'dosya';
-
-        // Uzantı kontrolü ve ekleme
-        // dataUrl: "data:application/pdf;base64,...."
         const arr = dataUrl.split(',');
         const mimeMatch = arr[0].match(/data:(.*?);/);
-        let ext = '';
+        let mime = '';
         if (mimeMatch && mimeMatch[1]) {
-          // örn: application/pdf
-          const mime = mimeMatch[1];
-          if (mime === 'application/pdf') ext = '.pdf';
-          else if (
-            mime ===
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-          )
-            ext = '.xlsx';
-          else if (mime === 'application/msword') ext = '.doc';
-          else if (
-            mime ===
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-          )
-            ext = '.docx';
-          else if (mime === 'image/png') ext = '.png';
-          else if (mime === 'image/jpeg') ext = '.jpg';
-          else if (mime === 'text/plain') ext = '.txt';
-          // Diğer uzantılar eklenebilir
+          mime = mimeMatch[1];
         }
-
-        // Eğer dosya adında uzantı yoksa ekle
-        if (ext && !downloadName.toLowerCase().endsWith(ext)) {
-          downloadName += ext;
+        // PDF ise yeni sekmede aç, diğerlerinde indir
+        if (previewOnly && (ext === 'pdf' || mime === 'application/pdf')) {
+          const win = window.open();
+          if (win) {
+            win.document.write(`
+              <style>body{margin:0;}</style>
+              <iframe src='${dataUrl}' frameborder='0' style='width:100vw;height:100vh;'></iframe>
+            `);
+          } else {
+            window.location.href = dataUrl;
+          }
+        } else {
+          downloadDataUrlFile(dataUrl, downloadName);
         }
-
-        downloadDataUrlFile(dataUrl, downloadName);
       } else {
         console.error('Failed to fetch file data:', response?.message);
       }
@@ -1012,48 +995,64 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
         {files.length > 0 && (
           <div className="existing-files">
             <div className="d-flex flex-column gap-2">
-              {files.map(file => (
-                <div
-                  key={`existing-${nodeId}-${file.id}-${file.name}`}
-                  className="file-item"
-                >
-                  <div className="d-flex align-items-center border rounded p-1">
-                    <FontAwesomeIcon
-                      icon={getFileIcon(file.type)}
-                      className="me-1 text-secondary"
-                      size="sm"
-                    />
-                    <span
-                      className="small file-name cursor-pointer"
-                      onClick={() => handleViewFile(file.id, file.type)}
-                    >
-                      {file.name}
-                      {viewingFile === file.id && (
-                        <span
-                          className="spinner-border spinner-border-sm ms-1"
-                          role="status"
-                          aria-hidden="true"
-                        ></span>
-                      )}
-                    </span>
-
-                    <div className="ms-auto d-flex">
-                      {isEditing && (
-                        <Button
-                          variant="link"
-                          className="text-danger p-1"
-                          onClick={() =>
-                            handleDeleteFile(file.id, nodeId, parentNodeType)
-                          }
-                          disabled={isCurrentlyUploading}
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </Button>
-                      )}
+              {files.map(file => {
+                // Dosya uzantısını güvenli şekilde al
+                const ext = file.name.split('.').pop()?.toLowerCase() || '';
+                return (
+                  <div
+                    key={`existing-${nodeId}-${file.id}-${file.name}`}
+                    className="file-item"
+                  >
+                    <div className="d-flex align-items-center border rounded p-1">
+                      <FontAwesomeIcon
+                        icon={getFileIcon(ext)}
+                        className="me-1 text-secondary"
+                        size="sm"
+                      />
+                      <span
+                        className="small file-name cursor-pointer"
+                        onClick={() => handleViewFile(file.id, ext)}
+                      >
+                        {file.name}
+                        {viewingFile === file.id && (
+                          <span
+                            className="spinner-border spinner-border-sm ms-1"
+                            role="status"
+                            aria-hidden="true"
+                          ></span>
+                        )}
+                      </span>
+                      {/* Eye icon always visible for preview/download */}
+                      <Button
+                        variant="link"
+                        className="ms-1 text-primary p-1"
+                        title={ext === 'pdf' ? 'Preview PDF' : 'Download'}
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleViewFile(file.id, ext, true);
+                        }}
+                        disabled={viewingFile === file.id}
+                      >
+                        <FontAwesomeIcon icon={faEye} />
+                      </Button>
+                      <div className="ms-auto d-flex">
+                        {isEditing && (
+                          <Button
+                            variant="link"
+                            className="text-danger p-1"
+                            onClick={() =>
+                              handleDeleteFile(file.id, nodeId, parentNodeType)
+                            }
+                            disabled={isCurrentlyUploading}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

@@ -21,6 +21,7 @@ import {
 
 export const searchByPiList = async (
   term: string,
+  piStatus: string,
   pageNo: number,
   pageSize: number | 'all' = 10
 ) => {
@@ -28,7 +29,7 @@ export const searchByPiList = async (
   if (pageSize === 'all') {
     url = `/pi/filter?${term}`;
   } else {
-    url = `/pi/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}`;
+    url = `/pi/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}&piStatus=${piStatus}`;
   }
   return await getRequest(url);
 };

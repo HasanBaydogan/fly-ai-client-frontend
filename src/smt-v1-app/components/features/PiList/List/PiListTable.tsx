@@ -95,6 +95,8 @@ const piStatus: { [key: string]: string } = {
   SUPPLIER_CONTACT_SENT_TO_OUR_FF: 'warning',
   PICK_UP_PENDING_BY_OUR_FF: 'warning',
   PART_ON_THE_WAY_TO_TRANSIT: 'warning',
+  SENT_TO_CLIENT_PARTIALLY: 'warning', // PARTIALLY_SENT_TO_CLIENT,
+
   // Custom Stages (LIGHT GREEN)
   OFFICIAL_INVOICE_REQUESTED_SENT_TO_ACCOUNTING: 'success',
   AWB_TO_TRANSIT_AND_INVOICES_SENT_TO_CUSTOMS_AGENT: 'success',
@@ -106,7 +108,6 @@ const piStatus: { [key: string]: string } = {
 
   // Delivery to Client Stages (DARK GREEN)
   FINAL_AWB_AND_OFFICIAL_INVOICE_SENT_TO_CLIENT: 'success',
-  SENT_TO_CLIENT_PARTIALLY: 'success', // PARTIALLY_SENT_TO_CLIENT,
   SENT_TO_CLIENT_FULLY: 'success',
   DELIVERY_CONFIRMED_BY_CLIENT: 'success',
   // Cancellation and Refund Stages (RED)
@@ -1007,7 +1008,6 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
           selectedCurrency
         );
       };
-
       const handleCurrencyChange = (
         e: React.ChangeEvent<HTMLSelectElement>
       ) => {
@@ -1635,6 +1635,7 @@ const getStatusBackgroundColor = (status: string): string => {
     case 'SUPPLIER_CONTACT_SENT_TO_OUR_FF':
     case 'PICK_UP_PENDING_BY_OUR_FF':
     case 'PART_ON_THE_WAY_TO_TRANSIT':
+    case 'SENT_TO_CLIENT_PARTIALLY':
       return 'rgba(229,120,11, 0.3)';
     case 'OFFICIAL_INVOICE_REQUESTED_SENT_TO_ACCOUNTING':
     case 'AWB_TO_TRANSIT_AND_INVOICES_SENT_TO_CUSTOMS_AGENT':
@@ -1645,7 +1646,6 @@ const getStatusBackgroundColor = (status: string): string => {
     case 'ORDER_ON_THE_WAY_TO_DESTINATION':
       return 'rgba(45, 219, 2, 0.3)';
     case 'FINAL_AWB_AND_OFFICIAL_INVOICE_SENT_TO_CLIENT':
-    case 'SENT_TO_CLIENT_PARTIALLY':
     case 'SENT_TO_CLIENT_FULLY':
     case 'DELIVERY_CONFIRMED_BY_CLIENT':
       return 'rgba(68, 218, 31, 0.64)';
@@ -1843,6 +1843,9 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
   // Status options for dropdown (must be inside the component)
   const statusOptions = [
+    'ALL',
+    'ACTIVE',
+    'MY_ISSUES',
     'PI_CREATED',
     'PO_SENT_TO_SUPPLIER',
     'PO_APPROVED_BY_SUPPLIER',
@@ -2408,7 +2411,6 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
               selectedCurrency
             );
           };
-
           const handleCurrencyChange = (
             e: React.ChangeEvent<HTMLSelectElement>
           ) => {
@@ -2487,8 +2489,10 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const fetchData = async (currentPage: number, searchParam: string = '') => {
     setLoading(true);
     try {
+      const piStatusToSend = dropdownOption === 'ALL' ? '' : dropdownOption;
       const response = await searchByPiList(
         searchParam,
+        piStatusToSend,
         currentPage + 1,
         pageSize
       );
@@ -2870,6 +2874,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
             <Button
               variant={filterOption === 'all' ? 'primary' : 'outline-primary'}
               size="sm"
+              disabled
               onClick={() => setFilterOption('all')}
             >
               All
@@ -2881,6 +2886,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
                 filterOption === 'active' ? 'primary' : 'outline-primary'
               }
               size="sm"
+              disabled
               onClick={() => setFilterOption('active')}
             >
               Active
@@ -2892,6 +2898,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
                 filterOption === 'my-issues' ? 'primary' : 'outline-primary'
               }
               size="sm"
+              disabled
               onClick={() => setFilterOption('my-issues')}
             >
               My Issues
