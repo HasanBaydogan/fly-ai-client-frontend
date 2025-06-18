@@ -61,6 +61,10 @@ const routes: RouteObject[] = [
         element: <LoginContainer />
       },
       {
+        path: '/',
+        element: <LoginContainer />
+      },
+      {
         path: 'privacy-policy',
         element: <PrivacyPolicy />
       },
