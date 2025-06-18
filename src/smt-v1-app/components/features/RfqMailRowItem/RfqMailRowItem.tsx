@@ -125,9 +125,33 @@ const RfqMailRowItem = ({
     }
   };
 
+  // PI listteki pastel renkler referans alınarak RFQ statülerine uygun soft renkler atanır
+  const getRfqRowBackgroundColor = (status: string): string => {
+    switch (status) {
+      case 'UNREAD':
+        return 'rgba(255,255,255,1)'; // Beyaz
+      case 'OPEN':
+        return 'rgba(255,193,7, 0.3)'; // Soft mavi
+      case 'WFS':
+        return 'rgba(229,120,11, 0.35)'; // Soft turuncu
+      case 'PQ':
+        return 'rgba(45, 219, 2, 0.3)'; // Soft yeşil
+      case 'FQ':
+        return 'rgba(68, 218, 31, 0.64)'; // Soft koyu yeşil
+      case 'NOT_RFQ':
+        return 'rgba(39,43,47, 0.3)'; // Soft kırmızı
+      case 'NO_QUOTE':
+        return 'rgba(220,53,69, 0.2)'; // Soft kırmızı
+      case 'SPAM':
+        return 'rgba(255,0,24, 0.2)'; // Soft kırmızı
+      default:
+        return 'rgba(255,255,255,1)'; // Default beyaz
+    }
+  };
+
   return (
     <>
-      <tr>
+      <tr style={{ backgroundColor: getRfqRowBackgroundColor(rfqMailStatus) }}>
         <td>
           <img
             src={rightHalfArrow}
