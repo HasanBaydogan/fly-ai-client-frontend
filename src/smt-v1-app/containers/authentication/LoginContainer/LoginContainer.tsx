@@ -23,6 +23,15 @@ const LoginContainer = () => {
   const navigation = useNavigate();
 
   useEffect(() => {
+    // Redirect to main page if already authenticated
+    const access_token = Cookies.get('access_token');
+    const refresh_token = Cookies.get('refresh_token');
+    if (access_token && refresh_token) {
+      navigation('/', { replace: true });
+    }
+  }, [navigation]);
+
+  useEffect(() => {
     const handleLoginDirection = async () => {
       const access_token = Cookies.get('access_token');
       const refresh_token = Cookies.get('refresh_token');

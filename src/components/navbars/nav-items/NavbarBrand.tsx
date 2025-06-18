@@ -16,7 +16,7 @@ const NavbarBrand = ({ logo }: { logo?: string }) => {
   // Custom navigation handler for the logo
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigateSafely('/');
+    navigateSafely('/mail-tracking');
   };
 
   return (
@@ -25,7 +25,7 @@ const NavbarBrand = ({ logo }: { logo?: string }) => {
         {breakpoints.down('lg') && <NavbarToggleButton />}
         <Navbar.Brand
           as="a"
-          href="/"
+          href="/mail-tracking"
           onClick={handleLogoClick}
           className={classNames({
             'me-1 me-sm-3':
