@@ -50,7 +50,7 @@ const ProfileDropdownMenu = ({
 
   const handleLogout = async () => {
     removeCookies();
-    window.location.assign('/');
+    window.location.assign('/login');
   };
 
   return (
@@ -108,7 +108,7 @@ const ProfileDropdownMenu = ({
           </Nav>
           <div className="px-3">
             <Link
-              to={'/'}
+              to={'/login'}
               onClick={handleLogout}
               className="btn btn-phoenix-secondary d-flex flex-center w-100"
             >

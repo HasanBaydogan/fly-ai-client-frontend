@@ -48,6 +48,7 @@ import PoDetailContainer from 'smt-v1-app/containers/PoDetailContainer/PoDetailC
 import PoListContainer from 'smt-v1-app/containers/PoListContainer/PoListContainer';
 import CompanyContainer from 'smt-v1-app/containers/CompanyContainer/CompanyContainer';
 import Error451 from 'pages/error/Error451';
+import ProtectedRoute from 'components/protectedRoute/ProtectedRoute';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
@@ -56,7 +57,7 @@ const routes: RouteObject[] = [
     element: <App />,
     children: [
       {
-        path: '/',
+        path: '/login',
         element: <LoginContainer />
       },
       {

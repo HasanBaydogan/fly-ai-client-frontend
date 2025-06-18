@@ -47,7 +47,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Mail Tracking',
-                path: '/',
+                path: '/mail-tracking',
                 pathName: 'mail-tracking',
                 icon: '',
                 active: true,
@@ -56,21 +56,21 @@ export const routes: RouteItems[] = [
               /*
               {
                 name: '• Mail List',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'mail-list',
                 icon: '',
                 active: true
               },
               {
                 name: '• RFQ Mails',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'rfq-mail',
                 icon: '',
                 active: true
               },
               {
                 name: '• Spam Mails',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'spam-mail',
                 icon: '',
                 active: true
@@ -85,7 +85,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Mail vs RFQ Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'mail-incoming-mail-view',
                 icon: '',
                 active: true,
@@ -93,14 +93,14 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Mail vs RFQ Part Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'mail-list',
                 icon: '',
                 active: true
               },
               {
                 name: '• User vs Mail Response Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'rfq-mail',
                 icon: '',
                 active: true
@@ -131,7 +131,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Create New RFQ',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'create-new-rfq',
                 icon: '',
                 active: true,
@@ -164,7 +164,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Daily RFQs',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'daily-rfqs',
                 icon: '',
                 active: true,
@@ -172,7 +172,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Daily Quotes',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'daily-quotes',
                 icon: '',
                 active: true,
@@ -204,7 +204,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Add New PO',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'new-po',
                 icon: '',
                 active: true,
@@ -228,7 +228,7 @@ export const routes: RouteItems[] = [
               },
               // {
               //   name: '• PI Trace',
-              //   path: '/',
+              //   path: '/pages/errors/404',
               //   pathName: 'pi-trace',
               //   icon: '',
               //   active: true,
@@ -236,7 +236,7 @@ export const routes: RouteItems[] = [
               // },
               {
                 name: '• PI Deadline Track',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'pi-deadline-track',
                 icon: '',
                 active: true,
@@ -252,7 +252,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• LOT List',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'lot-list',
                 icon: '',
                 active: true,
@@ -260,7 +260,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Add New LOT',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'add-new-lot',
                 icon: '',
                 active: true,
@@ -308,7 +308,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Waiting Parts',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'waiting-parts',
                 icon: '',
                 active: true,
@@ -316,7 +316,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Parts vs Sale Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'parts-sale-stats',
                 icon: '',
                 active: true,
@@ -324,7 +324,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Parts vs Quote Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'parts-quote-stats',
                 icon: '',
                 active: true,
@@ -332,7 +332,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Parts vs Inoice Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'parts-invoice-stats',
                 icon: '',
                 active: true,
@@ -380,7 +380,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Logistic List',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'logistic-list',
                 icon: '',
                 active: true,
@@ -388,7 +388,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Add New Logistic',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'new-logistic',
                 icon: '',
                 active: true,
@@ -404,7 +404,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Client vs RFQ Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'Client-rfq-stats',
                 icon: '',
                 active: true,
@@ -412,7 +412,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Client vs Quote Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'Client-quote-stats',
                 icon: '',
                 active: true,
@@ -420,7 +420,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Client vs Parts Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'Client-parts-stats',
                 icon: '',
                 active: true,
@@ -428,7 +428,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Client vs Invoice Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'Client-invoice-stats',
                 icon: '',
                 active: true,
@@ -476,7 +476,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Supplier vs Parts Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'supplier-parts-stats',
                 icon: '',
                 active: true,
@@ -484,7 +484,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Supplier vs RFQ Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'supplier-rfq-stats',
                 icon: '',
                 active: true,
@@ -524,7 +524,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• User List',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'user-list',
                 icon: '',
                 active: true,
@@ -532,7 +532,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Add New User',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'new-user',
                 icon: '',
                 active: true,
@@ -556,7 +556,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• User vs Priced Parts Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'user-priced-parts-stats',
                 icon: '',
                 active: true,
@@ -564,7 +564,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• User vs Quote MNT Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'user-quote-mnt-stats',
                 icon: '',
                 active: true,
@@ -580,7 +580,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• User vs Invoice Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'user-invoice-stats',
                 icon: '',
                 active: true,
@@ -588,7 +588,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• User vs Sold Parts Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'user-sold-parts-stats',
                 icon: '',
                 active: true,
@@ -596,7 +596,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• User vs Invoice MNT Stats',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'user-invoice-monetization-stats',
                 icon: '',
                 active: true,
@@ -606,7 +606,7 @@ export const routes: RouteItems[] = [
           },
           {
             name: '• User Registration Stats',
-            path: '/',
+            path: '/pages/errors/404',
             pathName: 'user-registration-stats',
             icon: '',
             active: true,
@@ -622,7 +622,7 @@ export const routes: RouteItems[] = [
         pages: [
           {
             name: '• Core Expences',
-            path: '/',
+            path: '/pages/errors/404',
             pathName: 'core-expances',
             icon: '',
             active: true,
@@ -630,7 +630,7 @@ export const routes: RouteItems[] = [
           },
           {
             name: '• Profit Analysis',
-            path: '/',
+            path: '/pages/errors/404',
             pathName: 'profit-analysis',
             icon: '',
             active: true,
@@ -646,7 +646,7 @@ export const routes: RouteItems[] = [
         pages: [
           {
             name: '• Edit Settings',
-            path: '/',
+            path: '/pages/errors/404',
             pathName: 'edit-settings',
             icon: '',
             active: true,
@@ -654,7 +654,7 @@ export const routes: RouteItems[] = [
           },
           {
             name: '• Backup',
-            path: '/',
+            path: '/pages/errors/404',
             pathName: 'backup',
             icon: '',
             active: true,
@@ -676,7 +676,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Log Window',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'log-windows',
                 icon: '',
                 active: true,
@@ -684,7 +684,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Analysis Window',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'analysis-window',
                 icon: '',
                 active: true,
@@ -700,7 +700,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• Search and Filter',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'serach-filter',
                 icon: '',
                 active: true,
@@ -716,7 +716,7 @@ export const routes: RouteItems[] = [
             pages: [
               {
                 name: '• PartsBase Web Page',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'partsbase-web-page',
                 icon: '',
                 active: true,
@@ -724,7 +724,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• ILS Web Page',
-                path: '/',
+                path: '/pages/errors/404',
                 pathName: 'ils-web-page',
                 icon: '',
                 active: true,
@@ -742,7 +742,7 @@ export const routes: RouteItems[] = [
         pages: [
           {
             name: '• Help List',
-            path: '/',
+            path: '/pages/errors/404',
             pathName: 'help-list',
             icon: '',
             active: true,
@@ -750,7 +750,7 @@ export const routes: RouteItems[] = [
           },
           {
             name: '• About',
-            path: '/',
+            path: '/pages/errors/404',
             pathName: 'about',
             icon: '',
             active: true,
