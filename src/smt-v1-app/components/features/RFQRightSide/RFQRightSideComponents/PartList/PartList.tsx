@@ -599,8 +599,9 @@ const PartList: React.FC<PartListProps> = ({
           attachmentId={attachmentId}
         />
       )}
-      {/* Notes Section with Total */}
+      {/* Parts Total and Alternative Parts Total Section */}
       <div className="mt-3 row align-items-end mx-2">
+        {/* Parts Total (left) */}
         <div className="col-md-4">
           <div
             className="card shadow-sm border-0"
@@ -618,7 +619,7 @@ const PartList: React.FC<PartListProps> = ({
                   className="fw-bold"
                   style={{ fontSize: '0.95rem', color: '#333' }}
                 >
-                  All Parts Total Prices
+                  Parts Total
                 </span>
               </div>
               <div
@@ -631,21 +632,149 @@ const PartList: React.FC<PartListProps> = ({
               >
                 {(() => {
                   if (!parts || parts.length === 0) return '0';
-                  const currency = parts[0]?.currency || 'USD';
-                  const total = parts.reduce(
-                    (sum, part) => sum + (part.price || 0) * (part.fndQTY || 0),
-                    0
+                  const totalsByCurrency = parts.reduce(
+                    (acc, part) => {
+                      if (!part.currency) return acc;
+                      if (!acc[part.currency]) acc[part.currency] = 0;
+                      acc[part.currency] +=
+                        (part.price || 0) * (part.fndQTY || 0);
+                      return acc;
+                    },
+                    {} as Record<string, number>
                   );
-                  return `${currency} ${total.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  })}`;
+                  return Object.entries(totalsByCurrency)
+                    .map(
+                      ([currency, total]) =>
+                        `${currency} ${total.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}`
+                    )
+                    .join(' | ');
                 })()}
               </div>
             </div>
           </div>
         </div>
-        <div className="col-md-8">
+        {/* Alternative Parts Total (middle) */}
+        <div className="col-md-4">
+          <div
+            className="card shadow-sm border-0"
+            style={{ background: '#ffff' }}
+          >
+            <div className="card-body py-2 px-2 d-flex flex-column align-items-center">
+              <div className="d-flex align-items-center mb-1">
+                <span
+                  className="me-2"
+                  style={{ fontSize: '1.1rem', color: '#0d6efd' }}
+                >
+                  <i className="fas fa-coins"></i>
+                </span>
+                <span
+                  className="fw-bold"
+                  style={{ fontSize: '0.95rem', color: '#333' }}
+                >
+                  Alternative Parts Total
+                </span>
+              </div>
+              <div
+                className="fw-bold"
+                style={{
+                  fontSize: '1.1rem',
+                  color: '#0d6efd',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                {(() => {
+                  if (!alternativeParts || alternativeParts.length === 0)
+                    return '0';
+                  const totalsByCurrency = alternativeParts.reduce(
+                    (acc, part) => {
+                      if (!part.currency) return acc;
+                      if (!acc[part.currency]) acc[part.currency] = 0;
+                      acc[part.currency] +=
+                        (part.price || 0) * (part.fndQTY || 0);
+                      return acc;
+                    },
+                    {} as Record<string, number>
+                  );
+                  return Object.entries(totalsByCurrency)
+                    .map(
+                      ([currency, total]) =>
+                        `${currency} ${total.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}`
+                    )
+                    .join(' | ');
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* All Parts Total (right) */}
+        <div className="col-md-4">
+          <div
+            className="card shadow-sm border-0"
+            style={{ background: '#ffff' }}
+          >
+            <div className="card-body py-2 px-2 d-flex flex-column align-items-center">
+              <div className="d-flex align-items-center mb-1">
+                <span
+                  className="me-2"
+                  style={{ fontSize: '1.1rem', color: '#0d6efd' }}
+                >
+                  <i className="fas fa-coins"></i>
+                </span>
+                <span
+                  className="fw-bold"
+                  style={{ fontSize: '0.95rem', color: '#333' }}
+                >
+                  All Parts Total
+                </span>
+              </div>
+              <div
+                className="fw-bold"
+                style={{
+                  fontSize: '1.1rem',
+                  color: '#0d6efd',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                {(() => {
+                  const allParts = [
+                    ...(parts || []),
+                    ...(alternativeParts || [])
+                  ];
+                  if (allParts.length === 0) return '0';
+                  const totalsByCurrency = allParts.reduce(
+                    (acc, part) => {
+                      if (!part.currency) return acc;
+                      if (!acc[part.currency]) acc[part.currency] = 0;
+                      acc[part.currency] +=
+                        (part.price || 0) * (part.fndQTY || 0);
+                      return acc;
+                    },
+                    {} as Record<string, number>
+                  );
+                  return Object.entries(totalsByCurrency)
+                    .map(
+                      ([currency, total]) =>
+                        `${currency} ${total.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}`
+                    )
+                    .join(' | ');
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* End Parts Total and Alternative Parts Total Section */}
+      <div className="mt-3 row align-items-end mx-2">
+        <div className="col-md-12">
           <label htmlFor="part-notes" className="form-label fw-bold">
             Notes
           </label>
