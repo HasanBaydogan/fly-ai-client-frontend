@@ -90,6 +90,9 @@ const RFQRightSide = ({
     rfq.alternativeRFQPartResponses
   );
 
+  // Add note state at the top, near other states
+  const [note, setNote] = useState<string>('');
+
   // Get access to the UnsavedChanges context
   const { isNavigationCanceled, resetNavigationCanceled } = useUnsavedChanges();
 
@@ -453,7 +456,8 @@ const RFQRightSide = ({
         alternativeRFQPartRequests: alternativeRFQPartRequests,
         clientId: foundClient.clientId,
         rfqDeadline: formatDateToString(rfqDeadline),
-        clientRFQId: clientRFQId !== '' ? clientRFQId : null
+        clientRFQId: clientRFQId !== '' ? clientRFQId : null,
+        clientNote: note
       };
 
       const resp = await saveRFQToDB(savedRFQ);
@@ -622,10 +626,11 @@ const RFQRightSide = ({
       const savedRFQ: SaveRFQ = {
         rfqMailId: rfq.rfqMailId,
         rfqPartRequests,
-        alternativeRFQPartRequests,
+        alternativeRFQPartRequests: alternativeRFQPartRequests,
         clientId: foundClient.clientId,
         rfqDeadline: formatDateToString(rfqDeadline),
-        clientRFQId: clientRFQId !== '' ? clientRFQId : null
+        clientRFQId: clientRFQId !== '' ? clientRFQId : null,
+        clientNote: note
       };
 
       const saveResp = await saveRFQToDB(savedRFQ);
@@ -785,6 +790,8 @@ const RFQRightSide = ({
           rfq.mailItemMoreDetailResponse?.mailItemAttachmentResponses?.[0]
             ?.attachmentId
         }
+        note={note}
+        setNote={setNote}
       />
       <AlternativePartList
         alternativeParts={alternativeParts}

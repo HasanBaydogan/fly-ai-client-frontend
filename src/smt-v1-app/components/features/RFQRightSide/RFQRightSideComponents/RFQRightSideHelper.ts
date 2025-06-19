@@ -95,6 +95,7 @@ export interface SaveRFQ {
   clientId: string;
   rfqDeadline: string;
   clientRFQId: string;
+  clientNote?: string;
 }
 export interface RFQPartRequest {
   rfqPartId: string;

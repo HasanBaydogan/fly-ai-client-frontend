@@ -51,6 +51,8 @@ interface PartListProps {
   partNumber: string;
   setPartNumber: React.Dispatch<React.SetStateAction<string>>;
   attachmentId?: string;
+  note: string;
+  setNote: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface PartSuggestion {
@@ -122,7 +124,9 @@ const PartList: React.FC<PartListProps> = ({
   // partDescription,
   partNumber,
   setPartNumber,
-  attachmentId
+  attachmentId,
+  note,
+  setNote
 }) => {
   // Genel state'ler
   const [isShowToast, setIsShowToast] = useState(false);
@@ -595,6 +599,67 @@ const PartList: React.FC<PartListProps> = ({
           attachmentId={attachmentId}
         />
       )}
+      {/* Notes Section with Total */}
+      <div className="mt-3 row align-items-end mx-2">
+        <div className="col-md-4">
+          <div
+            className="card shadow-sm border-0"
+            style={{ background: '#ffff' }}
+          >
+            <div className="card-body py-2 px-2 d-flex flex-column align-items-center">
+              <div className="d-flex align-items-center mb-1">
+                <span
+                  className="me-2"
+                  style={{ fontSize: '1.1rem', color: '#0d6efd' }}
+                >
+                  <i className="fas fa-coins"></i>
+                </span>
+                <span
+                  className="fw-bold"
+                  style={{ fontSize: '0.95rem', color: '#333' }}
+                >
+                  All Parts Total Prices
+                </span>
+              </div>
+              <div
+                className="fw-bold"
+                style={{
+                  fontSize: '1.1rem',
+                  color: '#0d6efd',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                {(() => {
+                  if (!parts || parts.length === 0) return '0';
+                  const currency = parts[0]?.currency || 'USD';
+                  const total = parts.reduce(
+                    (sum, part) => sum + (part.price || 0) * (part.fndQTY || 0),
+                    0
+                  );
+                  return `${currency} ${total.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })}`;
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-8">
+          <label htmlFor="part-notes" className="form-label fw-bold">
+            Notes
+          </label>
+          <textarea
+            id="part-notes"
+            className="form-control"
+            placeholder="Enter notes about the parts..."
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            rows={2}
+            style={{ resize: 'vertical', minHeight: '38px' }}
+          />
+        </div>
+      </div>
       {showPartModal && (
         <PartWizardModal
           show={showPartModal}
