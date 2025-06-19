@@ -225,30 +225,37 @@ const PiListAlternativeParts: React.FC<PiListAlternativePartsProps> = ({
     }
   };
 
+  // Eğer herhangi bir alternative part'ın stageOfPIPart değeri null ise, Edit/Save butonu ve Stage Of Part sütunu gizlenecek
+  const hasNullStage = alternativeParts.some(
+    part => part.stageOfPIPart == null
+  );
+
   return (
     <div>
       <div className="d-flex align-items-center">
         <h3 className="mt-3">Alternative Parts</h3>
-        <button
-          className={`mx-2 btn btn-sm ${
-            isEditing ? 'btn-success' : 'btn-primary'
-          }`}
-          onClick={() => {
-            if (isEditing) {
-              setShowConfirmModal(true);
-            } else {
-              setIsEditing(true);
-            }
-          }}
-          style={{ marginRight: '10px' }}
-          disabled={!alternativeParts || alternativeParts.length === 0}
-        >
-          <FontAwesomeIcon
-            icon={isEditing ? faSave : faPencilAlt}
-            className="me-2"
-          />
-          {isEditing ? 'Save' : 'Edit'}
-        </button>
+        {/* Edit butonu sadece tüm stageOfPIPart değerleri null değilse ve part varsa gösterilecek */}
+        {!hasNullStage && alternativeParts.length > 0 && (
+          <button
+            className={`mx-2 btn btn-sm ${
+              isEditing ? 'btn-success' : 'btn-primary'
+            }`}
+            onClick={() => {
+              if (isEditing) {
+                setShowConfirmModal(true);
+              } else {
+                setIsEditing(true);
+              }
+            }}
+            style={{ marginRight: '10px' }}
+          >
+            <FontAwesomeIcon
+              icon={isEditing ? faSave : faPencilAlt}
+              className="me-2"
+            />
+            {isEditing ? 'Save' : 'Edit'}
+          </button>
+        )}
       </div>
 
       {/* Confirmation Modal */}
@@ -315,7 +322,10 @@ const PiListAlternativeParts: React.FC<PiListAlternativePartsProps> = ({
               <th style={{ minWidth: '120px' }}>Part Number</th>
               <th style={{ minWidth: '150px' }}>Part Name</th>
               <th style={{ minWidth: '150px' }}>Additional Info</th>
-              <th style={{ minWidth: '150px' }}>Stage Of Part</th>
+              {/* Stage Of Part sütunu sadece tüm stageOfPIPart değerleri null değilse gösterilecek */}
+              {!hasNullStage && (
+                <th style={{ minWidth: '150px' }}>Stage Of Part</th>
+              )}
               <th style={{ minWidth: '150px' }}>Parent Part Number</th>
               <th style={{ minWidth: '100px' }}>Req QTY</th>
               <th style={{ minWidth: '100px' }}>Fnd QTY</th>
@@ -344,32 +354,35 @@ const PiListAlternativeParts: React.FC<PiListAlternativePartsProps> = ({
                 <td>{part.partNumber}</td>
                 <td>{part.partName}</td>
                 <td>{part.partDescription}</td>
-                <td>
-                  {isEditing ? (
-                    <Form.Select
-                      size="sm"
-                      value={
-                        modifiedParts.has(part.piPartId)
-                          ? modifiedParts.get(part.piPartId)
-                          : part.stageOfPIPart || ''
-                      }
-                      onChange={e => {
-                        handleStageChange(part.piPartId, e.target.value);
-                      }}
-                    >
-                      <option value="">Select Stage</option>
-                      {stageOptions.map(option => (
-                        <option key={option} value={option}>
-                          {formatStageLabel(option)}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  ) : part.stageOfPIPart ? (
-                    formatStageLabel(part.stageOfPIPart)
-                  ) : (
-                    ''
-                  )}
-                </td>
+                {/* Stage Of Part hücresi sadece tüm stageOfPIPart değerleri null değilse gösterilecek */}
+                {!hasNullStage && (
+                  <td>
+                    {isEditing ? (
+                      <Form.Select
+                        size="sm"
+                        value={
+                          modifiedParts.has(part.piPartId)
+                            ? modifiedParts.get(part.piPartId)
+                            : part.stageOfPIPart || ''
+                        }
+                        onChange={e => {
+                          handleStageChange(part.piPartId, e.target.value);
+                        }}
+                      >
+                        <option value="">Select Stage</option>
+                        {stageOptions.map(option => (
+                          <option key={option} value={option}>
+                            {formatStageLabel(option)}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    ) : part.stageOfPIPart ? (
+                      formatStageLabel(part.stageOfPIPart)
+                    ) : (
+                      ''
+                    )}
+                  </td>
+                )}
                 <td>{part.parentPartNumber}</td>
                 <td>{part.reqQuantity}</td>
                 <td>{part.fndQuantity}</td>
