@@ -1,4 +1,4 @@
-import { faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faMinus, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import editIcon from '../../../../../../assets/img/icons/edit-icon.svg';
@@ -12,13 +12,15 @@ interface RFQPartTableRowProps {
   handleEditPart: (rfqPartId: string) => void;
   handlePartDeletion: (rfqPartId: string) => void;
   handleOpenPartModal: (rfqPartId: string) => void;
+  onSearchPart: (partNumber: string) => void;
 }
 
 const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
   rfqParts,
   handleEditPart,
   handlePartDeletion,
-  handleOpenPartModal
+  handleOpenPartModal,
+  onSearchPart
 }) => {
   return (
     <>
@@ -26,11 +28,12 @@ const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
         return (
           <tr key={key}>
             <td style={{ padding: '10px' }}>
-              <div className="d-flex justify-content-center">
+              <div className="d-flex justify-content-center align-items-center">
                 <span
                   className="action-icon"
                   style={{ cursor: 'pointer', marginRight: '8px' }}
                   onClick={() => handlePartDeletion(rfqPart.rfqPartId)}
+                  title="Delete Part"
                 >
                   <FontAwesomeIcon icon={faMinus} />
                 </span>
@@ -39,7 +42,17 @@ const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
                   alt="edit-icon"
                   className="part-number-addition-edit-icon"
                   onClick={() => handleEditPart(rfqPart.rfqPartId)}
+                  style={{ marginRight: '8px' }}
+                  title="Edit Part"
                 />
+                <span
+                  className="action-icon"
+                  style={{ cursor: 'pointer', color: '#0d6efd' }}
+                  onClick={() => onSearchPart(rfqPart.partNumber)}
+                  title="Search Part"
+                >
+                  <FontAwesomeIcon icon={faMagnifyingGlass} />
+                </span>
               </div>
             </td>
             <td

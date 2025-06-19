@@ -26,6 +26,7 @@ import {
   convertBlobToJSON
 } from 'smt-v1-app/components/features/GlobalComponents/BlobConverter';
 import * as XLSX from 'xlsx';
+import ProspectSuppliersModal from './ProspectSuppliersModal';
 
 type Supplier = any;
 
@@ -215,6 +216,10 @@ const PartListTable: React.FC<PartListTableProps> = ({
   const [suggestions, setSuggestions] = useState<PartSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionRef = React.useRef<HTMLDivElement>(null);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchedPartNumber, setSearchedPartNumber] = useState<string | null>(
+    null
+  );
 
   const parseMultiLineInput = (input: string): string[] => {
     const lines = input
@@ -496,6 +501,11 @@ const PartListTable: React.FC<PartListTableProps> = ({
     }
   };
 
+  const handleSearchPart = (partNumber: string) => {
+    setSearchedPartNumber(partNumber);
+    setSearchModalOpen(true);
+  };
+
   return (
     <div>
       <div
@@ -541,6 +551,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
             handleEditPart={handleEditPart}
             handlePartDeletion={handlePartDeletion}
             handleOpenPartModal={handleOpenPartModal}
+            onSearchPart={handleSearchPart}
           />
           <tr>
             <td style={{ padding: '10px' }}>
@@ -1201,6 +1212,11 @@ const PartListTable: React.FC<PartListTableProps> = ({
           </Button>
         </Modal.Footer>
       </Modal>
+      <ProspectSuppliersModal
+        show={searchModalOpen}
+        onHide={() => setSearchModalOpen(false)}
+        partNumber={searchedPartNumber}
+      />
     </div>
   );
 };
