@@ -91,3 +91,7 @@ export const searchByPoList = async (
 export const getPoDetails = async (poId: string) => {
   return await getRequest(`/po/detail?poId=${poId}`);
 };
+
+export const getPoWizard = async (poId: string) => {
+  return await getRequest(`/po/detail-wizard?poId=${poId}`);
+};

@@ -19,7 +19,7 @@ import { useSearchParams } from 'react-router-dom';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import PIWizard from 'smt-v1-app/components/features/PIWizard/PIWizard';
 import POWizard from 'smt-v1-app/components/features/POWizard/POWizard';
-import { getPoDetails } from 'smt-v1-app/services/PoServices';
+import { getPoDetails, getPoWizard } from 'smt-v1-app/services/PoServices';
 import { PODetailData } from 'smt-v1-app/types/PoTypes';
 
 const PoDetailContainer = () => {
@@ -93,7 +93,7 @@ const PoDetailContainer = () => {
   const fetchPIWizardData = async () => {
     setIsPIWizardLoading(true);
     try {
-      const response = await getPiWizard(poId);
+      const response = await getPoWizard(poId);
       if (response && response.statusCode === 200) {
         setPiWizardData(response.data);
         handleOpenPIWizard();
@@ -112,7 +112,7 @@ const PoDetailContainer = () => {
     setIsPOWizardLoading(true);
     try {
       // Use the same data structure as PI Wizard initially
-      const response = await getPiWizard(poId);
+      const response = await getPoWizard(poId);
       if (response && response.statusCode === 200) {
         setPoWizardData(response.data);
         handleOpenPOWizard();
@@ -270,7 +270,6 @@ const PoDetailContainer = () => {
                 <div>
                   <CustomButton
                     variant="secondary"
-                    disabled
                     onClick={() => {
                       fetchPOWizardData();
                     }}
@@ -317,7 +316,7 @@ const PoDetailContainer = () => {
               selectedAlternativeParts={selectedAlternativeParts}
               quoteId={piData?.quoteReferenceId || poId}
               quoteComment=""
-              piResponseData={poWizardData}
+              poResponseData={poWizardData}
             />
           )}
 
