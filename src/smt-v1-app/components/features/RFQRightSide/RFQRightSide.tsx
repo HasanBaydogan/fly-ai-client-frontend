@@ -803,6 +803,7 @@ const RFQRightSide = ({
         handleGoToQuote={handleGoToQuote}
         isLoading={isLoading}
         rfqMailStatus={rfq.rfqMailStatus}
+        partsCount={parts.length}
       />
 
       <ToastNotification

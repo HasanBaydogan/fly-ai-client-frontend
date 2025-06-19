@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const RFQRightSideFooter = ({
   handleCancel,
@@ -8,7 +9,8 @@ const RFQRightSideFooter = ({
   handleConvertToQuote,
   handleGoToQuote,
   isLoading,
-  rfqMailStatus
+  rfqMailStatus,
+  partsCount
 }: {
   handleCancel: () => void;
   handleSaveUpdate: () => Promise<void>;
@@ -16,7 +18,14 @@ const RFQRightSideFooter = ({
   handleGoToQuote: () => Promise<void>;
   isLoading: boolean;
   rfqMailStatus: string;
+  partsCount: number;
 }) => {
+  const isConvertDisabled = isLoading || partsCount === 0;
+  const tooltip = (
+    <Tooltip id="tooltip-convert-to-quote">
+      You must add at least 1 part to create a quote.
+    </Tooltip>
+  );
   return (
     <div className="d-flex justify-content-between mt-4 mb-3">
       <div>
@@ -47,14 +56,23 @@ const RFQRightSideFooter = ({
         >
           {isLoading ? <LoadingAnimation /> : 'Save/Update'}
         </Button>
-        <Button
-          variant="outline-success"
-          onClick={handleConvertToQuote}
-          disabled={isLoading}
-          className="me-2"
+        <OverlayTrigger
+          placement="top"
+          overlay={isConvertDisabled ? tooltip : <></>}
+          delay={{ show: 250, hide: 150 }}
         >
-          {isLoading ? <LoadingAnimation /> : 'Convert To Quote'}
-        </Button>
+          <span className="d-inline-block">
+            <Button
+              variant="outline-success"
+              onClick={handleConvertToQuote}
+              disabled={isConvertDisabled}
+              className="me-2"
+              style={isConvertDisabled ? { pointerEvents: 'none' } : {}}
+            >
+              {isLoading ? <LoadingAnimation /> : 'Convert To Quote'}
+            </Button>
+          </span>
+        </OverlayTrigger>
       </div>
     </div>
   );
