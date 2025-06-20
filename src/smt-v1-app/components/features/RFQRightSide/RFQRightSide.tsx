@@ -93,6 +93,11 @@ const RFQRightSide = ({
   // Add note state at the top, near other states
   const [note, setNote] = useState<string>('');
 
+  // Set note to rfq.clientNote when rfq changes
+  useEffect(() => {
+    setNote(rfq.clientNote || '');
+  }, [rfq]);
+
   // Get access to the UnsavedChanges context
   const { isNavigationCanceled, resetNavigationCanceled } = useUnsavedChanges();
 

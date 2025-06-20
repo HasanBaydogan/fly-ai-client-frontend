@@ -652,9 +652,6 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       }, [original.piStatus, isEditing]);
 
       const statusOptions = [
-        'ALL',
-        'ACTIVE',
-        'MY_ISSUES',
         'PI_CREATED',
         'PO_SENT_TO_SUPPLIER',
         'PO_APPROVED_BY_SUPPLIER',
@@ -1839,49 +1836,10 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [filterOption, setFilterOption] = useState<
     'all' | 'active' | 'my-issues'
   >('all');
-  const [dropdownOption, setDropdownOption] = useState<string>('ALL');
+  const [dropdownOption, setDropdownOption] = useState<string>('All Statuses');
+  const [dropdownBackendValue, setDropdownBackendValue] = useState<string>('');
 
   // Status options for dropdown (must be inside the component)
-  const statusOptions = [
-    'ALL',
-    'ACTIVE',
-    'MY_ISSUES',
-    'PI_CREATED',
-    'PO_SENT_TO_SUPPLIER',
-    'PO_APPROVED_BY_SUPPLIER',
-    'PI_SENT_TO_CLIENT',
-    'PENDING_PAYMENT_FROM_CLIENT',
-    'PAYMENT_TRANSFERRED_FROM_CLIENT',
-    'PAYMENT_RECEIVED_FROM_CLIENT_FULLY',
-    'PAYMENT_RECEIVED_FROM_CLIENT_PARTIALLY',
-    'PAYMENT_REQUEST_SENT_TO_ACCOUNTING',
-    'PAID_TO_SUPPLIER_FULLY',
-    'PAID_TO_SUPPLIER_PARTIALLY',
-    'PAYMENT_CONFIRMED_BY_SUPPLIER',
-    'LT_PENDING_BY_SUPPLIER',
-    'LOT_CREATED',
-    'LOT_SENT_TO_FFs',
-    'FF_ARRANGED_FOR_LOT',
-    'READY_FOR_PICKUP_AT_SUPPLIER',
-    'SUPPLIER_PREPARING_TO_SEND_BY_OWN_FFs',
-    'SUPPLIER_CONTACT_SENT_TO_OUR_FF',
-    'PICK_UP_PENDING_BY_OUR_FF',
-    'PART_ON_THE_WAY_TO_TRANSIT',
-    'OFFICIAL_INVOICE_REQUESTED_SENT_TO_ACCOUNTING',
-    'AWB_TO_TRANSIT_AND_INVOICES_SENT_TO_CUSTOMS_AGENT',
-    'PART_IN_TURKEY',
-    'CUSTOMS_PROCEDURE_STARTED',
-    'AWB_TO_DESTINATION_SENT_TO_CLIENT_FOR_APPROVAL',
-    'AWB_APPROVED_BY_CLIENT',
-    'ORDER_ON_THE_WAY_TO_DESTINATION',
-    'FINAL_AWB_AND_OFFICIAL_INVOICE_SENT_TO_CLIENT',
-    'SENT_TO_CLIENT_PARTIALLY',
-    'SENT_TO_CLIENT_FULLY',
-    'DELIVERY_CONFIRMED_BY_CLIENT',
-    'CANCELED_PO_BEFORE_PAYMENT_BY_CLIENT',
-    'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_ACCOUNT',
-    'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_BALANCE'
-  ];
 
   // Add resize listener to update the Actions column width
   // useEffect(() => {
@@ -2489,7 +2447,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const fetchData = async (currentPage: number, searchParam: string = '') => {
     setLoading(true);
     try {
-      const piStatusToSend = dropdownOption === 'ALL' ? '' : dropdownOption;
+      const piStatusToSend = dropdownBackendValue || '';
       const response = await searchByPiList(
         searchParam,
         piStatusToSend,
@@ -2905,34 +2863,74 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
             </Button>
           </Col>
           <Col xs="auto">
-            <Dropdown onSelect={key => setDropdownOption(key as string)}>
-              <Dropdown.Toggle
-                variant="outline-secondary"
-                size="sm"
-                id="dropdown-filter"
-              >
-                {formatStatus(dropdownOption)}
-              </Dropdown.Toggle>
-              <Dropdown.Menu style={{ maxHeight: 400, overflowY: 'auto' }}>
-                {statusOptions.map(option => {
-                  const isCanceled = [
-                    'CANCELED_PO_BEFORE_PAYMENT_BY_CLIENT',
-                    'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_ACCOUNT',
-                    'CANCELED_PO_AFTER_PAYMENT_REFUNDED_TO_CUSTOMERS_BALANCE'
-                  ].includes(option);
-                  return (
+            {/* New dropdown options list */}
+            {(() => {
+              const customDropdownOptions = [
+                // { label: 'ALL', value: 'ALL' },
+
+                { label: 'Active', value: 'ACTIVE' },
+
+                { label: 'My Issues', value: 'MY_ISSUES' },
+
+                { label: 'Trade Confirmation Stages', value: 'TRADE' },
+                { label: 'Payment Stages', value: 'PAYMENT' },
+                {
+                  label: 'Delivery to Transit Stages',
+                  value: 'DELIVERY_TO_TRANSIT'
+                },
+                { label: 'Custom Stages', value: 'CUSTOM_STAGES' },
+                {
+                  label: 'Delivery to Client Stages',
+                  value: 'DELIVERY_TO_CLIENT'
+                },
+                {
+                  label: 'Cancelation and Refund Stages',
+                  value: 'CANCELLATION_AND_REFUND_STAGES'
+                }
+              ];
+              return (
+                <Dropdown
+                  onSelect={key => {
+                    const selected = customDropdownOptions.find(
+                      opt => opt.label === key
+                    );
+                    if (selected) {
+                      setDropdownOption(selected.label);
+                      setDropdownBackendValue(selected.value);
+                    } else {
+                      setDropdownOption('All Statuses');
+                      setDropdownBackendValue('');
+                    }
+                  }}
+                >
+                  <Dropdown.Toggle
+                    variant="outline-secondary"
+                    size="sm"
+                    id="dropdown-filter"
+                  >
+                    {dropdownOption}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu style={{ maxHeight: 400, overflowY: 'auto' }}>
                     <Dropdown.Item
-                      eventKey={option}
-                      active={dropdownOption === option}
-                      key={option}
-                      disabled={filterOption === 'active' && isCanceled}
+                      eventKey="All Statuses"
+                      active={dropdownOption === 'All Statuses'}
+                      key="All Statuses"
                     >
-                      {formatStatus(option)}
+                      All Statuses
                     </Dropdown.Item>
-                  );
-                })}
-              </Dropdown.Menu>
-            </Dropdown>
+                    {customDropdownOptions.map(option => (
+                      <Dropdown.Item
+                        eventKey={option.label}
+                        active={dropdownOption === option.label}
+                        key={option.value}
+                      >
+                        {option.label}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              );
+            })()}
           </Col>
         </Row>
       </div>

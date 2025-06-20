@@ -72,6 +72,7 @@ interface RFQ {
   alternativeRFQPartResponses: AlternativeRFQPart[];
   clientRFQNumberId: string | null;
   clientResponse: Client;
+  clientNote: string;
   lastModifiedDate: string;
   emailSentDate: string;
   mailItemMoreDetailResponse: MailItemMoreDetail;

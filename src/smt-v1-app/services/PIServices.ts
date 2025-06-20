@@ -29,7 +29,7 @@ export const searchByPiList = async (
   if (pageSize === 'all') {
     url = `/pi/filter?${term}`;
   } else {
-    url = `/pi/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}&piStatus=${piStatus}`;
+    url = `/pi/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}&piStatusRequest=${piStatus}`;
   }
   return await getRequest(url);
 };
