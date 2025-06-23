@@ -964,7 +964,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
 
         // Extract numeric value and update the data object
         if (!original.supplierPaidPrice) {
-          original.supplierPaidPrice = { currency: selectedCurrency, price: 0 };
+          original.supplierPaidPrice = {
+            currency: selectedCurrency,
+            price: 0
+          };
         }
         original.supplierPaidPrice.price = extractNumericValue(
           formattedValue,
@@ -2892,22 +2895,30 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         {/* Yeni: Filtre butonları ve dropdown */}
         <Row className="g-2 mt-2 align-items-center">
           <Nav variant="underline" className=" d-flex align-items-center">
-            {tabOptions.map(tab => (
-              <Nav.Item key={tab.value}>
-                <Nav.Link
-                  eventKey={tab.value}
-                  active={selectedTab === tab.value}
-                  onClick={() => {
-                    setSelectedTab(tab.value);
-                    setDropdownOption(tab.label);
-                    setDropdownBackendValue(tab.value);
-                  }}
-                  className="tab-link-text-size"
-                  style={{ cursor: 'pointer' }}
-                >
-                  {tab.label}
-                </Nav.Link>
-              </Nav.Item>
+            {tabOptions.map((tab, index) => (
+              <React.Fragment key={tab.value}>
+                <Nav.Item>
+                  <Nav.Link
+                    eventKey={tab.value}
+                    active={selectedTab === tab.value}
+                    onClick={() => {
+                      setSelectedTab(tab.value);
+                      setDropdownOption(tab.label);
+                      setDropdownBackendValue(tab.value);
+                    }}
+                    className="tab-link-text-size"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {tab.label}
+                  </Nav.Link>
+                </Nav.Item>
+                {index === 2 && (
+                  <>
+                    <div className="vr mx-2" style={{ height: '40px' }} />
+                    <span className=" me-2 align-self-center">Stages:</span>
+                  </>
+                )}
+              </React.Fragment>
             ))}
           </Nav>
         </Row>

@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Col, Form, Modal, Row, Spinner } from 'react-bootstrap';
+import {
+  Alert,
+  Button,
+  Col,
+  Dropdown,
+  Form,
+  Modal,
+  Row,
+  Spinner
+} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import PartHistoryListSection, {
   FormattedHistoryItem
@@ -39,6 +48,56 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
 }) => {
   const navigate = useNavigate();
 
+  const oemGroups = [
+    {
+      label: 'Tyres',
+      options: [
+        { value: 'MICHELIN', name: 'Michelin' },
+        { value: 'DUNLOP', name: 'Dunlop' },
+        { value: 'BRIDGESTONE', name: 'Bridgestone' },
+        { value: 'GOODYEAR', name: 'Goodyear' }
+      ]
+    },
+    {
+      label: 'Avionics',
+      options: [
+        { value: 'A-COLLINS_AEROSPACE', name: 'Collins Aerospace' },
+        { value: 'HONEYWELL', name: 'Honeywell' },
+        { value: 'THALES_GROUP', name: 'Thales Group' },
+        {
+          value: 'SAFRAN_ELECTRONICS_DEFENSE',
+          name: 'Safran Electronics & Defense'
+        },
+        { value: 'L3HARRIS_TECHNOLOGIES', name: 'L3Harris Technologies' }
+      ]
+    },
+    {
+      label: 'Landing Gear',
+      options: [
+        { value: 'SAFRAN_LANDING_SYSTEMS', name: 'Safran Landing Systems' },
+        { value: 'COLLINS_AEROSPACE', name: 'Collins Aerospace' },
+        { value: 'LIEBHERR_AEROSPACE', name: 'Liebherr Aerospace' },
+        { value: 'HEROUX_DEVTEK', name: 'Heroux-Devtek' }
+      ]
+    },
+    {
+      label: 'Actuators & Control Systems',
+      options: [
+        { value: 'PARKER_AEROSPACE', name: 'Parker Aerospace' },
+        { value: 'MOOG_INC', name: 'Moog Inc.' },
+        { value: 'SAFRAN_AEROSYSTEMS', name: 'Safran Aerosystems' }
+      ]
+    },
+    {
+      label: 'Aerostructures',
+      options: [
+        { value: 'SPIRIT_AEROSYSTEMS', name: 'Spirit AeroSystems' },
+        { value: 'PREMIUM_AEROTEC', name: 'Premium Aerotec' },
+        { value: 'GKN_AEROSPACE', name: 'GKN Aerospace' }
+      ]
+    }
+  ];
+
   const [partNumber, setPartNumber] = useState<string>(
     partData?.partNumber || ''
   );
@@ -50,7 +109,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
     partData?.aircraftModel || ''
   );
   const [comment, setComment] = useState<string>(partData?.comment || '');
-  const [oem, setOem] = useState<string>(partData?.oem || 'ANY');
+  const [oems, setOems] = useState<string[]>([]);
   const [selectedAircraft, setSelectedAircraft] = useState<string>(
     partData?.aircraft || 'ANY'
   );
@@ -105,7 +164,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
       setPartNumber(partData.partNumber || '');
       setPartName(partData.partName || '');
       setAircraftModel(partData.aircraftModel || '');
-      setOem(partData.oem || 'ANY');
+      setOems(partData.oems || (partData.oem ? partData.oem.split(',') : []));
       setHsCode(partData.hsCode || '');
       setComment(partData.comment || '');
       setSegmentIds(
@@ -156,8 +215,39 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
     setAircraftModel(event.target.value);
   };
 
-  const handleOEM = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setOem(event.target.value);
+  const handleOemCheckboxChange = (oemValue: string) => {
+    setOems(prevOems => {
+      if (oemValue === 'ANY') {
+        return prevOems.includes('ANY') ? [] : ['ANY'];
+      }
+      const newOems = prevOems.filter(o => o !== 'ANY');
+      if (newOems.includes(oemValue)) {
+        const filteredOems = newOems.filter(o => o !== oemValue);
+        return filteredOems.length === 0 ? ['ANY'] : filteredOems;
+      } else {
+        return [...newOems, oemValue];
+      }
+    });
+  };
+
+  const getDropdownTitle = () => {
+    if (oems.length === 0 || oems[0] === 'ANY') {
+      return 'ANY';
+    }
+
+    const allOems = oemGroups.flatMap(g => g.options);
+
+    const firstSelectedOem = allOems.find(o => o.value === oems[0]);
+
+    if (!firstSelectedOem) {
+      return 'Select Brands';
+    }
+    if (oems.length === 1) {
+      return firstSelectedOem.name;
+    }
+
+    const remainingCount = oems.length - 1;
+    return `${firstSelectedOem.name} +${remainingCount} Brands`;
   };
 
   const handleHsCode = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,20 +261,12 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
   const handleSave = async () => {
     setIsConfirmMode(false);
     setShowSaveModal(false);
-    const updatePartPayload = {
-      partNumber,
-      partName,
-      aircraft: selectedAircraft,
-      segmentIds,
-      aircraftModel,
-      comment,
-      oem,
-      hsCode
-    };
 
     setLoadingSave(true);
     try {
       let response;
+      const oemString = oems.join(',');
+
       if (partData && partData.partId) {
         response = await putPartUpdate({
           partId: partData.partId,
@@ -193,7 +275,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
           segmentIds,
           aircraftModel,
           comment,
-          oem,
+          oem: oemString,
           hsCode
         });
       } else {
@@ -204,7 +286,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
           segmentIds,
           aircraftModel,
           comment,
-          oem,
+          oem: oemString,
           hsCode
         });
       }
@@ -345,41 +427,54 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
         </Col>
         <Col sm={4}>
           <Form.Group className="mb-2">
-            <Form.Label>OEM</Form.Label>
-            <Form.Select
-              aria-label="OEM"
-              value={oem}
-              onChange={e => setOem(e.target.value)}
-            >
-              <option value="ANY">ANY</option>
-              <option value="AKZONOBEL">AKZONOBEL</option>
-              <option value="BRIDGESTONE">BRIDGESTONE</option>
-              <option value="CHAMPION">CHAMPION</option>
-              <option value="CHARLATTE">CHARLATTE</option>
-              <option value="COLUMBUSJACK">COLUMBUSJACK</option>
-              <option value="DAVID_CLARK">DAVID_CLARK</option>
-              <option value="DIAMOND_AIRCRAFT">DIAMOND_AIRCRAFT</option>
-              <option value="DUNLOP">DUNLOP</option>
-              <option value="DYNELL">DYNELL</option>
-              <option value="GOODRICH">GOODRICH</option>
-              <option value="GOODYEAR">GOODYEAR</option>
-              <option value="GROVE">GROVE</option>
-              <option value="HEATCON">HEATCON</option>
-              <option value="JBT_AEROTECH">JBT_AEROTECH</option>
-              <option value="MALABAR">MALABAR</option>
-              <option value="MALLAGHAN">MALLAGHAN</option>
-              <option value="MANITOWOC">MANITOWOC</option>
-              <option value="MICHELIN">MICHELIN</option>
-              <option value="MILOCO">MILOCO</option>
-              <option value="MULAG">MULAG</option>
-              <option value="POTAIN">POTAIN</option>
-              <option value="SAFRAN">SAFRAN</option>
-              <option value="SAGEPARTS">SAGEPARTS</option>
-              <option value="SOURIAU">SOURIAU</option>
-              <option value="TESA_PRODUCTS">TESA_PRODUCTS</option>
-              <option value="THALES">THALES</option>
-              <option value="TRONAIR">TRONAIR</option>
-            </Form.Select>
+            <Form.Label>OEM / Brands</Form.Label>
+            <Dropdown autoClose="outside">
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                id="dropdown-oem"
+                className="w-100 text-start d-flex justify-content-between align-items-center"
+              >
+                <span className="text-truncate">{getDropdownTitle()}</span>
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="w-100 p-0">
+                <Dropdown.Item
+                  as="div"
+                  onClick={() => handleOemCheckboxChange('ANY')}
+                >
+                  <Form.Check
+                    className="p-1 mx-2"
+                    type="checkbox"
+                    id="oem-any"
+                    label="ANY"
+                    checked={oems.includes('ANY') || oems.length === 0}
+                    onChange={() => {}}
+                  />
+                </Dropdown.Item>
+                {oemGroups.map(group => (
+                  <React.Fragment key={group.label}>
+                    <Dropdown.Header className="p-2 mx-3">
+                      {group.label}
+                    </Dropdown.Header>
+                    {group.options.map(option => (
+                      <Dropdown.Item
+                        className="p-1 mx-0"
+                        as="div"
+                        key={option.value}
+                        onClick={() => handleOemCheckboxChange(option.value)}
+                      >
+                        <Form.Check
+                          type="checkbox"
+                          id={`oem-${option.value}`}
+                          label={option.name}
+                          checked={oems.includes(option.value)}
+                          onChange={() => {}}
+                        />
+                      </Dropdown.Item>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
             <Form.Control.Feedback type="invalid">
               This field is required.
             </Form.Control.Feedback>
