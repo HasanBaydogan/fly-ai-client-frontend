@@ -19,7 +19,8 @@ import {
   Badge,
   Button,
   Form,
-  Modal
+  Modal,
+  Nav
 } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
@@ -1869,7 +1870,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const [selectedColumn, setSelectedColumn] = useState<SearchColumn>(
     searchColumns[0]
   );
-  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [pageSize, setPageSize] = useState<number | 'all'>('all');
   const [editingPiId, setEditingPiId] = useState<string | null>(null);
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
@@ -1883,6 +1884,23 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   >('all');
   const [dropdownOption, setDropdownOption] = useState<string>('All Statuses');
   const [dropdownBackendValue, setDropdownBackendValue] = useState<string>('');
+
+  const tabOptions = [
+    { label: 'All', value: 'ALL' },
+    { label: 'Active', value: 'ACTIVE' },
+    { label: 'My Issues', value: 'MY_ISSUES' },
+    { label: 'Trade Confirmation', value: 'TRADE' },
+    { label: 'Payment', value: 'PAYMENT' },
+    { label: 'Delivery to Transit', value: 'DELIVERY_TO_TRANSIT' },
+    { label: 'Custom', value: 'CUSTOM_STAGES' },
+    { label: 'Delivery to Client', value: 'DELIVERY_TO_CLIENT' },
+    {
+      label: 'Cancellation and Refund',
+      value: 'CANCELLATION_AND_REFUND_STAGES'
+    }
+  ];
+
+  const [selectedTab, setSelectedTab] = useState('ALL');
 
   // Status options for dropdown (must be inside the component)
 
@@ -2810,7 +2828,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         </Toast>
       </ToastContainer>
 
-      <div className="mb-4">
+      <div className="">
         <Row className="g-3 align-items-center">
           <Col xs={12} md={5}>
             <div className="d-flex gap-2">
@@ -2873,110 +2891,25 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         </Row>
         {/* Yeni: Filtre butonları ve dropdown */}
         <Row className="g-2 mt-2 align-items-center">
-          <Col xs="auto">
-            <Button
-              variant={filterOption === 'all' ? 'primary' : 'outline-primary'}
-              size="sm"
-              disabled
-              onClick={() => setFilterOption('all')}
-            >
-              All
-            </Button>
-          </Col>
-          <Col xs="auto">
-            <Button
-              variant={
-                filterOption === 'active' ? 'primary' : 'outline-primary'
-              }
-              size="sm"
-              disabled
-              onClick={() => setFilterOption('active')}
-            >
-              Active
-            </Button>
-          </Col>
-          <Col xs="auto">
-            <Button
-              variant={
-                filterOption === 'my-issues' ? 'primary' : 'outline-primary'
-              }
-              size="sm"
-              disabled
-              onClick={() => setFilterOption('my-issues')}
-            >
-              My Issues
-            </Button>
-          </Col>
-          <Col xs="auto">
-            {/* New dropdown options list */}
-            {(() => {
-              const customDropdownOptions = [
-                // { label: 'ALL', value: 'ALL' },
-
-                { label: 'Active', value: 'ACTIVE' },
-
-                { label: 'My Issues', value: 'MY_ISSUES' },
-
-                { label: 'Trade Confirmation Stages', value: 'TRADE' },
-                { label: 'Payment Stages', value: 'PAYMENT' },
-                {
-                  label: 'Delivery to Transit Stages',
-                  value: 'DELIVERY_TO_TRANSIT'
-                },
-                { label: 'Custom Stages', value: 'CUSTOM_STAGES' },
-                {
-                  label: 'Delivery to Client Stages',
-                  value: 'DELIVERY_TO_CLIENT'
-                },
-                {
-                  label: 'Cancelation and Refund Stages',
-                  value: 'CANCELLATION_AND_REFUND_STAGES'
-                }
-              ];
-              return (
-                <Dropdown
-                  onSelect={key => {
-                    const selected = customDropdownOptions.find(
-                      opt => opt.label === key
-                    );
-                    if (selected) {
-                      setDropdownOption(selected.label);
-                      setDropdownBackendValue(selected.value);
-                    } else {
-                      setDropdownOption('All Statuses');
-                      setDropdownBackendValue('');
-                    }
+          <Nav variant="underline" className=" d-flex align-items-center">
+            {tabOptions.map(tab => (
+              <Nav.Item key={tab.value}>
+                <Nav.Link
+                  eventKey={tab.value}
+                  active={selectedTab === tab.value}
+                  onClick={() => {
+                    setSelectedTab(tab.value);
+                    setDropdownOption(tab.label);
+                    setDropdownBackendValue(tab.value);
                   }}
+                  className="tab-link-text-size"
+                  style={{ cursor: 'pointer' }}
                 >
-                  <Dropdown.Toggle
-                    variant="outline-secondary"
-                    size="sm"
-                    id="dropdown-filter"
-                  >
-                    {dropdownOption}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu style={{ maxHeight: 400, overflowY: 'auto' }}>
-                    <Dropdown.Item
-                      eventKey="All Statuses"
-                      active={dropdownOption === 'All Statuses'}
-                      key="All Statuses"
-                    >
-                      All Statuses
-                    </Dropdown.Item>
-                    {customDropdownOptions.map(option => (
-                      <Dropdown.Item
-                        eventKey={option.label}
-                        active={dropdownOption === option.label}
-                        key={option.value}
-                      >
-                        {option.label}
-                      </Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
-              );
-            })()}
-          </Col>
+                  {tab.label}
+                </Nav.Link>
+              </Nav.Item>
+            ))}
+          </Nav>
         </Row>
       </div>
 

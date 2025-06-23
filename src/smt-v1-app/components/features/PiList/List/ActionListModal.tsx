@@ -224,6 +224,25 @@ const ActionListModal = ({
                         Cancel
                       </Button>
                     </>
+                  ) : confirmState.type === 'cancel-new' ? (
+                    <>
+                      <Button
+                        variant="danger"
+                        onClick={handleNewActionCancel}
+                        disabled={isSubmitting}
+                      >
+                        Confirm Cancel
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          setConfirmState({ type: '', target: null })
+                        }
+                        disabled={isSubmitting}
+                      >
+                        Back
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <Button
@@ -238,7 +257,9 @@ const ActionListModal = ({
                       </Button>
                       <Button
                         variant="secondary"
-                        onClick={handleNewActionCancel}
+                        onClick={() =>
+                          setConfirmState({ type: 'cancel-new', target: null })
+                        }
                       >
                         <FontAwesomeIcon icon={faTimes} className="me-1" />
                         Cancel
@@ -322,6 +343,26 @@ const ActionListModal = ({
                                 Cancel
                               </Button>
                             </>
+                          ) : confirmState.type === 'cancel-edit' &&
+                            confirmState.target === editId ? (
+                            <>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                              >
+                                Confirm Cancel
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() =>
+                                  setConfirmState({ type: '', target: null })
+                                }
+                              >
+                                Back
+                              </Button>
+                            </>
                           ) : (
                             <>
                               <Button
@@ -343,7 +384,12 @@ const ActionListModal = ({
                               <Button
                                 variant="secondary"
                                 size="sm"
-                                onClick={handleCancelEdit}
+                                onClick={() =>
+                                  setConfirmState({
+                                    type: 'cancel-edit',
+                                    target: editId
+                                  })
+                                }
                               >
                                 <FontAwesomeIcon
                                   icon={faTimes}

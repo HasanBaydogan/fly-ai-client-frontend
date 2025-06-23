@@ -27,7 +27,7 @@ export const searchByPiList = async (
 ) => {
   let url = '';
   if (pageSize === 'all') {
-    url = `/pi/filter?${term}`;
+    url = `/pi/filter?${term}&piStatusRequest=${piStatus}`;
   } else {
     url = `/pi/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}&piStatusRequest=${piStatus}`;
   }
