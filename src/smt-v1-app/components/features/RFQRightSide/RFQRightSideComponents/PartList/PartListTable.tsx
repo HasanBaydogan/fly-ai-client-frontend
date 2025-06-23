@@ -120,6 +120,8 @@ interface PartListTableProps {
   handlePartSearch: (searchTerm: string) => Promise<PartSuggestion[]>;
   setTagDate: React.Dispatch<React.SetStateAction<string>>;
   attachmentId?: string;
+  note: string;
+  setNote: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const headerCellStyle: React.CSSProperties = {
@@ -206,7 +208,9 @@ const PartListTable: React.FC<PartListTableProps> = ({
   handleNewPartAddition,
   handlePartSearch,
   setTagDate,
-  attachmentId
+  attachmentId,
+  note,
+  setNote
 }) => {
   const [showMultiAddModal, setShowMultiAddModal] = useState(false);
   const [multiPartNumbers, setMultiPartNumbers] = useState('');
@@ -425,11 +429,12 @@ const PartListTable: React.FC<PartListTableProps> = ({
         return;
       }
 
+      // --- 1) Dosyayı aç ve blob'a çevir ---
       const response = await openAttachment(attachmentId);
       const excelData = convertBase64ToBlob(response);
       logBlobDetails(excelData.blob);
 
-      // Excel dosyasını oku ve Part Number verilerini ayıkla
+      // --- 2) Workbook'u oku ve JSON matrise çevir ---
       const arrayBuffer = await excelData.blob.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
@@ -438,63 +443,95 @@ const PartListTable: React.FC<PartListTableProps> = ({
         header: 1
       });
 
-      // 'Part Number' başlığının olduğu sütunu bul
-      const headerRow = sheetJson.find(
+      // DEBUG: Eğer hâlâ note gözükmüyorsa buraya bak:
+      // console.log('sheetJson:', JSON.stringify(sheetJson, null, 2));
+
+      // --- 3) Başlık (header) satırını bul ---
+      const headerRowIndex = sheetJson.findIndex(
         row => Array.isArray(row) && row.includes('Part Number')
-      ) as any[];
+      );
+      if (headerRowIndex === -1) {
+        console.error('Başlık satırı (Part Number) bulunamadı!');
+        return;
+      }
+      const headerRow = sheetJson[headerRowIndex] as any[];
 
-      // Sütun başlıklarını normalize eden yardımcı fonksiyon
-      const normalize = (str: any) =>
-        typeof str === 'string' ? str.trim().toLowerCase() : str;
+      // normalize yardımcı
+      const normalize = (x: any) =>
+        typeof x === 'string' ? x.trim().toLowerCase() : x;
 
-      // Sütun indexlerini normalize ederek bul
-      const partNumberColIndex = headerRow
-        ? headerRow.findIndex(col => normalize(col) === 'part number')
-        : -1;
-      const descriptionColIndex = headerRow
-        ? headerRow.findIndex(col => normalize(col) === 'description')
-        : -1;
-      const qtyColIndex = headerRow
-        ? headerRow.findIndex(col => normalize(col) === 'qty')
-        : -1;
+      // kolon indexlerini al
+      const partNumberColIndex = headerRow.findIndex(
+        col => normalize(col) === 'part number'
+      );
+      const descriptionColIndex = headerRow.findIndex(
+        col => normalize(col) === 'description'
+      );
+      const qtyColIndex = headerRow.findIndex(col => normalize(col) === 'qty');
 
-      if (partNumberColIndex === -1) {
+      // hata uyarıları
+      if (partNumberColIndex < 0)
         console.error('Part Number sütunu bulunamadı!');
-      }
-      if (descriptionColIndex === -1) {
+      if (descriptionColIndex < 0)
         console.error('Description sütunu bulunamadı!');
-      }
-      if (qtyColIndex === -1) {
-        console.error('Qty sütunu bulunamadı!');
-      }
+      if (qtyColIndex < 0) console.error('Qty sütunu bulunamadı!');
 
-      const headerRowIndex = sheetJson.findIndex(row => row === headerRow);
-
-      // Part Number verileri
+      // --- 4) Part Numbers, Descriptions, Qty değerlerini oku ---
       const partNumbers: string[] = [];
-      // Description verileri
       const partNames: string[] = [];
-      // Qty verileri
       const qtyValues: string[] = [];
+
       for (let i = headerRowIndex + 1; i < sheetJson.length; i++) {
         const row = sheetJson[i];
-        if (row) {
-          if (partNumberColIndex !== -1 && row[partNumberColIndex]) {
-            partNumbers.push(row[partNumberColIndex]);
-          }
-          if (descriptionColIndex !== -1 && row[descriptionColIndex]) {
-            partNames.push(row[descriptionColIndex]);
-          }
-          if (qtyColIndex !== -1 && row[qtyColIndex]) {
-            qtyValues.push(row[qtyColIndex]);
-          }
+        if (!Array.isArray(row)) continue;
+
+        const pn = partNumberColIndex >= 0 ? row[partNumberColIndex] : null;
+        const desc = descriptionColIndex >= 0 ? row[descriptionColIndex] : null;
+        const q = qtyColIndex >= 0 ? row[qtyColIndex] : null;
+
+        if (pn != null) partNumbers.push(String(pn));
+        if (desc != null) partNames.push(String(desc));
+        if (q != null) qtyValues.push(String(q));
+      }
+
+      // --- 5) NOTE satırını bul ve vendor bilgisini al ---
+      let noteText = '';
+
+      // 5.a) İlk hücresinde “NOTE” geçen satırı bul
+      const noteRow = sheetJson.find(
+        row =>
+          Array.isArray(row) &&
+          row[0] != null &&
+          typeof row[0] === 'string' &&
+          normalize(row[0]).startsWith('note')
+      ) as any[] | undefined;
+
+      if (noteRow) {
+        const firstCell = noteRow[0].trim(); // örn: "NOTE:" veya "NOTE: Vendor..."
+        const parts = firstCell.split(/note\s*:\s*/i); // ["", ""] veya ["", "Vendor D1227..."]
+        if (parts[1]) {
+          // aynı hücrede vendor bilgisi varsa
+          noteText = parts[1].trim();
+        } else {
+          // yoksa sonraki hücreleri birleştir
+          noteText = noteRow
+            .slice(1)
+            .filter(c => c != null && c !== '')
+            .join(' ')
+            .trim();
         }
       }
+
+      // --- 6) State/setter’ları çağır ---
       setMultiPartNumbers(partNumbers.join('\n'));
       setMultiPartNames(partNames.join('\n'));
       setMultiQty(qtyValues.join('\n'));
+      setNote(noteText);
 
-      alert('Excel file imported and Part Numbers extracted successfully');
+      // console.log('Part Numbers:', partNumbers);
+      // console.log('Extracted Note:', noteText);
+
+      alert('Excel file imported and data extracted successfully');
     } catch (error) {
       console.error('Error importing Excel file:', error);
       alert('Error importing Excel file. Please try again.');
@@ -1198,6 +1235,20 @@ const PartListTable: React.FC<PartListTableProps> = ({
                 placeholder={`QTY 1\nQTY 2\nQTY 3`}
               />
             </Form.Group>
+          </div>
+          <div className="col-md-12">
+            <label htmlFor="part-notes" className="form-label fw-bold">
+              Notes
+            </label>
+            <textarea
+              id="part-notes"
+              className="form-control"
+              placeholder="Enter notes about the parts..."
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              rows={2}
+              style={{ resize: 'vertical', minHeight: '38px' }}
+            />
           </div>
         </Modal.Body>
         <Modal.Footer>

@@ -13,7 +13,8 @@ const normalize = (str: any) =>
 
 export const convertBase64ToBlob = (response: any): ExcelData => {
   try {
-    console.log('Original Response:', response);
+    3;
+    // console.log('Original Response:', response);
 
     // Convert base64 to Blob
     const byteCharacters = atob(response.data.data);
@@ -35,10 +36,10 @@ export const convertBase64ToBlob = (response: any): ExcelData => {
     };
 
     // Log the conversion results
-    console.log('Converted Blob:', blob);
-    console.log('File Name:', excelData.fileName);
-    console.log('Content Type:', excelData.contentType);
-    console.log('Complete Excel Data:', excelData);
+    // console.log('Converted Blob:', blob);
+    // console.log('File Name:', excelData.fileName);
+    // console.log('Content Type:', excelData.contentType);
+    // console.log('Complete Excel Data:', excelData);
 
     return excelData;
   } catch (error) {
@@ -48,9 +49,9 @@ export const convertBase64ToBlob = (response: any): ExcelData => {
 };
 
 export const logBlobDetails = (blob: Blob) => {
-  console.log('Blob Size:', blob.size, 'bytes');
-  console.log('Blob Type:', blob.type);
-  console.log('Blob Created At:', new Date().toLocaleString());
+  //   console.log('Blob Size:', blob.size, 'bytes');
+  //   console.log('Blob Type:', blob.type);
+  //   console.log('Blob Created At:', new Date().toLocaleString());
 };
 
 export const createDownloadLink = (blob: Blob, fileName: string): string => {
@@ -81,7 +82,7 @@ export const convertBlobToJSON = async (blob: Blob): Promise<any> => {
       lastModified: new Date().toISOString()
     };
 
-    console.log('Converted Blob to JSON:', jsonData);
+    // console.log('Converted Blob to JSON:', jsonData);
     return jsonData;
   } catch (error) {
     console.error('Error converting Blob to JSON:', error);

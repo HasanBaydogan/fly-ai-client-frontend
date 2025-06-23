@@ -597,6 +597,8 @@ const PartList: React.FC<PartListProps> = ({
           handlePartSearch={handlePartSearch}
           setTagDate={setTagDate}
           attachmentId={attachmentId}
+          note={note}
+          setNote={setNote}
         />
       )}
       {/* Parts Total and Alternative Parts Total Section */}
