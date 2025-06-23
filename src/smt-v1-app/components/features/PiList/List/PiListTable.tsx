@@ -1470,11 +1470,56 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
   },
   {
     header: 'Supplier',
-    accessorKey: '55---',
+    accessorKey: 'supplier',
+    cell: ({ row: { original } }) => {
+      if (
+        !original.supplier ||
+        !Array.isArray(original.supplier) ||
+        original.supplier.length < 1
+      ) {
+        return '-';
+      }
+
+      const parts = original.supplier;
+      const hasMoreItems = parts.length > 3;
+      const displayParts = hasMoreItems ? parts.slice(0, 2) : parts;
+
+      const tooltipContent = (
+        <div style={{ whiteSpace: 'pre-line' }}>
+          {parts.map((part: string, index: number) => (
+            <div key={index}>
+              <span className="me-1">•</span>
+              {part}
+            </div>
+          ))}
+        </div>
+      );
+
+      return (
+        <div style={{ whiteSpace: 'nowrap', position: 'relative' }}>
+          {displayParts.map((part: string, index: number) => (
+            <div key={index} className="my-1">
+              <span className="me-1">•</span>
+              {part}
+            </div>
+          ))}
+          {hasMoreItems && (
+            <div style={{ display: 'inline-block' }}>
+              <EnhancedTooltip
+                tooltipContent={tooltipContent}
+                placement="right"
+              >
+                <span className="text-primary">...</span>
+              </EnhancedTooltip>
+            </div>
+          )}
+        </div>
+      );
+    },
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      cellProps: { className: 'ps-3 text-body py-2' },
       headerProps: {
-        style: { width: '120px', minWidth: '120px' },
+        style: { width: '150px', minWidth: '150px' },
         className: 'ps-3'
       }
     }

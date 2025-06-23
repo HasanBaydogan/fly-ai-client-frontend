@@ -3,7 +3,6 @@ import { useAppContext } from 'providers/AppProvider';
 import { Navbar } from 'react-bootstrap';
 import { useBreakpoints } from 'providers/BreakpointsProvider';
 import NavbarToggleButton from './NavbarToggleButton';
-import { Link } from 'react-router-dom';
 import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
 
 const NavbarBrand = ({ logo }: { logo?: string }) => {
@@ -46,7 +45,7 @@ const NavbarBrand = ({ logo }: { logo?: string }) => {
             </div>
           )}
           <div className="small fs-10 text-center  text-muted">
-            v1.13.22-20.06.25
+            v1.13.23-23.06.25
           </div>
         </Navbar.Brand>
       </div>

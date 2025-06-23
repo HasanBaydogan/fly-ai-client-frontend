@@ -49,6 +49,8 @@ import PoListContainer from 'smt-v1-app/containers/PoListContainer/PoListContain
 import CompanyContainer from 'smt-v1-app/containers/CompanyContainer/CompanyContainer';
 import Error451 from 'pages/error/Error451';
 import ProtectedRoute from 'components/protectedRoute/ProtectedRoute';
+import UserQuoteStatusContainer from 'smt-v1-app/containers/UserQuoteStatusContainer/UserQuoteStatusContainer';
+import UserSettingsContainer from 'smt-v1-app/containers/UserSettingsContainer/UserSettingsContainer';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
@@ -199,6 +201,15 @@ const routes: RouteObject[] = [
               {
                 path: '',
                 element: <UserQuoteStatus />
+              }
+            ]
+          },
+          {
+            path: 'user-settings',
+            children: [
+              {
+                path: 'user-settings',
+                element: <UserSettingsContainer />
               }
             ]
           }

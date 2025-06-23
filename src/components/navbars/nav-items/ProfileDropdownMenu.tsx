@@ -34,7 +34,8 @@ const ProfileDropdownMenu = ({
     {
       label: 'User Settings',
       icon: 'settings',
-      url: '/user-settings?userId=' + userId
+      url: '/user-settings?userId='
+      // + userId
     },
     {
       label: 'Privacy Policy',
