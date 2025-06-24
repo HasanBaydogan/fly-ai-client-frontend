@@ -485,6 +485,15 @@ const PartListTable: React.FC<PartListTableProps> = ({
         const row = sheetJson[i];
         if (!Array.isArray(row)) continue;
 
+        // NOTE satırını kontrol et - eğer NOTE satırıysa döngüyü durdur
+        if (
+          row[0] != null &&
+          typeof row[0] === 'string' &&
+          normalize(row[0]).startsWith('note')
+        ) {
+          break; // NOTE satırından sonraki verileri okuma
+        }
+
         const pn = partNumberColIndex >= 0 ? row[partNumberColIndex] : null;
         const desc = descriptionColIndex >= 0 ? row[descriptionColIndex] : null;
         const q = qtyColIndex >= 0 ? row[qtyColIndex] : null;
@@ -497,7 +506,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
       // --- 5) NOTE satırını bul ve vendor bilgisini al ---
       let noteText = '';
 
-      // 5.a) İlk hücresinde “NOTE” geçen satırı bul
+      // 5.a) İlk hücresinde "NOTE" geçen satırı bul
       const noteRow = sheetJson.find(
         row =>
           Array.isArray(row) &&
@@ -522,7 +531,7 @@ const PartListTable: React.FC<PartListTableProps> = ({
         }
       }
 
-      // --- 6) State/setter’ları çağır ---
+      // --- 6) State/setter'ları çağır ---
       setMultiPartNumbers(partNumbers.join('\n'));
       setMultiPartNames(partNames.join('\n'));
       setMultiQty(qtyValues.join('\n'));
