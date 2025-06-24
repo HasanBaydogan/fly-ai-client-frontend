@@ -11,7 +11,7 @@ import {
   getAllSuppliersFromDB
 } from 'smt-v1-app/services/RFQService';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import DeleteConfirmationModal from '../../../GlobalComponents/DeleteConfirmationModal/DeleteConfirmationModal';
+import DeleteConfirmationModal from 'smt-v1-app/components/features/GlobalComponents/DeleteConfirmationModal/DeleteConfirmationModal';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import PartListTable from './PartListTable';
 import PartWizardModal from './PartWizardModal';
@@ -21,7 +21,7 @@ import {
   AlternativeRFQPart
 } from 'smt-v1-app/types/RfqContainerTypes';
 import { formatDate, convertDateFormat } from './PartListHelper';
-import { getPriceCurrencySymbol } from '../../../../../types/RFQRightSideHelper';
+import { getPriceCurrencySymbol } from 'smt-v1-app/types/RFQRightSideHelper';
 import {
   getByItemFields,
   getPartHistorySuggestion

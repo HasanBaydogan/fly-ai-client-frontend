@@ -8,7 +8,7 @@ import {
   PIResponseData,
   POResponseData
 } from '../POWizard';
-import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
+import { getPriceCurrencySymbol } from 'smt-v1-app/types/RFQRightSideHelper';
 
 import useCurrencyFormatter from 'hooks/useCurrencyFormatter';
 interface WizardSetupFormProps {

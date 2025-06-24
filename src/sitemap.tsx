@@ -131,7 +131,7 @@ export const routes: RouteItems[] = [
               },
               {
                 name: '• Create New RFQ',
-                path: '/pages/errors/404',
+                path: 'rfqs/create',
                 pathName: 'create-new-rfq',
                 icon: '',
                 active: true,

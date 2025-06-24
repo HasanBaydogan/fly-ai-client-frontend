@@ -1,10 +1,10 @@
 import React from 'react';
-import { getPriceCurrencySymbol } from '../../../../../types/RFQRightSideHelper';
+import { getPriceCurrencySymbol } from '../../../../types/RFQRightSideHelper';
 import { formatNumber } from '../RFQPartTableRow/RFQPartTableRowHelper';
 import { AlternativeRFQPart } from 'smt-v1-app/types/RfqContainerTypes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
-import editIcon from '../../../../../../assets/img/icons/edit-icon.svg';
+import editIcon from '../../../../../assets/img/icons/edit-icon.svg';
 
 const AlternativePartTableRow = ({
   alternativeRFQParts,

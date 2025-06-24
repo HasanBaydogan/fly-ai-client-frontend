@@ -1,11 +1,11 @@
 import { faMinus, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
-import editIcon from '../../../../../../assets/img/icons/edit-icon.svg';
+import editIcon from '../../../../../assets/img/icons/edit-icon.svg';
 import './RFQPartTableRow.css';
 import { RFQPart } from 'smt-v1-app/types/RfqContainerTypes';
 import { formatNumber } from './RFQPartTableRowHelper';
-import { getPriceCurrencySymbol } from '../../../../../types/RFQRightSideHelper';
+import { getPriceCurrencySymbol } from 'smt-v1-app/types/RFQRightSideHelper';
 
 interface RFQPartTableRowProps {
   rfqParts: RFQPart[];

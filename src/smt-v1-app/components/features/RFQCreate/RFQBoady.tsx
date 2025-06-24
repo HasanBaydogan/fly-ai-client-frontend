@@ -1,25 +1,22 @@
 import { useEffect, useState, useRef } from 'react';
 import { getColorStyles } from '../RfqMailRowItem/RfqMailRowHelper';
-import Client from './RFQRightSideComponents/Client/Client';
-import PartList from './RFQRightSideComponents/PartList/PartList';
-import AlternativePartList from './RFQRightSideComponents/AlternativePartList/AlternativePartList';
-import Header from './RFQRightSideComponents/Header/Header';
+import Client from './Client/Client';
+import PartList from './PartList/PartList';
+import AlternativePartList from './AlternativePartList/AlternativePartList';
+import Header from './Header/Header';
 import {
   AlternativeRFQPart,
   RFQ,
   RFQPart
 } from 'smt-v1-app/types/RfqContainerTypes';
-import RFQRightSideFooter from './RFQRightSideComponents/RFQRightSideFooter/RFQRightSideFooter';
-import {
-  formatDateToString,
-  parseDeadline
-} from './RFQRightSideComponents/Client/ClientHelper';
+import RFQRightSideFooter from './RFQRightSideFooter/RFQRightSideFooter';
+import { formatDateToString, parseDeadline } from './Client/ClientHelper';
 import {
   AlternativeRFQPartRequest,
   RFQPartRequest,
   SaveRFQ
 } from '../../../types/RFQRightSideHelper';
-import { saveRFQToDB } from 'smt-v1-app/services/RFQService';
+import { createRFQ } from 'smt-v1-app/services/RFQService';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -34,7 +31,7 @@ import { Modal, Button } from 'react-bootstrap';
 import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
 
 interface RFQRightSideProps {
-  rfq: RFQ;
+  rfq?: RFQ;
   onUnsavedChangesUpdate?: (hasChanges: boolean) => void;
   customNavigate?: (
     path: string,
@@ -42,19 +39,40 @@ interface RFQRightSideProps {
   ) => void;
 }
 
-const RFQRightSide = ({
+const RFQBoady = ({
   rfq,
   onUnsavedChangesUpdate,
   customNavigate
 }: RFQRightSideProps) => {
+  // Guard clause: if rfq is undefined, show loading or error state
+  if (!rfq) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '200px'
+        }}
+      >
+        <div className="text-center">
+          <h4>Loading RFQ data...</h4>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if this is a new RFQ creation (no rfqMailId)
+  const isNewRFQ = !rfq.rfqMailId || rfq.rfqMailId === '';
+
   const [bgColor, setBgColor] = useState('');
   const [textColor, setTextColor] = useState('');
   const navigation = useNavigate();
-  const [parts, setParts] = useState<RFQPart[]>(rfq.savedRFQItems);
+  const [parts, setParts] = useState<RFQPart[]>(rfq?.savedRFQItems || []);
   const [partName, setPartName] = useState<string>('');
   const [partNumber, setPartNumber] = useState<string>('');
   const [alternativePartName, setAlternativePartName] = useState<string>('');
-  const [clientRFQId, setClientRFQId] = useState(rfq.clientRFQNumberId);
+  const [clientRFQId, setClientRFQId] = useState(rfq?.clientRFQNumberId || '');
 
   // Global processing state: herhangi bir işlem devam ederken true olacak
   const [isLoading, setIsLoading] = useState(false);
@@ -79,15 +97,15 @@ const RFQRightSide = ({
   const initialValuesSet = useRef<boolean>(false);
 
   const [foundClient, setFoundClient] = useState<Client | null>(
-    rfq.clientResponse
+    rfq?.clientResponse || null
   );
   const [rfqDeadline, setRFQDeadline] = useState<Date | undefined>(
-    rfq.rfqDeadline ? parseDeadline(rfq.rfqDeadline) : null
+    rfq?.rfqDeadline ? parseDeadline(rfq.rfqDeadline) : null
   );
   const [alternativePartNumber, setAlternativePartNumber] =
     useState<string>('');
   const [alternativeParts, setAlternativeParts] = useState(
-    rfq.alternativeRFQPartResponses
+    rfq?.alternativeRFQPartResponses || []
   );
 
   // Add note state at the top, near other states
@@ -95,7 +113,7 @@ const RFQRightSide = ({
 
   // Set note to rfq.clientNote when rfq changes
   useEffect(() => {
-    setNote(rfq.clientNote || '');
+    setNote(rfq?.clientNote || '');
   }, [rfq]);
 
   // Get access to the UnsavedChanges context
@@ -104,21 +122,21 @@ const RFQRightSide = ({
   // Initialize the reference values when the component mounts or rfq changes
   useEffect(() => {
     // Only set the initial values if they haven't been set yet or if rfq has changed
-    initialPartsRef.current = JSON.stringify(rfq.savedRFQItems || []);
+    initialPartsRef.current = JSON.stringify(rfq?.savedRFQItems || []);
     initialAlternativePartsRef.current = JSON.stringify(
-      rfq.alternativeRFQPartResponses || []
+      rfq?.alternativeRFQPartResponses || []
     );
-    initialClientRef.current = rfq.clientResponse;
-    initialRfqDeadlineRef.current = rfq.rfqDeadline || '';
-    initialClientRFQIdRef.current = rfq.clientRFQNumberId || '';
+    initialClientRef.current = rfq?.clientResponse;
+    initialRfqDeadlineRef.current = rfq?.rfqDeadline || '';
+    initialClientRFQIdRef.current = rfq?.clientRFQNumberId || '';
     initialValuesSet.current = true;
 
     // Also reset current state to match the rfq props
-    setParts(rfq.savedRFQItems);
-    setAlternativeParts(rfq.alternativeRFQPartResponses);
-    setFoundClient(rfq.clientResponse);
-    setRFQDeadline(rfq.rfqDeadline ? parseDeadline(rfq.rfqDeadline) : null);
-    setClientRFQId(rfq.clientRFQNumberId);
+    setParts(rfq?.savedRFQItems || []);
+    setAlternativeParts(rfq?.alternativeRFQPartResponses || []);
+    setFoundClient(rfq?.clientResponse || null);
+    setRFQDeadline(rfq?.rfqDeadline ? parseDeadline(rfq.rfqDeadline) : null);
+    setClientRFQId(rfq?.clientRFQNumberId || '');
 
     // Reset unsaved changes flag when initializing with new rfq data
     setHasUnsavedChanges(false);
@@ -262,10 +280,10 @@ const RFQRightSide = ({
   };
 
   useEffect(() => {
-    const returnColors = getColorStyles(rfq.rfqMailStatus);
+    const returnColors = getColorStyles(rfq?.rfqMailStatus || '');
     setBgColor(returnColors.bgColor);
     setTextColor(returnColors.textColor);
-  }, [rfq.rfqMailStatus]);
+  }, [rfq?.rfqMailStatus]);
 
   const handleDeleteAlternativePart = (rfqPartId: string) => {
     const updatedArray = alternativeParts.filter(
@@ -306,28 +324,31 @@ const RFQRightSide = ({
   }
 
   const handleCancel = async () => {
-    if (!hasUnsavedChanges) {
-      // If no changes, proceed directly
-      setIsLoading(true);
-      const response = await cancelRFQMail(rfq.rfqMailId);
-      if (response && response.statusCode === 200) {
-        toastSuccess('Success Cancel', 'RFQ Mail is canceled successfully');
-        setTimeout(() => {
+    if (isNewRFQ) {
+      // For new RFQ creation, just navigate back without calling cancel API
+      if (!hasUnsavedChanges) {
+        // If no changes, proceed directly
+        if (customNavigate) {
+          customNavigate('/mail-tracking', { skipUnsavedCheck: true });
+        } else {
+          navigation('/mail-tracking');
+        }
+      } else {
+        // If there are changes, show unsaved changes warning
+        checkUnsavedChangesBeforeAction(() => {
           if (customNavigate) {
             customNavigate('/mail-tracking', { skipUnsavedCheck: true });
           } else {
             navigation('/mail-tracking');
           }
-        }, 1500);
-      } else {
-        toastError('An error', 'An error occurs');
-        setIsLoading(false);
+        });
       }
     } else {
-      // If there are changes, show unsaved changes warning
-      checkUnsavedChangesBeforeAction(async () => {
+      // For existing RFQ, use the original cancel logic
+      if (!hasUnsavedChanges) {
+        // If no changes, proceed directly
         setIsLoading(true);
-        const response = await cancelRFQMail(rfq.rfqMailId);
+        const response = await cancelRFQMail(rfq?.rfqMailId || '');
         if (response && response.statusCode === 200) {
           toastSuccess('Success Cancel', 'RFQ Mail is canceled successfully');
           setTimeout(() => {
@@ -341,7 +362,26 @@ const RFQRightSide = ({
           toastError('An error', 'An error occurs');
           setIsLoading(false);
         }
-      });
+      } else {
+        // If there are changes, show unsaved changes warning
+        checkUnsavedChangesBeforeAction(async () => {
+          setIsLoading(true);
+          const response = await cancelRFQMail(rfq?.rfqMailId || '');
+          if (response && response.statusCode === 200) {
+            toastSuccess('Success Cancel', 'RFQ Mail is canceled successfully');
+            setTimeout(() => {
+              if (customNavigate) {
+                customNavigate('/mail-tracking', { skipUnsavedCheck: true });
+              } else {
+                navigation('/mail-tracking');
+              }
+            }, 1500);
+          } else {
+            toastError('An error', 'An error occurs');
+            setIsLoading(false);
+          }
+        });
+      }
     }
   };
 
@@ -456,7 +496,7 @@ const RFQRightSide = ({
         });
 
       const savedRFQ: SaveRFQ = {
-        rfqMailId: rfq.rfqMailId,
+        rfqMailId: rfq?.rfqMailId || '',
         rfqPartRequests: rfqPartRequests,
         alternativeRFQPartRequests: alternativeRFQPartRequests,
         clientId: foundClient.clientId,
@@ -465,7 +505,7 @@ const RFQRightSide = ({
         clientNote: note
       };
 
-      const resp = await saveRFQToDB(savedRFQ);
+      const resp = await createRFQ(savedRFQ);
       if (resp && resp.statusCode === 200) {
         // Update reference values after a successful save
         initialPartsRef.current = JSON.stringify(parts);
@@ -501,8 +541,16 @@ const RFQRightSide = ({
   };
 
   const convertToWFS = async () => {
+    if (isNewRFQ) {
+      toastError(
+        'WFS Error',
+        'Cannot convert new RFQ to WFS. Please save first.'
+      );
+      return;
+    }
+
     setIsLoading(true);
-    const resp = await convertOpenToWFS(rfq.rfqMailId);
+    const resp = await convertOpenToWFS(rfq?.rfqMailId || '');
     if (resp && resp.statusCode === 200) {
       toastSuccess(
         'Success WFS Conversation',
@@ -515,6 +563,15 @@ const RFQRightSide = ({
   };
 
   const handleConvertToQuote = async () => {
+    // For new RFQ, require save first
+    if (isNewRFQ) {
+      toastError(
+        'Quote Error',
+        'Please save the RFQ first before converting to quote.'
+      );
+      return;
+    }
+
     // Set loading state without checking for unsaved changes
     setIsLoading(true);
 
@@ -629,7 +686,7 @@ const RFQRightSide = ({
         );
 
       const savedRFQ: SaveRFQ = {
-        rfqMailId: rfq.rfqMailId,
+        rfqMailId: rfq?.rfqMailId || '',
         rfqPartRequests,
         alternativeRFQPartRequests: alternativeRFQPartRequests,
         clientId: foundClient.clientId,
@@ -638,7 +695,7 @@ const RFQRightSide = ({
         clientNote: note
       };
 
-      const saveResp = await saveRFQToDB(savedRFQ);
+      const saveResp = await createRFQ(savedRFQ);
       if (!saveResp || saveResp.statusCode !== 200) {
         toastError('Save Error', 'Failed to save RFQ data');
         setIsLoading(false);
@@ -656,8 +713,8 @@ const RFQRightSide = ({
       setHasUnsavedChanges(false);
 
       // Convert to WFS if needed
-      if (rfq.rfqMailStatus === 'OPEN') {
-        const wfsResp = await convertOpenToWFS(rfq.rfqMailId);
+      if (rfq?.rfqMailStatus === 'OPEN') {
+        const wfsResp = await convertOpenToWFS(rfq?.rfqMailId || '');
         if (!wfsResp || wfsResp.statusCode !== 200) {
           toastError('WFS Error', 'Failed to convert to WFS');
           setIsLoading(false);
@@ -666,7 +723,7 @@ const RFQRightSide = ({
       }
 
       // Convert to Quote
-      const quoteResp = await convertRFQToQuote(rfq.rfqMailId);
+      const quoteResp = await convertRFQToQuote(rfq?.rfqMailId || '');
       if (quoteResp && quoteResp.statusCode === 200) {
         toastSuccess('Successful Quote', 'Converted to Quote');
         setTimeout(() => {
@@ -689,11 +746,20 @@ const RFQRightSide = ({
   };
 
   const handleGoToQuote = async () => {
+    // For new RFQ, require save first
+    if (isNewRFQ) {
+      toastError(
+        'Quote Error',
+        'Please save the RFQ first before accessing quote.'
+      );
+      return;
+    }
+
     if (!hasUnsavedChanges) {
       // If no changes, proceed directly
       setIsLoading(true);
       try {
-        const response = await getQuoteIdwithMailId(rfq.rfqMailId);
+        const response = await getQuoteIdwithMailId(rfq?.rfqMailId || '');
         if (response && response.statusCode === 200 && response.data?.quoteId) {
           navigation(`/quotes/quote?quoteId=${response.data.quoteId}`);
         } else {
@@ -709,7 +775,7 @@ const RFQRightSide = ({
       checkUnsavedChangesBeforeAction(async () => {
         setIsLoading(true);
         try {
-          const response = await getQuoteIdwithMailId(rfq.rfqMailId);
+          const response = await getQuoteIdwithMailId(rfq?.rfqMailId || '');
           if (
             response &&
             response.statusCode === 200 &&
@@ -757,15 +823,15 @@ const RFQRightSide = ({
   }, [isNavigationCanceled, resetNavigationCanceled]);
 
   return (
-    <div className="rfq-right">
+    <div className="rfq-create">
       <Header
-        date={rfq.lastModifiedDate}
-        emailSentDate={rfq.emailSentDate}
-        rfqNumberId={rfq.rfqNumberId}
-        clientRFQId={rfq.clientRFQNumberId}
+        date={rfq?.lastModifiedDate}
+        emailSentDate={rfq?.emailSentDate}
+        rfqNumberId={rfq?.rfqNumberId}
+        clientRFQId={rfq?.clientRFQNumberId}
         bgColor={bgColor}
         textColor={textColor}
-        status={rfq.rfqMailStatus}
+        status={rfq?.rfqMailStatus}
       />
 
       <Client
@@ -792,7 +858,7 @@ const RFQRightSide = ({
         partNumber={partNumber}
         setPartNumber={setPartNumber}
         attachmentId={
-          rfq.mailItemMoreDetailResponse?.mailItemAttachmentResponses?.[0]
+          rfq?.mailItemMoreDetailResponse?.mailItemAttachmentResponses?.[0]
             ?.attachmentId
         }
         note={note}
@@ -814,7 +880,7 @@ const RFQRightSide = ({
         handleConvertToQuote={handleConvertToQuote}
         handleGoToQuote={handleGoToQuote}
         isLoading={isLoading}
-        rfqMailStatus={rfq.rfqMailStatus}
+        rfqMailStatus={rfq?.rfqMailStatus}
         partsCount={parts.length}
       />
 
@@ -873,4 +939,4 @@ const RFQRightSide = ({
   );
 };
 
-export default RFQRightSide;
+export default RFQBoady;

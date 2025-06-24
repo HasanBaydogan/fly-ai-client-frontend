@@ -11,8 +11,8 @@ import { Button, Card, Form, Modal, Tab, Table } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRotateRight, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
-import { getPriceCurrencySymbol } from '../../../../../types/RFQRightSideHelper';
-import CustomButton from '../../../../../../components/base/Button';
+import { getPriceCurrencySymbol } from '../../../../types/RFQRightSideHelper';
+import CustomButton from '../../../../../components/base/Button';
 import {
   AlternativeRFQPart,
   RFQPart
@@ -29,7 +29,7 @@ import {
 } from '../PartList/PartListHelper';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import AlternativePartTableRow from '../AlternativePartTableRow/AlternativePartTableRow';
-import DeleteConfirmationModal from '../../../GlobalComponents/DeleteConfirmationModal/DeleteConfirmationModal';
+import DeleteConfirmationModal from '../../GlobalComponents/DeleteConfirmationModal/DeleteConfirmationModal';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import WizardFormProvider from 'providers/WizardFormProvider';
 import WizardForm from 'components/wizard/WizardForm';

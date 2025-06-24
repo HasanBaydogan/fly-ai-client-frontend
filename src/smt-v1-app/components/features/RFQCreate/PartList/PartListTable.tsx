@@ -10,9 +10,9 @@ import {
 import { Typeahead } from 'react-bootstrap-typeahead';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import RFQPartTableRow from '../RFQPartTableRow/RFQPartTableRow';
-import CustomButton from '../../../../../../components/base/Button';
+import CustomButton from '../../../../../components/base/Button';
 import { tableHeaders } from './PartListHelper';
-import { getPriceCurrencySymbol } from '../../../../../types/RFQRightSideHelper';
+import { getPriceCurrencySymbol } from 'smt-v1-app/types/RFQRightSideHelper';
 import { RFQPart } from 'smt-v1-app/types/RfqContainerTypes';
 import { generateTempRFQPartId } from './PartListHelper';
 import { OverlayTrigger } from 'react-bootstrap';

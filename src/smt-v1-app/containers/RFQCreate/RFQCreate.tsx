@@ -1,21 +1,42 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Button, Modal } from 'react-bootstrap';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import RFQLeftSide from 'smt-v1-app/components/features/RFQLeftSide/RFQLeftSide';
 import RFQRightSide from 'smt-v1-app/components/features/RFQRightSide/RFQRightSide';
-import { openRFQ } from 'smt-v1-app/services/RFQService';
 import './RFQContainer.css';
-import { RFQ } from '../../types/RfqContainerTypes';
 import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
+import PartList from 'smt-v1-app/components/features/RFQCreate/PartList/PartList';
+import RFQBoady from 'smt-v1-app/components/features/RFQCreate/RFQBoady';
+import { RFQ } from '../../types/RfqContainerTypes';
 
-const RFQContainer = () => {
+const RFQCreate = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [isError, setIsError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const rfqMailId = searchParams.get('rfqMailId');
-  const [rfq, setRfq] = useState<RFQ>();
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Create a new empty RFQ object for creating new RFQ
+  const [rfq, setRfq] = useState<RFQ>({
+    alternativeRFQPartResponses: [],
+    clientRFQNumberId: null,
+    clientResponse: null,
+    clientNote: '',
+    lastModifiedDate: new Date().toISOString(),
+    emailSentDate: new Date().toISOString(),
+    mailItemMoreDetailResponse: {
+      from: '',
+      mailContentItemResponses: '',
+      mailDate: new Date().toISOString(),
+      mailItemAttachmentResponses: [],
+      senderCompanyName: '',
+      subject: ''
+    },
+    rfqDeadline: '',
+    rfqId: null,
+    rfqMailId: '',
+    rfqMailStatus: 'OPEN',
+    rfqNumberId: '',
+    savedRFQItems: []
+  });
 
   // Get access to the UnsavedChanges context
   const {
@@ -33,18 +54,6 @@ const RFQContainer = () => {
     },
     [setHasUnsavedChanges]
   );
-
-  useEffect(() => {
-    const openRFQMail = async () => {
-      setIsLoading(true);
-      const response = await openRFQ(rfqMailId);
-      // console.log(response);
-      setRfq(response.data);
-      setIsLoading(false);
-    };
-
-    openRFQMail();
-  }, [rfqMailId]);
 
   // Effect to reset loading state when navigation is canceled
   useEffect(() => {
@@ -74,33 +83,16 @@ const RFQContainer = () => {
   );
 
   return (
-    <div className="d-flex flex-wrap justify-content-around ">
-      {/* Sol tarafı modular hale getirdik */}
-      {isLoading ? (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '200px'
-          }}
-        >
-          <LoadingAnimation />
-        </div>
-      ) : (
-        <>
-          <RFQLeftSide mailItem={rfq.mailItemMoreDetailResponse} />
-
-          {/* Sağ taraf (products, alternative products) */}
-          <RFQRightSide
-            rfq={rfq}
-            onUnsavedChangesUpdate={handleUnsavedChangesUpdate}
-            customNavigate={customNavigate}
-          />
-        </>
-      )}
+    <div className="rfq-create-container">
+      <>
+        <RFQBoady
+          rfq={rfq}
+          onUnsavedChangesUpdate={handleUnsavedChangesUpdate}
+          customNavigate={customNavigate}
+        />
+      </>
     </div>
   );
 };
 
-export default RFQContainer;
+export default RFQCreate;

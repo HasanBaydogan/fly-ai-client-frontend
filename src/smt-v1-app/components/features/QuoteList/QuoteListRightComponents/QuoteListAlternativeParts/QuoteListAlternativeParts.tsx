@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Table } from 'react-bootstrap';
-import { AlternativeRFQPart } from '../../../../../containers/RFQContainer/RfqContainerTypes';
+import { AlternativeRFQPart } from '../../../../../types/RfqContainerTypes';
 import './QuoteListAlternativeParts';
 import { AlternativeQuotePart } from 'smt-v1-app/containers/QuoteContainer/QuoteContainerTypes';
 interface QuoteListAlternativePartsProps {

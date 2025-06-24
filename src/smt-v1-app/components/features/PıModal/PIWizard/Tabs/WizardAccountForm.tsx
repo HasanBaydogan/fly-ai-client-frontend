@@ -3,7 +3,7 @@ import { Badge, Button, Card, Col, Form, Row, Table } from 'react-bootstrap';
 import DatePicker from 'components/base/DatePicker';
 import './WizardTabs.css';
 import { QuotePartRow, QuoteWizardData } from '../PIWizard';
-import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
+import { getPriceCurrencySymbol } from 'smt-v1-app/types/RFQRightSideHelper';
 
 interface WizardSetupFormProps {
   id: string;
