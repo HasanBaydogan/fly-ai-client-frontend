@@ -496,7 +496,7 @@ const RFQBoady = ({
         });
 
       const savedRFQ: SaveRFQ = {
-        rfqMailId: rfq?.rfqMailId || '',
+        rfqMailId: '1234',
         rfqPartRequests: rfqPartRequests,
         alternativeRFQPartRequests: alternativeRFQPartRequests,
         clientId: foundClient.clientId,

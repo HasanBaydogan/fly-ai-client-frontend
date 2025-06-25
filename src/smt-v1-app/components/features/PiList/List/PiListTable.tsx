@@ -8,7 +8,7 @@ import React, {
   useContext,
   useRef
 } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
@@ -2510,6 +2510,8 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
 
   const { setGlobalFilter, setColumnFilters } =
     useAdvanceTableContext<PiListData>();
+  const navigate = useNavigate();
+
   const fetchData = async (currentPage: number, searchParam: string = '') => {
     setLoading(true);
     try {
@@ -2520,6 +2522,16 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         currentPage + 1,
         pageSize
       );
+      if (
+        response?.statusCode === 451 ||
+        (response?.data === 'Error' && response?.statusCode === 451)
+      ) {
+        console.log(
+          'CompanyListTable - 451 detected, navigating to error page'
+        );
+        navigate('/451');
+        return;
+      }
       const piList = response?.data?.piResponses || [];
       const mappedData: PiListData[] = piList.map((item: any) => {
         let clientNames = '';

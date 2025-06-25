@@ -74,6 +74,15 @@ const QuoteContainer = () => {
     string[]
   >([]);
 
+  // Extract currency from parts data
+  const getCurrencyFromParts = useCallback(() => {
+    if (parts && parts.length > 0) {
+      // Get currency from the first part, assuming all parts have the same currency
+      return parts[0].currency;
+    }
+    return '';
+  }, [parts]);
+
   const handleOpen = () => setShowQuoteWizardTabs(true);
   const handleClose = () => setShowQuoteWizardTabs(false);
 
@@ -266,6 +275,7 @@ const QuoteContainer = () => {
             rfqNumberId={quoteData?.rfqNumberId}
             quoteId={quoteData?.quoteId}
             openOnSecondPage={openModalOnSecondPage}
+            currency={getCurrencyFromParts()}
           />
 
           {showQuoteWizardTabs ? (
