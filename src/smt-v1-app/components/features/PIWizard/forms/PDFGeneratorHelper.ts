@@ -3,6 +3,45 @@ import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { partRow, QuoteWizardSetting } from '../PIWizard';
 
+// Logo boyutlandırma yardımcı fonksiyonu
+const calculateLogoDimensions = (
+  logoDataUrl: string,
+  maxWidth: number,
+  maxHeight: number
+): Promise<{ width: number; height: number }> => {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const originalWidth = img.width;
+      const originalHeight = img.height;
+
+      // En-boy oranını hesapla
+      const aspectRatio = originalWidth / originalHeight;
+
+      let newWidth = maxWidth;
+      let newHeight = maxHeight;
+
+      // Eğer genişlik sınırına göre yükseklik fazla oluyorsa
+      if (newWidth / aspectRatio > maxHeight) {
+        newWidth = maxHeight * aspectRatio;
+        newHeight = maxHeight;
+      }
+      // Eğer yükseklik sınırına göre genişlik fazla oluyorsa
+      else if (newHeight * aspectRatio > maxWidth) {
+        newHeight = maxWidth / aspectRatio;
+        newWidth = maxWidth;
+      }
+
+      resolve({ width: newWidth, height: newHeight });
+    };
+    img.onerror = () => {
+      // Hata durumunda varsayılan boyutları kullan
+      resolve({ width: maxWidth, height: maxHeight });
+    };
+    img.src = logoDataUrl;
+  });
+};
+
 export const generatePDF = async (
   settings: QuoteWizardSetting,
   selectedDate: Date | null,
@@ -48,8 +87,33 @@ export const generatePDF = async (
       }
     };
 
-    // Logo
-    pdf.addImage(settings.logo, 'JPEG', 10, 10, 60, 30);
+    // Logo boyutlarını hesapla ve yerleştir
+    if (settings.logo) {
+      try {
+        const logoDimensions = await calculateLogoDimensions(
+          settings.logo,
+          50,
+          40
+        );
+        // Logo alanının ortası: 0-50 arası, ortası 25
+        const logoAreaHeight = 50;
+        const logoAreaCenter = 25;
+        // Logonun Y pozisyonunu, alanın ortasından logonun yarı yüksekliğini çıkararak hesapla
+        const logoY = logoAreaCenter - logoDimensions.height / 2;
+        pdf.addImage(
+          settings.logo,
+          'JPEG',
+          10,
+          logoY,
+          logoDimensions.width,
+          logoDimensions.height
+        );
+      } catch (error) {
+        // Hata durumunda varsayılan boyutları kullan ve ortala
+        const logoY = 25 - 40 / 2; // 25 - 20 = 5
+        pdf.addImage(settings.logo, 'JPEG', 8, logoY, 40, 60);
+      }
+    }
 
     pdf.setFontSize(10);
 
