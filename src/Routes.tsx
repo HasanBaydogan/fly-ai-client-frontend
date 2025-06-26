@@ -209,7 +209,7 @@ const routes: RouteObject[] = [
             path: 'user-settings',
             children: [
               {
-                path: 'user-settings',
+                path: '',
                 element: <UserSettingsContainer />
               }
             ]
