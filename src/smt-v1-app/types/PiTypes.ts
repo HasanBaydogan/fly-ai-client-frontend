@@ -10,6 +10,7 @@ export interface PIRequest {
   receivedPOMethod: 'MESSAGE' | 'MAIL';
   selectedCompanyId: string;
   quoteId: string;
+  totalAmount: number;
 }
 
 export interface PICommentUpdate {

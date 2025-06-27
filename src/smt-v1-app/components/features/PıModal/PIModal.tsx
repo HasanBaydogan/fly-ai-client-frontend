@@ -25,6 +25,7 @@ interface RFQModalProps {
   quoteId: string;
   openOnSecondPage?: boolean;
   currency: string;
+  totalAmount?: number;
 }
 
 // Tablo veri tipi
@@ -93,7 +94,8 @@ const RFQModal: React.FC<RFQModalProps> = ({
   rfqNumberId,
   quoteId,
   openOnSecondPage = false,
-  currency
+  currency,
+  totalAmount
 }) => {
   const [activeTab, setActiveTab] = useState<'message' | 'mail'>('message');
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
@@ -187,7 +189,8 @@ const RFQModal: React.FC<RFQModalProps> = ({
           | 'MAIL',
         selectedCompanyId,
         quoteId,
-        currency
+        currency,
+        totalAmount: totalAmount || 0
       };
 
       const response = await postPi(requestData);

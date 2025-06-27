@@ -84,6 +84,7 @@ export interface Quote {
   clientRFQId: string;
   comment: string;
   quoteId: string;
+  totalAmount: number;
   quoteNumberId: string;
   mailItemMoreDetailResponse: MailItemMoreDetail;
   quotePartResponses: QuotePart[];

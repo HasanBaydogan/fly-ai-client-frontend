@@ -276,6 +276,7 @@ const QuoteContainer = () => {
             quoteId={quoteData?.quoteId}
             openOnSecondPage={openModalOnSecondPage}
             currency={getCurrencyFromParts()}
+            totalAmount={quoteData?.totalAmount}
           />
 
           {showQuoteWizardTabs ? (
