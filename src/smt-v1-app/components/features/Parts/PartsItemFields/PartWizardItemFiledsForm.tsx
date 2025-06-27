@@ -61,7 +61,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
     {
       label: 'Avionics',
       options: [
-        { value: 'A-COLLINS_AEROSPACE', name: 'Collins Aerospace' },
+        { value: 'A_COLLINS_AEROSPACE', name: 'Collins Aerospace' },
         { value: 'HONEYWELL', name: 'Honeywell' },
         { value: 'THALES_GROUP', name: 'Thales Group' },
         {
@@ -75,7 +75,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
       label: 'Landing Gear',
       options: [
         { value: 'SAFRAN_LANDING_SYSTEMS', name: 'Safran Landing Systems' },
-        { value: 'COLLINS_AEROSPACE', name: 'Collins Aerospace' },
+        { value: 'B_COLLINS_AEROSPACE', name: 'Collins Aerospace' },
         { value: 'LIEBHERR_AEROSPACE', name: 'Liebherr Aerospace' },
         { value: 'HEROUX_DEVTEK', name: 'Heroux-Devtek' }
       ]
@@ -109,7 +109,16 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
     partData?.aircraftModel || ''
   );
   const [comment, setComment] = useState<string>(partData?.comment || '');
-  const [oems, setOems] = useState<string[]>([]);
+  const [oems, setOems] = useState<string[]>(() => {
+    if (partData) {
+      if (Array.isArray(partData.oems)) {
+        return partData.oems;
+      } else if (typeof partData.oem === 'string' && partData.oem) {
+        return partData.oem.split(',').filter(item => item.trim() !== '');
+      }
+    }
+    return [];
+  });
   const [selectedAircraft, setSelectedAircraft] = useState<string>(
     partData?.aircraft || 'ANY'
   );
@@ -164,7 +173,13 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
       setPartNumber(partData.partNumber || '');
       setPartName(partData.partName || '');
       setAircraftModel(partData.aircraftModel || '');
-      setOems(partData.oems || (partData.oem ? partData.oem.split(',') : []));
+      if (Array.isArray(partData.oems)) {
+        setOems(partData.oems);
+      } else if (typeof partData.oem === 'string' && partData.oem) {
+        setOems(partData.oem.split(',').filter(item => item.trim() !== ''));
+      } else {
+        setOems([]);
+      }
       setHsCode(partData.hsCode || '');
       setComment(partData.comment || '');
       setSegmentIds(
@@ -265,7 +280,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
     setLoadingSave(true);
     try {
       let response;
-      const oemString = oems.join(',');
+      const oemArray = oems.length === 0 ? ['ANY'] : oems;
 
       if (partData && partData.partId) {
         response = await putPartUpdate({
@@ -275,7 +290,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
           segmentIds,
           aircraftModel,
           comment,
-          oem: oemString,
+          oems: oemArray,
           hsCode
         });
       } else {
@@ -286,7 +301,7 @@ const PartWizardItemFiledsForm: React.FC<PartWizardItemFiledsFormProps> = ({
           segmentIds,
           aircraftModel,
           comment,
-          oem: oemString,
+          oems: oemArray,
           hsCode
         });
       }

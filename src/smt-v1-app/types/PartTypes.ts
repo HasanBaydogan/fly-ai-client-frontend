@@ -35,7 +35,7 @@ export interface createPart {
   aircraftModel: string;
   aircraft: string;
   comment: string;
-  oem: string;
+  oems: string[];
   hsCode: string;
 }
 export interface updatePartPayload {
@@ -45,7 +45,7 @@ export interface updatePartPayload {
   segmentIds: string[];
   aircraftModel: string;
   comment: string;
-  oem: string;
+  oems: string[];
   hsCode: string;
 }
 export interface UDFData {

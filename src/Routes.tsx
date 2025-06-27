@@ -52,6 +52,7 @@ import ProtectedRoute from 'components/protectedRoute/ProtectedRoute';
 import UserQuoteStatusContainer from 'smt-v1-app/containers/UserQuoteStatusContainer/UserQuoteStatusContainer';
 import UserSettingsContainer from 'smt-v1-app/containers/UserSettingsContainer/UserSettingsContainer';
 import RFQCreate from 'smt-v1-app/containers/RFQCreate/RFQCreate';
+import UserSettings from 'smt-v1-app/containers/UserSettingsContainer/UserSettingsContainer';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
@@ -210,7 +211,7 @@ const routes: RouteObject[] = [
             children: [
               {
                 path: '',
-                element: <UserSettingsContainer />
+                element: <UserSettings />
               }
             ]
           }

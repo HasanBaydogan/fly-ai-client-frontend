@@ -122,9 +122,8 @@ const SupplierEditContainer = () => {
     null | (FileAttachment & { id: string; contentType: string })
   >(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [brands, setBrands] = useState<Brand[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
   const [aircraftTypes, setAircraftTypes] = useState<AircraftType[]>([]);
-  const [brandOptions, setBrandOptions] = useState<string[]>([]);
   const [aircraftTypeOptions, setAircraftTypeOptions] = useState<string[]>([]);
   const [selectedLegalCountryId, setSelectedLegalCountryId] = useState('');
 
@@ -178,14 +177,8 @@ const SupplierEditContainer = () => {
       try {
         const response = await getOtherValues();
         if (response?.data) {
-          setBrandOptions(response.data.brands || []);
           setAircraftTypeOptions(response.data.aircraftTypes || []);
-          setBrands(prev =>
-            (response.data.brands || []).map(b => ({
-              value: b,
-              isSelected: false
-            }))
-          );
+          setBrands(response.data.brands || []);
           setAircraftTypes(prev =>
             (response.data.aircraftTypes || []).map(a => ({
               value: a,
@@ -237,7 +230,6 @@ const SupplierEditContainer = () => {
           setPassword(supplier.password);
           setContacts(supplier.contacts);
           setCertificateTypes(supplier.certificateTypes);
-          setBrands(supplier.brands || []);
           setAircraftTypes(supplier.aircraftTypes || []);
           setRatings({
             dialogSpeed: supplier.dialogSpeed,
@@ -256,6 +248,7 @@ const SupplierEditContainer = () => {
               }))
             );
           }
+          setBrands(supplier.brands || []);
         } else {
           // window.location.assign('/404');
         }
@@ -340,10 +333,6 @@ const SupplierEditContainer = () => {
       }))
     ];
 
-    // Get selected brand and aircraft type
-    const selectedBrand = brands.find(brand => brand.isSelected);
-    const selectedAircraft = aircraftTypes.find(type => type.isSelected);
-
     const payload = {
       supplierId,
       supplierCompanyName: companyName,
@@ -375,9 +364,7 @@ const SupplierEditContainer = () => {
       mail: mailInput,
       telephone: telephoneInput,
       contextNotes: contextNotes,
-      brands: brands
-        .filter(brand => brand.isSelected)
-        .map(brand => brand.value),
+      brands: brands,
       aircraftTypes: aircraftTypes
         .filter(type => type.isSelected)
         .map(type => type.value),
@@ -474,12 +461,19 @@ const SupplierEditContainer = () => {
   };
 
   const handleBrandsChange = (brand: string) => {
-    setBrands(prevBrands =>
-      prevBrands.map(b => ({
-        ...b,
-        isSelected: b.value === brand
-      }))
-    );
+    setBrands(prevBrands => {
+      if (brand === 'ANY') {
+        return prevBrands.includes('ANY') ? [] : ['ANY'];
+      }
+
+      const newBrands = prevBrands.filter(b => b !== 'ANY');
+      if (newBrands.includes(brand)) {
+        const filteredBrands = newBrands.filter(b => b !== brand);
+        return filteredBrands.length === 0 ? ['ANY'] : filteredBrands;
+      } else {
+        return [...newBrands, brand];
+      }
+    });
   };
 
   const handleAircraftTypesChange = (type: string) => {
@@ -627,20 +621,7 @@ const SupplierEditContainer = () => {
         aircraftTypes={aircraftTypes}
         onBrandsChange={handleBrandsChange}
         onAircraftTypesChange={handleAircraftTypesChange}
-        brandOptions={brandOptions}
         aircraftTypeOptions={aircraftTypeOptions}
-        onBrandAdded={newBrand =>
-          setBrands(prev => [
-            ...prev.map(b => ({ ...b, isSelected: false })),
-            { value: newBrand, isSelected: true }
-          ])
-        }
-        onAircraftTypeAdded={newType =>
-          setAircraftTypes(prev => [
-            ...prev.map(a => ({ ...a, isSelected: false })),
-            { value: newType, isSelected: true }
-          ])
-        }
       />
 
       <Row className="mt-3">
