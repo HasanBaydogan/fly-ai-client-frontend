@@ -7,6 +7,11 @@ interface AircraftType {
   isSelected: boolean;
 }
 
+interface BrandItem {
+  value: string;
+  isSelected: boolean;
+}
+
 interface BrandGroup {
   label: string;
   options: { value: string; name: string }[];
@@ -17,7 +22,7 @@ interface AccountInfoProps {
   setUsername: (value: string) => void;
   password: string;
   setPassword: (value: string) => void;
-  brands?: string[];
+  brands?: BrandItem[];
   aircraftTypes?: AircraftType[];
   onBrandsChange?: (brand: string) => void;
   onAircraftTypesChange?: (type: string) => void;
@@ -95,27 +100,46 @@ const AccountInfo = ({
     }
   ];
 
+  // Helper function to get selected brands
+  const getSelectedBrands = () => {
+    return brands.filter(brand => brand.isSelected).map(brand => brand.value);
+  };
+
+  // Helper function to check if a brand is selected
+  const isBrandSelected = (brandValue: string) => {
+    return brands.some(brand => brand.value === brandValue && brand.isSelected);
+  };
+
+  // Helper function to check if ANY is selected
+  const isAnySelected = () => {
+    return brands.some(brand => brand.value === 'ANY' && brand.isSelected);
+  };
+
   // Get dropdown title for brands
   const getBrandDropdownTitle = () => {
-    if (brands.length === 0) {
+    const selectedBrands = getSelectedBrands();
+
+    if (selectedBrands.length === 0) {
       return 'Select Brand';
     }
 
-    if (brands.includes('ANY')) {
+    if (isAnySelected()) {
       return 'ANY';
     }
 
     const allBrands = brandGroups.flatMap(g => g.options);
-    const firstSelectedBrand = allBrands.find(b => b.value === brands[0]);
+    const firstSelectedBrand = allBrands.find(
+      b => b.value === selectedBrands[0]
+    );
 
     if (!firstSelectedBrand) {
       return 'Select Brands';
     }
-    if (brands.length === 1) {
+    if (selectedBrands.length === 1) {
       return firstSelectedBrand.name;
     }
 
-    const remainingCount = brands.length - 1;
+    const remainingCount = selectedBrands.length - 1;
     return `${firstSelectedBrand.name} +${remainingCount} Brands`;
   };
 
@@ -126,8 +150,9 @@ const AccountInfo = ({
 
   // Initial data setup
   useEffect(() => {
-    if (brands && brands.length > 0) {
-      setSelectedBrand(brands[0]);
+    const selectedBrands = getSelectedBrands();
+    if (selectedBrands.length > 0) {
+      setSelectedBrand(selectedBrands[0]);
     }
 
     if (aircraftTypes && aircraftTypes.length > 0) {
@@ -143,8 +168,9 @@ const AccountInfo = ({
 
   // Update when props change
   useEffect(() => {
-    if (brands && brands.length > 0) {
-      setSelectedBrand(brands[0]);
+    const selectedBrands = getSelectedBrands();
+    if (selectedBrands.length > 0) {
+      setSelectedBrand(selectedBrands[0]);
     }
 
     if (aircraftTypes && aircraftTypes.length > 0) {
@@ -277,7 +303,7 @@ const AccountInfo = ({
                     type="checkbox"
                     id="brand-any"
                     label="ANY"
-                    checked={brands.includes('ANY')}
+                    checked={isAnySelected()}
                     onChange={() => {}}
                   />
                 </Dropdown.Item>
@@ -293,19 +319,17 @@ const AccountInfo = ({
                         key={option.value}
                         onClick={() => handleBrandCheckboxChange(option.value)}
                         style={{
-                          opacity: brands.includes('ANY') ? 0.5 : 1,
-                          pointerEvents: brands.includes('ANY')
-                            ? 'none'
-                            : 'auto'
+                          opacity: isAnySelected() ? 0.5 : 1,
+                          pointerEvents: isAnySelected() ? 'none' : 'auto'
                         }}
                       >
                         <Form.Check
                           type="checkbox"
                           id={`brand-${option.value}`}
                           label={option.name}
-                          checked={brands.includes(option.value)}
+                          checked={isBrandSelected(option.value)}
                           onChange={() => {}}
-                          disabled={brands.includes('ANY')}
+                          disabled={isAnySelected()}
                         />
                       </Dropdown.Item>
                     ))}

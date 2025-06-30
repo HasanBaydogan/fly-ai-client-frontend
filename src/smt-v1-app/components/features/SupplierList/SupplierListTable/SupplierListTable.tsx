@@ -23,7 +23,7 @@ import {
   getAllSupplier,
   transformToSupplier
 } from 'smt-v1-app/services/SupplierServices';
-import { SupplierData } from 'smt-v1-app/types/SupplierTypes';
+import { SupplierData2 } from 'smt-v1-app/types/SupplierTypes';
 import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
@@ -41,7 +41,7 @@ import AdvanceTableProvider from 'providers/AdvanceTableProvider';
 const getProjectListTableColumns = (
   handleTransferClick: (id: string, companyName: string) => void,
   handleDeleteClick: (id: string) => void
-): ColumnDef<SupplierData>[] => [
+): ColumnDef<SupplierData2>[] => [
   {
     accessorKey: 'companyName',
     header: 'Supplier Company',
@@ -118,6 +118,51 @@ const getProjectListTableColumns = (
   {
     accessorKey: 'brands',
     header: 'Brand',
+    cell: ({ row: { original } }) => {
+      if (
+        !original.brands ||
+        !Array.isArray(original.brands) ||
+        original.brands.length < 1
+      ) {
+        return '-';
+      }
+
+      const parts = original.brands;
+      const hasMoreItems = parts.length > 3;
+      const displayParts = hasMoreItems ? parts.slice(0, 2) : parts;
+
+      const tooltipContent = (
+        <div style={{ whiteSpace: 'pre-line' }}>
+          {parts.map((part: string, index: number) => (
+            <div key={index}>
+              <span className="me-1">•</span>
+              {part}
+            </div>
+          ))}
+        </div>
+      );
+
+      return (
+        <div style={{ whiteSpace: 'nowrap', position: 'relative' }}>
+          {displayParts.map((part: string, index: number) => (
+            <div key={index} className="my-1">
+              <span className="me-1">•</span>
+              {part}
+            </div>
+          ))}
+          {hasMoreItems && (
+            <div style={{ display: 'inline-block' }}>
+              <EnhancedTooltip
+                tooltipContent={tooltipContent}
+                placement="right"
+              >
+                <span className="text-primary">...</span>
+              </EnhancedTooltip>
+            </div>
+          )}
+        </div>
+      );
+    },
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
@@ -427,7 +472,7 @@ interface Supplier {
 }
 
 const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
-  const [data, setData] = useState<SupplierData[]>([]);
+  const [data, setData] = useState<SupplierData2[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -514,7 +559,7 @@ const SupplierList: FC<SupplierListProps> = ({ activeView }) => {
       );
       const suppliers = response?.data?.suppliers || [];
       if (Array.isArray(suppliers)) {
-        const mappedData: SupplierData[] = suppliers.map((item: any) => ({
+        const mappedData: SupplierData2[] = suppliers.map((item: any) => ({
           id: item.id,
           companyName: item.supplierCompany,
           segments: Array.isArray(item.segments)

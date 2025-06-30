@@ -156,7 +156,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           leadTime: part.leadTime || 0,
           partNumber: part.partNumber || '',
           quantity: part.quantity || 1,
-          reqCondition: part.reqCondition || 'NE'
+          reqCondition: part.reqCondition || 'NE',
+          deduction: part.deduction || 0
         };
       });
       // console.log('Formatted parts:', formattedParts);
@@ -200,7 +201,8 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             ...item,
             id: item.quotePartId,
             unitPrice: numericValue,
-            unitPriceString: formattedPrice
+            unitPriceString: formattedPrice,
+            deduction: item.deduction || 0
           };
         }
       );
@@ -227,7 +229,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
   // Calculate sub-total
   const calculateSubTotal = () => {
-    return quotePartRows.reduce((acc, row) => acc + row.qty * row.unitPrice, 0);
+    return quotePartRows.reduce(
+      (acc, row) => acc + row.qty * row.unitPrice + (row.deduction || 0),
+      0
+    );
   };
 
   // Calculate tax amount based on percentage
@@ -435,6 +440,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       leadTime: 0,
       qty: 1,
       unitPrice: 0.0,
+      deduction: 0,
       isNew: true,
       unitPriceString: '0.00'
     };
@@ -556,6 +562,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     );
   };
 
+  const handleDeductionChange = (value: number, rowId: string) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row =>
+        row.id === rowId ? { ...row, deduction: value } : row
+      )
+    );
+  };
+
   // Add function to handle row numbering
   const getRowNumber = (index: number) => {
     return index + 1;
@@ -584,6 +598,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       leadTime: 0,
       qty: 1,
       unitPrice: 0,
+      deduction: 0,
       isNew: true,
       unitPriceString: '0.00'
     };
@@ -773,6 +788,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
               <td className="text-white align-middle">QTY</td>
               <td className="text-white align-middle">LEAD TIME</td>
               <td className="text-white align-middle">UNIT PRICE</td>
+              <td className="text-white align-middle">DEDUCTION</td>
               <td
                 className="text-white align-middle"
                 style={{ minWidth: '100px' }}
@@ -877,7 +893,7 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     style={{ width: '75px' }}
                   />
                 </td>
-                <td style={{ width: '205px' }}>
+                <td style={{ width: '125px' }}>
                   <Form.Control
                     type="text"
                     value={row.unitPriceString}
@@ -893,11 +909,27 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                     }
                   />
                 </td>
+                <td style={{ width: '100px' }}>
+                  <Form.Control
+                    type="number"
+                    value={row.deduction || 0}
+                    onChange={e =>
+                      handleDeductionChange(Number(e.target.value), row.id)
+                    }
+                    min={0}
+                    step={0.01}
+                    style={{ width: '100px' }}
+                    placeholder="0.00"
+                  />
+                </td>
                 <td>
                   {getPriceCurrencySymbol(currency) +
                     ' ' +
                     formatNumberWithDecimals(
-                      (row.qty * row.unitPrice).toString()
+                      (
+                        row.qty * row.unitPrice +
+                        (row.deduction || 0)
+                      ).toString()
                     )}
                 </td>
                 <td className="button-cell">

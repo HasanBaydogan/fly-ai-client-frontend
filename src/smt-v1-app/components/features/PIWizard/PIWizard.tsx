@@ -17,6 +17,7 @@ export interface partRow {
   quotePartId: string;
   reqCondition: string;
   unitPrice: number;
+  deduction: number;
   isNew: boolean;
   unitPriceString: string;
   tempId: number | undefined;

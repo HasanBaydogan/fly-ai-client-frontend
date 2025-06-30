@@ -4,6 +4,34 @@ import {
   SupplierStatus
 } from 'smt-v1-app/components/features/SupplierList/SupplierListTable/SearchBySupplierListMock';
 
+export interface SupplierData2 {
+  id: string;
+  companyName: string;
+  segments: { segmentName: string }[];
+  brands: string[];
+  country: string;
+  address: string;
+  mail: string;
+  contacts: { email: string }[];
+  status: SupplierStatus;
+  quoteID: string | null;
+  attachments: {
+    attachmentId: string | null;
+    attachmentName: string | null;
+  }[];
+  workingDetails: string | null;
+  userName: string;
+  certificates: string[];
+  dialogSpeed: string;
+  dialogQuality: string;
+  easeOfSupply: string;
+  supplyCapability: string;
+  euDemandOfParts: string;
+  createdBy: string;
+  createdOn: string;
+  lastModifiedBy: string;
+  lastModifiedOn: string;
+}
 export interface SupplierData {
   id: string;
   companyName: string;
