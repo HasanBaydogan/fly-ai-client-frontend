@@ -1,0 +1,8 @@
+.part-number-addition-edit-icon {
+  width: 20px;
+}
+.part-number-addition-edit-icon:hover {
+  cursor: pointer;
+  background-color: rgb(211, 211, 211);
+  border-radius: 5px;
+}

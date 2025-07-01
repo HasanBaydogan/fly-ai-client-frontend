@@ -133,22 +133,22 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
       headerProps: { style: { width: '10%' }, className: 'ps-8' }
     }
   },
-  {
-    header: 'RFQ Cost',
-    accessorKey: 'rfqCost',
-    cell: ({ row: { original } }) => {
-      return (
-        original.rfqCost?.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        }) ?? '0.00'
-      );
-    },
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
+  // {
+  //   header: 'RFQ Cost',
+  //   accessorKey: 'rfqCost',
+  //   cell: ({ row: { original } }) => {
+  //     return (
+  //       original.rfqCost?.toLocaleString('en-US', {
+  //         minimumFractionDigits: 2,
+  //         maximumFractionDigits: 2
+  //       }) ?? '0.00'
+  //     );
+  //   },
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2' },
+  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
+  //   }
+  // },
   {
     accessorKey: 'finalCost',
     header: 'Final Cost',
@@ -165,14 +165,14 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
-  {
-    accessorKey: 'createdBy',
-    header: 'Created By',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
-  },
+  // {
+  //   accessorKey: 'createdBy',
+  //   header: 'Created By',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2' },
+  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
+  //   }
+  // },
   {
     accessorKey: 'createdAt',
     header: 'Created At',
@@ -180,15 +180,15 @@ export const QuoteTableColumns: ColumnDef<SupplierData>[] = [
       cellProps: { className: 'ps-3 text-body py-2' },
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
-  },
-  {
-    accessorKey: 'lastModifiedAt',
-    header: 'Last Modified At',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: { style: { width: '10%' }, className: 'ps-3' }
-    }
   }
+  // {
+  //   accessorKey: 'lastModifiedAt',
+  //   header: 'Last Modified At',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2' },
+  //     headerProps: { style: { width: '10%' }, className: 'ps-3' }
+  //   }
+  // }
 ];
 
 type SearchColumn = {

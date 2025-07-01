@@ -51,6 +51,7 @@ import Error451 from 'pages/error/Error451';
 import ProtectedRoute from 'components/protectedRoute/ProtectedRoute';
 import UserQuoteStatusContainer from 'smt-v1-app/containers/UserQuoteStatusContainer/UserQuoteStatusContainer';
 import UserSettingsContainer from 'smt-v1-app/containers/UserSettingsContainer/UserSettingsContainer';
+import RFQCreate from 'smt-v1-app/containers/RFQCreate/RFQCreate';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
@@ -80,13 +81,26 @@ const routes: RouteObject[] = [
           </UnsavedChangesProvider>
         ),
         children: [
+          // {
+          //   path: 'mail-tracking',
+          //   element: <MailTrackingContainer />
+          // },
+          // {
+          //   path: '',
+          //   element: <MailTrackingContainer />
+          // },
           {
-            path: 'mail-tracking',
-            element: <MailTrackingContainer />
-          },
-          {
-            path: '',
-            element: <MailTrackingContainer />
+            path: 'pi',
+            children: [
+              {
+                path: 'list',
+                element: <PiListContainer />
+              },
+              {
+                path: 'detail',
+                element: <PiDetailContainer />
+              }
+            ]
           },
           {
             path: 'rfqs',
@@ -100,8 +114,8 @@ const routes: RouteObject[] = [
                 element: <RFQContainer />
               },
               {
-                path: '',
-                element: <Error404 />
+                path: 'create',
+                element: <RFQCreate />
               }
             ]
           },
@@ -130,89 +144,89 @@ const routes: RouteObject[] = [
                 element: <PiDetailContainer />
               }
             ]
-          },
-          {
-            path: 'po',
-            children: [
-              {
-                path: 'list',
-                element: <PoListContainer />
-              },
-              {
-                path: 'detail',
-                element: <PoDetailContainer />
-              }
-            ]
-          },
-          {
-            path: 'supplier',
-            children: [
-              {
-                path: 'new-supplier',
-                element: <SupplierDetailContainer />
-              },
-              {
-                path: 'list',
-                element: <SupplierListContainer />
-              },
-              {
-                path: 'edit',
-                element: <SupplierEditContainer />
-              }
-            ]
-          },
-          {
-            path: '/companies',
-            element: <CompanyContainer />
-          },
-          {
-            path: 'client',
-            children: [
-              {
-                path: 'list',
-                element: <ClientListContainer />
-              },
-              {
-                path: 'new-client',
-                element: <NewClientContainer />
-              },
-              {
-                path: 'edit',
-                element: <ClientEditContainer />
-              }
-            ]
-          },
-          {
-            path: 'part',
-            children: [
-              {
-                path: 'list',
-                element: <PartListContainer />
-              },
-              {
-                path: 'new-part',
-                element: <PartContainer />
-              }
-            ]
-          },
-          {
-            path: 'user-quote-stats',
-            children: [
-              {
-                path: '',
-                element: <UserQuoteStatus />
-              }
-            ]
-          },
-          {
-            path: 'user-settings',
-            children: [
-              {
-                path: 'user-settings',
-                element: <UserSettingsContainer />
-              }
-            ]
           }
+          //     {
+          //       path: 'po',
+          //       children: [
+          //         {
+          //           path: 'list',
+          //           element: <PoListContainer />
+          //         },
+          //         {
+          //           path: 'detail',
+          //           element: <PoDetailContainer />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: 'supplier',
+          //       children: [
+          //         {
+          //           path: 'new-supplier',
+          //           element: <SupplierDetailContainer />
+          //         },
+          //         {
+          //           path: 'list',
+          //           element: <SupplierListContainer />
+          //         },
+          //         {
+          //           path: 'edit',
+          //           element: <SupplierEditContainer />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: '/companies',
+          //       element: <CompanyContainer />
+          //     },
+          //     {
+          //       path: 'client',
+          //       children: [
+          //         {
+          //           path: 'list',
+          //           element: <ClientListContainer />
+          //         },
+          //         {
+          //           path: 'new-client',
+          //           element: <NewClientContainer />
+          //         },
+          //         {
+          //           path: 'edit',
+          //           element: <ClientEditContainer />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: 'part',
+          //       children: [
+          //         {
+          //           path: 'list',
+          //           element: <PartListContainer />
+          //         },
+          //         {
+          //           path: 'new-part',
+          //           element: <PartContainer />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: 'user-quote-stats',
+          //       children: [
+          //         {
+          //           path: '',
+          //           element: <UserQuoteStatus />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: 'user-settings',
+          //       children: [
+          //         {
+          //           path: 'user-settings',
+          //           element: <UserSettingsContainer />
+          //         }
+          //       ]
+          //     }
         ]
       },
 

@@ -1,6 +1,6 @@
 import { ex } from '@fullcalendar/core/internal-common';
 import { getRequest, postRequest, putRequest } from './ApiCore/GlobalApiCore';
-import { SaveRFQ } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
+import { SaveRFQ } from 'smt-v1-app/types/RFQRightSideHelper';
 
 export const openRFQ = async (rfqMailId: string) => {
   const response = await putRequest(`/rfq-mail/open-rfq-mail/${rfqMailId}`);
@@ -27,6 +27,9 @@ export const getAllCurrenciesFromDB = async () => {
 
 export const saveRFQToDB = async (saveRFQ: SaveRFQ) => {
   return await postRequest(`/rfq/save`, saveRFQ);
+};
+export const createRFQ = async (createRFQ: SaveRFQ) => {
+  return await postRequest(`/rfq/create`, createRFQ);
 };
 
 export const searchByRFQList = async (

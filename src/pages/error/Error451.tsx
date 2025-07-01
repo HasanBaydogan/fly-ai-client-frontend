@@ -54,12 +54,7 @@ const Error451 = () => {
                   <br className="d-none d-sm-block" />
                   plase contact your administrator for more information.
                 </p>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  as={Link}
-                  to="/mail-tracking"
-                >
+                <Button variant="primary" size="lg" as={Link} to="/pi/list">
                   Go Home
                 </Button>
               </Col>
