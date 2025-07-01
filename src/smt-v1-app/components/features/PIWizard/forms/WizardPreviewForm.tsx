@@ -236,9 +236,11 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   PN/MODEL
                 </td>
                 <td className="text-white align-middle">DESCRIPTION</td>
+                <td className="text-white align-middle">CON.</td>
                 <td className="text-white align-middle">QTY</td>
                 <td className="text-white align-middle">LEAD TIME</td>
                 <td className="text-white align-middle">UNIT PRICE</td>
+                <td className="text-white align-middle">DEDUCTION</td>
                 <td
                   className="text-white align-middle"
                   style={{ minWidth: '100px' }}
@@ -253,6 +255,7 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                   <td>{index + 1}</td>
                   <td>{row.partNumber}</td>
                   <td>{row.description}</td>
+                  <td>{row.fndPartCondition}</td>
                   <td>{row.qty}</td>
                   <td>{row.leadTime} Days</td>
                   <td>
@@ -262,7 +265,16 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                     })}
                   </td>
                   <td>
-                    {(row.qty * row.unitPrice).toLocaleString('en-US', {
+                    {(row.deduction || 0).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: currency.replace(/[^A-Z]/g, '')
+                    })}
+                  </td>
+                  <td>
+                    {(
+                      row.qty * row.unitPrice +
+                      (row.deduction || 0)
+                    ).toLocaleString('en-US', {
                       style: 'currency',
                       currency: currency.replace(/[^A-Z]/g, '')
                     })}
@@ -336,7 +348,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                             <span className="text-primary ms-2">
                               {quotePartRows
                                 .reduce(
-                                  (acc, row) => acc + row.qty * row.unitPrice,
+                                  (acc, row) =>
+                                    acc +
+                                    row.qty * row.unitPrice +
+                                    (row.deduction || 0),
                                   0
                                 )
                                 .toLocaleString('en-US', {
@@ -436,7 +451,10 @@ const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
                         <strong>
                           {(
                             quotePartRows.reduce(
-                              (acc, row) => acc + row.qty * row.unitPrice,
+                              (acc, row) =>
+                                acc +
+                                row.qty * row.unitPrice +
+                                (row.deduction || 0),
                               0
                             ) +
                             (checkedStates[0] ? taxAmount : 0) +

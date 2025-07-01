@@ -151,13 +151,18 @@ export const generatePDF = async (
       (index + 1).toString(),
       row.partNumber,
       row.description,
+      row.fndPartCondition,
       row.qty,
       `${row.leadTime} Days`,
       row.unitPrice.toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
       }),
-      (row.qty * row.unitPrice).toLocaleString('en-US', {
+      (row.deduction || 0).toLocaleString('en-US', {
+        style: 'currency',
+        currency: currency.replace(/[^A-Z]/g, '')
+      }),
+      (row.qty * row.unitPrice + (row.deduction || 0)).toLocaleString('en-US', {
         style: 'currency',
         currency: currency.replace(/[^A-Z]/g, '')
       })
@@ -170,9 +175,11 @@ export const generatePDF = async (
           'NO',
           'PN/MODEL',
           'DESCRIPTION',
+          'CON.',
           'QTY',
           'LEAD TIME',
           'UNIT PRICE',
+          'DEDUCTION',
           'TOTAL'
         ]
       ],
@@ -181,20 +188,22 @@ export const generatePDF = async (
       headStyles: { fillColor: [51, 102, 204], textColor: 255 },
       styles: { halign: 'center', valign: 'middle' },
       columnStyles: {
-        0: { cellWidth: 15 },
-        1: { cellWidth: 31 },
-        2: { cellWidth: 50 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 20 },
-        5: { cellWidth: 30 },
-        6: { cellWidth: 30 }
+        0: { cellWidth: 10 }, // NO
+        1: { cellWidth: 29 }, // PN/MODEL
+        2: { cellWidth: 40 }, // DESCRIPTION
+        3: { cellWidth: 12 }, // CON.
+        4: { cellWidth: 12 }, // QTY
+        5: { cellWidth: 18 }, // LEAD TIME
+        6: { cellWidth: 25 }, // UNIT PRICE
+        7: { cellWidth: 25 }, // DEDUCTION
+        8: { cellWidth: 25 } // TOTAL
       },
       margin: { left: 7 }
     });
 
     // Calculate totals
     const subTotal = quotePartRows.reduce(
-      (acc, row) => acc + row.qty * row.unitPrice,
+      (acc, row) => acc + row.qty * row.unitPrice + (row.deduction || 0),
       0
     );
     const total =

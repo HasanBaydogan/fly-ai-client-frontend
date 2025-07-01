@@ -135,7 +135,6 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
 
       // Set quote part rows from piParts with formatted unit prices
       const formattedParts = piResponseData.piParts.map(part => {
-        // console.log('Processing part:', part);
         const { formatted: formattedPrice, numericValue } = formatCurrency(
           part.unitPrice?.toString() || '0',
           part.currency || 'USD'
@@ -153,14 +152,16 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
           currency: part.currency || 'USD',
           description: part.description || '',
           fndCondition: part.fndCondition || 'NE',
+          fndPartCondition: part.fndPartCondition || 'NE',
           leadTime: part.leadTime || 0,
           partNumber: part.partNumber || '',
-          quantity: part.quantity || 1,
+          qty: part.qty || part.quantity || 1,
           reqCondition: part.reqCondition || 'NE',
-          deduction: part.deduction || 0
+          deduction: part.deduction || 0,
+          no: part.no || 0,
+          quotePartId: part.piPartId || ''
         };
       });
-      // console.log('Formatted parts:', formattedParts);
       setQuotePartRows(formattedParts);
 
       // Set subTotalValues and checkedStates based on shipping options
@@ -202,7 +203,10 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
             id: item.quotePartId,
             unitPrice: numericValue,
             unitPriceString: formattedPrice,
-            deduction: item.deduction || 0
+            deduction: item.deduction || 0,
+            reqCondition: item.reqCondition || '',
+            fndCondition: item.fndCondition || '',
+            fndPartCondition: item.fndPartCondition || item.fndCondition || ''
           };
         }
       );
@@ -433,8 +437,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       alternativeTo: '',
       currency: quoteWizardData.currency,
       description: '',
-      reqCondition: 'NE',
       fndCondition: 'NE',
+      fndPartCondition: 'NE',
+      reqCondition: 'NE',
       no: 0,
       quotePartId: null,
       leadTime: 0,
@@ -562,6 +567,14 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
     );
   };
 
+  const handleFndPartCondition = (value: string, rowId: string) => {
+    setQuotePartRows(prevRows =>
+      prevRows.map(row =>
+        row.id === rowId ? { ...row, fndPartCondition: value } : row
+      )
+    );
+  };
+
   const handleDeductionChange = (value: number, rowId: string) => {
     setQuotePartRows(prevRows =>
       prevRows.map(row =>
@@ -592,8 +605,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
       alternativeTo: '',
       currency: currency,
       description: '',
-      reqCondition: 'NE',
       fndCondition: 'NE',
+      fndPartCondition: 'NE',
+      reqCondition: 'NE',
       quotePartId: null,
       leadTime: 0,
       qty: 1,
@@ -785,8 +799,9 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                 PN/MODEL
               </td>
               <td className="text-white align-middle">DESCRIPTION</td>
+              <td className="text-white align-middle">CON.</td>
               <td className="text-white align-middle">QTY</td>
-              <td className="text-white align-middle">LEAD TIME</td>
+              <td className="text-white align-middle">L.T.</td>
               <td className="text-white align-middle">UNIT PRICE</td>
               <td className="text-white align-middle">DEDUCTION</td>
               <td
@@ -861,6 +876,29 @@ const WizardSetupForm: React.FC<WizardSetupFormProps> = ({
                         {inputErrors[`description-${row.id}`]}
                       </div>
                     )}
+                  </div>
+                </td>
+                <td style={{ width: '100px' }}>
+                  <div className="d-flex flex-column">
+                    <Form.Select
+                      value={row.fndPartCondition}
+                      onChange={e =>
+                        handleFndPartCondition(e.target.value, row.id)
+                      }
+                      style={{ width: '100%' }}
+                    >
+                      <option value="NE">NE</option>
+                      <option value="FN">FN</option>
+                      <option value="NS">NS</option>
+                      <option value="OH">OH</option>
+                      <option value="SV">SV</option>
+                      <option value="AR">AR</option>
+                      <option value="RP">RP</option>
+                      <option value="IN">IN</option>
+                      <option value="TST">TST</option>
+                      <option value="MOD">MODIFIED</option>
+                      <option value="INS_TST">INS/TST</option>
+                    </Form.Select>
                   </div>
                 </td>
                 <td style={{ width: '75px' }}>

@@ -11,11 +11,12 @@ export interface partRow {
   currency: string;
   description: string;
   fndCondition: string;
+  reqCondition: string;
   leadTime: number;
   partNumber: string;
   qty: number;
   quotePartId: string;
-  reqCondition: string;
+  fndPartCondition: string;
   unitPrice: number;
   deduction: number;
   isNew: boolean;
