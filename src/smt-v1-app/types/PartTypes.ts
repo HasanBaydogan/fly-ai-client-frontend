@@ -5,7 +5,7 @@ export interface PartData {
   segments: string[];
   aircraft: string;
   aircraftModel: string;
-  oems: string;
+  oems: string[];
   hsCode: string;
 }
 export interface postFile {
