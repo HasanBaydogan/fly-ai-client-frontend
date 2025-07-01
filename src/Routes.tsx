@@ -82,13 +82,26 @@ const routes: RouteObject[] = [
           </UnsavedChangesProvider>
         ),
         children: [
+          // {
+          //   path: 'mail-tracking',
+          //   element: <MailTrackingContainer />
+          // },
+          // {
+          //   path: '',
+          //   element: <MailTrackingContainer />
+          // },
           {
-            path: 'mail-tracking',
-            element: <MailTrackingContainer />
-          },
-          {
-            path: '',
-            element: <MailTrackingContainer />
+            path: 'pi',
+            children: [
+              {
+                path: 'list',
+                element: <PiListContainer />
+              },
+              {
+                path: 'detail',
+                element: <PiDetailContainer />
+              }
+            ]
           },
           {
             path: 'rfqs',
@@ -215,6 +228,88 @@ const routes: RouteObject[] = [
               }
             ]
           }
+          //     {
+          //       path: 'po',
+          //       children: [
+          //         {
+          //           path: 'list',
+          //           element: <PoListContainer />
+          //         },
+          //         {
+          //           path: 'detail',
+          //           element: <PoDetailContainer />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: 'supplier',
+          //       children: [
+          //         {
+          //           path: 'new-supplier',
+          //           element: <SupplierDetailContainer />
+          //         },
+          //         {
+          //           path: 'list',
+          //           element: <SupplierListContainer />
+          //         },
+          //         {
+          //           path: 'edit',
+          //           element: <SupplierEditContainer />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: '/companies',
+          //       element: <CompanyContainer />
+          //     },
+          //     {
+          //       path: 'client',
+          //       children: [
+          //         {
+          //           path: 'list',
+          //           element: <ClientListContainer />
+          //         },
+          //         {
+          //           path: 'new-client',
+          //           element: <NewClientContainer />
+          //         },
+          //         {
+          //           path: 'edit',
+          //           element: <ClientEditContainer />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: 'part',
+          //       children: [
+          //         {
+          //           path: 'list',
+          //           element: <PartListContainer />
+          //         },
+          //         {
+          //           path: 'new-part',
+          //           element: <PartContainer />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: 'user-quote-stats',
+          //       children: [
+          //         {
+          //           path: '',
+          //           element: <UserQuoteStatus />
+          //         }
+          //       ]
+          //     },
+          //     {
+          //       path: 'user-settings',
+          //       children: [
+          //         {
+          //           path: 'user-settings',
+          //           element: <UserSettingsContainer />
+          //         }
+          //       ]
+          //     }
         ]
       },
 

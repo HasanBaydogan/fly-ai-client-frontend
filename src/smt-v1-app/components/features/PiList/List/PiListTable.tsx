@@ -498,7 +498,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
               size="sm"
               title="PI Detail"
               className="d-flex align-items-center justify-content-center"
-              style={{ width: '32px', height: '32px' }}
+              style={{ width: '32px', height: '32px', marginLeft: '10px' }}
               disabled={editingPiId && editingPiId !== original.piId}
             >
               <FontAwesomeIcon icon={faFileInvoice} />
@@ -521,7 +521,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             <FontAwesomeIcon icon={faUpload} />
           </Button>
 
-          {/* Edit/Save Button */}
+          {/* Edit/Save Button
           <Button
             variant={isEditing ? 'outline-success' : 'outline-info'}
             size="sm"
@@ -534,7 +534,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             <FontAwesomeIcon icon={isEditing ? faSave : faEdit} />
           </Button>
 
-          {/* Cancel Edit Button - Only show when in edit mode */}
+          {/* Cancel Edit Button - Only show when in edit mode 
           {isEditing && (
             <Button
               variant="outline-danger"
@@ -546,7 +546,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             >
               <FontAwesomeIcon icon={faTimes} />
             </Button>
-          )}
+          )} */}
 
           {showFileUploadModal && (
             <PIListFileUpload
@@ -561,7 +561,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     meta: {
       cellProps: { className: 'text-center py-2' },
       headerProps: {
-        style: { width: '120px', minWidth: '120px' },
+        style: { width: '80px', minWidth: '80px' },
         className: 'text-center'
       }
     }
@@ -702,7 +702,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             size="sm"
             value={selectedStatus}
             onChange={handleStatusChange}
-            style={{ minWidth: '150px' }}
+            style={{ minWidth: '120px' }}
           >
             {statusOptions.map(option => (
               <option key={option} value={option}>
@@ -721,7 +721,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     meta: {
       cellProps: { className: ' py-2' },
       headerProps: {
-        style: { width: '150px', minWidth: '150px' },
+        style: { width: '120px', minWidth: '120px' },
         className: 'ps-3'
       }
     }
@@ -757,434 +757,434 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       }
     }
   },
-  {
-    accessorKey: '4---',
-    header: 'Customer Payment',
-    cell: ({ row: { original } }) => {
-      // Get editing state from context
-      const { editingPiId, currencies, loadingCurrencies } =
-        useContext(PiListTableContext);
-      const isEditing = editingPiId === original.piId;
-      const [paymentValue, setPaymentValue] = useState<number | undefined>(
-        original.clientPaidPrice?.price
-      );
-      const [paymentStringValue, setPaymentStringValue] = useState<string>(
-        formatCurrency(
-          original.clientPaidPrice?.price?.toString() || '',
-          original.clientPaidPrice?.currency || 'USD'
-        )
-      );
-      const [selectedCurrency, setSelectedCurrency] = useState<string>(
-        original.clientPaidPrice?.currency || 'USD'
-      );
+  // {
+  //   accessorKey: '4---',
+  //   header: 'Customer Payment',
+  //   cell: ({ row: { original } }) => {
+  //     // Get editing state from context
+  //     const { editingPiId, currencies, loadingCurrencies } =
+  //       useContext(PiListTableContext);
+  //     const isEditing = editingPiId === original.piId;
+  //     const [paymentValue, setPaymentValue] = useState<number | undefined>(
+  //       original.clientPaidPrice?.price
+  //     );
+  //     const [paymentStringValue, setPaymentStringValue] = useState<string>(
+  //       formatCurrency(
+  //         original.clientPaidPrice?.price?.toString() || '',
+  //         original.clientPaidPrice?.currency || 'USD'
+  //       )
+  //     );
+  //     const [selectedCurrency, setSelectedCurrency] = useState<string>(
+  //       original.clientPaidPrice?.currency || 'USD'
+  //     );
 
-      // Update the selected payment value and currency when edit mode changes or when data changes
-      useEffect(() => {
-        setPaymentValue(original.clientPaidPrice?.price);
-        setPaymentStringValue(
-          formatCurrency(
-            original.clientPaidPrice?.price?.toString() || '',
-            original.clientPaidPrice?.currency || 'USD'
-          )
-        );
-        setSelectedCurrency(original.clientPaidPrice?.currency || 'USD');
-      }, [isEditing, original.clientPaidPrice]);
+  //     // Update the selected payment value and currency when edit mode changes or when data changes
+  //     useEffect(() => {
+  //       setPaymentValue(original.clientPaidPrice?.price);
+  //       setPaymentStringValue(
+  //         formatCurrency(
+  //           original.clientPaidPrice?.price?.toString() || '',
+  //           original.clientPaidPrice?.currency || 'USD'
+  //         )
+  //       );
+  //       setSelectedCurrency(original.clientPaidPrice?.currency || 'USD');
+  //     }, [isEditing, original.clientPaidPrice]);
 
-      const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const inputValue = e.target.value;
+  //     const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //       const inputValue = e.target.value;
 
-        // Handle backspace/delete
-        if (inputValue === '') {
-          setPaymentStringValue('');
-          if (!original.clientPaidPrice) {
-            original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
-          }
-          original.clientPaidPrice.price = 0;
-          return;
-        }
+  //       // Handle backspace/delete
+  //       if (inputValue === '') {
+  //         setPaymentStringValue('');
+  //         if (!original.clientPaidPrice) {
+  //           original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
+  //         }
+  //         original.clientPaidPrice.price = 0;
+  //         return;
+  //       }
 
-        // Process only digits and decimal point
-        let value = inputValue.replace(/[^0-9.]/g, '');
+  //       // Process only digits and decimal point
+  //       let value = inputValue.replace(/[^0-9.]/g, '');
 
-        // Format the value
-        let formattedValue = formatCurrency(value, selectedCurrency);
-        setPaymentStringValue(formattedValue);
+  //       // Format the value
+  //       let formattedValue = formatCurrency(value, selectedCurrency);
+  //       setPaymentStringValue(formattedValue);
 
-        // Extract numeric value and update the data object
-        if (!original.clientPaidPrice) {
-          original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
-        }
-        original.clientPaidPrice.price = extractNumericValue(
-          formattedValue,
-          selectedCurrency
-        );
-      };
+  //       // Extract numeric value and update the data object
+  //       if (!original.clientPaidPrice) {
+  //         original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
+  //       }
+  //       original.clientPaidPrice.price = extractNumericValue(
+  //         formattedValue,
+  //         selectedCurrency
+  //       );
+  //     };
 
-      const handlePaymentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        const inputValue = e.target.value;
+  //     const handlePaymentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  //       const inputValue = e.target.value;
 
-        if (inputValue === '') {
-          setPaymentStringValue('');
-          if (!original.clientPaidPrice) {
-            original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
-          }
-          original.clientPaidPrice.price = 0;
-          return;
-        }
+  //       if (inputValue === '') {
+  //         setPaymentStringValue('');
+  //         if (!original.clientPaidPrice) {
+  //           original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
+  //         }
+  //         original.clientPaidPrice.price = 0;
+  //         return;
+  //       }
 
-        // Process only digits and decimal point
-        let value = inputValue.replace(/[^0-9.]/g, '');
+  //       // Process only digits and decimal point
+  //       let value = inputValue.replace(/[^0-9.]/g, '');
 
-        // Format with blur option to append .00 if needed
-        let formattedValue = formatCurrency(value, selectedCurrency, 'blur');
-        setPaymentStringValue(formattedValue);
+  //       // Format with blur option to append .00 if needed
+  //       let formattedValue = formatCurrency(value, selectedCurrency, 'blur');
+  //       setPaymentStringValue(formattedValue);
 
-        // Extract numeric value and update the data object
-        if (!original.clientPaidPrice) {
-          original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
-        }
-        original.clientPaidPrice.price = extractNumericValue(
-          formattedValue,
-          selectedCurrency
-        );
-      };
+  //       // Extract numeric value and update the data object
+  //       if (!original.clientPaidPrice) {
+  //         original.clientPaidPrice = { currency: selectedCurrency, price: 0 };
+  //       }
+  //       original.clientPaidPrice.price = extractNumericValue(
+  //         formattedValue,
+  //         selectedCurrency
+  //       );
+  //     };
 
-      const handleCurrencyChange = (
-        e: React.ChangeEvent<HTMLSelectElement>
-      ) => {
-        const newCurrency = e.target.value;
-        setSelectedCurrency(newCurrency);
+  //     const handleCurrencyChange = (
+  //       e: React.ChangeEvent<HTMLSelectElement>
+  //     ) => {
+  //       const newCurrency = e.target.value;
+  //       setSelectedCurrency(newCurrency);
 
-        // Update the price object with the new currency
-        if (!original.clientPaidPrice) {
-          original.clientPaidPrice = {
-            currency: newCurrency,
-            price: 0
-          };
-        } else {
-          original.clientPaidPrice.currency = newCurrency;
-        }
+  //       // Update the price object with the new currency
+  //       if (!original.clientPaidPrice) {
+  //         original.clientPaidPrice = {
+  //           currency: newCurrency,
+  //           price: 0
+  //         };
+  //       } else {
+  //         original.clientPaidPrice.currency = newCurrency;
+  //       }
 
-        // Update the formatted display value with the new currency
-        setPaymentStringValue(
-          formatCurrency(
-            original.clientPaidPrice.price?.toString() || '',
-            newCurrency
-          )
-        );
-      };
+  //       // Update the formatted display value with the new currency
+  //       setPaymentStringValue(
+  //         formatCurrency(
+  //           original.clientPaidPrice.price?.toString() || '',
+  //           newCurrency
+  //         )
+  //       );
+  //     };
 
-      if (isEditing) {
-        return (
-          <CurrencyInput
-            value={paymentStringValue}
-            onChange={handlePaymentChange}
-            onBlur={handlePaymentBlur}
-            selectedCurrency={selectedCurrency}
-            currencies={currencies}
-            onCurrencyChange={handleCurrencyChange}
-            loadingCurrencies={loadingCurrencies}
-          />
-        );
-      }
+  //     if (isEditing) {
+  //       return (
+  //         <CurrencyInput
+  //           value={paymentStringValue}
+  //           onChange={handlePaymentChange}
+  //           onBlur={handlePaymentBlur}
+  //           selectedCurrency={selectedCurrency}
+  //           currencies={currencies}
+  //           onCurrencyChange={handleCurrencyChange}
+  //           loadingCurrencies={loadingCurrencies}
+  //         />
+  //       );
+  //     }
 
-      return (
-        <ReadOnlyCurrency
-          price={original.clientPaidPrice?.price}
-          currency={original.clientPaidPrice?.currency}
-        />
-      );
-    },
-    meta: {
-      cellProps: {
-        className: 'ps-3 fs-9 text-body white-space-nowrap py-2',
-        style: { width: '120px', minWidth: '120px' }
-      },
-      headerProps: {
-        style: { width: '120px', minWidth: '120px' },
-        className: 'ps-3'
-      }
-    }
-  },
-  {
-    header: 'Supplier Invoice',
-    accessorKey: '5---',
-    cell: ({ row: { original } }) => {
-      // Get editing state and currencies from context
-      const { editingPiId, currencies, loadingCurrencies } =
-        useContext(PiListTableContext);
-      const isEditing = editingPiId === original.piId;
-      const [invoiceValue, setInvoiceValue] = useState<number | undefined>(
-        original.supplierPaidPrice?.price
-      );
-      const [invoiceStringValue, setInvoiceStringValue] = useState<string>(
-        formatCurrency(
-          original.supplierPaidPrice?.price?.toString() || '',
-          original.supplierPaidPrice?.currency || 'USD'
-        )
-      );
-      const [selectedCurrency, setSelectedCurrency] = useState<string>(
-        original.supplierPaidPrice?.currency || 'USD'
-      );
+  //     return (
+  //       <ReadOnlyCurrency
+  //         price={original.clientPaidPrice?.price}
+  //         currency={original.clientPaidPrice?.currency}
+  //       />
+  //     );
+  //   },
+  //   meta: {
+  //     cellProps: {
+  //       className: 'ps-3 fs-9 text-body white-space-nowrap py-2',
+  //       style: { width: '120px', minWidth: '120px' }
+  //     },
+  //     headerProps: {
+  //       style: { width: '120px', minWidth: '120px' },
+  //       className: 'ps-3'
+  //     }
+  //   }
+  // },
+  // {
+  //   header: 'Supplier Invoice',
+  //   accessorKey: '5---',
+  //   cell: ({ row: { original } }) => {
+  //     // Get editing state and currencies from context
+  //     const { editingPiId, currencies, loadingCurrencies } =
+  //       useContext(PiListTableContext);
+  //     const isEditing = editingPiId === original.piId;
+  //     const [invoiceValue, setInvoiceValue] = useState<number | undefined>(
+  //       original.supplierPaidPrice?.price
+  //     );
+  //     const [invoiceStringValue, setInvoiceStringValue] = useState<string>(
+  //       formatCurrency(
+  //         original.supplierPaidPrice?.price?.toString() || '',
+  //         original.supplierPaidPrice?.currency || 'USD'
+  //       )
+  //     );
+  //     const [selectedCurrency, setSelectedCurrency] = useState<string>(
+  //       original.supplierPaidPrice?.currency || 'USD'
+  //     );
 
-      // Update the selected invoice value and currency when edit mode changes or when data changes
-      useEffect(() => {
-        setInvoiceValue(original.supplierPaidPrice?.price);
-        setInvoiceStringValue(
-          formatCurrency(
-            original.supplierPaidPrice?.price?.toString() || '',
-            original.supplierPaidPrice?.currency || 'USD'
-          )
-        );
-        setSelectedCurrency(original.supplierPaidPrice?.currency || 'USD');
-      }, [isEditing, original.supplierPaidPrice]);
+  //     // Update the selected invoice value and currency when edit mode changes or when data changes
+  //     useEffect(() => {
+  //       setInvoiceValue(original.supplierPaidPrice?.price);
+  //       setInvoiceStringValue(
+  //         formatCurrency(
+  //           original.supplierPaidPrice?.price?.toString() || '',
+  //           original.supplierPaidPrice?.currency || 'USD'
+  //         )
+  //       );
+  //       setSelectedCurrency(original.supplierPaidPrice?.currency || 'USD');
+  //     }, [isEditing, original.supplierPaidPrice]);
 
-      const handleInvoiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const inputValue = e.target.value;
+  //     const handleInvoiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //       const inputValue = e.target.value;
 
-        // Handle backspace/delete
-        if (inputValue === '') {
-          setInvoiceStringValue('');
-          if (!original.supplierPaidPrice) {
-            original.supplierPaidPrice = {
-              currency: selectedCurrency,
-              price: 0
-            };
-          }
-          original.supplierPaidPrice.price = 0;
-          return;
-        }
+  //       // Handle backspace/delete
+  //       if (inputValue === '') {
+  //         setInvoiceStringValue('');
+  //         if (!original.supplierPaidPrice) {
+  //           original.supplierPaidPrice = {
+  //             currency: selectedCurrency,
+  //             price: 0
+  //           };
+  //         }
+  //         original.supplierPaidPrice.price = 0;
+  //         return;
+  //       }
 
-        // Process only digits and decimal point
-        let value = inputValue.replace(/[^0-9.]/g, '');
+  //       // Process only digits and decimal point
+  //       let value = inputValue.replace(/[^0-9.]/g, '');
 
-        // Format the value
-        let formattedValue = formatCurrency(value, selectedCurrency);
-        setInvoiceStringValue(formattedValue);
+  //       // Format the value
+  //       let formattedValue = formatCurrency(value, selectedCurrency);
+  //       setInvoiceStringValue(formattedValue);
 
-        // Extract numeric value and update the data object
-        if (!original.supplierPaidPrice) {
-          original.supplierPaidPrice = {
-            currency: selectedCurrency,
-            price: 0
-          };
-        }
-        original.supplierPaidPrice.price = extractNumericValue(
-          formattedValue,
-          selectedCurrency
-        );
-      };
+  //       // Extract numeric value and update the data object
+  //       if (!original.supplierPaidPrice) {
+  //         original.supplierPaidPrice = {
+  //           currency: selectedCurrency,
+  //           price: 0
+  //         };
+  //       }
+  //       original.supplierPaidPrice.price = extractNumericValue(
+  //         formattedValue,
+  //         selectedCurrency
+  //       );
+  //     };
 
-      const handleInvoiceBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        const inputValue = e.target.value;
+  //     const handleInvoiceBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  //       const inputValue = e.target.value;
 
-        if (inputValue === '') {
-          setInvoiceStringValue('');
-          if (!original.supplierPaidPrice) {
-            original.supplierPaidPrice = {
-              currency: selectedCurrency,
-              price: 0
-            };
-          }
-          original.supplierPaidPrice.price = 0;
-          return;
-        }
+  //       if (inputValue === '') {
+  //         setInvoiceStringValue('');
+  //         if (!original.supplierPaidPrice) {
+  //           original.supplierPaidPrice = {
+  //             currency: selectedCurrency,
+  //             price: 0
+  //           };
+  //         }
+  //         original.supplierPaidPrice.price = 0;
+  //         return;
+  //       }
 
-        // Process only digits and decimal point
-        let value = inputValue.replace(/[^0-9.]/g, '');
+  //       // Process only digits and decimal point
+  //       let value = inputValue.replace(/[^0-9.]/g, '');
 
-        // Format with blur option to append .00 if needed
-        let formattedValue = formatCurrency(value, selectedCurrency, 'blur');
-        setInvoiceStringValue(formattedValue);
+  //       // Format with blur option to append .00 if needed
+  //       let formattedValue = formatCurrency(value, selectedCurrency, 'blur');
+  //       setInvoiceStringValue(formattedValue);
 
-        // Extract numeric value and update the data object
-        if (!original.supplierPaidPrice) {
-          original.supplierPaidPrice = {
-            currency: selectedCurrency,
-            price: 0
-          };
-        }
-        original.supplierPaidPrice.price = extractNumericValue(
-          formattedValue,
-          selectedCurrency
-        );
-      };
-      const handleCurrencyChange = (
-        e: React.ChangeEvent<HTMLSelectElement>
-      ) => {
-        const newCurrency = e.target.value;
-        setSelectedCurrency(newCurrency);
+  //       // Extract numeric value and update the data object
+  //       if (!original.supplierPaidPrice) {
+  //         original.supplierPaidPrice = {
+  //           currency: selectedCurrency,
+  //           price: 0
+  //         };
+  //       }
+  //       original.supplierPaidPrice.price = extractNumericValue(
+  //         formattedValue,
+  //         selectedCurrency
+  //       );
+  //     };
+  //     const handleCurrencyChange = (
+  //       e: React.ChangeEvent<HTMLSelectElement>
+  //     ) => {
+  //       const newCurrency = e.target.value;
+  //       setSelectedCurrency(newCurrency);
 
-        // Update the invoice object with the new currency
-        if (!original.supplierPaidPrice) {
-          original.supplierPaidPrice = {
-            currency: newCurrency,
-            price: 0
-          };
-        } else {
-          original.supplierPaidPrice.currency = newCurrency;
-        }
+  //       // Update the invoice object with the new currency
+  //       if (!original.supplierPaidPrice) {
+  //         original.supplierPaidPrice = {
+  //           currency: newCurrency,
+  //           price: 0
+  //         };
+  //       } else {
+  //         original.supplierPaidPrice.currency = newCurrency;
+  //       }
 
-        // Update the formatted display value with the new currency
-        setInvoiceStringValue(
-          formatCurrency(
-            original.supplierPaidPrice.price?.toString() || '',
-            newCurrency
-          )
-        );
-      };
+  //       // Update the formatted display value with the new currency
+  //       setInvoiceStringValue(
+  //         formatCurrency(
+  //           original.supplierPaidPrice.price?.toString() || '',
+  //           newCurrency
+  //         )
+  //       );
+  //     };
 
-      if (isEditing) {
-        return (
-          <CurrencyInput
-            value={invoiceStringValue}
-            onChange={handleInvoiceChange}
-            onBlur={handleInvoiceBlur}
-            selectedCurrency={selectedCurrency}
-            currencies={currencies}
-            onCurrencyChange={handleCurrencyChange}
-            loadingCurrencies={loadingCurrencies}
-          />
-        );
-      }
+  //     if (isEditing) {
+  //       return (
+  //         <CurrencyInput
+  //           value={invoiceStringValue}
+  //           onChange={handleInvoiceChange}
+  //           onBlur={handleInvoiceBlur}
+  //           selectedCurrency={selectedCurrency}
+  //           currencies={currencies}
+  //           onCurrencyChange={handleCurrencyChange}
+  //           loadingCurrencies={loadingCurrencies}
+  //         />
+  //       );
+  //     }
 
-      return (
-        <ReadOnlyCurrency
-          price={original.supplierPaidPrice?.price}
-          currency={original.supplierPaidPrice?.currency}
-        />
-      );
-    },
-    meta: {
-      cellProps: {
-        className: 'ps-3 fs-9 text-body white-space-nowrap py-2',
-        style: { width: '120px', minWidth: '120px' }
-      },
-      headerProps: {
-        style: { width: '120px', minWidth: '120px' },
-        className: 'ps-3'
-      }
-    }
-  },
-  {
-    id: 'bank',
-    accessorKey: '6---',
-    header: 'Bank',
-    cell: ({ row: { original } }) => {
-      // Get editing state from context
-      const { editingPiId } = useContext(PiListTableContext);
-      const isEditing = editingPiId === original.piId;
-      const [selectedBank, setSelectedBank] = useState(
-        original.piBank || 'OTHER'
-      );
+  //     return (
+  //       <ReadOnlyCurrency
+  //         price={original.supplierPaidPrice?.price}
+  //         currency={original.supplierPaidPrice?.currency}
+  //       />
+  //     );
+  //   },
+  //   meta: {
+  //     cellProps: {
+  //       className: 'ps-3 fs-9 text-body white-space-nowrap py-2',
+  //       style: { width: '120px', minWidth: '120px' }
+  //     },
+  //     headerProps: {
+  //       style: { width: '120px', minWidth: '120px' },
+  //       className: 'ps-3'
+  //     }
+  //   }
+  // },
+  // {
+  //   id: 'bank',
+  //   accessorKey: '6---',
+  //   header: 'Bank',
+  //   cell: ({ row: { original } }) => {
+  //     // Get editing state from context
+  //     const { editingPiId } = useContext(PiListTableContext);
+  //     const isEditing = editingPiId === original.piId;
+  //     const [selectedBank, setSelectedBank] = useState(
+  //       original.piBank || 'OTHER'
+  //     );
 
-      const bankOptions = ['OTHER', 'EK', 'FB', 'RUS', 'NUROL'];
+  //     const bankOptions = ['OTHER', 'EK', 'FB', 'RUS', 'NUROL'];
 
-      const handleBankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newValue = e.target.value;
-        setSelectedBank(newValue);
-        original.piBank = newValue;
-      };
+  //     const handleBankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  //       const newValue = e.target.value;
+  //       setSelectedBank(newValue);
+  //       original.piBank = newValue;
+  //     };
 
-      if (isEditing) {
-        return (
-          <Form.Select
-            size="sm"
-            value={selectedBank}
-            onChange={handleBankChange}
-            style={{ minWidth: '100px' }}
-          >
-            {bankOptions.map(option => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Form.Select>
-        );
-      }
+  //     if (isEditing) {
+  //       return (
+  //         <Form.Select
+  //           size="sm"
+  //           value={selectedBank}
+  //           onChange={handleBankChange}
+  //           style={{ minWidth: '100px' }}
+  //         >
+  //           {bankOptions.map(option => (
+  //             <option key={option} value={option}>
+  //               {option}
+  //             </option>
+  //           ))}
+  //         </Form.Select>
+  //       );
+  //     }
 
-      return (
-        <div
-          style={{
-            padding: '0.25rem 0.5rem',
-            width: '90px',
-            border: '1px solid #ced4da',
-            borderRadius: '0.25rem',
-            background: '#f8f9fa',
-            minHeight: '31px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          {original.piBank || 'OTHER'}
-        </div>
-      );
-    },
-    meta: {
-      headerProps: { style: { width: '100px', minWidth: '100px' } }
-    }
-  },
-  {
-    header: 'Bank Type',
-    accessorKey: '7---',
-    cell: ({ row: { original } }) => {
-      // Get editing state from context
-      const { editingPiId } = useContext(PiListTableContext);
-      const isEditing = editingPiId === original.piId;
-      const [selectedBankType, setSelectedBankType] = useState(
-        original.piBankType || 'NONE'
-      );
+  //     return (
+  //       <div
+  //         style={{
+  //           padding: '0.25rem 0.5rem',
+  //           width: '90px',
+  //           border: '1px solid #ced4da',
+  //           borderRadius: '0.25rem',
+  //           background: '#f8f9fa',
+  //           minHeight: '31px',
+  //           display: 'flex',
+  //           alignItems: 'center',
+  //           justifyContent: 'center'
+  //         }}
+  //       >
+  //         {original.piBank || 'OTHER'}
+  //       </div>
+  //     );
+  //   },
+  //   meta: {
+  //     headerProps: { style: { width: '100px', minWidth: '100px' } }
+  //   }
+  // },
+  // {
+  //   header: 'Bank Type',
+  //   accessorKey: '7---',
+  //   cell: ({ row: { original } }) => {
+  //     // Get editing state from context
+  //     const { editingPiId } = useContext(PiListTableContext);
+  //     const isEditing = editingPiId === original.piId;
+  //     const [selectedBankType, setSelectedBankType] = useState(
+  //       original.piBankType || 'NONE'
+  //     );
 
-      const bankTypeOptions = ['NONE', 'TRANSIT', 'EXPORT', 'IMPORTS'];
+  //     const bankTypeOptions = ['NONE', 'TRANSIT', 'EXPORT', 'IMPORTS'];
 
-      const handleBankTypeChange = (
-        e: React.ChangeEvent<HTMLSelectElement>
-      ) => {
-        const newValue = e.target.value;
-        setSelectedBankType(newValue);
-        original.piBankType = newValue;
-      };
+  //     const handleBankTypeChange = (
+  //       e: React.ChangeEvent<HTMLSelectElement>
+  //     ) => {
+  //       const newValue = e.target.value;
+  //       setSelectedBankType(newValue);
+  //       original.piBankType = newValue;
+  //     };
 
-      if (isEditing) {
-        return (
-          <Form.Select
-            size="sm"
-            value={selectedBankType}
-            onChange={handleBankTypeChange}
-            style={{ minWidth: '90px' }}
-          >
-            {bankTypeOptions.map(option => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Form.Select>
-        );
-      }
+  //     if (isEditing) {
+  //       return (
+  //         <Form.Select
+  //           size="sm"
+  //           value={selectedBankType}
+  //           onChange={handleBankTypeChange}
+  //           style={{ minWidth: '90px' }}
+  //         >
+  //           {bankTypeOptions.map(option => (
+  //             <option key={option} value={option}>
+  //               {option}
+  //             </option>
+  //           ))}
+  //         </Form.Select>
+  //       );
+  //     }
 
-      return (
-        <div
-          style={{
-            padding: '0.25rem 0.5rem',
-            widows: '90px',
-            border: '1px solid #ced4da',
-            borderRadius: '0.25rem',
-            background: '#f8f9fa',
-            minHeight: '31px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          {original.piBank || 'OTHER'}
-        </div>
-      );
-    },
-    meta: {
-      headerProps: { style: { width: '120px', minWidth: '120px' } }
-    }
-  },
+  //     return (
+  //       <div
+  //         style={{
+  //           padding: '0.25rem 0.5rem',
+  //           widows: '90px',
+  //           border: '1px solid #ced4da',
+  //           borderRadius: '0.25rem',
+  //           background: '#f8f9fa',
+  //           minHeight: '31px',
+  //           display: 'flex',
+  //           alignItems: 'center',
+  //           justifyContent: 'center'
+  //         }}
+  //       >
+  //         {original.piBank || 'OTHER'}
+  //       </div>
+  //     );
+  //   },
+  //   meta: {
+  //     headerProps: { style: { width: '120px', minWidth: '120px' } }
+  //   }
+  // },
   {
     accessorKey: 'poRequestedDate',
     header: 'PO Date',
@@ -1417,117 +1417,117 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       }
     }
   },
-  {
-    accessorKey: '44---',
-    header: 'OP Supplier',
-    cell: ({ row: { original } }) => {
-      // Get editing state from context
-      const { editingPiId } = useContext(PiListTableContext);
-      const isEditing = editingPiId === original.piId;
-      const [supplierValue, setSupplierValue] = useState<string>(
-        original.opSupplier || ''
-      );
+  // {
+  //   accessorKey: '44---',
+  //   header: 'OP Supplier',
+  //   cell: ({ row: { original } }) => {
+  //     // Get editing state from context
+  //     const { editingPiId } = useContext(PiListTableContext);
+  //     const isEditing = editingPiId === original.piId;
+  //     const [supplierValue, setSupplierValue] = useState<string>(
+  //       original.opSupplier || ''
+  //     );
 
-      const handleSupplierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
-        setSupplierValue(newValue);
-        original.opSupplier = newValue;
-      };
+  //     const handleSupplierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //       const newValue = e.target.value;
+  //       setSupplierValue(newValue);
+  //       original.opSupplier = newValue;
+  //     };
 
-      if (isEditing) {
-        return (
-          <Form.Control
-            type="text"
-            size="sm"
-            value={supplierValue}
-            onChange={handleSupplierChange}
-            style={{ minWidth: '150px' }}
-          />
-        );
-      }
+  //     if (isEditing) {
+  //       return (
+  //         <Form.Control
+  //           type="text"
+  //           size="sm"
+  //           value={supplierValue}
+  //           onChange={handleSupplierChange}
+  //           style={{ minWidth: '150px' }}
+  //         />
+  //       );
+  //     }
 
-      return (
-        <div
-          style={{
-            padding: '0.25rem 0.5rem',
-            width: '150px',
-            border: '1px solid #ced4da',
-            borderRadius: '0.25rem',
-            background: '#f8f9fa',
-            minHeight: '31px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-        >
-          {original.opSupplier || '-'}
-        </div>
-      );
-    },
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: {
-        style: { width: '150px', minWidth: '150px' },
-        className: 'ps-3'
-      }
-    }
-  },
-  {
-    header: 'Supplier',
-    accessorKey: 'supplier',
-    cell: ({ row: { original } }) => {
-      if (
-        !original.supplier ||
-        !Array.isArray(original.supplier) ||
-        original.supplier.length < 1
-      ) {
-        return '-';
-      }
+  //     return (
+  //       <div
+  //         style={{
+  //           padding: '0.25rem 0.5rem',
+  //           width: '150px',
+  //           border: '1px solid #ced4da',
+  //           borderRadius: '0.25rem',
+  //           background: '#f8f9fa',
+  //           minHeight: '31px',
+  //           display: 'flex',
+  //           justifyContent: 'center',
+  //           alignItems: 'center'
+  //         }}
+  //       >
+  //         {original.opSupplier || '-'}
+  //       </div>
+  //     );
+  //   },
+  //   meta: {
+  //     cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+  //     headerProps: {
+  //       style: { width: '150px', minWidth: '150px' },
+  //       className: 'ps-3'
+  //     }
+  //   }
+  // },
+  // {
+  //   header: 'Supplier',
+  //   accessorKey: 'supplier',
+  //   cell: ({ row: { original } }) => {
+  //     if (
+  //       !original.supplier ||
+  //       !Array.isArray(original.supplier) ||
+  //       original.supplier.length < 1
+  //     ) {
+  //       return '-';
+  //     }
 
-      const parts = original.supplier;
-      const hasMoreItems = parts.length > 3;
-      const displayParts = hasMoreItems ? parts.slice(0, 2) : parts;
+  //     const parts = original.supplier;
+  //     const hasMoreItems = parts.length > 3;
+  //     const displayParts = hasMoreItems ? parts.slice(0, 2) : parts;
 
-      const tooltipContent = (
-        <div style={{ whiteSpace: 'pre-line' }}>
-          {parts.map((part: string, index: number) => (
-            <div key={index}>
-              <span className="me-1">•</span>
-              {part}
-            </div>
-          ))}
-        </div>
-      );
+  //     const tooltipContent = (
+  //       <div style={{ whiteSpace: 'pre-line' }}>
+  //         {parts.map((part: string, index: number) => (
+  //           <div key={index}>
+  //             <span className="me-1">•</span>
+  //             {part}
+  //           </div>
+  //         ))}
+  //       </div>
+  //     );
 
-      return (
-        <div style={{ whiteSpace: 'nowrap', position: 'relative' }}>
-          {displayParts.map((part: string, index: number) => (
-            <div key={index} className="my-1">
-              <span className="me-1">•</span>
-              {part}
-            </div>
-          ))}
-          {hasMoreItems && (
-            <div style={{ display: 'inline-block' }}>
-              <EnhancedTooltip
-                tooltipContent={tooltipContent}
-                placement="right"
-              >
-                <span className="text-primary">...</span>
-              </EnhancedTooltip>
-            </div>
-          )}
-        </div>
-      );
-    },
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: {
-        style: { width: '150px', minWidth: '150px' },
-        className: 'ps-3'
-      }
-    }
-  },
+  //     return (
+  //       <div style={{ whiteSpace: 'nowrap', position: 'relative' }}>
+  //         {displayParts.map((part: string, index: number) => (
+  //           <div key={index} className="my-1">
+  //             <span className="me-1">•</span>
+  //             {part}
+  //           </div>
+  //         ))}
+  //         {hasMoreItems && (
+  //           <div style={{ display: 'inline-block' }}>
+  //             <EnhancedTooltip
+  //               tooltipContent={tooltipContent}
+  //               placement="right"
+  //             >
+  //               <span className="text-primary">...</span>
+  //             </EnhancedTooltip>
+  //           </div>
+  //         )}
+  //       </div>
+  //     );
+  //   },
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2' },
+  //     headerProps: {
+  //       style: { width: '150px', minWidth: '150px' },
+  //       className: 'ps-3'
+  //     }
+  //   }
+  // },
   {
     accessorKey: 'piParts',
     header: 'PI Parts',
@@ -1583,47 +1583,47 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         className: 'ps-3'
       }
     }
-  },
-  {
-    id: 'userHistory',
-    header: 'User History',
-    cell: ({ row: { original } }) => {
-      const historyData = {
-        'Created By': original.createdBy || '-',
-        'Created At': original.createdAt || '-',
-        'Last Modified By': original.lastModifiedBy || '-',
-        'Last Modified At': original.lastModifiedAt || '-'
-      };
-
-      const tooltipContent = (
-        <div style={{ whiteSpace: 'pre-line' }}>
-          {Object.entries(historyData).map(([key, value], index) => (
-            <div key={index}>
-              <strong>{key}:</strong> {value}
-            </div>
-          ))}
-        </div>
-      );
-
-      return (
-        <div className="text-center">
-          <EnhancedTooltip tooltipContent={tooltipContent} placement="left">
-            <FontAwesomeIcon
-              icon={faQuestionCircleRegular}
-              style={{ fontSize: '1.5rem', color: 'black', cursor: 'pointer' }}
-            />
-          </EnhancedTooltip>
-        </div>
-      );
-    },
-    meta: {
-      cellProps: { className: 'text-center py-2' },
-      headerProps: {
-        style: { width: '100px', minWidth: '100px' },
-        className: 'text-center'
-      }
-    }
   }
+  // {
+  //   id: 'userHistory',
+  //   header: 'User History',
+  //   cell: ({ row: { original } }) => {
+  //     const historyData = {
+  //       'Created By': original.createdBy || '-',
+  //       'Created At': original.createdAt || '-',
+  //       'Last Modified By': original.lastModifiedBy || '-',
+  //       'Last Modified At': original.lastModifiedAt || '-'
+  //     };
+
+  //     const tooltipContent = (
+  //       <div style={{ whiteSpace: 'pre-line' }}>
+  //         {Object.entries(historyData).map(([key, value], index) => (
+  //           <div key={index}>
+  //             <strong>{key}:</strong> {value}
+  //           </div>
+  //         ))}
+  //       </div>
+  //     );
+
+  //     return (
+  //       <div className="text-center">
+  //         <EnhancedTooltip tooltipContent={tooltipContent} placement="left">
+  //           <FontAwesomeIcon
+  //             icon={faQuestionCircleRegular}
+  //             style={{ fontSize: '1.5rem', color: 'black', cursor: 'pointer' }}
+  //           />
+  //         </EnhancedTooltip>
+  //       </div>
+  //     );
+  //   },
+  //   meta: {
+  //     cellProps: { className: 'text-center py-2' },
+  //     headerProps: {
+  //       style: { width: '100px', minWidth: '100px' },
+  //       className: 'text-center'
+  //     }
+  //   }
+  // }
 ];
 
 // Export an alias for backward compatibility with other files
@@ -2117,385 +2117,385 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
     const modifiedColumns = [...PiTableColumnsStatic];
 
     // Add the Actions column that needs editingPiId
-    modifiedColumns.splice(3, 0, {
-      header: 'Actions',
-      id: 'actionsColumn',
-      accessorKey: '1--',
-      cell: ({ row: { original } }) => (
-        <ActionTextArea
-          piId={original.piId}
-          actions={original.piActions || []}
-          isEditMode={editingPiId === original.piId}
-        />
-      ),
-      meta: {
-        cellProps: { className: 'ps-3 fs-9 text-body  py-2' },
-        headerProps: {
-          className: 'ps-3',
-          style: {
-            width: '300px'
-            // minWidth: '300px'
-          }
-        }
-      }
-    });
+    // modifiedColumns.splice(3, 0, {
+    //   header: 'Actions',
+    //   id: 'actionsColumn',
+    //   accessorKey: '1--',
+    //   cell: ({ row: { original } }) => (
+    //     <ActionTextArea
+    //       piId={original.piId}
+    //       actions={original.piActions || []}
+    //       isEditMode={editingPiId === original.piId}
+    //     />
+    //   ),
+    //   meta: {
+    //     cellProps: { className: 'ps-3 fs-9 text-body  py-2' },
+    //     headerProps: {
+    //       className: 'ps-3',
+    //       style: {
+    //         width: '300px'
+    //         // minWidth: '300px'
+    //       }
+    //     }
+    //   }
+    // });
 
     // Find and modify the Customer Payment column
-    const customerPaymentColumnIndex = modifiedColumns.findIndex(col => {
-      if ('accessorKey' in col) {
-        return col.accessorKey === '4---';
-      }
-      return false;
-    });
+    // const customerPaymentColumnIndex = modifiedColumns.findIndex(col => {
+    //   if ('accessorKey' in col) {
+    //     return col.accessorKey === '4---';
+    //   }
+    //   return false;
+    // });
 
-    if (customerPaymentColumnIndex !== -1) {
-      modifiedColumns[customerPaymentColumnIndex] = {
-        accessorKey: '4---',
-        header: 'Customer Payment',
-        cell: ({ row: { original } }) => {
-          // Get editing state from context
-          const { editingPiId, currencies, loadingCurrencies } =
-            useContext(PiListTableContext);
-          const isEditing = editingPiId === original.piId;
-          const [paymentValue, setPaymentValue] = useState<number | undefined>(
-            original.clientPaidPrice?.price
-          );
-          const [paymentStringValue, setPaymentStringValue] = useState<string>(
-            formatCurrency(
-              original.clientPaidPrice?.price?.toString() || '',
-              original.clientPaidPrice?.currency || 'USD'
-            )
-          );
-          const [selectedCurrency, setSelectedCurrency] = useState<string>(
-            original.clientPaidPrice?.currency || 'USD'
-          );
+    // if (customerPaymentColumnIndex !== -1) {
+    //   modifiedColumns[customerPaymentColumnIndex] = {
+    //     accessorKey: '4---',
+    //     header: 'Customer Payment',
+    //     cell: ({ row: { original } }) => {
+    //       // Get editing state from context
+    //       const { editingPiId, currencies, loadingCurrencies } =
+    //         useContext(PiListTableContext);
+    //       const isEditing = editingPiId === original.piId;
+    //       const [paymentValue, setPaymentValue] = useState<number | undefined>(
+    //         original.clientPaidPrice?.price
+    //       );
+    //       const [paymentStringValue, setPaymentStringValue] = useState<string>(
+    //         formatCurrency(
+    //           original.clientPaidPrice?.price?.toString() || '',
+    //           original.clientPaidPrice?.currency || 'USD'
+    //         )
+    //       );
+    //       const [selectedCurrency, setSelectedCurrency] = useState<string>(
+    //         original.clientPaidPrice?.currency || 'USD'
+    //       );
 
-          // Update the selected payment value and currency when edit mode changes or when data changes
-          useEffect(() => {
-            setPaymentValue(original.clientPaidPrice?.price);
-            setPaymentStringValue(
-              formatCurrency(
-                original.clientPaidPrice?.price?.toString() || '',
-                original.clientPaidPrice?.currency || 'USD'
-              )
-            );
-            setSelectedCurrency(original.clientPaidPrice?.currency || 'USD');
-          }, [isEditing, original.clientPaidPrice]);
+    //       // Update the selected payment value and currency when edit mode changes or when data changes
+    //       useEffect(() => {
+    //         setPaymentValue(original.clientPaidPrice?.price);
+    //         setPaymentStringValue(
+    //           formatCurrency(
+    //             original.clientPaidPrice?.price?.toString() || '',
+    //             original.clientPaidPrice?.currency || 'USD'
+    //           )
+    //         );
+    //         setSelectedCurrency(original.clientPaidPrice?.currency || 'USD');
+    //       }, [isEditing, original.clientPaidPrice]);
 
-          const handlePaymentChange = (
-            e: React.ChangeEvent<HTMLInputElement>
-          ) => {
-            const inputValue = e.target.value;
+    //       const handlePaymentChange = (
+    //         e: React.ChangeEvent<HTMLInputElement>
+    //       ) => {
+    //         const inputValue = e.target.value;
 
-            // Handle backspace/delete
-            if (inputValue === '') {
-              setPaymentStringValue('');
-              if (!original.clientPaidPrice) {
-                original.clientPaidPrice = {
-                  currency: selectedCurrency,
-                  price: 0
-                };
-              }
-              original.clientPaidPrice.price = 0;
-              return;
-            }
+    //         // Handle backspace/delete
+    //         if (inputValue === '') {
+    //           setPaymentStringValue('');
+    //           if (!original.clientPaidPrice) {
+    //             original.clientPaidPrice = {
+    //               currency: selectedCurrency,
+    //               price: 0
+    //             };
+    //           }
+    //           original.clientPaidPrice.price = 0;
+    //           return;
+    //         }
 
-            // Process only digits and decimal point
-            let value = inputValue.replace(/[^0-9.]/g, '');
+    //         // Process only digits and decimal point
+    //         let value = inputValue.replace(/[^0-9.]/g, '');
 
-            // Format the value
-            let formattedValue = formatCurrency(value, selectedCurrency);
-            setPaymentStringValue(formattedValue);
+    //         // Format the value
+    //         let formattedValue = formatCurrency(value, selectedCurrency);
+    //         setPaymentStringValue(formattedValue);
 
-            // Extract numeric value and update the data object
-            if (!original.clientPaidPrice) {
-              original.clientPaidPrice = {
-                currency: selectedCurrency,
-                price: 0
-              };
-            }
-            original.clientPaidPrice.price = extractNumericValue(
-              formattedValue,
-              selectedCurrency
-            );
-          };
+    //         // Extract numeric value and update the data object
+    //         if (!original.clientPaidPrice) {
+    //           original.clientPaidPrice = {
+    //             currency: selectedCurrency,
+    //             price: 0
+    //           };
+    //         }
+    //         original.clientPaidPrice.price = extractNumericValue(
+    //           formattedValue,
+    //           selectedCurrency
+    //         );
+    //       };
 
-          const handlePaymentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-            const inputValue = e.target.value;
+    //       const handlePaymentBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    //         const inputValue = e.target.value;
 
-            if (inputValue === '') {
-              setPaymentStringValue('');
-              if (!original.clientPaidPrice) {
-                original.clientPaidPrice = {
-                  currency: selectedCurrency,
-                  price: 0
-                };
-              }
-              original.clientPaidPrice.price = 0;
-              return;
-            }
+    //         if (inputValue === '') {
+    //           setPaymentStringValue('');
+    //           if (!original.clientPaidPrice) {
+    //             original.clientPaidPrice = {
+    //               currency: selectedCurrency,
+    //               price: 0
+    //             };
+    //           }
+    //           original.clientPaidPrice.price = 0;
+    //           return;
+    //         }
 
-            // Process only digits and decimal point
-            let value = inputValue.replace(/[^0-9.]/g, '');
+    //         // Process only digits and decimal point
+    //         let value = inputValue.replace(/[^0-9.]/g, '');
 
-            // Format with blur option to append .00 if needed
-            let formattedValue = formatCurrency(
-              value,
-              selectedCurrency,
-              'blur'
-            );
-            setPaymentStringValue(formattedValue);
+    //         // Format with blur option to append .00 if needed
+    //         let formattedValue = formatCurrency(
+    //           value,
+    //           selectedCurrency,
+    //           'blur'
+    //         );
+    //         setPaymentStringValue(formattedValue);
 
-            // Extract numeric value and update the data object
-            if (!original.clientPaidPrice) {
-              original.clientPaidPrice = {
-                currency: selectedCurrency,
-                price: 0
-              };
-            }
-            original.clientPaidPrice.price = extractNumericValue(
-              formattedValue,
-              selectedCurrency
-            );
-          };
+    //         // Extract numeric value and update the data object
+    //         if (!original.clientPaidPrice) {
+    //           original.clientPaidPrice = {
+    //             currency: selectedCurrency,
+    //             price: 0
+    //           };
+    //         }
+    //         original.clientPaidPrice.price = extractNumericValue(
+    //           formattedValue,
+    //           selectedCurrency
+    //         );
+    //       };
 
-          const handleCurrencyChange = (
-            e: React.ChangeEvent<HTMLSelectElement>
-          ) => {
-            const newCurrency = e.target.value;
-            setSelectedCurrency(newCurrency);
+    //       const handleCurrencyChange = (
+    //         e: React.ChangeEvent<HTMLSelectElement>
+    //       ) => {
+    //         const newCurrency = e.target.value;
+    //         setSelectedCurrency(newCurrency);
 
-            // Update the price object with the new currency
-            if (!original.clientPaidPrice) {
-              original.clientPaidPrice = {
-                currency: newCurrency,
-                price: 0
-              };
-            } else {
-              original.clientPaidPrice.currency = newCurrency;
-            }
+    //         // Update the price object with the new currency
+    //         if (!original.clientPaidPrice) {
+    //           original.clientPaidPrice = {
+    //             currency: newCurrency,
+    //             price: 0
+    //           };
+    //         } else {
+    //           original.clientPaidPrice.currency = newCurrency;
+    //         }
 
-            // Update the formatted display value with the new currency
-            setPaymentStringValue(
-              formatCurrency(
-                original.clientPaidPrice.price?.toString() || '',
-                newCurrency
-              )
-            );
-          };
+    //         // Update the formatted display value with the new currency
+    //         setPaymentStringValue(
+    //           formatCurrency(
+    //             original.clientPaidPrice.price?.toString() || '',
+    //             newCurrency
+    //           )
+    //         );
+    //       };
 
-          if (isEditing) {
-            return (
-              <CurrencyInput
-                value={paymentStringValue}
-                onChange={handlePaymentChange}
-                onBlur={handlePaymentBlur}
-                selectedCurrency={selectedCurrency}
-                currencies={currencies}
-                onCurrencyChange={handleCurrencyChange}
-                loadingCurrencies={loadingCurrencies}
-              />
-            );
-          }
+    //       if (isEditing) {
+    //         return (
+    //           <CurrencyInput
+    //             value={paymentStringValue}
+    //             onChange={handlePaymentChange}
+    //             onBlur={handlePaymentBlur}
+    //             selectedCurrency={selectedCurrency}
+    //             currencies={currencies}
+    //             onCurrencyChange={handleCurrencyChange}
+    //             loadingCurrencies={loadingCurrencies}
+    //           />
+    //         );
+    //       }
 
-          return (
-            <ReadOnlyCurrency
-              price={original.clientPaidPrice?.price}
-              currency={original.clientPaidPrice?.currency}
-            />
-          );
-        },
-        meta: {
-          cellProps: {
-            className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
-          },
-          headerProps: {
-            style: { width: '130px', minWidth: '130px' },
-            className: 'ps-3'
-          }
-        }
-      };
-    }
+    //       return (
+    //         <ReadOnlyCurrency
+    //           price={original.clientPaidPrice?.price}
+    //           currency={original.clientPaidPrice?.currency}
+    //         />
+    //       );
+    //     },
+    //     meta: {
+    //       cellProps: {
+    //         className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
+    //       },
+    //       headerProps: {
+    //         style: { width: '130px', minWidth: '130px' },
+    //         className: 'ps-3'
+    //       }
+    //     }
+    //   };
+    // }
 
     // Find and modify the Supplier Invoice column
-    const supplierInvoiceColumnIndex = modifiedColumns.findIndex(col => {
-      if ('accessorKey' in col) {
-        return col.accessorKey === '5---';
-      }
-      return false;
-    });
+    // const supplierInvoiceColumnIndex = modifiedColumns.findIndex(col => {
+    //   if ('accessorKey' in col) {
+    //     return col.accessorKey === '5---';
+    //   }
+    //   return false;
+    // });
 
-    if (supplierInvoiceColumnIndex !== -1) {
-      modifiedColumns[supplierInvoiceColumnIndex] = {
-        header: 'Supplier Invoice',
-        accessorKey: '5---',
-        cell: ({ row: { original } }) => {
-          // Get editing state and currencies from context
-          const { editingPiId, currencies, loadingCurrencies } =
-            useContext(PiListTableContext);
-          const isEditing = editingPiId === original.piId;
-          const [invoiceValue, setInvoiceValue] = useState<number | undefined>(
-            original.supplierPaidPrice?.price
-          );
-          const [invoiceStringValue, setInvoiceStringValue] = useState<string>(
-            formatCurrency(
-              original.supplierPaidPrice?.price?.toString() || '',
-              original.supplierPaidPrice?.currency || 'USD'
-            )
-          );
-          const [selectedCurrency, setSelectedCurrency] = useState<string>(
-            original.supplierPaidPrice?.currency || 'USD'
-          );
+    // if (supplierInvoiceColumnIndex !== -1) {
+    //   modifiedColumns[supplierInvoiceColumnIndex] = {
+    //     header: 'Supplier Invoice',
+    //     accessorKey: '5---',
+    //     cell: ({ row: { original } }) => {
+    //       // Get editing state and currencies from context
+    //       const { editingPiId, currencies, loadingCurrencies } =
+    //         useContext(PiListTableContext);
+    //       const isEditing = editingPiId === original.piId;
+    //       const [invoiceValue, setInvoiceValue] = useState<number | undefined>(
+    //         original.supplierPaidPrice?.price
+    //       );
+    //       const [invoiceStringValue, setInvoiceStringValue] = useState<string>(
+    //         formatCurrency(
+    //           original.supplierPaidPrice?.price?.toString() || '',
+    //           original.supplierPaidPrice?.currency || 'USD'
+    //         )
+    //       );
+    //       const [selectedCurrency, setSelectedCurrency] = useState<string>(
+    //         original.supplierPaidPrice?.currency || 'USD'
+    //       );
 
-          // Update the selected invoice value and currency when edit mode changes or when data changes
-          useEffect(() => {
-            setInvoiceValue(original.supplierPaidPrice?.price);
-            setInvoiceStringValue(
-              formatCurrency(
-                original.supplierPaidPrice?.price?.toString() || '',
-                original.supplierPaidPrice?.currency || 'USD'
-              )
-            );
-            setSelectedCurrency(original.supplierPaidPrice?.currency || 'USD');
-          }, [isEditing, original.supplierPaidPrice]);
+    //       // Update the selected invoice value and currency when edit mode changes or when data changes
+    //       useEffect(() => {
+    //         setInvoiceValue(original.supplierPaidPrice?.price);
+    //         setInvoiceStringValue(
+    //           formatCurrency(
+    //             original.supplierPaidPrice?.price?.toString() || '',
+    //             original.supplierPaidPrice?.currency || 'USD'
+    //           )
+    //         );
+    //         setSelectedCurrency(original.supplierPaidPrice?.currency || 'USD');
+    //       }, [isEditing, original.supplierPaidPrice]);
 
-          const handleInvoiceChange = (
-            e: React.ChangeEvent<HTMLInputElement>
-          ) => {
-            const inputValue = e.target.value;
+    //       const handleInvoiceChange = (
+    //         e: React.ChangeEvent<HTMLInputElement>
+    //       ) => {
+    //         const inputValue = e.target.value;
 
-            // Handle backspace/delete
-            if (inputValue === '') {
-              setInvoiceStringValue('');
-              if (!original.supplierPaidPrice) {
-                original.supplierPaidPrice = {
-                  currency: selectedCurrency,
-                  price: 0
-                };
-              }
-              original.supplierPaidPrice.price = 0;
-              return;
-            }
+    //         // Handle backspace/delete
+    //         if (inputValue === '') {
+    //           setInvoiceStringValue('');
+    //           if (!original.supplierPaidPrice) {
+    //             original.supplierPaidPrice = {
+    //               currency: selectedCurrency,
+    //               price: 0
+    //             };
+    //           }
+    //           original.supplierPaidPrice.price = 0;
+    //           return;
+    //         }
 
-            // Process only digits and decimal point
-            let value = inputValue.replace(/[^0-9.]/g, '');
+    //         // Process only digits and decimal point
+    //         let value = inputValue.replace(/[^0-9.]/g, '');
 
-            // Format the value
-            let formattedValue = formatCurrency(value, selectedCurrency);
-            setInvoiceStringValue(formattedValue);
+    //         // Format the value
+    //         let formattedValue = formatCurrency(value, selectedCurrency);
+    //         setInvoiceStringValue(formattedValue);
 
-            // Extract numeric value and update the data object
-            if (!original.supplierPaidPrice) {
-              original.supplierPaidPrice = {
-                currency: selectedCurrency,
-                price: 0
-              };
-            }
-            original.supplierPaidPrice.price = extractNumericValue(
-              formattedValue,
-              selectedCurrency
-            );
-          };
+    //         // Extract numeric value and update the data object
+    //         if (!original.supplierPaidPrice) {
+    //           original.supplierPaidPrice = {
+    //             currency: selectedCurrency,
+    //             price: 0
+    //           };
+    //         }
+    //         original.supplierPaidPrice.price = extractNumericValue(
+    //           formattedValue,
+    //           selectedCurrency
+    //         );
+    //       };
 
-          const handleInvoiceBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-            const inputValue = e.target.value;
+    //       const handleInvoiceBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    //         const inputValue = e.target.value;
 
-            if (inputValue === '') {
-              setInvoiceStringValue('');
-              if (!original.supplierPaidPrice) {
-                original.supplierPaidPrice = {
-                  currency: selectedCurrency,
-                  price: 0
-                };
-              }
-              original.supplierPaidPrice.price = 0;
-              return;
-            }
+    //         if (inputValue === '') {
+    //           setInvoiceStringValue('');
+    //           if (!original.supplierPaidPrice) {
+    //             original.supplierPaidPrice = {
+    //               currency: selectedCurrency,
+    //               price: 0
+    //             };
+    //           }
+    //           original.supplierPaidPrice.price = 0;
+    //           return;
+    //         }
 
-            // Process only digits and decimal point
-            let value = inputValue.replace(/[^0-9.]/g, '');
+    //         // Process only digits and decimal point
+    //         let value = inputValue.replace(/[^0-9.]/g, '');
 
-            // Format with blur option to append .00 if needed
-            let formattedValue = formatCurrency(
-              value,
-              selectedCurrency,
-              'blur'
-            );
-            setInvoiceStringValue(formattedValue);
+    //         // Format with blur option to append .00 if needed
+    //         let formattedValue = formatCurrency(
+    //           value,
+    //           selectedCurrency,
+    //           'blur'
+    //         );
+    //         setInvoiceStringValue(formattedValue);
 
-            // Extract numeric value and update the data object
-            if (!original.supplierPaidPrice) {
-              original.supplierPaidPrice = {
-                currency: selectedCurrency,
-                price: 0
-              };
-            }
-            original.supplierPaidPrice.price = extractNumericValue(
-              formattedValue,
-              selectedCurrency
-            );
-          };
-          const handleCurrencyChange = (
-            e: React.ChangeEvent<HTMLSelectElement>
-          ) => {
-            const newCurrency = e.target.value;
-            setSelectedCurrency(newCurrency);
+    //         // Extract numeric value and update the data object
+    //         if (!original.supplierPaidPrice) {
+    //           original.supplierPaidPrice = {
+    //             currency: selectedCurrency,
+    //             price: 0
+    //           };
+    //         }
+    //         original.supplierPaidPrice.price = extractNumericValue(
+    //           formattedValue,
+    //           selectedCurrency
+    //         );
+    //       };
+    //       const handleCurrencyChange = (
+    //         e: React.ChangeEvent<HTMLSelectElement>
+    //       ) => {
+    //         const newCurrency = e.target.value;
+    //         setSelectedCurrency(newCurrency);
 
-            // Update the invoice object with the new currency
-            if (!original.supplierPaidPrice) {
-              original.supplierPaidPrice = {
-                currency: newCurrency,
-                price: 0
-              };
-            } else {
-              original.supplierPaidPrice.currency = newCurrency;
-            }
+    //         // Update the invoice object with the new currency
+    //         if (!original.supplierPaidPrice) {
+    //           original.supplierPaidPrice = {
+    //             currency: newCurrency,
+    //             price: 0
+    //           };
+    //         } else {
+    //           original.supplierPaidPrice.currency = newCurrency;
+    //         }
 
-            // Update the formatted display value with the new currency
-            setInvoiceStringValue(
-              formatCurrency(
-                original.supplierPaidPrice.price?.toString() || '',
-                newCurrency
-              )
-            );
-          };
+    //         // Update the formatted display value with the new currency
+    //         setInvoiceStringValue(
+    //           formatCurrency(
+    //             original.supplierPaidPrice.price?.toString() || '',
+    //             newCurrency
+    //           )
+    //         );
+    //       };
 
-          if (isEditing) {
-            return (
-              <CurrencyInput
-                value={invoiceStringValue}
-                onChange={handleInvoiceChange}
-                onBlur={handleInvoiceBlur}
-                selectedCurrency={selectedCurrency}
-                currencies={currencies}
-                onCurrencyChange={handleCurrencyChange}
-                loadingCurrencies={loadingCurrencies}
-              />
-            );
-          }
+    //       if (isEditing) {
+    //         return (
+    //           <CurrencyInput
+    //             value={invoiceStringValue}
+    //             onChange={handleInvoiceChange}
+    //             onBlur={handleInvoiceBlur}
+    //             selectedCurrency={selectedCurrency}
+    //             currencies={currencies}
+    //             onCurrencyChange={handleCurrencyChange}
+    //             loadingCurrencies={loadingCurrencies}
+    //           />
+    //         );
+    //       }
 
-          return (
-            <ReadOnlyCurrency
-              price={original.supplierPaidPrice?.price}
-              currency={original.supplierPaidPrice?.currency}
-            />
-          );
-        },
-        meta: {
-          cellProps: {
-            className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
-          },
-          headerProps: {
-            style: {
-              width: '130px',
-              minWidth: '130px',
-              justifyContent: 'center'
-            },
-            className: 'ps-3'
-          }
-        }
-      };
-    }
+    //       return (
+    //         <ReadOnlyCurrency
+    //           price={original.supplierPaidPrice?.price}
+    //           currency={original.supplierPaidPrice?.currency}
+    //         />
+    //       );
+    //     },
+    //     meta: {
+    //       cellProps: {
+    //         className: 'ps-3 fs-9 text-body white-space-nowrap py-2'
+    //       },
+    //       headerProps: {
+    //         style: {
+    //           width: '130px',
+    //           minWidth: '130px',
+    //           justifyContent: 'center'
+    //         },
+    //         className: 'ps-3'
+    //       }
+    //     }
+    //   };
+    // }
 
     // ... existing column modifications ...
 

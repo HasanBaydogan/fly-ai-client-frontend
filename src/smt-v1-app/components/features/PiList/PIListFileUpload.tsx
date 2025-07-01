@@ -204,101 +204,101 @@ const mockData: MainCategory[] = [
         ]
       }
     ]
-  },
-  {
-    id: 'docs-supplier',
-    name: 'Docs with Supplier',
-    categories: [
-      {
-        id: 'supplier-received',
-        name: 'Received',
-        subCategories: [
-          {
-            id: 'suppliers-pi',
-            name: "Supplier's PI",
-            files: []
-          },
-          {
-            id: 'suppliers-final-invoice',
-            name: "Supplier's Final Invoice",
-            files: []
-          },
-          {
-            id: 'suppliers-packing-list',
-            name: "Supplier's Packing List",
-            files: []
-          },
-          {
-            id: 'certificate',
-            name: 'Certificate',
-            files: []
-          },
-          {
-            id: 'trace-docs',
-            name: 'Trace Docs',
-            files: []
-          }
-        ]
-      },
-      {
-        id: 'supplier-sent',
-        name: 'Sent',
-        subCategories: [
-          {
-            id: 'suppliers-euc',
-            name: "Supplier's EUC",
-            files: []
-          },
-          {
-            id: 'swift-to-supplier',
-            name: 'SWIFT to Supplier',
-            files: []
-          },
-          {
-            id: 'purchase-order',
-            name: 'Purchase Order',
-            files: []
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'docs-ff-received',
-    name: 'Docs with FF Received',
-    categories: [
-      {
-        id: 'suppliers-awb',
-        name: "Supplier's AWB",
-        subCategories: [],
-        files: []
-      },
-      {
-        id: 'invoice-ff-turkiye',
-        name: 'Invoice of FF to Transit',
-        subCategories: [],
-        files: []
-      },
-      {
-        id: 'invoice-ff-destination',
-        name: 'Invoice of FF to Destination',
-        subCategories: [],
-        files: []
-      }
-    ]
-  },
-  {
-    id: 'docs-ff-sent',
-    name: 'Docs with FF Send',
-    categories: [
-      {
-        id: 'lot-form',
-        name: 'Lot Form',
-        subCategories: [],
-        files: []
-      }
-    ]
   }
+  // {
+  //   id: 'docs-supplier',
+  //   name: 'Docs with Supplier',
+  //   categories: [
+  //     {
+  //       id: 'supplier-received',
+  //       name: 'Received',
+  //       subCategories: [
+  //         {
+  //           id: 'suppliers-pi',
+  //           name: "Supplier's PI",
+  //           files: []
+  //         },
+  //         {
+  //           id: 'suppliers-final-invoice',
+  //           name: "Supplier's Final Invoice",
+  //           files: []
+  //         },
+  //         {
+  //           id: 'suppliers-packing-list',
+  //           name: "Supplier's Packing List",
+  //           files: []
+  //         },
+  //         {
+  //           id: 'certificate',
+  //           name: 'Certificate',
+  //           files: []
+  //         },
+  //         {
+  //           id: 'trace-docs',
+  //           name: 'Trace Docs',
+  //           files: []
+  //         }
+  //       ]
+  //     },
+  //     {
+  //       id: 'supplier-sent',
+  //       name: 'Sent',
+  //       subCategories: [
+  //         {
+  //           id: 'suppliers-euc',
+  //           name: "Supplier's EUC",
+  //           files: []
+  //         },
+  //         {
+  //           id: 'swift-to-supplier',
+  //           name: 'SWIFT to Supplier',
+  //           files: []
+  //         },
+  //         {
+  //           id: 'purchase-order',
+  //           name: 'Purchase Order',
+  //           files: []
+  //         }
+  //       ]
+  //     }
+  //   ]
+  // },
+  // {
+  //   id: 'docs-ff-received',
+  //   name: 'Docs with FF Received',
+  //   categories: [
+  //     {
+  //       id: 'suppliers-awb',
+  //       name: "Supplier's AWB",
+  //       subCategories: [],
+  //       files: []
+  //     },
+  //     {
+  //       id: 'invoice-ff-turkiye',
+  //       name: 'Invoice of FF to Transit',
+  //       subCategories: [],
+  //       files: []
+  //     },
+  //     {
+  //       id: 'invoice-ff-destination',
+  //       name: 'Invoice of FF to Destination',
+  //       subCategories: [],
+  //       files: []
+  //     }
+  //   ]
+  // },
+  // {
+  //   id: 'docs-ff-sent',
+  //   name: 'Docs with FF Send',
+  //   categories: [
+  //     {
+  //       id: 'lot-form',
+  //       name: 'Lot Form',
+  //       subCategories: [],
+  //       files: []
+  //     }
+  //   ]
+  // }
 ];
 
 const getFileIcon = (fileType: string) => {
@@ -1125,7 +1125,8 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode('clients-po');
                                 }}
-                                disabled={isUploading['clients-po']}
+                                // disabled={isUploading['clients-po']}
+                                disabled
                               >
                                 <FontAwesomeIcon
                                   icon={
@@ -1206,7 +1207,8 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode('clients-pi');
                                 }}
-                                disabled={isUploading['clients-pi']}
+                                //disabled={isUploading['clients-pi']}
+                                disabled
                               >
                                 <FontAwesomeIcon
                                   icon={
@@ -1388,7 +1390,8 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode('official-invoice');
                                 }}
-                                disabled={isUploading['official-invoice']}
+                                //disabled={isUploading['official-invoice']}
+                                disabled
                               >
                                 <FontAwesomeIcon
                                   icon={
@@ -1471,7 +1474,8 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode('clients-awb');
                                 }}
-                                disabled={isUploading['clients-awb']}
+                                //disabled={isUploading['clients-awb']}
+                                disabled
                               >
                                 <FontAwesomeIcon
                                   icon={
@@ -1554,7 +1558,8 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                                   e.stopPropagation();
                                   toggleEditMode('packing-list');
                                 }}
-                                disabled={isUploading['packing-list']}
+                                //disabled={isUploading['packing-list']}
+                                disabled
                               >
                                 <FontAwesomeIcon
                                   icon={
@@ -1610,7 +1615,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
         </Row>
 
         {/* Row 2: Supplier Documents */}
-        <Row className="mb-3">
+        {/* <Row className="mb-3">
           <Col>
             <Card>
               <Card.Header className="bg-light fs-6 p-2">
@@ -1636,6 +1641,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                       </Card.Header>
                       <ListGroup variant="flush">
                         {/* Supplier received docs here */}
+        {/*
                         {data[1].categories[0].subCategories.map(
                           subCategory => (
                             <ListGroup.Item
@@ -1746,6 +1752,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                       </Card.Header>
                       <ListGroup variant="flush">
                         {/* Supplier sent docs here */}
+        {/*
                         {data[1].categories[1].subCategories.map(
                           subCategory => (
                             <ListGroup.Item
@@ -1846,10 +1853,10 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
               </Card.Body>
             </Card>
           </Col>
-        </Row>
+        </Row> */}
 
         {/* Row 3: FF Documents */}
-        <Row>
+        {/* <Row>
           <Col>
             <Card>
               <Card.Header className="bg-light fs-6 p-2">
@@ -1875,6 +1882,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                       </Card.Header>
                       <ListGroup variant="flush">
                         {/* FF docs here */}
+        {/*
                         {data[2].categories.map(category => (
                           <ListGroup.Item
                             key={category.id}
@@ -1968,6 +1976,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                       </Card.Header>
                       <ListGroup variant="flush">
                         {/* FF docs here */}
+        {/*
                         {data[3].categories.map(category => (
                           <ListGroup.Item
                             key={category.id}
@@ -2052,7 +2061,7 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
               </Card.Body>
             </Card>
           </Col>
-        </Row>
+        </Row> */}
       </div>
     );
   };

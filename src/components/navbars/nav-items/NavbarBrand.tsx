@@ -15,7 +15,7 @@ const NavbarBrand = ({ logo }: { logo?: string }) => {
   // Custom navigation handler for the logo
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigateSafely('/mail-tracking');
+    navigateSafely('/pi/list');
   };
 
   return (
@@ -24,7 +24,7 @@ const NavbarBrand = ({ logo }: { logo?: string }) => {
         {breakpoints.down('lg') && <NavbarToggleButton />}
         <Navbar.Brand
           as="a"
-          href="/mail-tracking"
+          href="/pi/list"
           onClick={handleLogoClick}
           className={classNames({
             'me-1 me-sm-3':
@@ -40,12 +40,12 @@ const NavbarBrand = ({ logo }: { logo?: string }) => {
             </>
           ) : (
             <div className="d-flex align-items-center ms-2">
-              <img src={logo} alt="asparel1" width={100} className="mt-2" />
+              <img src={logo} alt="asparel1" width={100} className="my-2" />
               <p className="logo-text ms-2 d-none d-sm-block"></p>
             </div>
           )}
           <div className="small fs-10 text-center  text-muted">
-            v1.13.42-01.07.25
+            v1.13.26-23.06.25
           </div>
         </Navbar.Brand>
       </div>

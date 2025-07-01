@@ -160,17 +160,17 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
       }
     }
   },
-  {
-    header: 'RFQ Cost',
-    accessorKey: 'rfqCost',
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: {
-        style: { width: '10%' },
-        className: 'ps-3'
-      }
-    }
-  },
+  // {
+  //   header: 'RFQ Cost',
+  //   accessorKey: 'rfqCost',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+  //     headerProps: {
+  //       style: { width: '10%' },
+  //       className: 'ps-3'
+  //     }
+  //   }
+  // },
   {
     header: 'Comments',
     accessorKey: 'comments',
@@ -224,17 +224,17 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
       headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
-  {
-    accessorKey: 'createdBy',
-    header: 'Created By',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: {
-        style: { width: '5%', textAlign: 'center' },
-        className: 'ps-3'
-      }
-    }
-  },
+  // {
+  //   accessorKey: 'createdBy',
+  //   header: 'Created By',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2' },
+  //     headerProps: {
+  //       style: { width: '5%', textAlign: 'center' },
+  //       className: 'ps-3'
+  //     }
+  //   }
+  // },
   {
     accessorKey: 'createdAt',
     header: 'Created At',
@@ -245,29 +245,29 @@ export const RFQTableColumns: ColumnDef<RFQData>[] = [
         className: 'ps-3'
       }
     }
-  },
-  {
-    accessorKey: 'lastModifiedBy',
-    header: 'Last Modified By',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2' },
-      headerProps: {
-        style: { width: '5%', textAlign: 'center' },
-        className: 'ps-3'
-      }
-    }
-  },
-  {
-    accessorKey: 'lastModifiedAt',
-    header: 'Last Modified At',
-    meta: {
-      cellProps: { className: 'ps-3 text-body py-2 ' },
-      headerProps: {
-        style: { width: '5%', textAlign: 'center' },
-        className: 'ps-3'
-      }
-    }
   }
+  // {
+  //   accessorKey: 'lastModifiedBy',
+  //   header: 'Last Modified By',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2' },
+  //     headerProps: {
+  //       style: { width: '5%', textAlign: 'center' },
+  //       className: 'ps-3'
+  //     }
+  //   }
+  // },
+  // {
+  //   accessorKey: 'lastModifiedAt',
+  //   header: 'Last Modified At',
+  //   meta: {
+  //     cellProps: { className: 'ps-3 text-body py-2 ' },
+  //     headerProps: {
+  //       style: { width: '5%', textAlign: 'center' },
+  //       className: 'ps-3'
+  //     }
+  //   }
+  // }
 ];
 
 type SearchColumn = {

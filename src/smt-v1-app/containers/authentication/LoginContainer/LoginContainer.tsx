@@ -52,7 +52,7 @@ const LoginContainer = () => {
       setCookie('access_token', access_token);
       setCookie('refresh_token', refresh_token);
 
-      navigation('/mail-tracking');
+      navigation('/pi/list');
     } else if (resp && resp.statusCode === 404) {
       toastError('Error', 'There is no such a user!');
     } else if (resp && resp.statusCode === 411) {
