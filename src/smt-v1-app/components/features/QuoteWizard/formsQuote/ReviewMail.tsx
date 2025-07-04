@@ -33,9 +33,9 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
     <div className="p-4" style={{ position: 'relative' }}>
       {/* Sağ üst köşeye "Go Mail Tracking" butonu ekledik */}
       <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-        <Button variant="primary" onClick={() => navigate('/mail-tracking')}>
+        {/* <Button variant="primary" onClick={() => navigate('/mail-tracking')}>
           Go Mail Tracking
-        </Button>
+        </Button> */}
       </div>
 
       {isSendEmailSuccess ? (

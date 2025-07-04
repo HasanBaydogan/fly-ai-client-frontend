@@ -68,7 +68,6 @@ interface PartSuggestion {
   price: number;
   currency: string;
   total: number;
-  supplier: string;
   comment: string | null;
   dgPackagingCost: boolean;
   tagDate: string | null;
@@ -97,7 +96,6 @@ interface PartHistorySuggestionResponse {
     price: number;
     currency: string;
     total: number;
-    supplier: string;
     comment: string | null;
     dgPackagingCost: boolean;
     tagDate: string | null;
@@ -149,7 +147,6 @@ const PartList: React.FC<PartListProps> = ({
     useState<string>('0.00');
   const [unitPricevalueNumber, setUnitPricevalueNumber] = useState<number>(0.0);
   const [currency, setCurrency] = useState('USD');
-  const [supplier, setSupplier] = useState<any[]>([]);
   const [comment, setComment] = useState<string>('');
   const [dgPackagingCst, setDgPackagingCost] = useState(false);
   const [tagDate, setTagDate] = useState('');
@@ -194,8 +191,6 @@ const PartList: React.FC<PartListProps> = ({
   useEffect(() => {
     const getAllSupplierAndCurrencies = async () => {
       setIsLoading(true);
-      const suppResp = await getAllSuppliersFromDB();
-      setSuppliers(suppResp.data);
       const currencyResp = await getAllCurrenciesFromDB();
       setCurrencies(currencyResp.data);
       setIsLoading(false);
@@ -203,19 +198,8 @@ const PartList: React.FC<PartListProps> = ({
     getAllSupplierAndCurrencies();
   }, []);
 
-  const handleAllSuppliersRefresh = async () => {
-    setIsNewSupplierLoading(true);
-    const resp = await getAllSuppliersFromDB();
-    setSuppliers(resp.data);
-    setIsNewSupplierLoading(false);
-  };
-
   const formatNumber = (n: string): string => {
     return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
-
-  const handleNewSupplier = () => {
-    window.open('/supplier/new-supplier', '_blank');
   };
 
   const handleOpenPartModal = (partNumber: string) => {
@@ -319,7 +303,6 @@ const PartList: React.FC<PartListProps> = ({
       setSupplierLT(foundRFQ.supplierLT);
       setClientLT(foundRFQ.clientLT);
       updateUnitPrice(foundRFQ);
-      setSupplier(foundRFQ.supplier ? [foundRFQ.supplier] : []);
       setComment(foundRFQ.comment);
       setDgPackagingCost(foundRFQ.dgPackagingCost);
       setTagDate(convertDateFormat(foundRFQ.tagDate));
@@ -377,8 +360,7 @@ const PartList: React.FC<PartListProps> = ({
       fndCND ||
       supplierLT !== 0 ||
       clientLT !== 0 ||
-      unitPricevalueNumber !== 0.0 ||
-      (supplier && supplier.length > 0);
+      unitPricevalueNumber !== 0.0;
     if (additionalFieldsProvided) {
       const missingFields = [];
       if (fndQTY === 0) missingFields.push('fndQTY');
@@ -387,7 +369,6 @@ const PartList: React.FC<PartListProps> = ({
       if (clientLT === 0) missingFields.push('clientLT');
       if (unitPricevalueNumber === 0.0)
         missingFields.push('unitPricevalueNumber');
-      if (!supplier || supplier.length === 0) missingFields.push('supplier');
       if (missingFields.length > 0) {
         toastError(
           'Incomplete Fields',
@@ -419,13 +400,6 @@ const PartList: React.FC<PartListProps> = ({
       clientLT,
       currency,
       price: unitPricevalueNumber,
-      supplier:
-        supplier.length > 0
-          ? {
-              supplierId: supplier[0].supplierId,
-              supplierName: supplier[0].supplierName
-            }
-          : null,
       comment: comment && comment.trim(),
       dgPackagingCost: dgPackagingCst,
       tagDate: tagDate ? formatDate(tagDate) : null,
@@ -467,7 +441,6 @@ const PartList: React.FC<PartListProps> = ({
     setUnitPricevalueNumber(0.0);
     setUnitPricevalueString('0.00');
     setCurrency('USD');
-    setSupplier([]);
     setComment('');
     setDgPackagingCost(false);
     setTagDate('');
@@ -506,7 +479,6 @@ const PartList: React.FC<PartListProps> = ({
           price: item.price || 0,
           currency: item.currency || 'USD',
           total: item.total || 0,
-          supplier: item.supplier || 'Unknown Supplier',
           comment: item.comment || null,
           tagDate: item.tagDate || null,
           lastUpdatedDate: item.lastUpdatedDate || '-',
@@ -560,8 +532,6 @@ const PartList: React.FC<PartListProps> = ({
           unitPricevalueNumber={unitPricevalueNumber}
           currency={currency}
           setCurrency={setCurrency}
-          supplier={supplier}
-          setSupplier={setSupplier}
           comment={comment}
           setComment={setComment}
           dgPackagingCst={dgPackagingCst}
@@ -583,10 +553,6 @@ const PartList: React.FC<PartListProps> = ({
           setAirlineCompany={setAirlineCompany}
           MSDS={MSDS}
           setMSDS={setMSDS}
-          suppliers={suppliers}
-          isNewSupplierLoading={isNewSupplierLoading}
-          handleNewSupplier={handleNewSupplier}
-          handleAllSuppliersRefresh={handleAllSuppliersRefresh}
           currencies={currencies}
           unitPriceChange={handleUnitPriceChange}
           handleBlur={handleBlur}

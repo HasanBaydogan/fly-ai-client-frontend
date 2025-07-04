@@ -45,14 +45,6 @@ const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
                   style={{ marginRight: '8px' }}
                   title="Edit Part"
                 />
-                <span
-                  className="action-icon"
-                  style={{ cursor: 'pointer', color: '#0d6efd' }}
-                  onClick={() => onSearchPart(rfqPart.partNumber)}
-                  title="Search Part"
-                >
-                  <FontAwesomeIcon icon={faMagnifyingGlass} />
-                </span>
               </div>
             </td>
             <td
@@ -79,11 +71,11 @@ const RFQPartTableRow: React.FC<RFQPartTableRowProps> = ({
               </span>{' '}
               {formatNumber(rfqPart.price)}
             </td>
-            <td>{rfqPart.supplier && rfqPart.supplier.supplierName}</td>
+            {/* <td>{rfqPart.supplier && rfqPart.supplier.supplierName}</td> */}
             <td className="text-center">
               <span className="fw-bold">
                 {getPriceCurrencySymbol(rfqPart.currency)}
-              </span>{' '}
+              </span>
               {formatNumber(rfqPart.price * rfqPart.fndQTY)}
             </td>
             <td>{rfqPart.comment}</td>

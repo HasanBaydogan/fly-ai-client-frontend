@@ -88,7 +88,7 @@ export const validateAccessToken = async () => {
     });
     if (response.data.statusCode === 200) {
       // 200 Success
-      window.location.assign('/mail-tracking');
+      window.location.assign('/pi/list');
     } else if (response.data.statusCode === 401) {
       // 401 Invalid Token
       removeCookies();
@@ -103,7 +103,7 @@ export const validateAccessToken = async () => {
           'refresh_token',
           refreshTokenresponse.data.data.refresh_token
         );
-        window.location.assign('/mail-tracking');
+        window.location.assign('/pi/list');
       } else {
         removeCookies();
       }

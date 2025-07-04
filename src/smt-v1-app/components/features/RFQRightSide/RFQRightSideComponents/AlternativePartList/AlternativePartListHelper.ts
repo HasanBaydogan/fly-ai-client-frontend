@@ -10,7 +10,6 @@ export const tableHeaders = [
   'Suppl. LT',
   'Client LT',
   'Unit Price',
-  'Supplier',
   'Total',
   'Comments',
   'DGPackagingCost',

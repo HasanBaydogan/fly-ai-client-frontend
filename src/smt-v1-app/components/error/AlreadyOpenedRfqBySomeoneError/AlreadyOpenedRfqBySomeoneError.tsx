@@ -36,12 +36,7 @@ const AlreadyOpenedRfqBySomeoneError = () => {
                   <br className="d-none d-sm-block" />
                   Someone already open that RFQ
                 </p>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  as={Link}
-                  to="/mail-tracking"
-                >
+                <Button variant="primary" size="lg" as={Link} to="/pi/list">
                   Go Home
                 </Button>
               </Col>

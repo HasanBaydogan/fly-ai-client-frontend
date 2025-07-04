@@ -41,13 +41,13 @@ const ReviewMail: React.FC<ReviewMailProps> = ({
           >
             Go PI List
           </Button>
-          <Button
+          {/* <Button
             className="p-2"
             variant="primary"
             onClick={() => navigate('/mail-tracking')}
           >
             Go Mail Tracking
-          </Button>
+          </Button> */}
         </div>
       </div>
 

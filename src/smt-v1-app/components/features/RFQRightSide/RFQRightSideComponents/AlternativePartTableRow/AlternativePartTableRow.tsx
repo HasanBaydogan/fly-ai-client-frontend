@@ -72,14 +72,11 @@ const AlternativePartTableRow = ({
               </span>{' '}
               {formatNumber(alternativeRFQPart.price)}
             </td>
-            <td>
-              {alternativeRFQPart.supplier &&
-                alternativeRFQPart.supplier.supplierName}
-            </td>
+
             <td className="text-center">
               <span className="fw-bold">
                 {getPriceCurrencySymbol(alternativeRFQPart.currency)}
-              </span>{' '}
+              </span>
               {formatNumber(
                 alternativeRFQPart.price * alternativeRFQPart.fndQTY
               )}
