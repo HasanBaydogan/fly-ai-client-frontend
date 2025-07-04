@@ -234,28 +234,6 @@ const PiPartList: React.FC<PiPartListProps> = ({
     <div>
       <div className="d-flex align-items-center">
         <h3 className="mt-3">Parts</h3>
-        {/* Edit butonu sadece tüm stageOfPIPart değerleri null değilse gösterilecek */}
-        {!hasNullStage && (
-          <button
-            className={`mx-2 btn btn-sm ${
-              isEditing ? 'btn-success' : 'btn-primary'
-            }`}
-            onClick={() => {
-              if (isEditing) {
-                setShowConfirmModal(true);
-              } else {
-                setIsEditing(true);
-              }
-            }}
-            style={{ marginRight: '10px' }}
-          >
-            <FontAwesomeIcon
-              icon={isEditing ? faSave : faPencilAlt}
-              className="me-2"
-            />
-            {isEditing ? 'Save' : 'Edit'}
-          </button>
-        )}
       </div>
 
       {/* Confirmation Modal */}

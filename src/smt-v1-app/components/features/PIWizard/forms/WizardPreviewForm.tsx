@@ -15,6 +15,7 @@ import {
 import QRCode from 'react-qr-code';
 
 interface WizardPersonalFormProps {
+  id: string;
   settings: QuoteWizardSetting;
   quotePartRows: partRow[];
   subTotalValues: number[]; // Sub-total değerleri
@@ -54,6 +55,7 @@ interface WizardPersonalFormProps {
 }
 
 const WizardPreviewForm: React.FC<WizardPersonalFormProps> = ({
+  id,
   settings,
   subTotalValues,
   selectedDate,

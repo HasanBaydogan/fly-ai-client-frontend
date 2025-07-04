@@ -234,28 +234,6 @@ const PiListAlternativeParts: React.FC<PiListAlternativePartsProps> = ({
     <div>
       <div className="d-flex align-items-center">
         <h3 className="mt-3">Alternative Parts</h3>
-        {/* Edit butonu sadece tüm stageOfPIPart değerleri null değilse ve part varsa gösterilecek */}
-        {!hasNullStage && alternativeParts.length > 0 && (
-          <button
-            className={`mx-2 btn btn-sm ${
-              isEditing ? 'btn-success' : 'btn-primary'
-            }`}
-            onClick={() => {
-              if (isEditing) {
-                setShowConfirmModal(true);
-              } else {
-                setIsEditing(true);
-              }
-            }}
-            style={{ marginRight: '10px' }}
-          >
-            <FontAwesomeIcon
-              icon={isEditing ? faSave : faPencilAlt}
-              className="me-2"
-            />
-            {isEditing ? 'Save' : 'Edit'}
-          </button>
-        )}
       </div>
 
       {/* Confirmation Modal */}

@@ -46,18 +46,6 @@ const Client = ({
     setIsLoading(false);
   };
 
-  const handleRefreshClientList = () => {
-    try {
-      getAllClients();
-      toastSuccess(
-        'Successfull Refreshing Client List',
-        'Client list is refreshed successfully!'
-      );
-    } catch (ex) {
-      toastError('Refreshing Client List Error', 'Unknown error occurs');
-    }
-  };
-
   useEffect(() => {
     getAllClients();
   }, []);
@@ -95,62 +83,14 @@ const Client = ({
         <div>
           <h3 className="mt-5">Client</h3>
           <hr className="custom-line m-0" />
-          <div className="d-flex align-items-center justify-content-between mt-3">
-            <div className="d-flex align-items-center">
-              <h4 className="me-3">Client:</h4>
-              <Form.Group className="d-flex align-items-center">
-                <Typeahead
-                  id="client-search"
-                  labelKey="clientName"
-                  options={clientList || []}
-                  placeholder="Search by Client Name"
-                  onInputChange={handleSearch}
-                  onChange={handleSelectClient}
-                  selected={foundClient ? [foundClient] : []}
-                  multiple={false}
-                  positionFixed
-                  style={{ zIndex: 10 }}
-                />
-              </Form.Group>
-            </div>
-            <div className="d-flex">
-              <Button
-                variant="primary"
-                onClick={handleAddCompany}
-                className="px-2 mx-1"
-              >
-                <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px' }} />
-                Add Client
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={getAllClients}
-                className="px-2 mx-1"
-              >
-                <FontAwesomeIcon
-                  icon={faArrowRotateRight}
-                  className="me-3"
-                  size="lg"
-                />
-                {'Refresh Client List'}
-              </Button>
-            </div>
-          </div>
 
           <div className="found-client-container d-flex align-items-center mt-3">
-            <h4 className="me-3 mb-0">Found Client:</h4>
+            <h4 className="me-3 mb-0">Client:</h4>
             <span
               className={`me-3 fw-bold ${!foundClient ? 'text-muted' : ''}`}
             >
               {foundClient?.clientName || 'None'}
             </span>
-            <input
-              type="checkbox"
-              className="form-check-input me-2"
-              checked={!!foundClient}
-              onChange={() => setFoundClient(null)}
-              disabled={!foundClient}
-            />
           </div>
 
           <div className="d-flex align-items-center justify-content-between mt-3">
@@ -170,6 +110,7 @@ const Client = ({
                   placeholder="ClientRFQ Id"
                   value={clientRFQId}
                   onChange={e => setClientRFQId(e.target.value)}
+                  disabled
                 />
               </Form.Group>
             </div>

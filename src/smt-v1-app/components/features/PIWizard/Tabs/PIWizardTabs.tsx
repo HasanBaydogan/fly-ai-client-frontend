@@ -1,6 +1,5 @@
 import WizardSetupForm from '../forms/WizardSetupForm';
 import WizardSendMailForm from '../forms/WizardSendMailForm';
-import WizardFormFooter from '../wizard/WizardFormFooter';
 import WizardForm from '../wizard/WizardForm';
 import useWizardForm from 'hooks/useWizardForm';
 import WizardFormProvider from 'providers/WizardFormProvider';
@@ -80,10 +79,10 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
   onClose
 }) => {
   const form = useWizardForm({
-    totalStep: 4
+    totalStep: 1
   });
 
-  const [activeTab, setActiveTab] = useState('setup');
+  const [activeTab, setActiveTab] = useState('preview');
   const [quotePartRows, setQuotePartRows] = useState<partRow[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [subTotalValues, setSubTotalValues] = useState<number[]>([]);
@@ -301,8 +300,31 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
           </Card.Header>
           <Card.Body>
             <Tab.Content>
-              <Tab.Pane eventKey={1}>
+              <Tab.Pane eventKey={1} unmountOnExit>
                 <WizardForm step={1}>
+                  {
+                    <WizardPreviewForm
+                      id="preview"
+                      setBase64Pdf={setBase64Pdf}
+                      setIsPdfConvertedToBase64={setIsPdfConvertedToBase64}
+                      setBase64PdfFileName={setBase64PdfFileName}
+                      settings={quoteWizardData.quoteWizardSetting}
+                      quotePartRows={quotePartRows}
+                      subTotalValues={subTotalValues}
+                      selectedDate={selectedDate}
+                      checkedStates={checkedStates}
+                      quoteNumber={quoteWizardData.quoteNumberId}
+                      currency={currency}
+                      percentageValue={percentageValue}
+                      taxAmount={taxAmount}
+                      setupOtherProps={setupOtherProps}
+                      piResponseData={piResponseData}
+                    />
+                  }
+                </WizardForm>
+              </Tab.Pane>
+              <Tab.Pane eventKey={2}>
+                <WizardForm step={2}>
                   <WizardSetupForm
                     id="setup"
                     currencies={currencies}
@@ -326,68 +348,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
                   />
                 </WizardForm>
               </Tab.Pane>
-              <Tab.Pane eventKey={2} unmountOnExit>
-                <WizardForm step={2}>
-                  {
-                    <WizardPreviewForm
-                      setBase64Pdf={setBase64Pdf}
-                      setIsPdfConvertedToBase64={setIsPdfConvertedToBase64}
-                      setBase64PdfFileName={setBase64PdfFileName}
-                      settings={quoteWizardData.quoteWizardSetting}
-                      quotePartRows={quotePartRows}
-                      subTotalValues={subTotalValues}
-                      selectedDate={selectedDate}
-                      checkedStates={checkedStates}
-                      quoteNumber={quoteWizardData.quoteNumberId}
-                      currency={currency}
-                      percentageValue={percentageValue}
-                      taxAmount={taxAmount}
-                      setupOtherProps={setupOtherProps}
-                      piResponseData={piResponseData}
-                    />
-                  }
-                </WizardForm>
-              </Tab.Pane>
-
-              <Tab.Pane eventKey={3}>
-                <WizardForm step={3}>
-                  {
-                    <WizardSendMailForm
-                      emailProps={emailProps}
-                      isPdfConvertedToBase64={isPdfConvertedToBase64}
-                      base64Pdf={base64Pdf}
-                      base64PdfFileName={base64PdfFileName}
-                      piId={piResponseData.piId}
-                    />
-                  }
-                </WizardForm>
-              </Tab.Pane>
-
-              <Tab.Pane eventKey={4}>
-                <WizardForm step={4}>
-                  {
-                    <ReviewMail
-                      emailProps={emailProps}
-                      quoteNumberId={quoteWizardData.quoteNumberId}
-                      rfqNumberId={quoteWizardData.rfqNumberId}
-                      isSendEmailSuccess={isSendEmailSuccess}
-                      from={from}
-                      handleSendQuoteEmail={handleSendQuoteEmail}
-                      isEmailSendLoading={isEmailSendLoading}
-                    />
-                  }
-                </WizardForm>
-              </Tab.Pane>
             </Tab.Content>
           </Card.Body>
-          <Card.Footer className="border-top-0">
-            <WizardFormFooter
-              handleSendQuoteEmail={handleSendQuoteEmail}
-              isEmailSendLoading={isEmailSendLoading}
-              setEmailSendLoading={setEmailSendLoading}
-              onClose={onClose}
-            />
-          </Card.Footer>
         </Card>
       </WizardFormProvider>
     </MailProvider>

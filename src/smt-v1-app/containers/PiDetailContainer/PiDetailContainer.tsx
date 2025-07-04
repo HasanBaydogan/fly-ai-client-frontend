@@ -232,41 +232,17 @@ const QuoteContainer = () => {
               <div>
                 <div>
                   <CustomButton
-                    variant="secondary"
-                    onClick={() => {
-                      openModal();
-                    }}
-                    style={{ marginRight: '10px' }}
-                  >
-                    PO Wizard
-                  </CustomButton>
-
-                  <CustomButton
                     variant="info"
                     onClick={() => {
                       fetchPIWizardData();
                     }}
                   >
-                    PI Wizard
+                    Review PI
                   </CustomButton>
                 </div>
               </div>
             </div>
           </div>
-
-          <POModal
-            show={isModalOpen}
-            onHide={closeModal}
-            rfqNumberId={piData?.clientRFQId}
-            quoteId={piData?.quoteId || piId}
-            piId={piId}
-            openOnSecondPage={openModalOnSecondPage}
-            onCreatePO={response => {
-              fetchPOWizardData(response);
-              console.log('PO Wizard response:', response);
-              closeModal();
-            }}
-          />
 
           {/* Show PI Wizard when data is loaded */}
           {showPIWizard && piWizardData && (
@@ -279,20 +255,6 @@ const QuoteContainer = () => {
               quoteId={piData?.quoteId || piId}
               quoteComment=""
               piResponseData={piWizardData}
-            />
-          )}
-
-          {/* Show PO Wizard when data is loaded */}
-          {showPOWizard && poWizardData && (
-            <POWizard
-              handleOpen={handleOpenPOWizard}
-              handleClose={handleClosePOWizard}
-              showTabs={showPOWizard}
-              selectedParts={selectedParts}
-              selectedAlternativeParts={selectedAlternativeParts}
-              quoteId={piData?.quoteId || piId}
-              quoteComment=""
-              poResponseData={poWizardData}
             />
           )}
 
