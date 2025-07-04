@@ -128,7 +128,7 @@ export interface RFQPartRequest {
     | '';
   supplierLT: number;
   clientLT: number;
-  supplierId: string;
+  supplierId?: string;
   price: number;
   currency: string;
   comment: string;

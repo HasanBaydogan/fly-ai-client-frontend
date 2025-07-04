@@ -1,7 +1,7 @@
 import React from 'react';
-import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
+import { getPriceCurrencySymbol } from '../../../../../types/RFQRightSideHelper';
 import { formatNumber } from '../RFQPartTableRow/RFQPartTableRowHelper';
-import { AlternativeRFQPart } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import { AlternativeRFQPart } from 'smt-v1-app/types/RfqContainerTypes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
 import editIcon from '../../../../../../assets/img/icons/edit-icon.svg';
@@ -72,14 +72,11 @@ const AlternativePartTableRow = ({
               </span>{' '}
               {formatNumber(alternativeRFQPart.price)}
             </td>
-            <td>
-              {alternativeRFQPart.supplier &&
-                alternativeRFQPart.supplier.supplierName}
-            </td>
+
             <td className="text-center">
               <span className="fw-bold">
                 {getPriceCurrencySymbol(alternativeRFQPart.currency)}
-              </span>{' '}
+              </span>
               {formatNumber(
                 alternativeRFQPart.price * alternativeRFQPart.fndQTY
               )}

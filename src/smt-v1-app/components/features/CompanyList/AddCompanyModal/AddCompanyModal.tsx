@@ -25,7 +25,7 @@ import {
   friendlyFormatIBAN
 } from 'ibantools';
 import { useIbanValidator } from '../../GlobalComponents/IbanValidator';
-import { CompanyData, BankInfo } from '../List/CompanyListTable';
+import { CompanyData, BankInfo, CargoOption } from '../List/CompanyListTable';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 
 // Get all available countries and sort them alphabetically
@@ -88,9 +88,11 @@ interface CompanyFormData extends Partial<CompanyData> {
   logo: string;
   companyName: string;
   companyAddress: string;
+  cargoAddress: string; // Optional field for cargo address
   companyEmail: string;
   companyTelephone: string;
   companyBanks: BankInfo[];
+  cargoOptions: CargoOption[];
 }
 
 interface AddCompanyModalProps {
@@ -134,9 +136,11 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     logo: '',
     companyName: '',
     companyAddress: '',
+    cargoAddress: '',
     companyEmail: '',
     companyTelephone: '',
-    companyBanks: [{ ...initialBankInfo }]
+    companyBanks: [{ ...initialBankInfo }],
+    cargoOptions: []
   });
 
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>('US');
@@ -155,12 +159,14 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         logo: initialData.logo,
         companyName: initialData.companyName,
         companyAddress: initialData.companyAddress,
+        cargoAddress: initialData.cargoAddress || '',
         companyEmail: initialData.companyEmail,
         companyTelephone: initialData.companyTelephone,
         companyBanks: initialData.companyBanks.map(bank => ({
           ...bank,
           ibanError: undefined
-        }))
+        })),
+        cargoOptions: initialData.cargoOptions || []
       });
     }
   }, [isEditMode, initialData]);
@@ -241,6 +247,38 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
     setFormData(prev => ({
       ...prev,
       companyBanks: prev.companyBanks.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAddCargoOption = () => {
+    const newCargoOption: CargoOption = {
+      id: `${Date.now()}`,
+      name: '',
+      active: true
+    };
+    setFormData(prev => ({
+      ...prev,
+      cargoOptions: [...prev.cargoOptions, newCargoOption]
+    }));
+  };
+
+  const handleRemoveCargoOption = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      cargoOptions: prev.cargoOptions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleCargoOptionChange = (
+    index: number,
+    field: keyof CargoOption,
+    value: string | boolean
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      cargoOptions: prev.cargoOptions.map((option, i) =>
+        i === index ? { ...option, [field]: value } : option
+      )
     }));
   };
 
@@ -380,9 +418,11 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
         logo: '',
         companyName: '',
         companyAddress: '',
+        cargoAddress: '',
         companyEmail: '',
         companyTelephone: '',
-        companyBanks: [{ ...initialBankInfo }]
+        companyBanks: [{ ...initialBankInfo }],
+        cargoOptions: []
       });
       setValidated(false);
       setPhoneError('');
@@ -576,6 +616,115 @@ const AddCompanyModal: React.FC<AddCompanyModalProps> = ({
               </Form.Group>
             </Col>
           </Row>
+          <Row className="mb-3">
+            <Col md={12} className="mt-0">
+              <Form.Group>
+                <Form.Label>Cargo Address</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  name="cargoAddress"
+                  value={formData.cargoAddress}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Form.Control.Feedback type="invalid">
+                  Please enter cargo address.
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <div className="mb-3">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="mb-0">Cargo Options</h6>
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={handleAddCargoOption}
+                className="d-flex align-items-center"
+              >
+                <FontAwesomeIcon icon={faPlus} className="me-2" />
+                Add Cargo Option
+              </Button>
+            </div>
+
+            {formData.cargoOptions.map((option, index) => (
+              <div
+                key={index}
+                className="border rounded p-3 mb-3 position-relative"
+              >
+                <Button
+                  variant="link"
+                  className="position-absolute end-0 top-0 text-danger"
+                  onClick={() => handleRemoveCargoOption(index)}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </Button>
+                <Row className="g-3">
+                  <Col md={8}>
+                    <Form.Group>
+                      <Form.Label>Cargo Option Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={option.name}
+                        onChange={e =>
+                          handleCargoOptionChange(index, 'name', e.target.value)
+                        }
+                        placeholder="Enter cargo option name"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group>
+                      <Form.Label>Status</Form.Label>
+                      <div className="d-flex align-items-center">
+                        <Button
+                          variant={option.active ? 'success' : 'danger'}
+                          size="sm"
+                          onClick={() =>
+                            handleCargoOptionChange(
+                              index,
+                              'active',
+                              !option.active
+                            )
+                          }
+                          style={{
+                            width: '48px',
+                            height: '24px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            position: 'relative',
+                            transition: 'background-color 0.3s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '0'
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              backgroundColor: 'white',
+                              borderRadius: '50%',
+                              position: 'absolute',
+                              left: option.active ? 'calc(100% - 21px)' : '3px',
+                              transition: 'left 0.3s ease'
+                            }}
+                          />
+                        </Button>
+                        <span className="ms-2">
+                          {option.active ? 'Active' : 'Passive'}
+                        </span>
+                      </div>
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </div>
+            ))}
+          </div>
 
           <div className="mb-3">
             <div className="d-flex justify-content-between align-items-center mb-3">

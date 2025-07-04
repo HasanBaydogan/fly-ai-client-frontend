@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import ReactDOMServer from 'react-dom/server';
 import { openAttachment } from 'smt-v1-app/services/AttachmentService';
-import { MailItemAttachment } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import { MailItemAttachment } from 'smt-v1-app/types/RfqContainerTypes';
 
 import pdfIcon from '../../../../../../assets/img/icons/pdf_icon2.svg';
 import excelIcon from '../../../../../../assets/img/icons/xls-icon.svg';

@@ -421,8 +421,6 @@ const RFQBoady = ({
             fndRFQPartCondition: part.fndCND ? part.fndCND : null,
             supplierLT: part.supplierLT !== 0 ? part.supplierLT : null,
             clientLT: part.clientLT !== 0 ? part.clientLT : null,
-            supplierId:
-              part.supplier !== null ? part.supplier.supplierId : null,
             price: part.price,
             currency: part.currency,
             comment: part.comment !== '' ? part.comment : null,
@@ -462,10 +460,6 @@ const RFQBoady = ({
                 : null,
             clientLT:
               alternativePart.clientLT !== 0 ? alternativePart.clientLT : null,
-            supplierId:
-              alternativePart.supplier !== null
-                ? alternativePart.supplier.supplierId
-                : null,
             price: alternativePart.price,
             currency: alternativePart.currency,
             comment:
@@ -614,7 +608,6 @@ const RFQBoady = ({
           fndRFQPartCondition: part.fndCND ? part.fndCND : null,
           supplierLT: part.supplierLT !== 0 ? part.supplierLT : null,
           clientLT: part.clientLT !== 0 ? part.clientLT : null,
-          supplierId: part.supplier !== null ? part.supplier.supplierId : null,
           price: part.price,
           currency: part.currency,
           comment: part.comment !== '' ? part.comment : null,
@@ -652,10 +645,6 @@ const RFQBoady = ({
                 : null,
             clientLT:
               alternativePart.clientLT !== 0 ? alternativePart.clientLT : null,
-            supplierId:
-              alternativePart.supplier !== null
-                ? alternativePart.supplier.supplierId
-                : null,
             price: alternativePart.price,
             currency: alternativePart.currency,
             comment:

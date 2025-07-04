@@ -11,7 +11,7 @@ import {
   getAllSuppliersFromDB
 } from 'smt-v1-app/services/RFQService';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
-import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
+import DeleteConfirmationModal from '../../../GlobalComponents/DeleteConfirmationModal/DeleteConfirmationModal';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import PartListTable from './PartListTable';
 import PartWizardModal from './PartWizardModal';
@@ -19,9 +19,9 @@ import useWizardForm from 'hooks/useWizardForm';
 import {
   RFQPart,
   AlternativeRFQPart
-} from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+} from 'smt-v1-app/types/RfqContainerTypes';
 import { formatDate, convertDateFormat } from './PartListHelper';
-import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
+import { getPriceCurrencySymbol } from '../../../../../types/RFQRightSideHelper';
 import {
   getByItemFields,
   getPartHistorySuggestion
@@ -188,14 +188,11 @@ const PartList: React.FC<PartListProps> = ({
     connectedAlternativeRFQPartsForDeletion,
     setConnectedAlternativeRFQPartsForDeletion
   ] = useState<AlternativeRFQPart[]>();
-  const [suppliers, setSuppliers] = useState<any[]>([]);
   const [currencies, setCurrencies] = useState<string[]>([]);
 
   useEffect(() => {
     const getAllSupplierAndCurrencies = async () => {
       setIsLoading(true);
-      const suppResp = await getAllSuppliersFromDB();
-      setSuppliers(suppResp.data);
       const currencyResp = await getAllCurrenciesFromDB();
       setCurrencies(currencyResp.data);
       setIsLoading(false);
@@ -203,19 +200,8 @@ const PartList: React.FC<PartListProps> = ({
     getAllSupplierAndCurrencies();
   }, []);
 
-  const handleAllSuppliersRefresh = async () => {
-    setIsNewSupplierLoading(true);
-    const resp = await getAllSuppliersFromDB();
-    setSuppliers(resp.data);
-    setIsNewSupplierLoading(false);
-  };
-
   const formatNumber = (n: string): string => {
     return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
-
-  const handleNewSupplier = () => {
-    window.open('/supplier/new-supplier', '_blank');
   };
 
   const handleOpenPartModal = (partNumber: string) => {
@@ -319,7 +305,6 @@ const PartList: React.FC<PartListProps> = ({
       setSupplierLT(foundRFQ.supplierLT);
       setClientLT(foundRFQ.clientLT);
       updateUnitPrice(foundRFQ);
-      setSupplier(foundRFQ.supplier ? [foundRFQ.supplier] : []);
       setComment(foundRFQ.comment);
       setDgPackagingCost(foundRFQ.dgPackagingCost);
       setTagDate(convertDateFormat(foundRFQ.tagDate));
@@ -387,7 +372,7 @@ const PartList: React.FC<PartListProps> = ({
       if (clientLT === 0) missingFields.push('clientLT');
       if (unitPricevalueNumber === 0.0)
         missingFields.push('unitPricevalueNumber');
-      if (!supplier || supplier.length === 0) missingFields.push('supplier');
+      // if (!supplier || supplier.length === 0) missingFields.push('supplier');
       if (missingFields.length > 0) {
         toastError(
           'Incomplete Fields',
@@ -419,13 +404,6 @@ const PartList: React.FC<PartListProps> = ({
       clientLT,
       currency,
       price: unitPricevalueNumber,
-      supplier:
-        supplier.length > 0
-          ? {
-              supplierId: supplier[0].supplierId,
-              supplierName: supplier[0].supplierName
-            }
-          : null,
       comment: comment && comment.trim(),
       dgPackagingCost: dgPackagingCst,
       tagDate: tagDate ? formatDate(tagDate) : null,
@@ -560,8 +538,8 @@ const PartList: React.FC<PartListProps> = ({
           unitPricevalueNumber={unitPricevalueNumber}
           currency={currency}
           setCurrency={setCurrency}
-          supplier={supplier}
-          setSupplier={setSupplier}
+          // supplier={supplier}
+          // setSupplier={setSupplier}
           comment={comment}
           setComment={setComment}
           dgPackagingCst={dgPackagingCst}
@@ -583,10 +561,6 @@ const PartList: React.FC<PartListProps> = ({
           setAirlineCompany={setAirlineCompany}
           MSDS={MSDS}
           setMSDS={setMSDS}
-          suppliers={suppliers}
-          isNewSupplierLoading={isNewSupplierLoading}
-          handleNewSupplier={handleNewSupplier}
-          handleAllSuppliersRefresh={handleAllSuppliersRefresh}
           currencies={currencies}
           unitPriceChange={handleUnitPriceChange}
           handleBlur={handleBlur}

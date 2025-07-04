@@ -29,10 +29,18 @@ import AttachmentPreview, {
 } from 'components/common/AttachmentPreview';
 import { getAttachedFile } from 'smt-v1-app/services/GlobalServices';
 import ContactStatusSection from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/ContactStatusSection';
+import BankListSection from 'smt-v1-app/components/features/SupplierDetail/SupplierDetailComponents/BankDetails';
 
 interface Brand {
   value: string;
   isSelected: boolean;
+}
+interface BankAccount {
+  bankName: string;
+  branchCode: string;
+  branchName: string;
+  ibanNo: string;
+  swiftCode: string;
 }
 
 interface AircraftType {
@@ -89,6 +97,7 @@ const SupplierDetailContainer = () => {
   const [contacts, setContacts] = useState<FormattedContactData[]>([]);
   const [certificateTypes, setCertificateTypes] = useState<Certypes[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
 
   const [ratings, setRatings] = useState<RatingData>({
     easeOfSupply: 0,
@@ -131,7 +140,6 @@ const SupplierDetailContainer = () => {
   const [contextNotes, setContextNotes] = useState('');
   const [brands, setBrands] = useState<Brand[]>([]);
   const [aircraftTypes, setAircraftTypes] = useState<AircraftType[]>([]);
-  const [brandOptions, setBrandOptions] = useState<string[]>([]);
   const [aircraftTypeOptions, setAircraftTypeOptions] = useState<string[]>([]);
 
   const handleRatingsChange = (updatedRatings: RatingData) => {
@@ -206,14 +214,33 @@ const SupplierDetailContainer = () => {
       try {
         const response = await getOtherValues();
         if (response?.data) {
-          setBrandOptions(response.data.brands || []);
           setAircraftTypeOptions(response.data.aircraftTypes || []);
-          setBrands(prev =>
-            (response.data.brands || []).map(b => ({
-              value: b,
-              isSelected: false
-            }))
-          );
+
+          // Initialize brands with the new structure
+          const allBrands = [
+            { value: 'ANY', isSelected: false },
+            { value: 'MICHELIN', isSelected: false },
+            { value: 'DUNLOP', isSelected: false },
+            { value: 'BRIDGESTONE', isSelected: false },
+            { value: 'GOODYEAR', isSelected: false },
+            { value: 'A_COLLINS_AEROSPACE', isSelected: false },
+            { value: 'HONEYWELL', isSelected: false },
+            { value: 'THALES_GROUP', isSelected: false },
+            { value: 'SAFRAN_ELECTRONICS_DEFENSE', isSelected: false },
+            { value: 'L3HARRIS_TECHNOLOGIES', isSelected: false },
+            { value: 'SAFRAN_LANDING_SYSTEMS', isSelected: false },
+            { value: 'B_COLLINS_AEROSPACE', isSelected: false },
+            { value: 'LIEBHERR_AEROSPACE', isSelected: false },
+            { value: 'HEROUX_DEVTEK', isSelected: false },
+            { value: 'PARKER_AEROSPACE', isSelected: false },
+            { value: 'MOOG_INC', isSelected: false },
+            { value: 'SAFRAN_AEROSYSTEMS', isSelected: false },
+            { value: 'SPIRIT_AEROSYSTEMS', isSelected: false },
+            { value: 'PREMIUM_AEROTEC', isSelected: false },
+            { value: 'GKN_AEROSPACE', isSelected: false }
+          ];
+          setBrands(allBrands);
+
           setAircraftTypes(prev =>
             (response.data.aircraftTypes || []).map(a => ({
               value: a,
@@ -322,9 +349,8 @@ const SupplierDetailContainer = () => {
       mail: mailInput,
       telephone: telephoneInput,
       contextNotes: contextNotes,
-      brands: brands
-        .filter(brand => brand.isSelected)
-        .map(brand => brand.value),
+      brands: brands.filter(b => b.isSelected).map(b => b.value),
+      supplierBankDetails: bankAccounts,
       aircraftTypes: aircraftTypes
         .filter(type => type.isSelected)
         .map(type => type.value),
@@ -398,12 +424,55 @@ const SupplierDetailContainer = () => {
   };
 
   const handleBrandsChange = (brand: string) => {
-    setBrands(prevBrands =>
-      prevBrands.map((b: Brand) => ({
+    setBrands(prevBrands => {
+      if (brand === 'ANY') {
+        const anyBrand = prevBrands.find(b => b.value === 'ANY');
+        if (anyBrand?.isSelected) {
+          // If ANY is currently selected, deselect it
+          return prevBrands.map(b => ({ ...b, isSelected: false }));
+        } else {
+          // If ANY is not selected, select it and deselect all others
+          return prevBrands.map(b => ({
+            ...b,
+            isSelected: b.value === 'ANY'
+          }));
+        }
+      }
+
+      // If ANY is selected, deselect it first
+      let newBrands = prevBrands.map(b => ({
         ...b,
-        isSelected: b.value === brand
-      }))
-    );
+        isSelected: b.value === 'ANY' ? false : b.isSelected
+      }));
+
+      const targetBrand = newBrands.find(b => b.value === brand);
+      if (targetBrand) {
+        if (targetBrand.isSelected) {
+          // If brand is currently selected, deselect it
+          newBrands = newBrands.map(b => ({
+            ...b,
+            isSelected: b.value === brand ? false : b.isSelected
+          }));
+
+          // If no brands are selected, select ANY
+          const hasSelectedBrands = newBrands.some(b => b.isSelected);
+          if (!hasSelectedBrands) {
+            newBrands = newBrands.map(b => ({
+              ...b,
+              isSelected: b.value === 'ANY'
+            }));
+          }
+        } else {
+          // If brand is not selected, select it
+          newBrands = newBrands.map(b => ({
+            ...b,
+            isSelected: b.value === brand ? true : b.isSelected
+          }));
+        }
+      }
+
+      return newBrands;
+    });
   };
 
   const handleAircraftTypesChange = (type: string) => {
@@ -522,20 +591,7 @@ const SupplierDetailContainer = () => {
         aircraftTypes={aircraftTypes}
         onBrandsChange={handleBrandsChange}
         onAircraftTypesChange={handleAircraftTypesChange}
-        brandOptions={brandOptions}
         aircraftTypeOptions={aircraftTypeOptions}
-        onBrandAdded={newBrand =>
-          setBrands(prev => [
-            ...prev.map(b => ({ ...b, isSelected: false })),
-            { value: newBrand, isSelected: true }
-          ])
-        }
-        onAircraftTypeAdded={newType =>
-          setAircraftTypes(prev => [
-            ...prev.map(a => ({ ...a, isSelected: false })),
-            { value: newType, isSelected: true }
-          ])
-        }
       />
 
       <Row className="mt-3">
@@ -583,6 +639,12 @@ const SupplierDetailContainer = () => {
         />
       )} */}
       {/* Other Sections */}
+      <div className="gap-2 mb-5">
+        <BankListSection
+          onBankAccountsChange={setBankAccounts}
+          initialBankAccounts={bankAccounts}
+        />
+      </div>
       <div className="d-flex flex-row gap-2">
         <div className="mt-3" style={{ width: '66%' }}>
           <ContactListSection onContactsChange={setContacts} />

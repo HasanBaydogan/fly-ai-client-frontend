@@ -3,7 +3,7 @@ import RFQHeader from './RFQLeftSideComponents/RFQHeader/RFQHeader';
 import RFQContent from './RFQLeftSideComponents/RFQContent/RFQContent';
 import RFQAttachments from './RFQLeftSideComponents/RFQAttachments/RFQAttachments';
 import StatusButtonGroup from './RFQLeftSideComponents/StatusButtonGroup/StatusButtonGroup';
-import { MailItemMoreDetail } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import { MailItemMoreDetail } from 'smt-v1-app/types/RfqContainerTypes';
 
 const RFQLeftSide = ({ mailItem }: { mailItem: MailItemMoreDetail }) => {
   return (

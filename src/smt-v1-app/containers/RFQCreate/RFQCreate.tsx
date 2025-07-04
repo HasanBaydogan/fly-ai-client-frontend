@@ -5,7 +5,7 @@ import RFQLeftSide from 'smt-v1-app/components/features/RFQLeftSide/RFQLeftSide'
 import RFQRightSide from 'smt-v1-app/components/features/RFQRightSide/RFQRightSide';
 import './RFQContainer.css';
 import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
-// import PartList from 'smt-v1-app/components/features/RFQCreate/PartList/PartList';
+import PartList from 'smt-v1-app/components/features/RFQCreate/PartList/PartList';
 import RFQBoady from 'smt-v1-app/components/features/RFQCreate/RFQBoady';
 import { RFQ } from '../../types/RfqContainerTypes';
 

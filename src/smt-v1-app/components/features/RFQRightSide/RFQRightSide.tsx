@@ -8,7 +8,7 @@ import {
   AlternativeRFQPart,
   RFQ,
   RFQPart
-} from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+} from 'smt-v1-app/types/RfqContainerTypes';
 import RFQRightSideFooter from './RFQRightSideComponents/RFQRightSideFooter/RFQRightSideFooter';
 import {
   formatDateToString,
@@ -18,7 +18,7 @@ import {
   AlternativeRFQPartRequest,
   RFQPartRequest,
   SaveRFQ
-} from './RFQRightSideComponents/RFQRightSideHelper';
+} from '../../../types/RFQRightSideHelper';
 import { saveRFQToDB } from 'smt-v1-app/services/RFQService';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import { useNavigate } from 'react-router-dom';
@@ -381,8 +381,7 @@ const RFQRightSide = ({
             fndRFQPartCondition: part.fndCND ? part.fndCND : null,
             supplierLT: part.supplierLT !== 0 ? part.supplierLT : null,
             clientLT: part.clientLT !== 0 ? part.clientLT : null,
-            supplierId:
-              part.supplier !== null ? part.supplier.supplierId : null,
+            supplierId: null,
             price: part.price,
             currency: part.currency,
             comment: part.comment !== '' ? part.comment : null,
@@ -422,10 +421,7 @@ const RFQRightSide = ({
                 : null,
             clientLT:
               alternativePart.clientLT !== 0 ? alternativePart.clientLT : null,
-            supplierId:
-              alternativePart.supplier !== null
-                ? alternativePart.supplier.supplierId
-                : null,
+            supplierId: null,
             price: alternativePart.price,
             currency: alternativePart.currency,
             comment:
@@ -557,7 +553,7 @@ const RFQRightSide = ({
           fndRFQPartCondition: part.fndCND ? part.fndCND : null,
           supplierLT: part.supplierLT !== 0 ? part.supplierLT : null,
           clientLT: part.clientLT !== 0 ? part.clientLT : null,
-          supplierId: part.supplier !== null ? part.supplier.supplierId : null,
+          // supplierId: part.supplier !== null ? part.supplier.supplierId : null,
           price: part.price,
           currency: part.currency,
           comment: part.comment !== '' ? part.comment : null,
@@ -595,10 +591,7 @@ const RFQRightSide = ({
                 : null,
             clientLT:
               alternativePart.clientLT !== 0 ? alternativePart.clientLT : null,
-            supplierId:
-              alternativePart.supplier !== null
-                ? alternativePart.supplier.supplierId
-                : null,
+            supplierId: null,
             price: alternativePart.price,
             currency: alternativePart.currency,
             comment:

@@ -102,7 +102,7 @@ const AdvanceTable = ({
               <td>{renderSegments(row.segments)}</td>
               <td>{row.aircraft}</td>
               <td>{row.aircraftModel}</td>
-              <td>{row.oem}</td>
+              <td>{renderSegments(row.oems)}</td>
               <td>{row.hsCode}</td>
             </tr>
           ))}

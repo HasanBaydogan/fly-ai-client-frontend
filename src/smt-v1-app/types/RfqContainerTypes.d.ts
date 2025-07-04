@@ -15,7 +15,6 @@ interface RFQPart {
   clientLT: number;
   price: number;
   currency: string;
-  supplier: Supplier;
   comment: string;
   dgPackagingCost: boolean;
   tagDate: string;
@@ -49,7 +48,6 @@ interface AlternativeRFQPart {
   clientLT: number;
   price: number;
   currency: string;
-  supplier: Supplier;
   comment: string;
   dgPackagingCost: boolean;
   tagDate: string;

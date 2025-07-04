@@ -36,3 +36,13 @@ export const postCompanyReverseActive = async (companyId: string) => {
     {}
   );
 };
+
+export interface CargoOptionUpdate {
+  companyId: string;
+  cargoOptionId: string;
+  active: boolean;
+}
+
+export const postCargoOptionUpdateStatus = async (data: CargoOptionUpdate) => {
+  return await postRequest('/company/cargo-option/update-status', data);
+};

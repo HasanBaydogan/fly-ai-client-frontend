@@ -6,7 +6,7 @@ import RFQLeftSide from 'smt-v1-app/components/features/RFQLeftSide/RFQLeftSide'
 import RFQRightSide from 'smt-v1-app/components/features/RFQRightSide/RFQRightSide';
 import { openRFQ } from 'smt-v1-app/services/RFQService';
 import './RFQContainer.css';
-import { RFQ } from './RfqContainerTypes';
+import { RFQ } from '../../types/RfqContainerTypes';
 import { useUnsavedChanges } from 'providers/UnsavedChangesProvider';
 
 const RFQContainer = () => {

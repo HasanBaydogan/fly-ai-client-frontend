@@ -52,6 +52,7 @@ import ProtectedRoute from 'components/protectedRoute/ProtectedRoute';
 import UserQuoteStatusContainer from 'smt-v1-app/containers/UserQuoteStatusContainer/UserQuoteStatusContainer';
 import UserSettingsContainer from 'smt-v1-app/containers/UserSettingsContainer/UserSettingsContainer';
 import RFQCreate from 'smt-v1-app/containers/RFQCreate/RFQCreate';
+import UserSettings from 'smt-v1-app/containers/UserSettingsContainer/UserSettingsContainer';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
@@ -142,6 +143,88 @@ const routes: RouteObject[] = [
               {
                 path: 'detail',
                 element: <PiDetailContainer />
+              }
+            ]
+          },
+          {
+            path: 'po',
+            children: [
+              {
+                path: 'list',
+                element: <PoListContainer />
+              },
+              {
+                path: 'detail',
+                element: <PoDetailContainer />
+              }
+            ]
+          },
+          {
+            path: 'supplier',
+            children: [
+              {
+                path: 'new-supplier',
+                element: <SupplierDetailContainer />
+              },
+              {
+                path: 'list',
+                element: <SupplierListContainer />
+              },
+              {
+                path: 'edit',
+                element: <SupplierEditContainer />
+              }
+            ]
+          },
+          {
+            path: '/companies',
+            element: <CompanyContainer />
+          },
+          {
+            path: 'client',
+            children: [
+              {
+                path: 'list',
+                element: <ClientListContainer />
+              },
+              {
+                path: 'new-client',
+                element: <NewClientContainer />
+              },
+              {
+                path: 'edit',
+                element: <ClientEditContainer />
+              }
+            ]
+          },
+          {
+            path: 'part',
+            children: [
+              {
+                path: 'list',
+                element: <PartListContainer />
+              },
+              {
+                path: 'new-part',
+                element: <PartContainer />
+              }
+            ]
+          },
+          {
+            path: 'user-quote-stats',
+            children: [
+              {
+                path: '',
+                element: <UserQuoteStatus />
+              }
+            ]
+          },
+          {
+            path: 'user-settings',
+            children: [
+              {
+                path: '',
+                element: <UserSettings />
               }
             ]
           }

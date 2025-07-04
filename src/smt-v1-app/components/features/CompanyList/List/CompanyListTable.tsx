@@ -25,7 +25,8 @@ import { useAdvanceTableContext } from 'providers/AdvanceTableProvider';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import {
   getCompanyAll,
-  postCompanyReverseActive
+  postCompanyReverseActive,
+  postCargoOptionUpdateStatus
 } from 'smt-v1-app/services/CompanyServices';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQuestionCircle as faQuestionCircleRegular } from '@fortawesome/free-regular-svg-icons';
@@ -58,14 +59,22 @@ export interface BankInfo {
   ibanError?: string;
 }
 
+export interface CargoOption {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 export interface CompanyData {
   companyId: string;
   logo: string;
   companyName: string;
   companyAddress: string;
+  cargoAddress: string;
   companyEmail: string;
   companyTelephone: string;
   companyBanks: BankInfo[];
+  cargoOptions: CargoOption[];
   createdBy: string;
   createdAt: string;
   lastModifiedBy: string;
@@ -314,6 +323,96 @@ const StatusToggleButton = ({
   );
 };
 
+const CargoOptionToggleButton = ({
+  isActive,
+  onToggle,
+  companyId,
+  cargoOptionId
+}: {
+  isActive: boolean;
+  onToggle: (newStatus: boolean) => void;
+  companyId: string;
+  cargoOptionId: string;
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleClick = async () => {
+    setIsLoading(true);
+    try {
+      await postCargoOptionUpdateStatus({
+        companyId,
+        cargoOptionId,
+        active: !isActive
+      });
+      onToggle(!isActive);
+    } catch (error) {
+      console.error('Error updating cargo option status:', error);
+      setErrorMessage(
+        'Failed to update cargo option status. Please try again.'
+      );
+      setShowError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        variant={isActive ? 'success' : 'danger'}
+        size="sm"
+        onClick={handleClick}
+        disabled={isLoading}
+        style={{
+          width: '48px',
+          height: '24px',
+          borderRadius: '12px',
+          border: 'none',
+          position: 'relative',
+          transition: 'background-color 0.3s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0',
+          opacity: isLoading ? 0.7 : 1
+        }}
+      >
+        <div
+          style={{
+            width: '18px',
+            height: '18px',
+            backgroundColor: 'white',
+            borderRadius: '50%',
+            position: 'absolute',
+            left: isActive ? 'calc(100% - 21px)' : '3px',
+            transition: 'left 0.3s ease'
+          }}
+        />
+      </Button>
+
+      <Toast
+        show={showError}
+        onClose={() => setShowError(false)}
+        delay={3000}
+        autohide
+        style={{
+          position: 'fixed',
+          top: 20,
+          right: 20,
+          zIndex: 9999
+        }}
+      >
+        <Toast.Header>
+          <strong className="me-auto text-danger">Error</strong>
+        </Toast.Header>
+        <Toast.Body>{errorMessage}</Toast.Body>
+      </Toast>
+    </>
+  );
+};
+
 const createColumns = (
   onEditClick: (company: CompanyData) => void
 ): ColumnDef<CompanyData>[] => [
@@ -468,6 +567,58 @@ const createColumns = (
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
       headerProps: { style: { width: '5%' }, className: 'ps-3' }
+    }
+  },
+  {
+    accessorKey: 'cargoOptions',
+    header: 'Cargo Options',
+    cell: ({ row: { original } }: { row: { original: CompanyData } }) => {
+      const [cargoOptions, setCargoOptions] = useState(
+        original.cargoOptions || []
+      );
+
+      const handleCargoOptionToggle = (
+        cargoOptionId: string,
+        newStatus: boolean
+      ) => {
+        setCargoOptions(prev =>
+          prev.map(option =>
+            option.id === cargoOptionId
+              ? { ...option, active: newStatus }
+              : option
+          )
+        );
+        // Refresh the data after successful update
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      };
+
+      if (!Array.isArray(cargoOptions) || cargoOptions.length === 0) {
+        return <div className="ps-3">-</div>;
+      }
+
+      return (
+        <div className="ps-3">
+          {cargoOptions.map((option, index) => (
+            <div key={index} className="mb-1 d-flex align-items-center gap-2">
+              <CargoOptionToggleButton
+                isActive={option.active}
+                onToggle={newStatus =>
+                  handleCargoOptionToggle(option.id, newStatus)
+                }
+                companyId={original.companyId}
+                cargoOptionId={option.id}
+              />
+              <span>{option.name}</span>
+            </div>
+          ))}
+        </div>
+      );
+    },
+    meta: {
+      cellProps: { className: 'text-body py-2' },
+      headerProps: { style: { width: '10%' }, className: 'ps-3' }
     }
   },
   {

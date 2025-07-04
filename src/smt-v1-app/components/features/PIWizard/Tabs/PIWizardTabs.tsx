@@ -202,8 +202,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
         partId: quotePart.id,
         partNumber: quotePart.partNumber,
         quotePartName: quotePart.description,
-        reqCnd: quotePart.reqCondition,
-        fndCnd: quotePart.fndCondition,
+        reqCnd: quotePart.reqCondition || '',
+        fndCnd: quotePart.fndCondition || '',
         leadTime: quotePart.leadTime,
         qty: quotePart.qty,
         unitPrice: quotePart.unitPrice
@@ -219,8 +219,8 @@ const WizardTabs: React.FC<WizardTabsProps> = ({
           partId: quotePart.id,
           partNumber: quotePart.partNumber,
           quotePartName: quotePart.description,
-          reqCnd: quotePart.reqCondition,
-          fndCnd: quotePart.fndCondition,
+          reqCnd: quotePart.reqCondition || '',
+          fndCnd: quotePart.fndCondition || '',
           leadTime: quotePart.leadTime,
           qty: quotePart.qty,
           unitPrice: quotePart.unitPrice

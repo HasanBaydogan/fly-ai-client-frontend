@@ -28,8 +28,6 @@ import {
 import * as XLSX from 'xlsx';
 import ProspectSuppliersModal from './ProspectSuppliersModal';
 
-type Supplier = any;
-
 export interface PartSuggestion {
   partNumber: string;
   partName: string | null;
@@ -43,7 +41,6 @@ export interface PartSuggestion {
   price: number;
   currency: string;
   total: number;
-  supplier: string;
   comment: string | null;
   dgPackagingCost: boolean;
   tagDate: string | null;
@@ -83,8 +80,6 @@ interface PartListTableProps {
   unitPricevalueNumber: number;
   currency: string;
   setCurrency: React.Dispatch<React.SetStateAction<string>>;
-  supplier: Supplier[];
-  setSupplier: React.Dispatch<React.SetStateAction<Supplier[]>>;
   comment: string;
   setComment: React.Dispatch<React.SetStateAction<string>>;
   dgPackagingCst: boolean;
@@ -106,10 +101,6 @@ interface PartListTableProps {
   setAirlineCompany: React.Dispatch<React.SetStateAction<string>>;
   MSDS: string;
   setMSDS: React.Dispatch<React.SetStateAction<string>>;
-  suppliers: Supplier[];
-  isNewSupplierLoading: boolean;
-  handleNewSupplier: () => void;
-  handleAllSuppliersRefresh: () => void;
   currencies: string[];
   unitPriceChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
@@ -172,8 +163,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
   unitPricevalueNumber,
   currency,
   setCurrency,
-  supplier,
-  setSupplier,
   comment,
   setComment,
   dgPackagingCst,
@@ -195,10 +184,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
   setAirlineCompany,
   MSDS,
   setMSDS,
-  suppliers,
-  isNewSupplierLoading,
-  handleNewSupplier,
-  handleAllSuppliersRefresh,
   currencies,
   unitPriceChange,
   handleBlur,
@@ -283,7 +268,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
         clientLT: 0,
         currency: 'USD',
         price: 0.0,
-        supplier: null,
         comment: '',
         dgPackagingCost: false,
         tagDate: null,
@@ -336,7 +320,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
     setSupplierLT(suggestion.supplierLT);
     setClientLT(suggestion.clientLT);
     setCurrency(suggestion.currency);
-    //setSupplier([{ supplierName: suggestion.supplier }]);
     setComment(suggestion.comment || '');
     setDgPackagingCost(suggestion.dgPackagingCost);
     setTagDate(suggestion.tagDate || '');
@@ -688,7 +671,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
                             <div style={headerCellStyle}>Price</div>
                             <div style={headerCellStyle}>Currency</div>
                             <div style={headerCellStyle}>Total</div>
-                            <div style={headerCellStyle}>Supplier</div>
                             <div style={headerCellStyle}>Stock</div>
                             <div style={headerCellStyle}>Location</div>
                             <div style={headerCellStyle}>Certificate</div>
@@ -776,9 +758,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
                                   </div>
                                   <div style={cellStyle}>
                                     {formatCurrency(suggestion.total)}
-                                  </div>
-                                  <div style={cellStyle}>
-                                    {suggestion.supplier || '-'}
                                   </div>
                                   <div style={cellStyle}>
                                     {suggestion.stock || '-'}
@@ -971,51 +950,6 @@ const PartListTable: React.FC<PartListTableProps> = ({
                   style={{ width: '110px' }}
                 />
               </div>
-            </td>
-            {/* SUPPLIER */}
-            <td style={{ overflow: 'visible' }}>
-              {isNewSupplierLoading ? (
-                <div className="d-flex justify-content-center align-items-center">
-                  <LoadingAnimation />
-                </div>
-              ) : (
-                <div className="d-flex">
-                  <Button
-                    variant="primary"
-                    className="px-3 py-1 me-3"
-                    onClick={handleNewSupplier}
-                  >
-                    <span style={{ fontSize: '16px' }}>+</span>
-                  </Button>
-                  <div className="d-flex justify-content-center align-items-center">
-                    <FontAwesomeIcon
-                      icon={faArrowRotateRight}
-                      className="me-3"
-                      size="lg"
-                      onClick={handleAllSuppliersRefresh}
-                    />
-                  </div>
-                  <Form.Group style={{ width: '200px' }}>
-                    <Typeahead
-                      id="searchable-select"
-                      labelKey="supplierName"
-                      options={suppliers}
-                      placeholder="Select a supplier"
-                      multiple={false}
-                      positionFixed
-                      style={{ zIndex: 100 }}
-                      selected={supplier}
-                      onChange={selected => {
-                        if (selected.length > 0) {
-                          setSupplier(selected as Supplier[]);
-                        } else {
-                          setSupplier([]);
-                        }
-                      }}
-                    />
-                  </Form.Group>
-                </div>
-              )}
             </td>
             {/* TOTAL */}
             <td>

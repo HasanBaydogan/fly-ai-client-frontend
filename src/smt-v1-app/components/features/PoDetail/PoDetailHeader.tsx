@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import RFQAttachments from '../RFQLeftSide/RFQLeftSideComponents/RFQAttachments/RFQAttachments';
 import { MailItemMoreDetail } from 'smt-v1-app/containers/PiDetailContainer/QuoteContainerTypes';
 import PiAttachments from './PoAttachments';
-import { MailItemAttachment } from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+import { MailItemAttachment } from 'smt-v1-app/types/RfqContainerTypes';
 
 interface HeaderProps {
   poRequestedDate: string;

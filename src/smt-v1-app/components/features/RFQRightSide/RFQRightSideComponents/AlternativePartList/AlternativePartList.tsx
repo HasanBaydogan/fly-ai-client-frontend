@@ -11,12 +11,12 @@ import { Button, Card, Form, Modal, Tab, Table } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRotateRight, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Typeahead } from 'react-bootstrap-typeahead';
-import { getPriceCurrencySymbol } from '../RFQRightSideHelper';
+import { getPriceCurrencySymbol } from '../../../../../types/RFQRightSideHelper';
 import CustomButton from '../../../../../../components/base/Button';
 import {
   AlternativeRFQPart,
   RFQPart
-} from 'smt-v1-app/containers/RFQContainer/RfqContainerTypes';
+} from 'smt-v1-app/types/RfqContainerTypes';
 import {
   getAllCurrenciesFromDB,
   getAllSuppliersFromDB
@@ -24,12 +24,11 @@ import {
 import {
   convertDateFormat,
   Currency,
-  formatDate,
-  Supplier
+  formatDate
 } from '../PartList/PartListHelper';
 import ToastNotification from 'smt-v1-app/components/common/ToastNotification/ToastNotification';
 import AlternativePartTableRow from '../AlternativePartTableRow/AlternativePartTableRow';
-import DeleteConfirmationModal from '../DeleteConfirmationModal/DeleteConfirmationModal';
+import DeleteConfirmationModal from '../../../GlobalComponents/DeleteConfirmationModal/DeleteConfirmationModal';
 import LoadingAnimation from 'smt-v1-app/components/common/LoadingAnimation/LoadingAnimation';
 import WizardFormProvider from 'providers/WizardFormProvider';
 import WizardForm from 'components/wizard/WizardForm';
@@ -95,10 +94,7 @@ const AlternativePartList = ({
   const [unitPricevalueString, setUnitPricevalueString] =
     useState<string>('0.00');
   const [unitPricevalueNumber, setUnitPricevalueNumber] = useState<number>(0.0);
-
   const [currency, setCurrency] = useState<string>('USD');
-
-  const [supplier, setSupplier] = useState<Supplier[]>([]);
   const [comment, setComment] = useState<string>('');
   const [dgPackagingCst, setDgPackagingCost] = useState(false);
   const [tagDate, setTagDate] = useState('');
@@ -128,34 +124,7 @@ const AlternativePartList = ({
   const [isEditing, setIsEditing] = useState(false);
   const [partId, setPartId] = useState<string | null>(null);
   const [rfqPartId, setRfqPartId] = useState<string | null>(null);
-
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-
   const [currencies, setCurrencies] = useState<string[]>([]);
-
-  useEffect(() => {
-    // Get all suppliers
-    const getAllSupplierAndCurrencies = async () => {
-      setIsLoading(true);
-      const suppResp = await getAllSuppliersFromDB();
-      setSuppliers(suppResp.data);
-      const currencyResp = await getAllCurrenciesFromDB();
-      setCurrencies(currencyResp.data);
-      setIsLoading(false);
-    };
-    getAllSupplierAndCurrencies();
-  }, []);
-
-  const handleNewSupplier = () => {
-    window.open('/supplier/new-supplier', '_blank');
-  };
-
-  const handleAllSuppliersRefresh = async () => {
-    setIsNewSupplierLoading(true);
-    const resp = await getAllSuppliersFromDB();
-    setSuppliers(resp.data);
-    setIsNewSupplierLoading(false);
-  };
   const formatNumber = (n: string): string => {
     return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
@@ -301,8 +270,6 @@ const AlternativePartList = ({
 
     // We want to set the price & currency
     updateUnitPrice(foundAlternative);
-
-    setSupplier(foundAlternative.supplier ? [foundAlternative.supplier] : []);
     setComment(foundAlternative.comment || '');
     setDgPackagingCost(foundAlternative.dgPackagingCost);
     setTagDate(convertDateFormat(foundAlternative.tagDate));
@@ -359,8 +326,7 @@ const AlternativePartList = ({
       fndCND ||
       supplierLT !== 0 ||
       clientLT !== 0 ||
-      unitPricevalueNumber !== 0.0 ||
-      (supplier && supplier.length > 0);
+      unitPricevalueNumber !== 0.0;
 
     if (additionalFieldsProvided) {
       const missingFields: string[] = [];
@@ -370,7 +336,6 @@ const AlternativePartList = ({
       if (clientLT === 0) missingFields.push('clientLT');
       if (unitPricevalueNumber === 0.0)
         missingFields.push('unitPricevalueNumber');
-      if (!supplier || supplier.length === 0) missingFields.push('supplier');
 
       if (missingFields.length > 0) {
         toastError(
@@ -412,13 +377,6 @@ const AlternativePartList = ({
       clientLT,
       currency,
       price: unitPricevalueNumber,
-      supplier:
-        supplier.length > 0
-          ? {
-              supplierId: supplier[0].supplierId,
-              supplierName: supplier[0].supplierName
-            }
-          : null,
       comment: comment && comment.trim(),
       dgPackagingCost: dgPackagingCst,
       tagDate: tagDate ? formatDate(tagDate) : null,
@@ -452,7 +410,6 @@ const AlternativePartList = ({
     setUnitPricevalueString('0.00');
     setCurrency('USD');
     setSelectedParentRFQPart([]);
-    setSupplier([]);
     setComment('');
     setDgPackagingCost(false);
     setTagDate('');
@@ -801,57 +758,6 @@ const AlternativePartList = ({
                   </div>
                 </td>
                 {/* UNIT PRICE END */}
-
-                {/* SUPPLIER START */}
-                <td style={{ overflow: 'visible' }}>
-                  {isNewSupplierLoading ? (
-                    <LoadingAnimation />
-                  ) : (
-                    <div className="d-flex">
-                      <Button
-                        variant="primary"
-                        className="px-3 py-1 me-3"
-                        onClick={handleNewSupplier}
-                      >
-                        <span style={{ fontSize: '16px' }}>+</span>
-                      </Button>
-                      <div className="d-flex justify-content-center align-items-center">
-                        <FontAwesomeIcon
-                          icon={faArrowRotateRight}
-                          className="me-3"
-                          size="lg"
-                          onClick={handleAllSuppliersRefresh}
-                        />
-                      </div>
-
-                      {
-                        <Form.Group style={{ width: '200px' }}>
-                          <Typeahead
-                            id="searchable-select"
-                            labelKey="supplierName"
-                            options={suppliers}
-                            placeholder="Select a supplier"
-                            multiple={false}
-                            positionFixed
-                            style={{ zIndex: 100 }}
-                            //If it is empty then it returns [] otherwise It returns selected
-                            selected={supplier}
-                            onChange={selected => {
-                              if (selected.length > 0) {
-                                setSupplier(selected as Supplier[]);
-                                console.log('Selected Supplier:', selected); // For debugging
-                              } else {
-                                setSupplier([]);
-                                console.log('Supplier cleared.'); // For debugging
-                              }
-                            }}
-                          />
-                        </Form.Group>
-                      }
-                    </div>
-                  )}
-                </td>
-                {/* SUPPLIER END */}
 
                 {/* TOTAL START */}
                 <td>

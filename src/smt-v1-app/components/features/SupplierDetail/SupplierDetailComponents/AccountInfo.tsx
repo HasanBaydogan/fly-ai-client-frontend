@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Col } from 'react-bootstrap';
-import Form from 'react-bootstrap/Form';
+import React, { useState, useEffect } from 'react';
+import { Col, Dropdown, Form } from 'react-bootstrap';
 import { patchOtherValues } from 'smt-v1-app/services/SupplierServices';
-
-interface Brand {
-  value: string;
-  isSelected: boolean;
-}
 
 interface AircraftType {
   value: string;
   isSelected: boolean;
+}
+
+interface BrandItem {
+  value: string;
+  isSelected: boolean;
+}
+
+interface BrandGroup {
+  label: string;
+  options: { value: string; name: string }[];
 }
 
 interface AccountInfoProps {
@@ -18,14 +22,11 @@ interface AccountInfoProps {
   setUsername: (value: string) => void;
   password: string;
   setPassword: (value: string) => void;
-  brands?: Brand[];
+  brands?: BrandItem[];
   aircraftTypes?: AircraftType[];
   onBrandsChange?: (brand: string) => void;
   onAircraftTypesChange?: (type: string) => void;
-  brandOptions?: string[];
   aircraftTypeOptions?: string[];
-  onBrandAdded?: (brand: string) => void;
-  onAircraftTypeAdded?: (aircraftType: string) => void;
 }
 
 const AccountInfo = ({
@@ -37,34 +38,121 @@ const AccountInfo = ({
   aircraftTypes = [],
   onBrandsChange,
   onAircraftTypesChange,
-  brandOptions = [],
-  aircraftTypeOptions = [],
-  onBrandAdded,
-  onAircraftTypeAdded
+  aircraftTypeOptions = []
 }: AccountInfoProps) => {
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [selectedAircraftType, setSelectedAircraftType] = useState<string>('');
-  const [isBrandInput, setIsBrandInput] = useState(false);
   const [isAircraftInput, setIsAircraftInput] = useState(false);
-  const [brandInputStatus, setBrandInputStatus] = useState<
-    'idle' | 'success' | 'error'
-  >('idle');
   const [aircraftInputStatus, setAircraftInputStatus] = useState<
     'idle' | 'success' | 'error'
   >('idle');
-  const [localBrandOptions, setLocalBrandOptions] =
-    useState<string[]>(brandOptions);
   const [localAircraftTypeOptions, setLocalAircraftTypeOptions] =
     useState<string[]>(aircraftTypeOptions);
 
+  // Brand groups structure similar to oemGroups
+  const brandGroups = [
+    {
+      label: 'Tyres',
+      options: [
+        { value: 'MICHELIN', name: 'Michelin' },
+        { value: 'DUNLOP', name: 'Dunlop' },
+        { value: 'BRIDGESTONE', name: 'Bridgestone' },
+        { value: 'GOODYEAR', name: 'Goodyear' }
+      ]
+    },
+    {
+      label: 'Avionics',
+      options: [
+        { value: 'A_COLLINS_AEROSPACE', name: 'Collins Aerospace' },
+        { value: 'HONEYWELL', name: 'Honeywell' },
+        { value: 'THALES_GROUP', name: 'Thales Group' },
+        {
+          value: 'SAFRAN_ELECTRONICS_DEFENSE',
+          name: 'Safran Electronics & Defense'
+        },
+        { value: 'L3HARRIS_TECHNOLOGIES', name: 'L3Harris Technologies' }
+      ]
+    },
+    {
+      label: 'Landing Gear',
+      options: [
+        { value: 'SAFRAN_LANDING_SYSTEMS', name: 'Safran Landing Systems' },
+        { value: 'B_COLLINS_AEROSPACE', name: 'Collins Aerospace' },
+        { value: 'LIEBHERR_AEROSPACE', name: 'Liebherr Aerospace' },
+        { value: 'HEROUX_DEVTEK', name: 'Heroux-Devtek' }
+      ]
+    },
+    {
+      label: 'Actuators & Control Systems',
+      options: [
+        { value: 'PARKER_AEROSPACE', name: 'Parker Aerospace' },
+        { value: 'MOOG_INC', name: 'Moog Inc.' },
+        { value: 'SAFRAN_AEROSYSTEMS', name: 'Safran Aerosystems' }
+      ]
+    },
+    {
+      label: 'Aerostructures',
+      options: [
+        { value: 'SPIRIT_AEROSYSTEMS', name: 'Spirit AeroSystems' },
+        { value: 'PREMIUM_AEROTEC', name: 'Premium Aerotec' },
+        { value: 'GKN_AEROSPACE', name: 'GKN Aerospace' }
+      ]
+    }
+  ];
+
+  // Helper function to get selected brands
+  const getSelectedBrands = () => {
+    return brands.filter(brand => brand.isSelected).map(brand => brand.value);
+  };
+
+  // Helper function to check if a brand is selected
+  const isBrandSelected = (brandValue: string) => {
+    return brands.some(brand => brand.value === brandValue && brand.isSelected);
+  };
+
+  // Helper function to check if ANY is selected
+  const isAnySelected = () => {
+    return brands.some(brand => brand.value === 'ANY' && brand.isSelected);
+  };
+
+  // Get dropdown title for brands
+  const getBrandDropdownTitle = () => {
+    const selectedBrands = getSelectedBrands();
+
+    if (selectedBrands.length === 0) {
+      return 'Select Brand';
+    }
+
+    if (isAnySelected()) {
+      return 'ANY';
+    }
+
+    const allBrands = brandGroups.flatMap(g => g.options);
+    const firstSelectedBrand = allBrands.find(
+      b => b.value === selectedBrands[0]
+    );
+
+    if (!firstSelectedBrand) {
+      return 'Select Brands';
+    }
+    if (selectedBrands.length === 1) {
+      return firstSelectedBrand.name;
+    }
+
+    const remainingCount = selectedBrands.length - 1;
+    return `${firstSelectedBrand.name} +${remainingCount} Brands`;
+  };
+
+  // Handle brand checkbox change
+  const handleBrandCheckboxChange = (brandValue: string) => {
+    onBrandsChange?.(brandValue);
+  };
+
   // Initial data setup
   useEffect(() => {
-    if (brands && brands.length > 0) {
-      const selectedBrandObj = brands.find(brand => brand.isSelected);
-      if (selectedBrandObj) {
-        setSelectedBrand(selectedBrandObj.value);
-        onBrandsChange?.(selectedBrandObj.value);
-      }
+    const selectedBrands = getSelectedBrands();
+    if (selectedBrands.length > 0) {
+      setSelectedBrand(selectedBrands[0]);
     }
 
     if (aircraftTypes && aircraftTypes.length > 0) {
@@ -80,16 +168,11 @@ const AccountInfo = ({
 
   // Update when props change
   useEffect(() => {
-    if (brands && brands.length > 0) {
-      const selectedBrandObj = brands.find(brand => brand.isSelected);
-      if (selectedBrandObj && selectedBrandObj.value !== selectedBrand) {
-        setSelectedBrand(selectedBrandObj.value);
-        onBrandsChange?.(selectedBrandObj.value);
-      }
+    const selectedBrands = getSelectedBrands();
+    if (selectedBrands.length > 0) {
+      setSelectedBrand(selectedBrands[0]);
     }
-  }, [brands]);
 
-  useEffect(() => {
     if (aircraftTypes && aircraftTypes.length > 0) {
       const selectedAircraftTypeObj = aircraftTypes.find(
         type => type.isSelected
@@ -102,27 +185,12 @@ const AccountInfo = ({
         onAircraftTypesChange?.(selectedAircraftTypeObj.value);
       }
     }
-  }, [aircraftTypes]);
+  }, [brands, aircraftTypes]);
 
   // Sync with parent options if they change
   useEffect(() => {
-    setLocalBrandOptions(brandOptions);
-  }, [brandOptions]);
-  useEffect(() => {
     setLocalAircraftTypeOptions(aircraftTypeOptions);
   }, [aircraftTypeOptions]);
-
-  const handleBrandsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === 'new') {
-      setIsBrandInput(true);
-      setSelectedBrand('');
-    } else {
-      setIsBrandInput(false);
-      setSelectedBrand(value);
-      onBrandsChange?.(value);
-    }
-  };
 
   const handleAircraftTypesChange = (
     e: React.ChangeEvent<HTMLSelectElement>
@@ -138,13 +206,6 @@ const AccountInfo = ({
     }
   };
 
-  const handleBrandInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSelectedBrand(value);
-    onBrandsChange?.(value);
-    setBrandInputStatus('idle');
-  };
-
   const handleAircraftInputChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -154,24 +215,6 @@ const AccountInfo = ({
     setAircraftInputStatus('idle');
   };
 
-  // Yeni brand ekleme işlemi
-  const handleBrandInputBlur = async () => {
-    if (selectedBrand.trim() && !localBrandOptions.includes(selectedBrand)) {
-      try {
-        await patchOtherValues({ value: selectedBrand, status: 'BRAND' });
-        setLocalBrandOptions(prev => [...prev, selectedBrand]);
-        setBrandInputStatus('success');
-        onBrandAdded?.(selectedBrand);
-      } catch (e) {
-        setBrandInputStatus('error');
-        // Hata yönetimi eklenebilir
-      }
-    }
-    if (!selectedBrand.trim()) {
-      setIsBrandInput(false);
-      setBrandInputStatus('idle');
-    }
-  };
   // Yeni aircraft type ekleme işlemi
   const handleAircraftInputBlur = async () => {
     if (
@@ -185,7 +228,6 @@ const AccountInfo = ({
         });
         setLocalAircraftTypeOptions(prev => [...prev, selectedAircraftType]);
         setAircraftInputStatus('success');
-        onAircraftTypeAdded?.(selectedAircraftType);
       } catch (e) {
         setAircraftInputStatus('error');
         // Hata yönetimi eklenebilir
@@ -232,33 +274,69 @@ const AccountInfo = ({
         <div className="gap-4" style={{ width: '75%' }}>
           <Form.Group className="gap-5">
             <Form.Label>Brands</Form.Label>
-            {isBrandInput ? (
-              <Form.Control
-                type="text"
-                placeholder="Enter new brand"
-                value={selectedBrand}
-                onChange={handleBrandInputChange}
-                onBlur={handleBrandInputBlur}
+            <Dropdown autoClose="outside">
+              <Dropdown.Toggle
+                variant="outline-secondary"
                 style={{
-                  borderColor:
-                    brandInputStatus === 'success'
-                      ? 'green'
-                      : brandInputStatus === 'error'
-                      ? 'red'
-                      : undefined
+                  background: 'white',
+                  border: '1px solid #d8e0e9',
+                  color: '#212529',
+                  fontWeight: 430,
+                  fontSize: '0.9rem',
+                  padding: '0.6rem 1rem',
+                  borderRadius: '0.5rem',
+                  boxShadow: 'none',
+                  outline: 'none'
                 }}
-              />
-            ) : (
-              <Form.Select value={selectedBrand} onChange={handleBrandsChange}>
-                <option value="">Select Brand</option>
-                {localBrandOptions.map(option => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
+                id="dropdown-brands"
+                className="w-100 text-start d-flex justify-content-between align-items-center"
+              >
+                <span className="text-truncate">{getBrandDropdownTitle()}</span>
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="w-100 p-0">
+                <Dropdown.Item
+                  as="div"
+                  onClick={() => handleBrandCheckboxChange('ANY')}
+                >
+                  <Form.Check
+                    className="p-1 mx-2"
+                    type="checkbox"
+                    id="brand-any"
+                    label="ANY"
+                    checked={isAnySelected()}
+                    onChange={() => {}}
+                  />
+                </Dropdown.Item>
+                {brandGroups.map(group => (
+                  <React.Fragment key={group.label}>
+                    <Dropdown.Header className="p-2 mx-3">
+                      {group.label}
+                    </Dropdown.Header>
+                    {group.options.map(option => (
+                      <Dropdown.Item
+                        className="p-1 mx-0"
+                        as="div"
+                        key={option.value}
+                        onClick={() => handleBrandCheckboxChange(option.value)}
+                        style={{
+                          opacity: isAnySelected() ? 0.5 : 1,
+                          pointerEvents: isAnySelected() ? 'none' : 'auto'
+                        }}
+                      >
+                        <Form.Check
+                          type="checkbox"
+                          id={`brand-${option.value}`}
+                          label={option.name}
+                          checked={isBrandSelected(option.value)}
+                          onChange={() => {}}
+                          disabled={isAnySelected()}
+                        />
+                      </Dropdown.Item>
+                    ))}
+                  </React.Fragment>
                 ))}
-                <option value="new">+ Add New Brand</option>
-              </Form.Select>
-            )}
+              </Dropdown.Menu>
+            </Dropdown>
 
             <Form.Label>Aircraft Type</Form.Label>
             {isAircraftInput ? (

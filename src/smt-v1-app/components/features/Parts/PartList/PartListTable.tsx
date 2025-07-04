@@ -1,10 +1,7 @@
-import React, { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
+import { useEffect, useMemo, useState, ChangeEvent, FC } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import AdvanceTable from './AdvanceTable';
 import AdvanceTableFooter from 'smt-v1-app/components/features/GlobalComponents/GenericListTable/AdvanceTableFooter';
-import RevealDropdown, {
-  RevealDropdownTrigger
-} from 'components/base/RevealDropdown';
 import { Col, Row, Dropdown } from 'react-bootstrap';
 import SearchBox from 'components/common/SearchBox';
 import debounce from 'lodash/debounce';
@@ -30,7 +27,7 @@ export const PartTableColumns: ColumnDef<PartData>[] = [
     accessorKey: 'partName',
     meta: {
       cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
-      headerProps: { style: { width: '32%' }, className: 'ps-3' }
+      headerProps: { style: { width: '20%' }, className: 'ps-3' }
     }
   },
   {
@@ -58,7 +55,7 @@ export const PartTableColumns: ColumnDef<PartData>[] = [
     }
   },
   {
-    accessorKey: 'oem',
+    accessorKey: 'oems',
     header: 'Oem',
     meta: {
       cellProps: { className: 'ps-3 text-body py-2' },
@@ -126,7 +123,7 @@ const PartListTable: FC<PartListProps> = ({ activeView, onPartSelect }) => {
             : [],
           aircraft: item.aircraft,
           aircraftModel: item.aircraftModel,
-          oem: item.oem,
+          oems: item.oems,
           hsCode: item.hsCode
         }));
         setData(mappedData);

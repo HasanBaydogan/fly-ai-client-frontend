@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Form, Row, Col, Table } from 'react-bootstrap';
 import './PiOthers.css';
-import { getPriceCurrencySymbol } from 'smt-v1-app/components/features/RFQRightSide/RFQRightSideComponents/RFQRightSideHelper';
+import { getPriceCurrencySymbol } from 'smt-v1-app/types/RFQRightSideHelper';
 
 interface PiOthersProps {
   piData?: any; // Adding piData prop
