@@ -1,5 +1,11 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { Icon, UilCube, UilBuilding, UilDiary, UilQuestionCircle } from '@iconscout/react-unicons';
+import {
+  Icon,
+  UilCube,
+  UilBuilding,
+  UilDiary,
+  UilQuestionCircle
+} from '@iconscout/react-unicons';
 import { faBuilding } from '@fortawesome/free-solid-svg-icons';
 import FeatherIcon from 'feather-icons-react';
 
@@ -88,6 +94,14 @@ export const routes: RouteItems[] = [
         name: 'Help',
         path: '/help-list',
         pathName: 'help-list',
+        icon: '',
+        active: true,
+        next: false
+      },
+      {
+        name: 'About',
+        path: 'coming-soon',
+        pathName: 'about',
         icon: '',
         active: true,
         next: false

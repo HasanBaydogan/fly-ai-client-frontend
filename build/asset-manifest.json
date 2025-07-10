@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.89011c84.css",
-    "main.js": "/static/js/main.2463564b.js",
+    "main.js": "/static/js/main.075e3f3c.js",
     "static/js/905.05cb42e3.chunk.js": "/static/js/905.05cb42e3.chunk.js",
     "static/js/313.c6024fed.chunk.js": "/static/js/313.c6024fed.chunk.js",
     "static/js/249.0a520196.chunk.js": "/static/js/249.0a520196.chunk.js",
@@ -25,6 +25,7 @@
     "static/media/bali-1.png": "/static/media/bali-1.d9170f8b70c20566b34c.png",
     "static/media/89.jpg": "/static/media/89.a8e130ea540e66e1291b.jpg",
     "static/media/sydney-3.png": "/static/media/sydney-3.25f0efa7667c1bea7a8f.png",
+    "static/media/bg-dark-40.png": "/static/media/bg-dark-40.81457536d3dc8f2cfcfb.png",
     "static/media/50.png": "/static/media/50.ce49f07d67d9d5f78922.png",
     "static/media/79.png": "/static/media/79.e0a325ac96c13556bb57.png",
     "static/media/51.png": "/static/media/51.8cae40b6ef767f9d84e2.png",
@@ -34,6 +35,7 @@
     "static/media/1.png": "/static/media/1.87bcd31d2e127f2d9736.png",
     "static/media/55.png": "/static/media/55.26ac8127cd1556ad38be.png",
     "static/media/14.png": "/static/media/14.e484f0ba279f99bbc2fa.png",
+    "static/media/bg-40.png": "/static/media/bg-40.4b74d05339fad6899743.png",
     "static/media/tokyo-2.png": "/static/media/tokyo-2.1904b5cb29962774d991.png",
     "static/media/87.jpg": "/static/media/87.33aca29c3033a0ed3a3b.jpg",
     "static/media/5.png": "/static/media/5.8bc92c71e642d6cdb0e4.png",
@@ -87,7 +89,7 @@
     "static/media/i-phone.png": "/static/media/i-phone.0c255ec967c8103cb2da.png",
     "static/media/44.png": "/static/media/44.5812df1f0bbd5a99e19b.png",
     "static/media/i-phone-dark.png": "/static/media/i-phone-dark.54269cea5967f49c6a5a.png",
-    "static/media/40.png": "/static/media/40.856a0d9cb28a6de494f2.png",
+    "static/media/40.png": "/static/media/40.fff2ce408f972a201b09.png",
     "static/media/39.png": "/static/media/39.a4d8cd61c7a8cb5b7ff4.png",
     "static/media/15.png": "/static/media/15.8f3a0c03c4aecabcf9d4.png",
     "static/media/83.png": "/static/media/83.b09944af7391a94da24e.png",
@@ -101,6 +103,7 @@
     "static/media/36.png": "/static/media/36.b907b55edf11a1e32c49.png",
     "static/media/dark_404.png": "/static/media/dark_404.88c674364912963a7c33.png",
     "static/media/asparelLogo.jpg": "/static/media/asparelLogo.6904f403a613f333d95b.jpg",
+    "static/media/dark_40.png": "/static/media/dark_40.e9506ab32d865de14d66.png",
     "static/media/60.webp": "/static/media/60.c450bd57bbf4ca4db76f.webp",
     "static/media/dark_403.png": "/static/media/dark_403.5db925272ce719941e45.png",
     "static/media/bg-right-28.png": "/static/media/bg-right-28.7c70512ef72cc399184f.png",
@@ -159,6 +162,6 @@
   },
   "entrypoints": [
     "static/css/main.89011c84.css",
-    "static/js/main.2463564b.js"
+    "static/js/main.075e3f3c.js"
   ]
 }

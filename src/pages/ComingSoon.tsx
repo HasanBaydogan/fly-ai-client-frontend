@@ -49,10 +49,9 @@ const ComingSoon = () => {
                   Get notified when we launch
                 </h2>
                 <p className="mb-6 w-xxl-75">
-                  <b>Something in the way!</b> Subscribe to our newsletter to be
-                  the first to know about upcoming features and discounts.
+                  <b>Something in the way!</b>
                 </p>
-                <Row className="g-3 w-md-75 w-xl-100 w-xxl-75 mx-auto mx-xl-0">
+                {/* <Row className="g-3 w-md-75 w-xl-100 w-xxl-75 mx-auto mx-xl-0">
                   <Col className="ps-0">
                     <Form.Control />
                   </Col>
@@ -66,7 +65,7 @@ const ComingSoon = () => {
                       Subscribe
                     </Button>
                   </Col>
-                </Row>
+                </Row> */}
               </div>
             </div>
           </Col>
