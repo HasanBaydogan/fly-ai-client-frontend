@@ -12,7 +12,7 @@ import NavbarTopNav from '../navbar-horizontal/NavbarTopNav';
 import { useBreakpoints } from 'providers/BreakpointsProvider';
 import NavbarVerticalCollapseProvider from './NavbarVerticalCollapseProvider';
 
-const NavbarVerical = () => {
+const NavbarVertical = () => {
   const {
     config: {
       navbarPosition,
@@ -87,4 +87,4 @@ const NavbarVerical = () => {
   );
 };
 
-export default NavbarVerical;
+export default NavbarVertical;

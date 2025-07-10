@@ -53,6 +53,11 @@ import UserQuoteStatusContainer from 'smt-v1-app/containers/UserQuoteStatusConta
 import UserSettingsContainer from 'smt-v1-app/containers/UserSettingsContainer/UserSettingsContainer';
 import RFQCreate from 'smt-v1-app/containers/RFQCreate/RFQCreate';
 import UserSettings from 'smt-v1-app/containers/UserSettingsContainer/UserSettingsContainer';
+import TestNavbar from 'pages/TestNavbar';
+import TestLogo from 'pages/TestLogo';
+import TestDualNavbar from 'pages/TestDualNavbar';
+import FaqTab from 'pages/faq/FaqTab';
+import ComingSoon from 'pages/ComingSoon';
 
 // import PartListContainer from 'smt-v1-app/containers/PartContainer/PartList/PartListContainer';
 
@@ -227,6 +232,26 @@ const routes: RouteObject[] = [
                 element: <UserSettings />
               }
             ]
+          },
+          {
+            path: 'test-navbar',
+            element: <TestNavbar />
+          },
+          {
+            path: 'test-logo',
+            element: <TestLogo />
+          },
+          {
+            path: 'test-dual-navbar',
+            element: <TestDualNavbar />
+          },
+          {
+            path: 'help-list',
+            element: <FaqTab />
+          },
+          {
+            path: 'coming-soon',
+            element: <ComingSoon />
           }
           //     {
           //       path: 'po',

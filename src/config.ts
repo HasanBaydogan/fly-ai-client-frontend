@@ -22,7 +22,7 @@ export const initialConfig: Config = {
   theme: 'light',
   navbarTopAppearance: 'default',
   navbarVerticalAppearance: 'default',
-  navbarPosition: 'vertical',
+  navbarPosition: 'dual',
   navbarTopShape: 'default',
   isRTL: false,
   isDark: false,

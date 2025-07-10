@@ -42,27 +42,43 @@ const MainLayout = () => {
 
   const { contentClass, footerClass } = useMainLayoutContext();
 
+  // Navbar render fonksiyonu
+  const renderNavbar = () => {
+    switch (navbarPosition) {
+      case 'vertical':
+        return <NavbarVertical />;
+      case 'horizontal':
+        return <NavbarTopHorizontal />;
+      case 'combo':
+        return (
+          <>
+            <NavbarTopHorizontal />
+            <NavbarVertical />
+          </>
+        );
+      case 'dual':
+        if (isLoading) {
+          return (
+            <div className="">
+              <LoadingAnimation />
+            </div>
+          );
+        }
+        return (
+          <NavbarDual
+            userId={userInfos?.userId}
+            userFullName={userInfos?.userFullName}
+            logo={userInfos?.logo}
+          />
+        );
+      default:
+        return <NavbarVertical />;
+    }
+  };
+
   return (
     <Container fluid className="px-0">
-      {(navbarPosition === 'vertical' || navbarPosition === 'combo') && (
-        <NavbarVertical />
-      )}
-      {navbarPosition === 'vertical' &&
-        (isLoading ? (
-          <div className="">
-            <LoadingAnimation />
-          </div>
-        ) : (
-          <NavbarTopDefault
-            userId={userInfos && userInfos.userId}
-            userFullName={userInfos && userInfos.userFullName}
-            logo={userInfos && userInfos.logo}
-          />
-        ))}
-      {(navbarPosition === 'horizontal' || navbarPosition === 'combo') && (
-        <NavbarTopHorizontal />
-      )}
-      {navbarPosition === 'dual' && <NavbarDual />}
+      {renderNavbar()}
 
       <div className={classNames(contentClass, 'content')}>
         <Outlet />
