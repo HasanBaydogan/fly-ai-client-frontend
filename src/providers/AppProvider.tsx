@@ -4,7 +4,8 @@ import React, {
   PropsWithChildren,
   useContext,
   useEffect,
-  useReducer
+  useReducer,
+  useCallback
 } from 'react';
 import { getColor, getItemFromStore } from 'helpers/utils';
 import { Config, initialConfig } from 'config';
@@ -54,12 +55,15 @@ const AppProvider = ({ children }: PropsWithChildren) => {
 
   const [config, configDispatch] = useReducer(configReducer, configState); // initail
 
-  const setConfig = (payload: Partial<Config>) => {
-    configDispatch({
-      type: SET_CONFIG,
-      payload
-    });
-  };
+  const setConfig = useCallback(
+    (payload: Partial<Config>) => {
+      configDispatch({
+        type: SET_CONFIG,
+        payload
+      });
+    },
+    [configDispatch]
+  );
 
   const toggleTheme = () => {
     configDispatch({
@@ -74,6 +78,7 @@ const AppProvider = ({ children }: PropsWithChildren) => {
     return getColor(name);
   };
 
+  // Handle navbar shape changes
   useEffect(() => {
     if (config.navbarTopShape === 'slim') {
       // document.body.classList.add('nav-slim');
@@ -84,7 +89,10 @@ const AppProvider = ({ children }: PropsWithChildren) => {
     } else {
       document.documentElement.removeAttribute('data-navbar-horizontal-shape');
     }
+  }, [config.navbarTopShape]);
 
+  // Handle navbar position changes
+  useEffect(() => {
     if (config.navbarPosition === 'dual') {
       setConfig({
         navbarTopShape: 'default'
@@ -95,13 +103,16 @@ const AppProvider = ({ children }: PropsWithChildren) => {
       'data-navigation-type',
       config.navbarPosition
     );
+  }, [config.navbarPosition, setConfig]);
 
+  // Handle navbar vertical collapse changes
+  useEffect(() => {
     if (config.isNavbarVerticalCollapsed) {
       document.documentElement.classList.add('navbar-vertical-collapsed');
     } else {
       document.documentElement.classList.remove('navbar-vertical-collapsed');
     }
-  }, [config]);
+  }, [config.isNavbarVerticalCollapsed]);
 
   return (
     <AppContext.Provider

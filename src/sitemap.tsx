@@ -36,42 +36,42 @@ export interface RouteItems {
 }
 
 export const routes: RouteItems[] = [
-  {
-    label: 'RFQ',
-    icon: UilCube,
-    pages: [
-      {
-        name: 'RFQ List',
-        path: 'rfqs/list',
-        pathName: 'rfq-list',
-        icon: 'file-minus',
-        active: true,
-        next: false
-      },
-      {
-        name: 'Create New RFQ',
-        path: 'rfqs/create',
-        pathName: 'create-new-rfq',
-        icon: 'file-plus',
-        active: true,
-        next: false
-      }
-    ]
-  },
-  {
-    label: 'QUOTE',
-    icon: UilDiary,
-    pages: [
-      {
-        name: 'Quote List',
-        path: '/quotes/quotelist',
-        pathName: 'quote-list',
-        icon: 'briefcase',
-        active: true,
-        next: false
-      }
-    ]
-  },
+  // {
+  //   label: 'RFQ',
+  //   icon: UilCube,
+  //   pages: [
+  //     {
+  //       name: 'RFQ List',
+  //       path: 'rfqs/list',
+  //       pathName: 'rfq-list',
+  //       icon: 'file-minus',
+  //       active: true,
+  //       next: false
+  //     },
+  //     {
+  //       name: 'Create New RFQ',
+  //       path: 'rfqs/create',
+  //       pathName: 'create-new-rfq',
+  //       icon: 'file-plus',
+  //       active: true,
+  //       next: false
+  //     }
+  //   ]
+  // },
+  // {
+  //   label: 'QUOTE',
+  //   icon: UilDiary,
+  //   pages: [
+  //     {
+  //       name: 'Quote List',
+  //       path: '/quotes/quotelist',
+  //       pathName: 'quote-list',
+  //       icon: 'briefcase',
+  //       active: true,
+  //       next: false
+  //     }
+  //   ]
+  // },
   {
     label: 'PI List',
     icon: UilDiary,

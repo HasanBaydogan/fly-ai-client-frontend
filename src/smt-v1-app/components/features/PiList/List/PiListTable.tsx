@@ -430,7 +430,7 @@ const PiListTableContext = createContext<{
 export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
   {
     id: 'actions',
-    header: 'Buttons',
+    header: 'Attachments',
     cell: ({ row: { original } }) => {
       const [showFileUploadModal, setShowFileUploadModal] = useState(false);
       // Use the shared context
@@ -482,7 +482,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
 
       return (
         <div className="d-flex gap-2 px-2">
-          <Link
+          {/* <Link
             to={`/pi/detail?piId=${original.piId}`}
             style={{
               textDecoration: 'none',
@@ -503,13 +503,13 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
             >
               <FontAwesomeIcon icon={faFileInvoice} />
             </Button>
-          </Link>
+          </Link> */}
           <Button
             variant="outline-secondary"
             size="sm"
             title="PI File Upload"
             className="d-flex align-items-center justify-content-center"
-            style={{ width: '32px', height: '32px' }}
+            style={{ width: '32px', height: '32px', marginLeft: '50px' }}
             onClick={() => {
               if (editingPiId && editingPiId !== original.piId) {
                 return;
@@ -1631,24 +1631,13 @@ export const PiTableColumns = PiTableColumnsStatic;
 
 type SearchColumn = {
   label: string;
-  value:
-    | 'all'
-    | 'piId'
-    | 'quoteID'
-    | 'contractNo'
-    | 'company'
-    | 'partNumber'
-    | 'partName';
+  value: 'all' | 'clientPONumber' | 'partNumber';
 };
 
 const searchColumns: SearchColumn[] = [
   // { label: 'No Filter', value: 'all' },
-  { label: 'PI ID', value: 'piId' },
-  { label: 'Quote ID', value: 'quoteID' },
-  { label: 'Contract No', value: 'contractNo' },
-  { label: 'Company', value: 'company' },
-  { label: 'Part Number', value: 'partNumber' },
-  { label: 'Part Name', value: 'partName' }
+  { label: 'PO Ref NO', value: 'clientPONumber' },
+  { label: 'Part Number', value: 'partNumber' }
 ];
 
 interface QuoteListTableProps {
@@ -1891,7 +1880,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
   const tabOptions = [
     { label: 'All', value: 'ALL' },
     { label: 'Active', value: 'ACTIVE' },
-    { label: 'My Issues', value: 'MY_ISSUES' },
+    // { label: 'My Issues', value: 'MY_ISSUES' },
     { label: 'Trade Confirmation', value: 'TRADE' },
     { label: 'Payment', value: 'PAYMENT' },
     { label: 'Delivery to Transit', value: 'DELIVERY_TO_TRANSIT' },
@@ -2532,15 +2521,18 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
         navigate('/451');
         return;
       }
-      const piList = response?.data?.piResponses || [];
+      const piList = response?.data?.piClientResponse || [];
       const mappedData: PiListData[] = piList.map((item: any) => {
         let clientNames = '';
-        if (Array.isArray(item.piResponses)) {
-          clientNames = item.piResponses
+        if (Array.isArray(item.piClientResponse)) {
+          clientNames = item.piClientResponse
             .map((c: any) => c.clientName)
             .join(', ');
-        } else if (item.piResponses && typeof item.piResponses === 'object') {
-          clientNames = item.piResponses.clientName;
+        } else if (
+          item.piClientResponse &&
+          typeof item.piClientResponse === 'object'
+        ) {
+          clientNames = item.piClientResponse.clientName;
         }
         return {
           ...item,
@@ -2924,7 +2916,7 @@ const PiListTable: FC<QuoteListTableProps> = ({ activeView }) => {
                     {tab.label}
                   </Nav.Link>
                 </Nav.Item>
-                {index === 2 && (
+                {index === 1 && (
                   <>
                     <div className="vr mx-2" style={{ height: '40px' }} />
                     <span className=" me-2 align-self-center">Stages:</span>

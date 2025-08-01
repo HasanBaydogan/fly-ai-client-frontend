@@ -174,11 +174,6 @@ const mockData: MainCategory[] = [
             id: 'clients-swift',
             name: "Client's SWIFT",
             files: []
-          },
-          {
-            id: 'clients-pi',
-            name: "Client's PI",
-            files: []
           }
         ]
       },
@@ -186,6 +181,11 @@ const mockData: MainCategory[] = [
         id: 'sent',
         name: 'Sent',
         subCategories: [
+          {
+            id: 'clients-pi',
+            name: "Client's PI",
+            files: []
+          },
           {
             id: 'official-invoice',
             name: 'Official Invoice',
@@ -1180,87 +1180,6 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                             handleSelectNode(
                               'docs-client',
                               'received',
-                              'clients-pi'
-                            )
-                          }
-                          active={
-                            selectedCategory.mainId === 'docs-client' &&
-                            selectedCategory.categoryId === 'received' &&
-                            selectedCategory.subCategoryId === 'clients-pi'
-                          }
-                        >
-                          <div className="d-flex align-items-center">
-                            <FontAwesomeIcon
-                              icon={faFolder}
-                              className="me-2"
-                              size="sm"
-                              style={{ color: '#f8d775' }}
-                            />
-                            <span className="small">Client's PI</span>
-                            <div className="d-flex gap-2 ms-auto align-items-center">
-                              {renderFilesForNode('clients-pi', 'subcategory')}
-
-                              <Button
-                                variant="outline-primary"
-                                className="py-1 px-2"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  toggleEditMode('clients-pi');
-                                }}
-                                //disabled={isUploading['clients-pi']}
-                                disabled
-                              >
-                                <FontAwesomeIcon
-                                  icon={
-                                    editModes['clients-pi'] ? faSave : faEdit
-                                  }
-                                />
-                                {isUploading['clients-pi'] && (
-                                  <span
-                                    className="spinner-border spinner-border-sm ms-1"
-                                    role="status"
-                                    aria-hidden="true"
-                                  ></span>
-                                )}
-                              </Button>
-                              {editModes['clients-pi'] && (
-                                <Form.Group
-                                  controlId="fileUpload-clients-pi"
-                                  className="d-inline-block ms-1"
-                                >
-                                  <Form.Label
-                                    className={`btn btn-outline-primary py-1 px-2 mb-0 ${
-                                      isUploading['clients-pi']
-                                        ? 'disabled'
-                                        : ''
-                                    }`}
-                                  >
-                                    <FontAwesomeIcon icon={faFileUpload} />
-                                    <Form.Control
-                                      type="file"
-                                      multiple
-                                      onChange={e =>
-                                        handleFileUpload(
-                                          e as ChangeEvent<HTMLInputElement>,
-                                          'clients-pi'
-                                        )
-                                      }
-                                      style={{ display: 'none' }}
-                                      disabled={isUploading['clients-pi']}
-                                    />
-                                  </Form.Label>
-                                </Form.Group>
-                              )}
-                            </div>
-                          </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item
-                          className="py-1 px-2"
-                          action
-                          onClick={() =>
-                            handleSelectNode(
-                              'docs-client',
-                              'received',
                               'clients-swift'
                             )
                           }
@@ -1352,6 +1271,87 @@ const PIListFileUpload: React.FC<PIListFileUploadProps> = ({
                         <span className="fs-7">Sent</span>
                       </Card.Header>
                       <ListGroup variant="flush">
+                        <ListGroup.Item
+                          className="py-1 px-2"
+                          action
+                          onClick={() =>
+                            handleSelectNode(
+                              'docs-client',
+                              'received',
+                              'clients-pi'
+                            )
+                          }
+                          active={
+                            selectedCategory.mainId === 'docs-client' &&
+                            selectedCategory.categoryId === 'sent' &&
+                            selectedCategory.subCategoryId === 'clients-pi'
+                          }
+                        >
+                          <div className="d-flex align-items-center">
+                            <FontAwesomeIcon
+                              icon={faFolder}
+                              className="me-2"
+                              size="sm"
+                              style={{ color: '#f8d775' }}
+                            />
+                            <span className="small">Client's PI</span>
+                            <div className="d-flex gap-2 ms-auto align-items-center">
+                              {renderFilesForNode('clients-pi', 'subcategory')}
+
+                              <Button
+                                variant="outline-primary"
+                                className="py-1 px-2"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  toggleEditMode('clients-pi');
+                                }}
+                                //disabled={isUploading['clients-pi']}
+                                disabled
+                              >
+                                <FontAwesomeIcon
+                                  icon={
+                                    editModes['clients-pi'] ? faSave : faEdit
+                                  }
+                                />
+                                {isUploading['clients-pi'] && (
+                                  <span
+                                    className="spinner-border spinner-border-sm ms-1"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                )}
+                              </Button>
+                              {editModes['clients-pi'] && (
+                                <Form.Group
+                                  controlId="fileUpload-clients-pi"
+                                  className="d-inline-block ms-1"
+                                >
+                                  <Form.Label
+                                    className={`btn btn-outline-primary py-1 px-2 mb-0 ${
+                                      isUploading['clients-pi']
+                                        ? 'disabled'
+                                        : ''
+                                    }`}
+                                  >
+                                    <FontAwesomeIcon icon={faFileUpload} />
+                                    <Form.Control
+                                      type="file"
+                                      multiple
+                                      onChange={e =>
+                                        handleFileUpload(
+                                          e as ChangeEvent<HTMLInputElement>,
+                                          'clients-pi'
+                                        )
+                                      }
+                                      style={{ display: 'none' }}
+                                      disabled={isUploading['clients-pi']}
+                                    />
+                                  </Form.Label>
+                                </Form.Group>
+                              )}
+                            </div>
+                          </div>
+                        </ListGroup.Item>
                         <ListGroup.Item
                           className="py-1 px-2"
                           action

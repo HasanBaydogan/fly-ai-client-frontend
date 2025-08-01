@@ -27,9 +27,9 @@ export const searchByPiList = async (
 ) => {
   let url = '';
   if (pageSize === 'all') {
-    url = `/pi/filter?${term}&piStatusRequest=${piStatus}`;
+    url = `/client-dashboard/pi/filter?${term}&piStatusRequest=${piStatus}`;
   } else {
-    url = `/pi/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}&piStatusRequest=${piStatus}`;
+    url = `/client-dashboard/pi/filter?pageNo=${pageNo}&pageSize=${pageSize}&${term}&piStatusRequest=${piStatus}`;
   }
   return await getRequest(url);
 };
@@ -77,7 +77,9 @@ export const getPiAttachments = async (piId: string) => {
 };
 
 export const getPiSelectedAttachments = async (id: string, type: string) => {
-  return await getRequest(`/pi/attachment?id=${id}&type=${type}`);
+  return await getRequest(
+    `/client-dashboard/pi/attachment?id=${id}&type=${type}`
+  );
 };
 
 export const uploadPIAttachments = async (
@@ -91,7 +93,7 @@ export const uploadPIAttachments = async (
     type
   };
 
-  return await postRequest('/pi/attachment', requestData);
+  return await postRequest('/client-dashboard/pi/attachment', requestData);
 };
 
 export const postPiActionCreate = async (NewAction: PINewAction) => {

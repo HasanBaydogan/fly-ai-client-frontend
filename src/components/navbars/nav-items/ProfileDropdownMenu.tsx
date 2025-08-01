@@ -33,8 +33,8 @@ const ProfileDropdownMenu = ({
     */
     {
       label: 'User Settings',
-      icon: 'settings',
-      url: '/user-settings?userId='
+      icon: 'settings'
+      // url: '/user-settings?userId='
       // + userId
     },
     {
