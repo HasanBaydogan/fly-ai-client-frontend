@@ -43,7 +43,7 @@ export const getPreEmailSendingParameters = async (piId: string) => {
 };
 
 export const getPiDetails = async (piNumberId: string) => {
-  return await getRequest(`/pi/pi-detail?piId=${piNumberId}`);
+  return await getRequest(`/client-dashboard/pi/pi-detail?piId=${piNumberId}`);
 };
 
 export const sendQuoteEmail = async (sendEmailProps: SendEmailProps) => {
@@ -73,12 +73,12 @@ export const getPiWizard = async (piId: string) => {
 };
 
 export const getPiAttachments = async (piId: string) => {
-  return await getRequest(`/pi/attachment/all?piId=${piId}`);
+  return await getRequest(`/client-dashboard/pi-attachment?piId=${piId}`);
 };
 
 export const getPiSelectedAttachments = async (id: string, type: string) => {
   return await getRequest(
-    `/client-dashboard/pi/attachment?id=${id}&type=${type}`
+    `/client-dashboard/pi-attachment/detail?id=${id}&type=${type}`
   );
 };
 
@@ -93,7 +93,7 @@ export const uploadPIAttachments = async (
     type
   };
 
-  return await postRequest('/client-dashboard/pi/attachment', requestData);
+  return await postRequest('/client-dashboard/pi-attachment', requestData);
 };
 
 export const postPiActionCreate = async (NewAction: PINewAction) => {
