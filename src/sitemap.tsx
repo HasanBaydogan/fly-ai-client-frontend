@@ -85,27 +85,27 @@ export const routes: RouteItems[] = [
         next: false
       }
     ]
-  },
-  {
-    label: 'Help',
-    icon: UilQuestionCircle,
-    pages: [
-      {
-        name: 'Help',
-        path: '/help-list',
-        pathName: 'help-list',
-        icon: '',
-        active: true,
-        next: false
-      },
-      {
-        name: 'About',
-        path: 'coming-soon',
-        pathName: 'about',
-        icon: '',
-        active: true,
-        next: false
-      }
-    ]
   }
+  // {
+  //   label: 'Help',
+  //   icon: UilQuestionCircle,
+  //   pages: [
+  //     {
+  //       name: 'Help',
+  //       path: '/help-list',
+  //       pathName: 'help-list',
+  //       icon: '',
+  //       active: true,
+  //       next: false
+  //     },
+  //     {
+  //       name: 'About',
+  //       path: 'coming-soon',
+  //       pathName: 'about',
+  //       icon: '',
+  //       active: true,
+  //       next: false
+  //     }
+  //   ]
+  // }
 ];
