@@ -615,14 +615,13 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
         <div
           style={{
             padding: '0.25rem 0.5rem',
-            width: '100px',
+            width: '120px',
             border: '1px solid #ced4da',
             borderRadius: '0.25rem',
             background: '#f8f9fa',
             minHeight: '31px',
             display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
+            justifyContent: 'center'
           }}
         >
           {original.clientPONumber || '-'}
@@ -630,7 +629,9 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       );
     },
     meta: {
-      cellProps: { className: 'white-space-nowrap py-2' },
+      cellProps: {
+        className: 'white-space-nowrap py-2 d-flex justify-content-center'
+      },
       headerProps: { style: { width: '120px', minWidth: '120px' } }
     }
   },
@@ -748,7 +749,8 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
     ),
     meta: {
       cellProps: {
-        className: 'ps-3 fs-9 text-body white-space-nowrap py-2',
+        className:
+          'ps-3 fs-9 text-body white-space-nowrap py-2 d-flex justify-content-center',
         style: { width: '120px', minWidth: '120px' }
       },
       headerProps: {
@@ -1270,7 +1272,10 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       );
     },
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      cellProps: {
+        className:
+          'ps-3 fs-9 text-body white-space-nowrap py-2 d-flex justify-content-center'
+      },
       headerProps: {
         style: { width: '120px', minWidth: '120px' },
         className: 'ps-3'
@@ -1340,7 +1345,7 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       );
     },
     meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2' },
+      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2 ' },
       headerProps: {
         style: { width: '120px', minWidth: '120px' },
         className: 'ps-3'

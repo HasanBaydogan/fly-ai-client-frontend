@@ -85,8 +85,8 @@ const NavItems = ({
       <Nav.Item>
         <Dropdown autoClose="outside" className="h-100">
           <Dropdown.Toggle
-            as={Link}
-            to="#!"
+            // as={Link}
+            // to="#!"
             className="dropdown-caret-none nav-link pe-0 py-0 lh-1 h-100 d-flex align-items-center"
             variant=""
           >

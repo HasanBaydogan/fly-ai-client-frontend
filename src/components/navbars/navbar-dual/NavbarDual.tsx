@@ -34,7 +34,7 @@ const NavbarDual = ({
             <NavbarBrand logo={logo} />
           </div>
 
-          <div className="navbar-search-wrapper">
+          {/* <div className="navbar-search-wrapper">
             <DropdownSearchBox
               className="navbar-top-search-box"
               inputClassName="rounded-pill"
@@ -45,7 +45,7 @@ const NavbarDual = ({
             >
               <SearchResult />
             </DropdownSearchBox>
-          </div>
+          </div> */}
 
           <div className="navbar-nav-wrapper">
             <NavItems userFullName={userFullName} userId={userId} />

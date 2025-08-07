@@ -39,8 +39,8 @@ const ProfileDropdownMenu = ({
     },
     {
       label: 'Privacy Policy',
-      icon: 'help-circle',
-      url: '/help-center'
+      icon: 'help-circle'
+      // url: '/help-center'
     },
     {
       label: 'Help Center',
