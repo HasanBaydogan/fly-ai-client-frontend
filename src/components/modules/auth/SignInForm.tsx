@@ -51,6 +51,9 @@ const SignInForm = ({
   return (
     <>
       <div className="text-center mb-7">
+        <h3 className="text-body-highlight">Client Panel</h3>
+      </div>
+      <div className="text-center mb-7">
         <h3 className="text-body-highlight">Sign In</h3>
         <p className="text-body-tertiary">Get access to your account</p>
       </div>
