@@ -1282,76 +1282,76 @@ export const PiTableColumnsStatic: ColumnDef<PiListData>[] = [
       }
     }
   },
-  {
-    header: 'S. Paid Date',
-    accessorKey: '11---',
-    cell: ({ row: { original } }) => {
-      // Get editing state from context
-      const { editingPiId } = useContext(PiListTableContext);
-      const isEditing = editingPiId === original.piId;
-      const [selectedDate, setSelectedDate] = useState<string>(
-        original.supplierPaidDate
-          ? formatDateForInput(original.supplierPaidDate)
-          : ''
-      );
+  // {
+  //   header: 'S. Paid Date',
+  //   accessorKey: '11---',
+  //   cell: ({ row: { original } }) => {
+  //     // Get editing state from context
+  //     const { editingPiId } = useContext(PiListTableContext);
+  //     const isEditing = editingPiId === original.piId;
+  //     const [selectedDate, setSelectedDate] = useState<string>(
+  //       original.supplierPaidDate
+  //         ? formatDateForInput(original.supplierPaidDate)
+  //         : ''
+  //     );
 
-      // Update the selected date when edit mode changes or when data changes
-      useEffect(() => {
-        setSelectedDate(
-          original.supplierPaidDate
-            ? formatDateForInput(original.supplierPaidDate)
-            : ''
-        );
-      }, [isEditing, original.supplierPaidDate]);
+  //     // Update the selected date when edit mode changes or when data changes
+  //     useEffect(() => {
+  //       setSelectedDate(
+  //         original.supplierPaidDate
+  //           ? formatDateForInput(original.supplierPaidDate)
+  //           : ''
+  //       );
+  //     }, [isEditing, original.supplierPaidDate]);
 
-      const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
-        setSelectedDate(newValue);
+  //     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //       const newValue = e.target.value;
+  //       setSelectedDate(newValue);
 
-        // Update the original data with the new date or null if empty
-        original.supplierPaidDate = newValue
-          ? formatDateForBackend(newValue)
-          : null;
-      };
+  //       // Update the original data with the new date or null if empty
+  //       original.supplierPaidDate = newValue
+  //         ? formatDateForBackend(newValue)
+  //         : null;
+  //     };
 
-      if (isEditing) {
-        return (
-          <Form.Control
-            type="date"
-            size="sm"
-            value={selectedDate}
-            onChange={handleDateChange}
-            style={{ minWidth: '110px' }}
-          />
-        );
-      }
+  //     if (isEditing) {
+  //       return (
+  //         <Form.Control
+  //           type="date"
+  //           size="sm"
+  //           value={selectedDate}
+  //           onChange={handleDateChange}
+  //           style={{ minWidth: '110px' }}
+  //         />
+  //       );
+  //     }
 
-      return (
-        <div
-          style={{
-            padding: '0.25rem 0.5rem',
-            width: '100px',
-            border: '1px solid #ced4da',
-            borderRadius: '0.25rem',
-            background: '#f8f9fa',
-            minHeight: '31px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          {original.supplierPaidDate || '-'}
-        </div>
-      );
-    },
-    meta: {
-      cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2 ' },
-      headerProps: {
-        style: { width: '120px', minWidth: '120px' },
-        className: 'ps-3'
-      }
-    }
-  },
+  //     return (
+  //       <div
+  //         style={{
+  //           padding: '0.25rem 0.5rem',
+  //           width: '100px',
+  //           border: '1px solid #ced4da',
+  //           borderRadius: '0.25rem',
+  //           background: '#f8f9fa',
+  //           minHeight: '31px',
+  //           display: 'flex',
+  //           alignItems: 'center',
+  //           justifyContent: 'center'
+  //         }}
+  //       >
+  //         {original.supplierPaidDate || '-'}
+  //       </div>
+  //     );
+  //   },
+  //   meta: {
+  //     cellProps: { className: 'ps-3 fs-9 text-body white-space-nowrap py-2 ' },
+  //     headerProps: {
+  //       style: { width: '120px', minWidth: '120px' },
+  //       className: 'ps-3'
+  //     }
+  //   }
+  // },
   {
     accessorKey: '22---',
     header: 'LT Days',
