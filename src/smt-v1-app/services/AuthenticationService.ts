@@ -14,6 +14,7 @@ const api = () => {
 };
 export const register = async user => {
   try {
+    console.log(user)
     const response = await api().post('/auth/register', user);
     return response.data;
   } catch (err) {

@@ -123,7 +123,7 @@ const SignInForm = ({
       </Form>
       <div className="text-center">
         <Link to={`/register`} className="fs-9 fw-bold">
-          Create an account
+          Request an Access
         </Link>
       </div>
     </>

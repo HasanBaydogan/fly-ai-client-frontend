@@ -19,6 +19,7 @@ const SignUpForm = ({
   setMessageHeader: React.Dispatch<React.SetStateAction<string>>;
   setMessageBodyText: React.Dispatch<React.SetStateAction<string>>;
 }) => {
+  const [companyName, setCompanyName] = useState('');
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
@@ -43,7 +44,9 @@ const SignUpForm = ({
     e.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
 
-    if (!name.trim()) {
+    if (!companyName.trim()) {
+      toastError('Please enter your Company Name');
+    } else if (!name.trim()) {
       toastError('Please enter your name');
     } else if (!surname.trim()) {
       toastError('Please enter your surname');
@@ -63,6 +66,7 @@ const SignUpForm = ({
       toastError('Please confirm terms and privacy!');
     } else {
       const user = {
+        companyName: companyName.trim(),
         name: name.trim(),
         surname: surname.trim(),
         email: normalizedEmail,
@@ -82,10 +86,20 @@ const SignUpForm = ({
   return (
     <>
       <div className="text-center mb-3">
-        <h3 className="text-body-highlight">Sign Up</h3>
-        <p className="text-body-tertiary">Create your account today</p>
+        <h3 className="text-body-highlight">Access Request Form</h3>
+        <p className="text-body-tertiary">Request for Client Panel Account</p>
       </div>
       <Form>
+        <Form.Group className="mb-2 text-start">
+          <Form.Label htmlFor="name">Company Name</Form.Label>
+          <Form.Control
+            id="companyName"
+            type="text"
+            placeholder="Company Name"
+            value={companyName}
+            onChange={e => setCompanyName(e.target.value)}
+          />
+        </Form.Group>
         <Form.Group className="mb-2 text-start">
           <Form.Label htmlFor="name">Name</Form.Label>
           <Form.Control
